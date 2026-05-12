@@ -1,0 +1,34 @@
+metric	value	status	reason
+query_count	48.000000	ok	number of migration gold queries
+true_positive_count	12.000000	ok	positive migration cases
+revise_only_count	10.000000	ok	boundary cases that should block or revise direct transfer
+true_negative_count	12.000000	ok	incompatible cases that should not migrate
+needs_clarification_count	8.000000	ok	underspecified cases that should ask for clarification
+retrieval_trap_count	6.000000	ok	keyword/name traps that should not trigger migration
+prediction_coverage	1.000000	ok	gold queries with predictions
+migration_output_type_hit	0.791667	ok	exact output type match; mostly useful for migration-only sets
+mixed_decision_accuracy	1.000000	ok	correct accept/revise/reject/clarify decision across mixed cases
+top_k_source_tool_hit	0.750000	ok	top-3 source tools include at least one expected source where expected tools are provided
+positive_migration_output_rate	1.000000	ok	positive cases that surfaced a migration hypothesis
+positive_source_tool_hit	1.000000	ok	positive cases with expected source tool in top-3
+negative_false_migration_rate	0.000000	ok	reject/clarify cases that still surfaced migration; lower is better
+negative_rejection_success_rate	1.000000	ok	incompatible cases correctly not migrated
+clarification_success_rate	1.000000	ok	underspecified cases that asked for clarification and did not force migration
+trap_avoidance_rate	1.000000	ok	retrieval traps that did not trigger migration or forbidden claims
+revise_decision_success_rate	1.000000	ok	revise-only cases that blocked direct incompatible transfer
+forbidden_tool_violation_rate	0.000000	ok	lower is better
+forbidden_claim_violation_rate	0.000000	ok	lower is better; negated boundary statements are not counted as violations
+caveat_presence_rate	1.000000	ok	migration report contains explicit caveat or validation language
+expected_caveat_hit_rate	0.631944	ok	average loose match against expected caveat terms
+claim_boundary_presence_rate	0.270833	ok	exploratory boundary is visible
+compatibility_gap_presence_rate	0.270833	ok	I/O or method gaps are surfaced
+mean_migration_plausibility_score	0.436981	ok	mean across surfaced migration paths
+mean_io_compatibility	0.430556	ok	mean across surfaced migration paths
+mean_graph_jaccard	0.296944	ok	mean across surfaced migration paths
+mean_risk_penalty	0.151944	ok	lower is more conservative
+semantic_audit_pass_rate	1.000000	ok	requires hallucination_audit in predictions
+high_hallucination_rate	0.000000	ok	critical plus high audit issues divided by audited claims
+unsupported_tool_claim_rate	0.000000	ok	unsupported tool issues divided by audited claims
+accepted_hypothesis_rate	1.000000	ok	among surfaced paths with explicit migration review rows
+unreviewed_migration_path_rate	0.527778	ok	surfaced paths that are profile-only and lack a migration-vector review row
+revise_block_success_rate	1.000000	ok	queries whose revise-only source tools were not surfaced
