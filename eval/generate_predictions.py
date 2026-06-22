@@ -12,6 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from agent.workflow import build_sckg_graph
 from connectors.graph_client import Neo4jClient
+from core.agent_runtime import ToolExecutor, ToolRegistry
 from core.constraints import parse_research_constraints
 from core.evidence_policy import (
     MAIN_RECOMMENDATION_TOP_K,
@@ -21,16 +22,21 @@ from core.evidence_policy import (
     has_main_recommendation_evidence,
 )
 from core.models import (
+    AgentRunTrace,
+    EvidenceContextPack,
     EvidenceBundle,
     MigrationPath,
     PredictionRecord,
     ScoredTool,
+    ToolSpec,
     ToolCandidate,
     derived_evidence,
     github_evidence,
     missing_evidence,
 )
 from core.settings import get_settings
+from engine.context_pack_builder import build_evidence_context_pack
+from engine.context_pack_reporter import render_context_pack_report
 from core.task_ontology import (
     FINE_TASKS,
     build_task_query_terms,
@@ -59,7 +65,7 @@ from engine.semantic_hallucination_auditor import audit_report
 from engine.workflow_recommender import build_minimal_workflow_recommendation
 
 
-WORKFLOW_EXPECTED_TYPES = {"workflow", "evidence_chain"}
+WORKFLOW_EXPECTED_TYPES = {"workflow"}
 MIGRATION_TRIGGER_TERMS = [
     "找不到",
     "没有现成",
@@ -413,6 +419,190 @@ def generate_prediction(
     return _generate_deterministic(record, blind_migration=blind_migration)
 
 
+def _new_prediction_executor(query_id: str) -> ToolExecutor:
+    registry = ToolRegistry()
+    registry.register(
+        spec=ToolSpec(
+            name="parse_research_intent",
+            description="Parse a user query into conservative research constraints.",
+            input_schema="user_query: str",
+            output_schema="ResearchConstraints JSON",
+            role="IntentAgent",
+        ),
+        fn=lambda user_query: parse_research_constraints({}, user_query).model_dump(mode="json"),
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="search_tool_candidates",
+            description="Retrieve ToolCandidate records through governed KG/offline retrieval.",
+            input_schema="constraints: dict, user_query: str",
+            output_schema="List[ToolCandidate]",
+            role="RetrievalAgent",
+        ),
+        fn=lambda constraints, user_query="": _find_tool_candidates(constraints, user_query=user_query),
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="fetch_tool_evidence",
+            description="Fetch structured evidence for named tools without changing evidence state.",
+            input_schema="tool_names: list[str]",
+            output_schema="dict[str, list[Evidence]]",
+            role="RetrievalAgent",
+        ),
+        fn=_fetch_tool_evidence_for_trace,
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="score_candidates_mcdm",
+            description="Score candidate tools with evidence-aware MCDM.",
+            input_schema="tool_candidates: List[ToolCandidate], constraints: dict",
+            output_schema="List[ScoredTool]",
+            role="RankingAgent",
+            recommendation_grade_allowed=True,
+        ),
+        fn=lambda tool_candidates, constraints=None: _score_candidates(
+            [ToolCandidate.model_validate(item) for item in tool_candidates],
+            constraints or {},
+        ),
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="build_workflow_template",
+            description="Build deterministic workflow template from constraints and candidate tools.",
+            input_schema="constraints: dict, candidate_tools: list[str]",
+            output_schema="WorkflowRecommendation",
+            role="WorkflowPlannerAgent",
+        ),
+        fn=lambda constraints, candidate_tools=None: build_minimal_workflow_recommendation(
+            constraints,
+            candidate_tools=candidate_tools or [],
+        ),
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="build_migration_hypotheses",
+            description="Build reviewed exploratory migration hypotheses only.",
+            input_schema="constraints: dict, tool_candidates: list, expected_source_tools: list|None, blocked_tools: list",
+            output_schema="List[MigrationPath]",
+            role="MigrationAgent",
+        ),
+        fn=lambda constraints, tool_candidates=None, expected_source_tools=None, blocked_tools=None: _filter_blocked_migration_paths(
+            _build_fallback_migrations(
+                constraints,
+                [ToolCandidate.model_validate(item) for item in (tool_candidates or [])],
+                expected_source_tools=expected_source_tools,
+            ),
+            blocked_tools or [],
+        ),
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="build_evidence_context_pack",
+            description="Build governed EvidenceContextPack with trusted/retrieval/migration/blocked layers.",
+            input_schema="context-pack inputs",
+            output_schema="EvidenceContextPack",
+            role="ReportAgent",
+        ),
+        fn=_build_context_pack_tool,
+    )
+    registry.register(
+        spec=ToolSpec(
+            name="audit_report_claims",
+            description="Audit report claims against structured evidence and context pack.",
+            input_schema="report/evidence/scored/candidate/migration/workflow/context_pack",
+            output_schema="HallucinationAuditResult",
+            role="AuditorAgent",
+        ),
+        fn=_audit_report_tool,
+    )
+    return ToolExecutor(
+        registry,
+        trace=AgentRunTrace(trace_id=f"trace_{query_id}"),
+        max_tool_iterations=24,
+    )
+
+
+def _trace_prediction_fields(trace: AgentRunTrace) -> Dict[str, Any]:
+    summary = trace.summary()
+    return {
+        "trace_id": trace.trace_id,
+        "agent_trace_summary": summary,
+        "tool_call_count": summary["tool_call_count"],
+        "failed_tool_call_count": summary["failed_tool_call_count"],
+        "mean_tool_latency_ms": summary["mean_tool_latency_ms"],
+        "invalid_action_count": summary["invalid_action_count"],
+        "blocked_by_guardrail": summary["blocked_by_guardrail"],
+    }
+
+
+def _fetch_tool_evidence_for_trace(tool_names: List[str]) -> Dict[str, List[Dict[str, Any]]]:
+    client = Neo4jClient()
+    try:
+        evidence = client.fetch_tool_evidence(tool_names)
+    finally:
+        client.close()
+    return {
+        name: [item.model_dump(mode="json") for item in items]
+        for name, items in evidence.items()
+    }
+
+
+def _build_context_pack_tool(
+    *,
+    user_query: str,
+    constraints: Dict[str, Any],
+    recommendation_type: str,
+    scored_tools: List[Dict[str, Any]],
+    tool_candidates: List[Dict[str, Any]],
+    workflow: Optional[Dict[str, Any]],
+    migration_paths: List[Dict[str, Any]],
+    evidence_bundle: Dict[str, Any],
+    missing_components: List[str],
+    blocked_tools: Optional[List[str]] = None,
+    hallucination_audit: Optional[Dict[str, Any]] = None,
+) -> EvidenceContextPack:
+    from core.models import WorkflowRecommendation
+
+    workflow_model = WorkflowRecommendation.model_validate(workflow) if workflow else None
+    return build_evidence_context_pack(
+        user_query=user_query,
+        constraints=constraints,
+        recommendation_type=recommendation_type,
+        scored_tools=[ScoredTool.model_validate(item) for item in scored_tools],
+        tool_candidates=[ToolCandidate.model_validate(item) for item in tool_candidates],
+        workflow=workflow_model,
+        migration_paths=[MigrationPath.model_validate(item) for item in migration_paths],
+        evidence_bundle=EvidenceBundle.model_validate(evidence_bundle),
+        missing_components=missing_components,
+        blocked_tools=blocked_tools or [],
+        hallucination_audit=hallucination_audit,
+    )
+
+
+def _audit_report_tool(
+    *,
+    final_report: str,
+    evidence_bundle: Dict[str, Any],
+    scored_tools: List[Dict[str, Any]],
+    candidate_tools: List[Dict[str, Any]],
+    migration_paths: List[Dict[str, Any]],
+    workflow: Optional[Dict[str, Any]],
+    context_pack: Dict[str, Any],
+) -> Any:
+    from core.models import WorkflowRecommendation
+
+    workflow_model = WorkflowRecommendation.model_validate(workflow) if workflow else None
+    return audit_report(
+        final_report=final_report,
+        evidence_bundle=EvidenceBundle.model_validate(evidence_bundle),
+        scored_tools=[ScoredTool.model_validate(item) for item in scored_tools],
+        candidate_tools=[ToolCandidate.model_validate(item) for item in candidate_tools],
+        migration_paths=[MigrationPath.model_validate(item) for item in migration_paths],
+        workflow_recommendation=workflow_model,
+        context_pack=context_pack,
+    )
+
+
 def _generate_deterministic(
     record: Dict[str, Any],
     blind_migration: bool = False,
@@ -420,10 +610,30 @@ def _generate_deterministic(
     query_id = record["id"]
     user_query = record["query"]
     errors: List[str] = []
+    executor = _new_prediction_executor(query_id)
 
-    constraints = parse_research_constraints({}, user_query)
+    parse_result = executor.run_tool(
+        "parse_research_intent",
+        node_name="IntentAgent",
+        args={"user_query": user_query},
+    )
+    if parse_result.status == "ok" and isinstance(parse_result.result, dict):
+        constraints = parse_research_constraints(parse_result.result, user_query)
+    else:
+        errors.append(f"intent_parse_failed: {parse_result.error_type or parse_result.status}")
+        constraints = parse_research_constraints({}, user_query)
     constraints_dict = constraints.model_dump(mode="json")
     constraints_dict = _apply_migration_intent_to_constraints(constraints_dict, user_query)
+    executor.add_role_result(
+        "IntentAgent",
+        status="ok" if parse_result.status == "ok" else "error",
+        input_summary={"query_id": query_id},
+        output_summary={
+            "task": constraints_dict.get("task", "Unknown"),
+            "modality": constraints_dict.get("modality", "Unknown"),
+            "clarification_state": constraints_dict.get("clarification_state", "needs_clarification"),
+        },
+    )
     recommendation_type = _choose_recommendation_type(
         constraints=constraints_dict,
         user_query=user_query,
@@ -441,8 +651,18 @@ def _generate_deterministic(
     scored_tools: List[ScoredTool] = []
     migration_paths: List[MigrationPath] = []
 
+    retrieval_result = executor.run_tool(
+        "search_tool_candidates",
+        node_name="RetrievalAgent",
+        args={"constraints": constraints_dict, "user_query": user_query},
+    )
     try:
-        tool_candidates = _find_tool_candidates(constraints_dict, user_query=user_query)
+        if retrieval_result.status != "ok":
+            raise RuntimeError(retrieval_result.error_message or retrieval_result.error_type)
+        tool_candidates = [
+            item if isinstance(item, ToolCandidate) else ToolCandidate.model_validate(item)
+            for item in (retrieval_result.result or [])
+        ]
         tool_candidates, scored_tools = _filter_blocked_tool_outputs(
             tool_candidates,
             scored_tools,
@@ -450,10 +670,50 @@ def _generate_deterministic(
         )
     except Exception as exc:
         errors.append(f"candidate_retrieval_failed: {exc}")
+    if tool_candidates:
+        executor.run_tool(
+            "fetch_tool_evidence",
+            node_name="RetrievalAgent",
+            args={"tool_names": [candidate.tool_name for candidate in tool_candidates]},
+        )
+    executor.add_role_result(
+        "RetrievalAgent",
+        status="ok" if retrieval_result.status == "ok" else "error",
+        input_summary={
+            "task": constraints_dict.get("task"),
+            "modality": constraints_dict.get("modality"),
+        },
+        output_summary={
+            "candidate_count": len(tool_candidates),
+            "blocked_tools": migration_gate["blocked_tools"],
+        },
+    )
+    executor.add_role_result(
+        "EvidenceGateAgent",
+        status="ok",
+        input_summary={"raw_candidate_count": len(tool_candidates)},
+        output_summary={
+            "trusted_core_candidate_count": len(tool_candidates),
+            "policy": "has_main_recommendation_evidence",
+        },
+    )
 
     if recommendation_type in {"ranked_tools", "workflow", "evidence_chain"}:
+        scoring_result = executor.run_tool(
+            "score_candidates_mcdm",
+            node_name="RankingAgent",
+            args={
+                "tool_candidates": [item.model_dump(mode="json") for item in tool_candidates],
+                "constraints": constraints_dict,
+            },
+        )
         try:
-            scored_tools = _score_candidates(tool_candidates, constraints_dict)
+            if scoring_result.status != "ok":
+                raise RuntimeError(scoring_result.error_message or scoring_result.error_type)
+            scored_tools = [
+                item if isinstance(item, ScoredTool) else ScoredTool.model_validate(item)
+                for item in (scoring_result.result or [])
+            ]
             tool_candidates, scored_tools = _filter_blocked_tool_outputs(
                 tool_candidates,
                 scored_tools,
@@ -461,25 +721,63 @@ def _generate_deterministic(
             )
         except Exception as exc:
             errors.append(f"mcdm_scoring_failed: {exc}")
+        executor.add_role_result(
+            "RankingAgent",
+            status="ok" if scoring_result.status == "ok" else "error",
+            input_summary={"candidate_count": len(tool_candidates)},
+            output_summary={"scored_tool_count": len(scored_tools)},
+        )
 
     if (recommendation_type == "migration" or not tool_candidates) and migration_gate["allow_migration"]:
-        migration_paths = _build_fallback_migrations(
-            constraints_dict,
-            tool_candidates,
-            expected_source_tools=None if blind_migration else record.get("expected_source_tools"),
+        migration_result = executor.run_tool(
+            "build_migration_hypotheses",
+            node_name="MigrationAgent",
+            args={
+                "constraints": constraints_dict,
+                "tool_candidates": [item.model_dump(mode="json") for item in tool_candidates],
+                "expected_source_tools": None if blind_migration else record.get("expected_source_tools"),
+                "blocked_tools": migration_gate["blocked_tools"],
+            },
         )
-        migration_paths = _filter_blocked_migration_paths(
-            migration_paths,
-            migration_gate["blocked_tools"],
+        if migration_result.status == "ok":
+            migration_paths = [
+                item if isinstance(item, MigrationPath) else MigrationPath.model_validate(item)
+                for item in (migration_result.result or [])
+            ]
+        else:
+            errors.append(f"migration_hypothesis_failed: {migration_result.error_type or migration_result.status}")
+        executor.add_role_result(
+            "MigrationAgent",
+            status="ok" if migration_result.status == "ok" else "error",
+            input_summary={"allow_migration": migration_gate["allow_migration"]},
+            output_summary={
+                "migration_path_count": len(migration_paths),
+                "accepted_path_count": len(_accepted_migration_paths(migration_paths)),
+            },
         )
 
     ranked_tool_names = [tool.tool_name for tool in scored_tools]
     candidate_tool_names = [candidate.tool_name for candidate in tool_candidates]
     workflow = None
     if recommendation_type in WORKFLOW_EXPECTED_TYPES:
-        workflow = build_minimal_workflow_recommendation(
-            constraints_dict,
-            candidate_tools=(ranked_tool_names or candidate_tool_names)[:3],
+        workflow_result = executor.run_tool(
+            "build_workflow_template",
+            node_name="WorkflowPlannerAgent",
+            args={
+                "constraints": constraints_dict,
+                "candidate_tools": (ranked_tool_names or candidate_tool_names)[:3],
+            },
+        )
+        if workflow_result.status == "ok":
+            workflow = workflow_result.result
+            _filter_workflow_candidate_tools(workflow, migration_gate["blocked_tools"])
+        else:
+            errors.append(f"workflow_template_failed: {workflow_result.error_type or workflow_result.status}")
+        executor.add_role_result(
+            "WorkflowPlannerAgent",
+            status="ok" if workflow_result.status == "ok" else "error",
+            input_summary={"recommendation_type": recommendation_type},
+            output_summary={"workflow_step_count": len(workflow.steps) if workflow else 0},
         )
 
     visible_tool_candidates, visible_scored_tools, visible_migration_paths = _visible_outputs(
@@ -487,10 +785,11 @@ def _generate_deterministic(
         scored_tools=scored_tools,
         migration_paths=migration_paths,
     )
+    report_migration_paths = _accepted_migration_paths(visible_migration_paths)
     evidence_bundle = _combine_evidence(
         tool_candidates=visible_tool_candidates,
         scored_tools=visible_scored_tools,
-        migration_paths=visible_migration_paths,
+        migration_paths=report_migration_paths,
         workflow=workflow,
     )
     missing_components = _missing_components(
@@ -503,34 +802,141 @@ def _generate_deterministic(
     )
     missing_components.extend(migration_gate["missing_components"])
     missing_components = sorted(set(missing_components))
-    final_report = _build_final_report(
-        constraints=constraints_dict,
-        recommendation_type=recommendation_type,
-        scored_tools=visible_scored_tools,
-        migration_paths=visible_migration_paths,
-        workflow=workflow,
-        missing_components=missing_components,
+    context_pack_result = executor.run_tool(
+        "build_evidence_context_pack",
+        node_name="ReportAgent",
+        args={
+            "user_query": user_query,
+            "constraints": constraints_dict,
+            "recommendation_type": recommendation_type,
+            "scored_tools": [item.model_dump(mode="json") for item in visible_scored_tools],
+            "tool_candidates": [item.model_dump(mode="json") for item in visible_tool_candidates],
+            "workflow": workflow.model_dump(mode="json") if workflow else None,
+            "migration_paths": [item.model_dump(mode="json") for item in visible_migration_paths],
+            "evidence_bundle": evidence_bundle.model_dump(mode="json"),
+            "missing_components": missing_components,
+            "blocked_tools": migration_gate["blocked_tools"],
+        },
     )
-    hallucination_audit = audit_report(
-        final_report=final_report,
-        evidence_bundle=evidence_bundle,
-        scored_tools=visible_scored_tools,
-        candidate_tools=visible_tool_candidates,
-        migration_paths=visible_migration_paths,
-        workflow_recommendation=workflow,
+    if context_pack_result.status == "ok":
+        context_pack = context_pack_result.result
+    else:
+        errors.append(f"context_pack_failed: {context_pack_result.error_type or context_pack_result.status}")
+        context_pack = build_evidence_context_pack(
+            user_query=user_query,
+            constraints=constraints_dict,
+            recommendation_type=recommendation_type,
+            scored_tools=visible_scored_tools,
+            tool_candidates=visible_tool_candidates,
+            workflow=workflow,
+            migration_paths=visible_migration_paths,
+            evidence_bundle=evidence_bundle,
+            missing_components=missing_components,
+            blocked_tools=migration_gate["blocked_tools"],
+        )
+    final_report = render_context_pack_report(context_pack)
+    audit_result = executor.run_tool(
+        "audit_report_claims",
+        node_name="AuditorAgent",
+        args={
+            "final_report": final_report,
+            "evidence_bundle": evidence_bundle.model_dump(mode="json"),
+            "scored_tools": [item.model_dump(mode="json") for item in visible_scored_tools],
+            "candidate_tools": [item.model_dump(mode="json") for item in visible_tool_candidates],
+            "migration_paths": [item.model_dump(mode="json") for item in report_migration_paths],
+            "workflow": workflow.model_dump(mode="json") if workflow else None,
+            "context_pack": context_pack.model_dump(mode="json"),
+        },
     )
+    if audit_result.status == "ok":
+        hallucination_audit = audit_result.result
+    else:
+        errors.append(f"semantic_audit_failed: {audit_result.error_type or audit_result.status}")
+        hallucination_audit = audit_report(
+            final_report=final_report,
+            evidence_bundle=evidence_bundle,
+            scored_tools=visible_scored_tools,
+            candidate_tools=visible_tool_candidates,
+            migration_paths=report_migration_paths,
+            workflow_recommendation=workflow,
+            context_pack=context_pack.model_dump(mode="json"),
+        )
+    blocking_issues = _blocking_audit_issues(hallucination_audit.model_dump(mode="json"))
+    if blocking_issues:
+        executor.trace.blocked_by_guardrail = True
+        final_report = _safe_audit_blocked_report(
+            constraints=constraints_dict,
+            recommendation_type=recommendation_type,
+            scored_tools=visible_scored_tools,
+            migration_paths=report_migration_paths,
+            workflow=workflow,
+            missing_components=missing_components,
+        )
+        hallucination_audit = audit_report(
+            final_report=final_report,
+            evidence_bundle=evidence_bundle,
+            scored_tools=visible_scored_tools,
+            candidate_tools=visible_tool_candidates,
+            migration_paths=report_migration_paths,
+            workflow_recommendation=workflow,
+            context_pack=context_pack.model_dump(mode="json"),
+        )
+    executor.add_role_result(
+        "AuditorAgent",
+        status="blocked" if blocking_issues else "ok",
+        input_summary={"claim_count": hallucination_audit.claim_count},
+        output_summary={
+            "unsupported_claim_count": hallucination_audit.unsupported_claim_count,
+            "high_or_critical_issue_count": len(blocking_issues),
+        },
+        vetoed=bool(blocking_issues),
+    )
+    context_pack_result = executor.run_tool(
+        "build_evidence_context_pack",
+        node_name="ReportAgent",
+        args={
+            "user_query": user_query,
+            "constraints": constraints_dict,
+            "recommendation_type": recommendation_type,
+            "scored_tools": [item.model_dump(mode="json") for item in visible_scored_tools],
+            "tool_candidates": [item.model_dump(mode="json") for item in visible_tool_candidates],
+            "workflow": workflow.model_dump(mode="json") if workflow else None,
+            "migration_paths": [item.model_dump(mode="json") for item in visible_migration_paths],
+            "evidence_bundle": evidence_bundle.model_dump(mode="json"),
+            "missing_components": missing_components,
+            "blocked_tools": migration_gate["blocked_tools"],
+            "hallucination_audit": hallucination_audit.model_dump(mode="json"),
+        },
+    )
+    if context_pack_result.status == "ok":
+        context_pack = context_pack_result.result
     claim_count = hallucination_audit.claim_count
     unsupported_claims = hallucination_audit.unsupported_claim_count
+    executor.add_role_result(
+        "ReportAgent",
+        status="ok",
+        input_summary={"context_pack_mode": context_pack.kg_rag_mode},
+        output_summary={
+            "report_chars": len(final_report),
+            "rag_snippet_count": (
+                (context_pack.retrieval_context or {})
+                .get("formal_rag_context", {})
+                .get("snippet_count", 0)
+            ),
+        },
+    )
 
     status = "ok"
     if errors:
-        status = "partial" if scored_tools or migration_paths or workflow else "error"
+        status = "partial" if visible_scored_tools or report_migration_paths or workflow else "error"
     elif missing_components:
         status = "partial"
 
     candidate_payload = [item.model_dump(mode="json") for item in visible_tool_candidates]
     scored_payload = [item.model_dump(mode="json") for item in visible_scored_tools]
-    migration_payload = [item.model_dump(mode="json") for item in visible_migration_paths]
+    migration_payload = [item.model_dump(mode="json") for item in report_migration_paths]
+    visible_ranked_tool_names = [tool.tool_name for tool in visible_scored_tools]
+    visible_candidate_tool_names = [candidate.tool_name for candidate in visible_tool_candidates]
 
     return PredictionRecord(
         id=query_id,
@@ -543,6 +949,7 @@ def _generate_deterministic(
         recommendation_type=recommendation_type,
         recommendation_kind=recommendation_type,
         evidence_bundle=evidence_bundle,
+        context_pack=context_pack,
         workflow_recommendation=workflow,
         final_report=final_report,
         missing_components=missing_components,
@@ -556,7 +963,7 @@ def _generate_deterministic(
         execution_mode="deterministic",
         candidate_tool_count=len(tool_candidates),
         scored_tool_count=len(scored_tools),
-        migration_path_count=len(migration_paths),
+        migration_path_count=len(report_migration_paths),
         output_truncated=(
             len(candidate_payload) < len(tool_candidates)
             or len(scored_payload) < len(scored_tools)
@@ -565,9 +972,9 @@ def _generate_deterministic(
         recommended_tools=_trim_names(
             _recommended_tool_names(
                 recommendation_type=recommendation_type,
-                ranked_tool_names=ranked_tool_names,
-                candidate_tool_names=candidate_tool_names,
-                migration_paths=migration_paths,
+                ranked_tool_names=visible_ranked_tool_names,
+                candidate_tool_names=visible_candidate_tool_names,
+                migration_paths=report_migration_paths,
             ),
             20,
         ),
@@ -577,6 +984,7 @@ def _generate_deterministic(
         unsupported_claims=unsupported_claims,
         semantic_hallucination_rate=hallucination_audit.hallucination_rate,
         hallucination_audit=hallucination_audit.model_dump(mode="json"),
+        **_trace_prediction_fields(executor.trace),
         errors=errors,
     )
 
@@ -588,7 +996,13 @@ def _generate_with_agent(
     query_id = record["id"]
     user_query = record["query"]
     errors: List[str] = []
+    executor = _new_prediction_executor(f"{query_id}_agent")
     try:
+        executor.run_tool(
+            "parse_research_intent",
+            node_name="IntentAgent",
+            args={"user_query": user_query},
+        )
         app = build_sckg_graph()
         final_state = app.invoke(
             {
@@ -601,6 +1015,7 @@ def _generate_with_agent(
                 "migration_paths": [],
                 "workflow_recommendations": [],
                 "decision_report": None,
+                "context_pack": {},
                 "final_report": "",
                 "current_step": "init",
                 "error_message": None,
@@ -613,6 +1028,8 @@ def _generate_with_agent(
         data["execution_mode"] = "agent"
         data["execution_status"] = "error"
         data["errors"] = fallback.errors + errors
+        data.setdefault("agent_trace_summary", fallback.agent_trace_summary)
+        data.setdefault("trace_id", fallback.trace_id)
         return PredictionRecord.model_validate(data)
 
     constraints = parse_research_constraints(
@@ -658,10 +1075,11 @@ def _generate_with_agent(
         scored_tools=scored_tools,
         migration_paths=migration_paths,
     )
+    report_migration_paths = _accepted_migration_paths(visible_migration_paths)
     evidence_bundle = _combine_evidence(
         tool_candidates=visible_tool_candidates,
         scored_tools=visible_scored_tools,
-        migration_paths=visible_migration_paths,
+        migration_paths=report_migration_paths,
         workflow=workflow,
     )
     missing_components = _missing_components(
@@ -672,23 +1090,92 @@ def _generate_with_agent(
         candidate_count=len(tool_candidates),
         scored_count=len(scored_tools),
     )
+    raw_context_pack = final_state.get("context_pack") or {}
+    context_pack = (
+        EvidenceContextPack.model_validate(raw_context_pack)
+        if raw_context_pack
+        else build_evidence_context_pack(
+            user_query=user_query,
+            constraints=constraints.model_dump(mode="json"),
+            recommendation_type=recommendation_type,
+            scored_tools=visible_scored_tools,
+            tool_candidates=visible_tool_candidates,
+            workflow=workflow,
+            migration_paths=visible_migration_paths,
+            evidence_bundle=evidence_bundle,
+            missing_components=missing_components,
+        )
+    )
     final_report = final_state.get("final_report", "")
     hallucination_audit = audit_report(
         final_report=final_report,
         evidence_bundle=evidence_bundle,
         scored_tools=visible_scored_tools,
         candidate_tools=visible_tool_candidates,
-        migration_paths=visible_migration_paths,
+        migration_paths=report_migration_paths,
         workflow_recommendation=workflow,
+        context_pack=context_pack.model_dump(mode="json"),
     )
     claim_count = hallucination_audit.claim_count
     unsupported_claims = hallucination_audit.unsupported_claim_count
     ranked_tool_names = [tool.tool_name for tool in scored_tools]
     candidate_tool_names = [candidate.tool_name for candidate in tool_candidates]
+    blocking_issues = _blocking_audit_issues(hallucination_audit.model_dump(mode="json"))
+    executor.add_role_result(
+        "IntentAgent",
+        status="ok",
+        input_summary={"query_id": query_id},
+        output_summary={
+            "task": constraints.task,
+            "modality": constraints.modality,
+            "clarification_state": constraints.clarification_state,
+        },
+    )
+    executor.add_role_result(
+        "RetrievalAgent",
+        status="ok",
+        output_summary={"candidate_count": len(tool_candidates)},
+    )
+    executor.add_role_result(
+        "EvidenceGateAgent",
+        status="ok",
+        output_summary={"trusted_core_candidate_count": len(tool_candidates)},
+    )
+    executor.add_role_result(
+        "RankingAgent",
+        status="ok",
+        output_summary={"scored_tool_count": len(scored_tools)},
+    )
+    executor.add_role_result(
+        "WorkflowPlannerAgent",
+        status="ok",
+        output_summary={"workflow_step_count": len(workflow.steps) if workflow else 0},
+    )
+    executor.add_role_result(
+        "MigrationAgent",
+        status="ok",
+        output_summary={"migration_path_count": len(report_migration_paths)},
+    )
+    executor.add_role_result(
+        "ReportAgent",
+        status="ok",
+        output_summary={"report_chars": len(final_report)},
+    )
+    executor.add_role_result(
+        "AuditorAgent",
+        status="blocked" if blocking_issues else "ok",
+        output_summary={
+            "unsupported_claim_count": unsupported_claims,
+            "high_or_critical_issue_count": len(blocking_issues),
+        },
+        vetoed=bool(blocking_issues),
+    )
 
     candidate_payload = [item.model_dump(mode="json") for item in visible_tool_candidates]
     scored_payload = [item.model_dump(mode="json") for item in visible_scored_tools]
-    migration_payload = [item.model_dump(mode="json") for item in visible_migration_paths]
+    migration_payload = [item.model_dump(mode="json") for item in report_migration_paths]
+    visible_ranked_tool_names = [tool.tool_name for tool in visible_scored_tools]
+    visible_candidate_tool_names = [candidate.tool_name for candidate in visible_tool_candidates]
 
     return PredictionRecord(
         id=query_id,
@@ -701,6 +1188,7 @@ def _generate_with_agent(
         recommendation_type=recommendation_type,
         recommendation_kind=recommendation_type,
         evidence_bundle=evidence_bundle,
+        context_pack=context_pack,
         workflow_recommendation=workflow,
         final_report=final_report,
         missing_components=missing_components,
@@ -709,7 +1197,7 @@ def _generate_with_agent(
         execution_mode="agent",
         candidate_tool_count=len(tool_candidates),
         scored_tool_count=len(scored_tools),
-        migration_path_count=len(migration_paths),
+        migration_path_count=len(report_migration_paths),
         output_truncated=(
             len(candidate_payload) < len(tool_candidates)
             or len(scored_payload) < len(scored_tools)
@@ -718,9 +1206,9 @@ def _generate_with_agent(
         recommended_tools=_trim_names(
             _recommended_tool_names(
                 recommendation_type=recommendation_type,
-                ranked_tool_names=ranked_tool_names,
-                candidate_tool_names=candidate_tool_names,
-                migration_paths=migration_paths,
+                ranked_tool_names=visible_ranked_tool_names,
+                candidate_tool_names=visible_candidate_tool_names,
+                migration_paths=report_migration_paths,
             ),
             20,
         ),
@@ -730,6 +1218,7 @@ def _generate_with_agent(
         unsupported_claims=unsupported_claims,
         semantic_hallucination_rate=hallucination_audit.hallucination_rate,
         hallucination_audit=hallucination_audit.model_dump(mode="json"),
+        **_trace_prediction_fields(executor.trace),
         errors=errors,
     )
 
@@ -1054,17 +1543,35 @@ def _visible_outputs(
     return visible_candidates, visible_scored, migration_paths[:MIGRATION_TOP_K]
 
 
+def _accepted_migration_paths(migration_paths: List[MigrationPath]) -> List[MigrationPath]:
+    return [
+        path for path in migration_paths
+        if (path.reviewer_decision or "").strip().lower() == "accept_exploratory"
+    ]
+
+
 def _recommended_tool_names(
     recommendation_type: str,
     ranked_tool_names: List[str],
     candidate_tool_names: List[str],
     migration_paths: List[MigrationPath],
 ) -> List[str]:
-    if recommendation_type == "none":
+    if recommendation_type in {"none", "evidence_chain"}:
         return []
     if recommendation_type == "migration":
         return [path.tool_name for path in migration_paths]
     return ranked_tool_names or candidate_tool_names
+
+
+def _filter_workflow_candidate_tools(workflow: Any, blocked_tools: List[str]) -> None:
+    blocked = {_tool_key(name) for name in blocked_tools}
+    if not workflow or not blocked:
+        return
+    for step in getattr(workflow, "steps", []) or []:
+        step.candidate_tools = [
+            tool for tool in step.candidate_tools
+            if _tool_key(tool) not in blocked
+        ]
 
 
 def _trim_names(items: List[str], limit: int) -> List[str]:
@@ -1574,7 +2081,9 @@ def _build_final_report(
             )
         )
         gaps = [
-            f"{path.tool_name}: " + " | ".join(path.compatibility_gaps[:2])
+            f"{path.tool_name}: " + " | ".join(
+                _safe_report_text(gap) for gap in path.compatibility_gaps[:2]
+            )
             for path in migration_paths[:3]
             if path.compatibility_gaps
         ]
@@ -1585,7 +2094,7 @@ def _build_final_report(
             "requires validation before operational use and has no benchmark-backed performance claim."
         )
     if workflow:
-        lines.append("- workflow_steps: " + " -> ".join(step.name for step in workflow.steps))
+        lines.append("- workflow_steps: " + " -> ".join(_report_step_name(step.name) for step in workflow.steps))
         if workflow.compatibility_warnings:
             lines.append("- compatibility_warnings: " + " | ".join(workflow.compatibility_warnings))
     if missing_components:
@@ -1593,6 +2102,58 @@ def _build_final_report(
     caveats = _task_caveats(constraints, missing_components)
     if caveats:
         lines.append("- evidence_caveats: " + " | ".join(caveats))
+    return "\n".join(lines)
+
+
+def _blocking_audit_issues(audit_payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return [
+        issue for issue in audit_payload.get("issues", []) or []
+        if issue.get("severity") in {"critical", "high"}
+    ]
+
+
+def _safe_audit_blocked_report(
+    *,
+    constraints: Dict[str, Any],
+    recommendation_type: str,
+    scored_tools: List[ScoredTool],
+    migration_paths: List[MigrationPath],
+    workflow: Any,
+    missing_components: List[str],
+) -> str:
+    lines = [
+        "## Safe Scientific Output",
+        "- report_status: blocked_by_semantic_auditor",
+        f"- recommendation_type: {recommendation_type}",
+        f"- task: {constraints.get('task', 'Unknown')}",
+        f"- modality: {constraints.get('modality', 'Unknown')}",
+        f"- clarification_state: {constraints.get('clarification_state', 'needs_clarification')}",
+    ]
+    if scored_tools:
+        lines.append("- ranked_tools: " + ", ".join(tool.tool_name for tool in scored_tools[:5]))
+    if migration_paths:
+        lines.append("- migration_paths: " + ", ".join(path.tool_name for path in migration_paths[:3]))
+        gaps = [
+            f"{path.tool_name}: " + " | ".join(
+                _safe_report_text(gap) for gap in path.compatibility_gaps[:2]
+            )
+            for path in migration_paths[:3]
+            if path.compatibility_gaps
+        ]
+        if gaps:
+            lines.append("- migration_compatibility_gaps: " + " ; ".join(gaps))
+        lines.append(
+            "- migration_claim_boundary: exploratory hypothesis only; "
+            "requires validation before operational use and has no benchmark-backed performance claim."
+        )
+    if workflow:
+        lines.append("- workflow_steps: " + " -> ".join(_report_step_name(step.name) for step in workflow.steps))
+    if missing_components:
+        lines.append("- missing_components: " + ", ".join(missing_components))
+    caveats = _task_caveats(constraints, missing_components)
+    if caveats:
+        lines.append("- evidence_caveats: " + " | ".join(caveats))
+    lines.append("- safety_note: unsupported high-risk claims were blocked by AuditorAgent.")
     return "\n".join(lines)
 
 
@@ -1614,6 +2175,25 @@ def _task_caveats(
             "No strong benchmark-backed performance claim is allowed for this perturbation task."
         )
     return general + caveats
+
+
+def _report_step_name(value: str) -> str:
+    return _safe_report_text(value).replace("benchmark audit", "evidence audit")
+
+
+def _safe_report_text(value: str) -> str:
+    text = str(value)
+    replacements = {
+        "must be validated": "requires validation",
+        "must be checked": "requires checking",
+        "must be verified": "requires verification",
+    }
+    lowered = text.lower()
+    for old, new in replacements.items():
+        if old in lowered:
+            text = text.replace(old, new)
+            text = text.replace(old.capitalize(), new.capitalize())
+    return text
 
 
 def _claim_stats(

@@ -330,6 +330,11 @@ def _query_context(constraints: Dict[str, Any]) -> str:
     return _normalize_text(" ".join(parts))
 
 
+def _query_has_any(constraints: Dict[str, Any], terms: tuple[str, ...]) -> bool:
+    context = _query_context(constraints)
+    return any(_normalize_text(term) in context for term in terms)
+
+
 def _term_score(terms: tuple[str, ...], context: str) -> float:
     if not terms or not context:
         return 0.0
@@ -553,11 +558,37 @@ def _select_review(
     return None
 
 
+def _has_target_level_block(
+    reviews: dict[str, list[MigrationReview]],
+    profile: AlgorithmProfile,
+    constraints: Dict[str, Any],
+) -> bool:
+    """Block profile fallback when a relevant human review explicitly withheld approval."""
+    relevant = [
+        (review, _review_relevance(review, constraints))
+        for review in reviews.get(profile.tool_name, [])
+    ]
+    relevant = [(review, score) for review, score in relevant if score >= 0.35]
+    if not relevant:
+        return False
+    if any(
+        _normalize_text(review.reviewer_decision) == "accept_exploratory"
+        for review, _ in relevant
+    ):
+        return False
+    blocking_decisions = {"reject_incompatible", "needs_more_evidence", "revise_mechanism"}
+    return any(
+        _normalize_text(review.reviewer_decision) in blocking_decisions
+        for review, _ in relevant
+    )
+
+
 def _has_revise_block(reviews: dict[str, list[MigrationReview]], tool_name: str) -> bool:
     tool_reviews = reviews.get(tool_name, [])
-    has_revise = any(_normalize_text(review.reviewer_decision) == "revise_mechanism" for review in tool_reviews)
+    blocking_decisions = {"revise_mechanism", "reject_incompatible", "needs_more_evidence"}
+    has_block = any(_normalize_text(review.reviewer_decision) in blocking_decisions for review in tool_reviews)
     has_accept = any(_normalize_text(review.reviewer_decision) == "accept_exploratory" for review in tool_reviews)
-    return has_revise and not has_accept
+    return has_block and not has_accept
 
 
 def _profile_fallback_relevance(
@@ -592,7 +623,18 @@ def build_migration_hypotheses(
         profile = profiles.get(tool_name)
         if profile is None:
             continue
+        if (
+            profile.tool_name == "cell2location"
+            and target_task == "Foundation Model Representation"
+            and not _query_has_any(
+                constraints,
+                ("comparator", "baseline", "control", "对照", "比较", "机制比较"),
+            )
+        ):
+            continue
         if _has_revise_block(reviews, profile.tool_name):
+            continue
+        if _has_target_level_block(reviews, profile, constraints):
             continue
         review = _select_review(reviews, profile, constraints)
 
@@ -688,6 +730,7 @@ def build_migration_hypotheses(
                     profile,
                     review.compatibility_gaps if review else profile.known_limitations,
                 ),
+                reviewer_decision=review.reviewer_decision if review else "",
             )
         )
 

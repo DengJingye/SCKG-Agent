@@ -52,6 +52,9 @@ NEGATIVE_OR_UNCERTAIN_TERMS = (
     "no ",
     "not ",
     "uncertain",
+    "validated before",
+    "requires validation",
+    "must be validated",
     "without",
     "exploratory",
     "absence",
@@ -227,6 +230,7 @@ def audit_report(
     candidate_tools: Optional[Sequence[ToolCandidate]] = None,
     migration_paths: Optional[Sequence[MigrationPath]] = None,
     workflow_recommendation: Optional[WorkflowRecommendation] = None,
+    context_pack: Optional[Dict[str, Any]] = None,
 ) -> HallucinationAuditResult:
     """Audit a rendered report against structured recommendation evidence."""
 
@@ -242,13 +246,14 @@ def audit_report(
         migration_paths=migration_paths,
         workflow_recommendation=workflow_recommendation,
     )
-    evidence_summary = _EvidenceSummary.from_items(evidence_items, evidence_bundle)
+    evidence_summary = _EvidenceSummary.from_items(evidence_items, evidence_bundle, context_pack=context_pack)
     allowed_tools = _allowed_tool_names(
         scored_tools=scored_tools,
         candidate_tools=candidate_tools,
         migration_paths=migration_paths,
         workflow_recommendation=workflow_recommendation,
     )
+    allowed_tools.update(_context_pack_tool_names(context_pack))
     rank_by_tool = {_canon_tool(tool.tool_name): tool.rank for tool in scored_tools}
 
     issues: List[HallucinationIssue] = []
@@ -320,9 +325,22 @@ class _EvidenceSummary:
         self.missing_evidence = missing_evidence
 
     @classmethod
-    def from_items(cls, items: Sequence[Evidence], bundle: EvidenceBundle) -> "_EvidenceSummary":
+    def from_items(
+        cls,
+        items: Sequence[Evidence],
+        bundle: EvidenceBundle,
+        context_pack: Optional[Dict[str, Any]] = None,
+    ) -> "_EvidenceSummary":
         source_types = {item.source_type for item in items}
         metric_names = {item.metric_name for item in items}
+        for snippet in _context_pack_snippets(context_pack):
+            source_kind = str(snippet.get("source_kind") or "")
+            if source_kind == "benchmark":
+                source_types.add("benchmark")
+                metric_names.add("benchmark_result")
+            if source_kind == "publication":
+                source_types.add("paper")
+                metric_names.add("paper_support")
         trusted_count = len(
             [
                 item for item in items
@@ -426,9 +444,37 @@ def _allowed_tool_names(
     return expanded
 
 
+def _context_pack_tool_names(context_pack: Optional[Dict[str, Any]]) -> Set[str]:
+    names: Set[str] = set()
+    if not context_pack:
+        return names
+    retrieval = context_pack.get("retrieval_context") or {}
+    formal_rag = retrieval.get("formal_rag_context") or {}
+    for snippet in formal_rag.get("snippets") or []:
+        tool_name = snippet.get("tool_name")
+        if tool_name:
+            names.add(_canon_tool(str(tool_name)))
+    expanded = set(names)
+    for alias, canonical in COMMON_TOOL_ALIASES.items():
+        if _canon_tool(canonical) in names:
+            expanded.add(alias)
+    return expanded
+
+
+def _context_pack_snippets(context_pack: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    if not context_pack:
+        return []
+    retrieval = context_pack.get("retrieval_context") or {}
+    formal_rag = retrieval.get("formal_rag_context") or {}
+    snippets = formal_rag.get("snippets") or []
+    return [item for item in snippets if isinstance(item, dict)]
+
+
 def _audit_tools(sentence: str, allowed_tools: Set[str], is_negative: bool) -> List[HallucinationIssue]:
     issues = []
     lowered = sentence.lower()
+    if _is_retrieval_snippet_line(lowered):
+        return issues
     if _has_any(sentence, QUERY_CONTEXT_TERMS) and not _has_any(lowered, BENCHMARK_TERMS + CERTAINTY_TERMS + RANKING_TERMS):
         return issues
     for canonical in _detect_tool_mentions(sentence):
@@ -578,6 +624,8 @@ def _audit_migration(
 
 def _audit_ranking(sentence: str, rank_by_tool: Dict[str, int]) -> List[HallucinationIssue]:
     lowered = sentence.lower()
+    if _is_retrieval_snippet_line(lowered):
+        return []
     if not rank_by_tool or not _has_any(lowered, RANKING_TERMS):
         return []
     issues = []
@@ -605,6 +653,8 @@ def _audit_certainty(
     is_negative: bool,
 ) -> List[HallucinationIssue]:
     lowered = sentence.lower()
+    if _is_retrieval_snippet_line(lowered):
+        return []
     if is_negative or not _has_any(lowered, CERTAINTY_TERMS):
         return []
     if evidence.recommendation_coverage >= 0.6 and evidence.trusted_count > 0 and evidence.max_confidence >= 0.6:
@@ -659,6 +709,10 @@ def _canon_tool(value: str) -> str:
 
 def _has_any(text: str, terms: Iterable[str]) -> bool:
     return any(term in text for term in terms)
+
+
+def _is_retrieval_snippet_line(lowered_sentence: str) -> bool:
+    return lowered_sentence.startswith("- rag_snippet:")
 
 
 def _dedupe_issues(issues: Sequence[HallucinationIssue]) -> List[HallucinationIssue]:

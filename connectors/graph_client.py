@@ -1,3 +1,6 @@
+import time
+from urllib.parse import urlparse, urlunparse
+
 from neo4j import GraphDatabase
 
 from core.logging_config import get_logger
@@ -15,20 +18,67 @@ class Neo4jClient:
     """
     def __init__(self):
         self.uri, self.user, self.password = get_settings().require_neo4j()
+        self.active_uri = None
         self.driver = None
         self.offline_store = None
         self.connect()
 
     def connect(self):
         """建立数据库连接"""
+        attempts = 3
+        last_error = None
+        total_attempts = 0
+        uri_candidates = _connection_uri_candidates(self.uri)
         try:
-            self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
-            # 测试连接
-            self.driver.verify_connectivity()
-            logger.info("Connected to Neo4j graph database at %s", self.uri)
+            for uri_index, candidate_uri in enumerate(uri_candidates):
+                for attempt in range(1, attempts + 1):
+                    total_attempts += 1
+                    try:
+                        self.driver = GraphDatabase.driver(candidate_uri, auth=(self.user, self.password))
+                        # 测试连接
+                        self.driver.verify_connectivity()
+                        self.active_uri = candidate_uri
+                        if candidate_uri != self.uri:
+                            logger.warning(
+                                "Connected to Neo4j through direct Bolt fallback at %s after routing URI failed.",
+                                _safe_uri_label(candidate_uri),
+                            )
+                        else:
+                            logger.info(
+                                "Connected to Neo4j graph database at %s",
+                                _safe_uri_label(candidate_uri),
+                            )
+                        return
+                    except Exception as exc:
+                        last_error = exc
+                        if self.driver:
+                            self.driver.close()
+                            self.driver = None
+                        if attempt < attempts:
+                            logger.warning(
+                                "Neo4j connection attempt %s/%s failed for %s; retrying: %s",
+                                attempt,
+                                attempts,
+                                _safe_uri_label(candidate_uri),
+                                exc,
+                            )
+                            time.sleep(1.5 * attempt)
+                        elif uri_index + 1 < len(uri_candidates):
+                            logger.warning(
+                                "Neo4j connection failed for %s; trying %s: %s",
+                                _safe_uri_label(candidate_uri),
+                                _safe_uri_label(uri_candidates[uri_index + 1]),
+                                exc,
+                            )
+                        else:
+                            raise
         except Exception as e:
             if get_settings().offline_graph_fallback:
-                logger.warning("Neo4j connection failed, falling back to offline graph store: %s", e)
+                logger.warning(
+                    "Neo4j connection failed after %s attempt(s), falling back to offline graph store: %s",
+                    total_attempts,
+                    last_error or e,
+                )
                 self.offline_store = OfflineGraphStore()
                 self.driver = None
             else:
@@ -153,3 +203,35 @@ class Neo4jClient:
                 "props": props,
             },
         )
+
+
+def _safe_uri_label(uri: str) -> str:
+    parsed = urlparse(uri)
+    host = parsed.hostname or "unknown-host"
+    port = f":{parsed.port}" if parsed.port else ""
+    return f"{parsed.scheme}://{host}{port}"
+
+
+def _connection_uri_candidates(uri: str) -> list[str]:
+    parsed = urlparse(uri)
+    direct_scheme_by_routing_scheme = {
+        "neo4j": "bolt",
+        "neo4j+s": "bolt+s",
+        "neo4j+ssc": "bolt+ssc",
+    }
+    direct_scheme = direct_scheme_by_routing_scheme.get(parsed.scheme)
+    if not direct_scheme:
+        return [uri]
+    direct_uri = urlunparse(
+        (
+            direct_scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        )
+    )
+    if direct_uri == uri:
+        return [uri]
+    return [uri, direct_uri]

@@ -38,6 +38,8 @@ from core.task_ontology import (
 from connectors.graph_client import Neo4jClient
 from engine.isomorphism_analyzer import IsomorphismAnalyzer
 from core.prompts import REPORT_GENERATION_PROMPT # 确保已引入
+from engine.context_pack_builder import build_evidence_context_pack
+from engine.context_pack_reporter import render_context_pack_report
 from engine.mcdm_calculator import MCDMCalculator
 from engine.migration_hypothesis_engine import build_migration_hypotheses
 from engine.semantic_hallucination_auditor import audit_report
@@ -48,11 +50,32 @@ from core.settings import get_settings
 # 1. 定义节点函数 (Nodes)
 # ==========================================
 
+
+def _contextualized_query_for_llm(state: ScKGAgentState) -> str:
+    """Attach user memory/upload context for LLM parsing without changing evidence."""
+
+    query = state.get("user_query", "")
+    project_memory = state.get("project_memory") or {}
+    uploaded_context = state.get("uploaded_context") or {}
+    conversation_context = state.get("conversation_context") or []
+    context = {
+        "current_user_query": query,
+        "project_memory": project_memory,
+        "uploaded_context": uploaded_context,
+        "recent_conversation": conversation_context[-6:],
+        "governance_note": (
+            "Memory and uploads are user context only. They are not trusted "
+            "scientific evidence and must not create benchmark or literature claims."
+        ),
+    }
+    return json.dumps(context, ensure_ascii=False)
+
 def parse_intent_node(state: ScKGAgentState) -> ScKGAgentState:
     """节点 1：解析用户意图，提取数据模态、规模等硬约束条件"""
     print("-> 执行节点: 🧠 意图解析 (调用 Qwen 提取结构化信息)")
     
     user_query = state["user_query"]
+    contextual_query = _contextualized_query_for_llm(state)
     if get_settings().offline_llm:
         extracted_data = normalize_constraints({}, user_query=user_query)
         print("   🔒 LLM 离线模式已启用，使用 deterministic constraint fallback。")
@@ -63,11 +86,11 @@ def parse_intent_node(state: ScKGAgentState) -> ScKGAgentState:
     
     messages = [
         {"role": "system", "content": INTENT_EXTRACTION_PROMPT},
-        {"role": "user", "content": user_query}
+        {"role": "user", "content": contextual_query}
     ]
     
     try:
-        llm = get_llm()
+        llm = get_llm(state.get("user_runtime_config"))
         response = llm.invoke(messages)
         content = response.content.strip()
         
@@ -581,12 +604,9 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
     user_query = snapshot.user_query
     constraints = snapshot.extracted_constraints.to_state_dict()
     candidates = snapshot.candidate_tools[:MAIN_RECOMMENDATION_TOP_K]
-    scored_tools = [tool.model_dump(mode="json") for tool in snapshot.scored_tools]
-    visible_scored_tools = scored_tools[:MAIN_RECOMMENDATION_TOP_K]
-    visible_scored_names = {tool["tool_name"] for tool in visible_scored_tools}
-    migration_paths = [
-        path.model_dump(mode="json")
-        for path in snapshot.migration_paths[:MIGRATION_TOP_K]
+    visible_scored_tools = [
+        tool.model_dump(mode="json")
+        for tool in snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K]
     ]
     recommended_tool_names = [tool["tool_name"] for tool in visible_scored_tools] or candidates
     workflow_recommendation = build_minimal_workflow_recommendation(
@@ -608,6 +628,8 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
         )
     )
     uncertainty.extend(workflow_recommendation.compatibility_warnings)
+    visible_migrations = snapshot.migration_paths[:MIGRATION_TOP_K]
+    report_migrations = _accepted_migration_paths(visible_migrations)
     for tool in snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K]:
         bundle = tool.evidence
         if not bundle.items and not bundle.missing_evidence:
@@ -625,7 +647,7 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
         )
         if bundle.missing_evidence:
             uncertainty.append(f"{tool.tool_name} missing evidence: {', '.join(bundle.missing_evidence)}")
-    for path in snapshot.migration_paths:
+    for path in report_migrations:
         recommendations.append(
             Recommendation(
                 kind="migration",
@@ -645,39 +667,47 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
         uncertainty=uncertainty,
     )
     
-    # 2. 构建输入给大模型的数据快照
+    combined_evidence = _combine_report_evidence(
+        scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
+        migration_paths=report_migrations,
+        workflow_recommendation=workflow_recommendation,
+    )
+    missing_components = sorted(
+        set(
+            combined_evidence.missing_evidence
+            + [
+                f"constraint:{field}"
+                for field in constraints.get("pending_constraints", []) or []
+            ]
+        )
+    )
+    context_pack = build_evidence_context_pack(
+        user_query=user_query,
+        constraints=constraints,
+        recommendation_type=(
+            "migration"
+            if snapshot.migration_paths and not snapshot.scored_tools
+            else "workflow"
+        ),
+        scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
+        tool_candidates=snapshot.tool_candidates[:MAIN_RECOMMENDATION_TOP_K],
+        workflow=workflow_recommendation,
+        migration_paths=visible_migrations,
+        evidence_bundle=combined_evidence,
+        missing_components=missing_components,
+    )
+
+    # 2. 构建输入给大模型的数据快照。v0.12 起 LLM 只能看到受控 context pack。
     context_data = {
         "user_query": user_query,
-        "identified_constraints": constraints,
-        "direct_candidates": candidates,
-        "direct_candidate_count": len(candidates),
-        "ranked_tools": visible_scored_tools,
-        "ranked_tool_count": len(visible_scored_tools),
-        "algorithm_migration_analysis": migration_paths,
-        "workflow_recommendation": workflow_recommendation.model_dump(mode="json"),
-        "evidence_coverage": decision_report.evidence_coverage,
-        "evidence_bundle": {
-            "scored_tools": [
-                {
-                    "tool_name": tool.tool_name,
-                    "evidence": tool.evidence.model_dump(mode="json"),
-                    "evidence_breakdown": tool.evidence_breakdown,
-                }
-                for tool in snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K]
-                if tool.tool_name in visible_scored_names
-            ],
-            "workflow": workflow_recommendation.evidence.model_dump(mode="json"),
-        },
-        "risks": risks,
-        "uncertainty": uncertainty,
-        "task_specific_caveats": _task_caveats(constraints, []),
-        "report_guardrails": [
-            "Use only tools and claims present in this JSON context.",
-            "Do not add external thresholds, commands, literature claims, or common-practice facts.",
-            "If evidence is experimental or missing benchmark/literature, label the recommendation as partial/exploratory.",
-            "Mention missing evidence explicitly instead of filling the gap with domain knowledge.",
-            "For Perturbation Differential Expression, mention benchmark insufficiency explicitly and do not make strong performance claims for MIMOSCA.",
-        ],
+        "evidence_context_pack": context_pack.model_dump(mode="json"),
+        "conversation_context": snapshot.conversation_context[-6:],
+        "project_memory": snapshot.project_memory,
+        "uploaded_context": snapshot.uploaded_context,
+        "context_governance": (
+            "Conversation memory and uploaded files are user-provided context only; "
+            "they cannot upgrade evidence, ranking, benchmark claims, or trusted_core status."
+        ),
     }
     
     # 3. 构造消息
@@ -687,17 +717,11 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
     ]
     
     if get_settings().offline_llm:
-        report_content = _build_structured_offline_report(
-            constraints=constraints,
-            scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
-            migration_paths=snapshot.migration_paths[:MIGRATION_TOP_K],
-            workflow_recommendation=workflow_recommendation,
-            uncertainty=uncertainty,
-        )
+        report_content = render_context_pack_report(context_pack)
         print("   🔒 LLM 离线模式已启用，生成 deterministic structured report。")
     else:
         try:
-            llm = get_llm()
+            llm = get_llm(state.get("user_runtime_config"))
             # 调用 Qwen2.5 生成报告
             response = llm.invoke(messages)
             report_content = response.content
@@ -708,15 +732,12 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
 
     hallucination_audit = audit_report(
         final_report=report_content,
-        evidence_bundle=_combine_report_evidence(
-            scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
-            migration_paths=snapshot.migration_paths[:MIGRATION_TOP_K],
-            workflow_recommendation=workflow_recommendation,
-        ),
+        evidence_bundle=combined_evidence,
         scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
         candidate_tools=snapshot.tool_candidates[:MAIN_RECOMMENDATION_TOP_K],
-        migration_paths=snapshot.migration_paths[:MIGRATION_TOP_K],
+        migration_paths=report_migrations,
         workflow_recommendation=workflow_recommendation,
+        context_pack=context_pack.model_dump(mode="json"),
     )
     blocking_issues = [
         issue for issue in hallucination_audit.issues
@@ -732,21 +753,36 @@ def generate_report_node(state: ScKGAgentState) -> ScKGAgentState:
         )
         hallucination_audit = audit_report(
             final_report=report_content,
-            evidence_bundle=_combine_report_evidence(
-                scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
-                migration_paths=snapshot.migration_paths[:MIGRATION_TOP_K],
-                workflow_recommendation=workflow_recommendation,
-            ),
+            evidence_bundle=combined_evidence,
             scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
             candidate_tools=snapshot.tool_candidates[:MAIN_RECOMMENDATION_TOP_K],
-            migration_paths=snapshot.migration_paths[:MIGRATION_TOP_K],
+            migration_paths=report_migrations,
             workflow_recommendation=workflow_recommendation,
+            context_pack=context_pack.model_dump(mode="json"),
         )
+
+    context_pack = build_evidence_context_pack(
+        user_query=user_query,
+        constraints=constraints,
+        recommendation_type=(
+            "migration"
+            if snapshot.migration_paths and not snapshot.scored_tools
+            else "workflow"
+        ),
+        scored_tools=snapshot.scored_tools[:MAIN_RECOMMENDATION_TOP_K],
+        tool_candidates=snapshot.tool_candidates[:MAIN_RECOMMENDATION_TOP_K],
+        workflow=workflow_recommendation,
+        migration_paths=visible_migrations,
+        evidence_bundle=combined_evidence,
+        missing_components=missing_components,
+        hallucination_audit=hallucination_audit.model_dump(mode="json"),
+    )
         
     return {
         "current_step": "generate_report",
         "workflow_recommendations": [workflow_recommendation.model_dump(mode="json")],
         "decision_report": decision_report.model_dump(mode="json"),
+        "context_pack": context_pack.model_dump(mode="json"),
         "final_report": report_content,
         "hallucination_audit": hallucination_audit.model_dump(mode="json"),
     }
@@ -935,6 +971,13 @@ def _extract_task_alignment(evidence_items: List[Any]) -> float:
         and isinstance(getattr(item, "metric_value", None), (int, float))
     ]
     return max([float(value) for value in values], default=0.0)
+
+
+def _accepted_migration_paths(migration_paths: List[MigrationPath]) -> List[MigrationPath]:
+    return [
+        path for path in migration_paths
+        if (path.reviewer_decision or "").strip().lower() == "accept_exploratory"
+    ]
 
 # ==========================================
 # 2. 定义条件路由函数 (Conditional Edges)

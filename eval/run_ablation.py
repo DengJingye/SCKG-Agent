@@ -24,6 +24,8 @@ from core.models import (
     derived_evidence,
 )
 from core.settings import get_settings
+from engine.context_pack_builder import build_evidence_context_pack
+from engine.context_pack_reporter import render_context_pack_report
 from engine.semantic_hallucination_auditor import audit_report
 from engine.workflow_recommender import build_minimal_workflow_recommendation
 from eval.generate_predictions import (
@@ -41,6 +43,7 @@ from eval.generate_predictions import (
     _missing_components,
     _recommended_tool_names,
     _score_candidates,
+    _accepted_migration_paths,
     _visible_outputs,
     load_gold_queries,
     write_predictions,
@@ -319,6 +322,13 @@ def _generate_pure_llm(record: Dict[str, Any]) -> PredictionRecord:
         recommendation_type=recommendation_type,
         recommendation_kind=recommendation_type,
         evidence_bundle=EvidenceBundle(),
+        context_pack=build_evidence_context_pack(
+            user_query=user_query,
+            constraints=constraints_dict,
+            recommendation_type=recommendation_type,
+            evidence_bundle=EvidenceBundle(),
+            missing_components=["no_structured_evidence_gate", "no_semantic_audit"],
+        ),
         workflow_recommendation=None,
         final_report=final_report,
         missing_components=["no_structured_evidence_gate", "no_semantic_audit"],
@@ -418,10 +428,11 @@ def _generate_evidence_gate(
         scored_tools=scored_tools,
         migration_paths=migration_paths,
     )
+    report_migrations = _accepted_migration_paths(visible_migrations)
     evidence_bundle = _combine_evidence(
         tool_candidates=visible_candidates,
         scored_tools=visible_scored,
-        migration_paths=visible_migrations,
+        migration_paths=report_migrations,
         workflow=workflow,
     )
     missing_components = _missing_components(
@@ -434,28 +445,34 @@ def _generate_evidence_gate(
     )
     missing_components.extend(migration_gate["missing_components"])
     missing_components = sorted(set(missing_components))
-    final_report = _build_final_report(
+    context_pack = build_evidence_context_pack(
+        user_query=user_query,
         constraints=constraints_dict,
         recommendation_type=recommendation_type,
         scored_tools=visible_scored,
-        migration_paths=visible_migrations,
+        tool_candidates=visible_candidates,
         workflow=workflow,
+        migration_paths=visible_migrations,
+        evidence_bundle=evidence_bundle,
         missing_components=missing_components,
+        blocked_tools=migration_gate["blocked_tools"],
     )
+    final_report = render_context_pack_report(context_pack)
     hallucination_audit = audit_report(
         final_report=final_report,
         evidence_bundle=evidence_bundle,
         scored_tools=visible_scored,
         candidate_tools=visible_candidates,
-        migration_paths=visible_migrations,
+        migration_paths=report_migrations,
         workflow_recommendation=workflow,
+        context_pack=context_pack.model_dump(mode="json"),
     )
     if audit and _has_blocking_issues(hallucination_audit.model_dump(mode="json")):
         final_report = _safe_audit_blocked_report(
             constraints=constraints_dict,
             recommendation_type=recommendation_type,
             scored_tools=visible_scored,
-            migration_paths=visible_migrations,
+            migration_paths=report_migrations,
             workflow=workflow,
             missing_components=missing_components,
         )
@@ -464,19 +481,33 @@ def _generate_evidence_gate(
             evidence_bundle=evidence_bundle,
             scored_tools=visible_scored,
             candidate_tools=visible_candidates,
-            migration_paths=visible_migrations,
+            migration_paths=report_migrations,
             workflow_recommendation=workflow,
+            context_pack=context_pack.model_dump(mode="json"),
         )
+    context_pack = build_evidence_context_pack(
+        user_query=user_query,
+        constraints=constraints_dict,
+        recommendation_type=recommendation_type,
+        scored_tools=visible_scored,
+        tool_candidates=visible_candidates,
+        workflow=workflow,
+        migration_paths=visible_migrations,
+        evidence_bundle=evidence_bundle,
+        missing_components=missing_components,
+        blocked_tools=migration_gate["blocked_tools"],
+        hallucination_audit=hallucination_audit.model_dump(mode="json"),
+    )
 
     recommended_tools = _recommended_tool_names(
         recommendation_type=recommendation_type,
-        ranked_tool_names=ranked_tool_names,
-        candidate_tool_names=candidate_tool_names,
-        migration_paths=migration_paths,
+        ranked_tool_names=[tool.tool_name for tool in visible_scored],
+        candidate_tool_names=[candidate.tool_name for candidate in visible_candidates],
+        migration_paths=report_migrations,
     )
     status = "ok"
     if errors:
-        status = "partial" if (visible_scored or visible_migrations or workflow) else "error"
+        status = "partial" if (visible_scored or report_migrations or workflow) else "error"
     elif missing_components:
         status = "partial"
 
@@ -487,10 +518,11 @@ def _generate_evidence_gate(
         parsed_constraints=constraints_dict,
         candidate_tools=[item.model_dump(mode="json") for item in visible_candidates],
         scored_tools=[item.model_dump(mode="json") for item in visible_scored],
-        migration_paths=[item.model_dump(mode="json") for item in visible_migrations],
+        migration_paths=[item.model_dump(mode="json") for item in report_migrations],
         recommendation_type=recommendation_type,
         recommendation_kind=recommendation_type,
         evidence_bundle=evidence_bundle,
+        context_pack=context_pack,
         workflow_recommendation=workflow,
         final_report=final_report,
         missing_components=missing_components,
@@ -504,11 +536,11 @@ def _generate_evidence_gate(
         execution_mode="evidence_gate_auditor" if audit else "evidence_gate",
         candidate_tool_count=len(tool_candidates),
         scored_tool_count=len(scored_tools),
-        migration_path_count=len(migration_paths),
+        migration_path_count=len(report_migrations),
         output_truncated=(
             len(visible_candidates) < len(tool_candidates)
             or len(visible_scored) < len(scored_tools)
-            or len(visible_migrations) < len(migration_paths)
+            or len(report_migrations) < len(migration_paths)
         ),
         recommended_tools=recommended_tools[:20],
         evidence_coverage=evidence_bundle.coverage,

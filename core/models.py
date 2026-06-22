@@ -38,6 +38,7 @@ PredictionExecutionMode = Literal[
     "evidence_gate_auditor",
     "full_kg_pipeline",
 ]
+ToolCallStatus = Literal["ok", "error", "blocked"]
 
 
 class ScientificBaseModel(BaseModel):
@@ -207,10 +208,201 @@ class MigrationPath(ScientificBaseModel):
     novelty_relevance: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     risk_penalty: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     compatibility_gaps: List[str] = Field(default_factory=list)
+    reviewer_decision: str = ""
     claim_boundary: str = (
         "Exploratory MigrationHypothesis only; not a formal recommendation "
         "and not benchmark-backed performance evidence."
     )
+
+
+ContextRole = Literal[
+    "trusted_recommendation",
+    "retrieval",
+    "migration",
+    "blocked",
+]
+
+
+class ContextEvidenceItem(ScientificBaseModel):
+    """Compact evidence reference exposed to report generation."""
+
+    context_role: ContextRole
+    tool_name: str = ""
+    evidence_id: str
+    source_type: str
+    source_title: str = UNKNOWN
+    source_url: Optional[str] = None
+    metric_name: str = UNKNOWN
+    metric_value: Optional[Any] = None
+    metric_unit: str = UNKNOWN
+    benchmark_type: str = ""
+    dataset_scope: str = UNKNOWN
+    evidence_strength: str = "weak"
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    trust_level: str = "model_extracted"
+    graph_layer: str = "review_needed"
+    review_status: str = "unreviewed"
+    use_for: List[str] = Field(default_factory=list)
+    source_is_main_recommendation_evidence: bool = False
+    context_can_rank: bool = False
+    explanation_only: bool = True
+    claim_boundary: str = ""
+
+
+class EvidenceContextPack(ScientificBaseModel):
+    """Controlled Hybrid KG-RAG context visible to templates or future LLM calls."""
+
+    user_query: str = ""
+    parsed_constraints: Dict[str, Any] = Field(default_factory=dict)
+    recommendation_type: PredictionRecommendationType = "none"
+    trusted_recommendation_context: Dict[str, Any] = Field(default_factory=dict)
+    retrieval_context: Dict[str, Any] = Field(default_factory=dict)
+    migration_context: Dict[str, Any] = Field(default_factory=dict)
+    blocked_context: Dict[str, Any] = Field(default_factory=dict)
+    missing_evidence: List[str] = Field(default_factory=list)
+    prompt_policy: Dict[str, List[str]] = Field(default_factory=dict)
+    kg_rag_mode: str = "minimal_hybrid_kg_rag_v0_12"
+
+
+class ToolSpec(ScientificBaseModel):
+    """Typed tool contract exposed to governed agent roles."""
+
+    name: str
+    description: str
+    input_schema: str = ""
+    output_schema: str = ""
+    role: str = ""
+    mutates_state: bool = False
+    recommendation_grade_allowed: bool = False
+
+
+class ToolCall(ScientificBaseModel):
+    trace_id: str
+    call_id: str
+    node_name: str
+    tool_name: str
+    args_hash: str
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ToolResult(ScientificBaseModel):
+    trace_id: str
+    call_id: str
+    node_name: str
+    tool_name: str
+    args_hash: str = ""
+    status: ToolCallStatus = "ok"
+    result: Optional[Any] = None
+    error_type: str = ""
+    error_message: str = ""
+    result_size: int = Field(default=0, ge=0)
+    latency_ms: float = Field(default=0.0, ge=0.0)
+    started_at: datetime
+    ended_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AgentRunEvent(ScientificBaseModel):
+    trace_id: str
+    event_id: str
+    node_name: str
+    tool_name: str = ""
+    role_name: str = ""
+    status: ToolCallStatus = "ok"
+    args_hash: str = ""
+    latency_ms: float = Field(default=0.0, ge=0.0)
+    error_type: str = ""
+    result_size: int = Field(default=0, ge=0)
+    started_at: datetime
+    ended_at: datetime
+
+
+class AgentRoleResult(ScientificBaseModel):
+    role_name: str
+    status: ToolCallStatus = "ok"
+    input_summary: Dict[str, Any] = Field(default_factory=dict)
+    output_summary: Dict[str, Any] = Field(default_factory=dict)
+    evidence_boundary: str = (
+        "Role output is structured handoff context only and cannot promote "
+        "candidate evidence to trusted_core."
+    )
+    vetoed: bool = False
+    warnings: List[str] = Field(default_factory=list)
+
+
+class AgentRunTrace(ScientificBaseModel):
+    trace_id: str
+    events: List[AgentRunEvent] = Field(default_factory=list)
+    role_results: List[AgentRoleResult] = Field(default_factory=list)
+    max_tool_iterations: int = Field(default=24, ge=1)
+    invalid_action_count: int = Field(default=0, ge=0)
+    repeated_call_count: int = Field(default=0, ge=0)
+    blocked_by_guardrail: bool = False
+
+    @property
+    def tool_call_count(self) -> int:
+        return len([event for event in self.events if event.tool_name])
+
+    @property
+    def failed_tool_call_count(self) -> int:
+        return len(
+            [
+                event for event in self.events
+                if event.tool_name and event.status in {"error", "blocked"}
+            ]
+        )
+
+    @property
+    def mean_tool_latency_ms(self) -> float:
+        events = [event for event in self.events if event.tool_name]
+        if not events:
+            return 0.0
+        return sum(event.latency_ms for event in events) / len(events)
+
+    def summary(self) -> Dict[str, Any]:
+        role_names = [role.role_name for role in self.role_results]
+        tool_events = [event for event in self.events if event.tool_name]
+        statuses: Dict[str, int] = {}
+        for event in self.events:
+            statuses[event.status] = statuses.get(event.status, 0) + 1
+        return {
+            "trace_id": self.trace_id,
+            "tool_call_count": self.tool_call_count,
+            "failed_tool_call_count": self.failed_tool_call_count,
+            "mean_tool_latency_ms": round(self.mean_tool_latency_ms, 3),
+            "invalid_action_count": self.invalid_action_count,
+            "repeated_call_count": self.repeated_call_count,
+            "blocked_by_guardrail": self.blocked_by_guardrail,
+            "roles": role_names,
+            "tools": sorted({event.tool_name for event in tool_events}),
+            "tool_sequence": [event.tool_name for event in tool_events],
+            "status_counts": statuses,
+            "failed_events": [
+                {
+                    "node_name": event.node_name,
+                    "tool_name": event.tool_name,
+                    "status": event.status,
+                    "error_type": event.error_type,
+                }
+                for event in tool_events
+                if event.status in {"error", "blocked"}
+            ],
+        }
+
+
+class AgentRunEvalMetric(ScientificBaseModel):
+    name: str
+    value: Optional[float] = None
+    status: str = "ok"
+    reason: str = ""
+
+
+class AgentRunEvalReport(ScientificBaseModel):
+    mode: str = "agent_run_eval"
+    gold_path: str
+    prediction_path: str
+    query_count: int = Field(ge=0)
+    metrics: Dict[str, AgentRunEvalMetric] = Field(default_factory=dict)
+    per_query: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class Recommendation(ScientificBaseModel):
@@ -261,6 +453,7 @@ class PredictionRecord(ScientificBaseModel):
     recommendation_type: PredictionRecommendationType = "none"
     recommendation_kind: PredictionRecommendationType = "none"
     evidence_bundle: EvidenceBundle = Field(default_factory=EvidenceBundle)
+    context_pack: Optional[EvidenceContextPack] = None
     workflow_recommendation: Optional[WorkflowRecommendation] = None
     final_report: str = ""
     missing_components: List[str] = Field(default_factory=list)
@@ -278,6 +471,13 @@ class PredictionRecord(ScientificBaseModel):
     unsupported_claims: int = Field(default=0, ge=0)
     semantic_hallucination_rate: float = Field(default=0.0, ge=0.0, le=1.0)
     hallucination_audit: Dict[str, Any] = Field(default_factory=dict)
+    trace_id: str = ""
+    agent_trace_summary: Dict[str, Any] = Field(default_factory=dict)
+    tool_call_count: int = Field(default=0, ge=0)
+    failed_tool_call_count: int = Field(default=0, ge=0)
+    mean_tool_latency_ms: float = Field(default=0.0, ge=0.0)
+    invalid_action_count: int = Field(default=0, ge=0)
+    blocked_by_guardrail: bool = False
     errors: List[str] = Field(default_factory=list)
 
     @model_validator(mode="after")

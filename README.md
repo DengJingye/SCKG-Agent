@@ -1,287 +1,479 @@
 # scKG-Atlas Agent
 
-scKG-Atlas Agent 不是一个普通聊天机器人，而是一个面向单细胞与多组学分析场景的智能决策基础设施原型。它的目标是把单细胞工具、任务、模态、算法原理、工程活跃度和可迁移性证据组织成知识图谱，并在用户提出科研分析需求时，给出可解释、可追溯、可扩展的工具推荐或算法迁移建议。
+scKG-Atlas Agent is an evidence-governed recommendation and workflow prototype for single-cell, spatial, and multi-omics tool selection. It is not meant to behave like an unconstrained chatbot. Its core job is to convert a research request into structured constraints, retrieve only governed evidence, rank cautiously, expose missing evidence, and prevent unsupported scientific claims from entering the final report.
 
-当前项目已经具备一个最小可运行闭环：自然语言需求解析、Neo4j 知识图谱硬约束检索、MCDM 多准则排序、算法同构性向量检索、最终报告生成，以及 Streamlit 前端展示。
+The current system combines:
 
-## 项目定位
+- a Streamlit research assistant UI;
+- a LangGraph workflow for parsing, retrieval, ranking, workflow assembly, migration routing, and report generation;
+- formal TSV evidence tables for reviewed publication and benchmark support;
+- optional Neo4j / AuraDB graph access with a local offline fallback;
+- a controlled Hybrid KG-RAG `EvidenceContextPack`;
+- semantic hallucination auditing before reports are accepted;
+- candidate evidence and review queues kept outside the trusted recommendation path;
+- a read-only KG quality audit and a quieter default graph explorer view.
 
-这个项目后续应该被当作“单细胞领域智能决策基础设施”来建设，而不是只当成问答界面。
+## Current Status
 
-核心能力包括：
+This repository is now closer to an evidence-governance system than a simple MVP. The main recommendation path is intentionally narrow:
 
-- 将单细胞工具生态沉淀为可查询、可更新、可审计的知识图谱。
-- 根据任务、模态、硬件、数据对象和生物学分辨率筛选可行工具。
-- 用 GitHub 活跃度、引用量、Benchmark 排名等证据做多准则决策排序。
-- 当没有直接工具匹配时，基于算法特征 embedding 做同构性迁移推理。
-- 输出带证据链的科研分析建议，而不是只生成自然语言答案。
+### Stage Position
 
-## 当前架构
+If the project is mapped onto the four working stages below, the current primary stage is **C. LLM evaluation / trustworthiness**.
+
+| Stage | Current status | Evidence from the repository |
+| --- | --- | --- |
+| A. Complete agent pipeline | Partial, not production-complete | LangGraph has a closed parse -> retrieve -> rank/migrate -> report -> audit loop, but execution agents, full workflow graph evidence, robust production serving, and large reviewed evidence coverage are still missing. |
+| B. Retrieval + evidence support | Implemented and active | Formal publication/benchmark TSVs, Neo4j/offline fallback retrieval, evidence gates, `trusted_core` filtering, and candidate-only review queues are in place. |
+| C. LLM evaluation / trustworthiness | Current focus | Ablation modes, sealed migration evals, semantic hallucination audits, controlled `EvidenceContextPack`, and safe blocked reports are implemented and have local result artifacts. |
+| D. Tool workflow prototype | Implemented as a prototype | Deterministic workflow templates exist and are shown in predictions/reports, but step-level benchmark evidence and workflow graph validation remain open. |
+
+The short answer: **B and D are usable prototypes; C is the current active milestone; A has a working skeleton but is not complete enough to claim a full production agent pipeline.**
 
 ```text
-用户问题
-  |
-  v
-Streamlit 前端 app.py
-  |
-  v
-LangGraph 工作流 agent/workflow.py
-  |
-  +-- 意图解析：core/prompts.py + core/llm_client.py
-  |
-  +-- 硬约束检索：connectors/graph_client.py -> Neo4j
-  |
-  +-- 有候选工具：engine/mcdm_calculator.py 做 MCDM 排序
-  |
-  +-- 无候选工具：engine/isomorphism_analyzer.py 做算法同构性迁移检索
-  |
-  v
-报告生成
+raw retrieval
+  -> evidence gate
+  -> trusted_core filtering
+  -> top-k selection
+  -> EvidenceContextPack
+  -> report generation
+  -> semantic hallucination audit
 ```
 
-## 目录说明
+Important current inventory, regenerated from local files:
+
+| Asset | Current count |
+| --- | ---: |
+| `data/scrna_tools.tsv` rows excluding header | 1,842 |
+| formal publication rows | 28 |
+| formal benchmark rows | 14 |
+| unique candidate evidence IDs counted by graph inventory | 178 |
+| default graph visible nodes | 23 Tool + 23 Task |
+| default graph visible edges | 44 |
+| full local graph inventory edges | 86 |
+| KG quality audit issues | 126 |
+| KG quality review actions | 49 |
+
+The formal publication and benchmark tables are still small and conservative. That is deliberate: weak candidate material must stay in review queues until human-approved.
+
+## Repository Layout
 
 ```text
-docs/
-  schema.md              目标知识图谱 schema 与系统边界
-  current_graph_inventory.md 当前图谱节点、关系和风险盘点
-  mcdm_evidence_plan.md  MCDM 真实证据采集与替换占位字段方案
-
-eval/
-  gold_queries.jsonl     20 条核心评测 query，用于后续 P@K、召回率和幻觉率评估
-  run_eval.py            离线约束解析回归评测入口
+app.py
+  Streamlit UI. Provides chat history, upload context, local user memory,
+  API-key settings, and the sidebar-linked KG explorer.
 
 agent/
-  states.py              LangGraph 全局状态定义
-  workflow.py            Agent 决策工作流：解析、检索、排序、迁移、报告生成
+  states.py              State model for the LangGraph workflow.
+  workflow.py            Main agent graph: parse -> retrieve -> rank/migrate -> report -> audit.
 
 core/
-  models.py              Pydantic 科学对象系统：Evidence、ToolCandidate、Workflow、Report 等
-  constraints.py         Pydantic 科研约束解析与 fallback 归一化
-  llm_client.py          LLM 客户端封装，读取 .env 中的模型配置
-  prompts.py             意图解析与报告生成 prompt
+  constraints.py         Research-constraint parsing and deterministic fallback.
+  evidence_policy.py     Recommendation-grade evidence gates and top-k limits.
+  evidence_schemas.py    Canonical TSV field order for formal publication/benchmark evidence.
+  llm_client.py          OpenAI-compatible LLM client wrapper.
+  models.py              Pydantic scientific objects: Evidence, ToolCandidate, ScoredTool,
+                         WorkflowRecommendation, MigrationPath, EvidenceContextPack,
+                         PredictionRecord.
+  prompts.py             Prompt contracts for parsing and report generation.
+  settings.py            Single configuration entry point.
+  task_ontology.py       Task aliases, task families, and tool-task hints.
+  user_store.py          Local SQLite chat history, memory, working context, encrypted API config.
 
 connectors/
-  graph_client.py        Neo4j 连接器和硬约束查询接口
+  graph_client.py        Neo4j client with optional offline fallback.
+  offline_graph.py       Local read-only graph store built from data files.
 
 engine/
-  mcdm_calculator.py     多准则决策排序引擎
-  isomorphism_analyzer.py 算法同构性向量检索引擎
-
-data_pipeline/
-  github_crawler.py      GitHub 工程证据抓取
-  llm_extractor.py       从摘要/说明文本抽取结构化图谱信息
-  neo4j_loader.py        从 TSV 批量抽取、向量化并写入 Neo4j
-  hybrid_loader.py       从本地 JSONL 备份恢复图谱算法特征
-
-script/
-  init_mock_data.py      写入少量测试图谱数据
-  test_neo4j.py          Neo4j 连通性测试
-  test_llm.py            LLM 连通性测试
+  context_pack_builder.py        Builds the controlled Hybrid KG-RAG context.
+  context_pack_reporter.py       Deterministic offline report renderer.
+  formal_evidence_rag.py         Read-only formal evidence snippets from local TSVs.
+  isomorphism_analyzer.py        Embedding-based exploratory algorithm similarity search.
+  knowledge_graph_view.py        Read-only local TSV graph explorer model and HTML renderer.
+  mcdm_calculator.py             Evidence-aware MCDM scoring.
+  migration_hypothesis_engine.py Reviewed exploratory migration hypothesis builder.
+  migration_intent.py            Deterministic migration intent gate and blockers.
+  semantic_hallucination_auditor.py Report claim audit.
+  workflow_recommender.py        Minimal workflow skeleton builder.
 
 data/
-  scrna_tools.tsv        单细胞工具原始清单
-  scKG_embeddings_backup.jsonl 图谱抽取与 embedding 本地备份
+  scrna_tools.tsv                 Tool catalog.
+  tool_publications.tsv           Formal reviewed publication evidence.
+  tool_benchmarks.tsv             Formal reviewed benchmark evidence.
+  scKG_embeddings_backup.jsonl    Local algorithm feature / embedding backup.
+  evidence_candidates/            Candidate-only evidence, review packets, audit reports.
 
-app.py                   Streamlit 可视化交互入口
-main.py                  命令行 MVP 测试入口
+data_pipeline/
+  evidence_candidate_crawler.py   Candidate publication/benchmark crawl.
+  build_*_review*.py              Review packet builders.
+  promote_*_evidence.py           Human-reviewed promotion scripts for formal TSVs.
+  evidence_backfill.py            Formal evidence backfill into graph Evidence nodes.
+  sync_reviewed_tool_nodes.py     Reviewed Tool node sync.
+  kg_quality_audit.py             Read-only local KG quality audit.
+  export_graph_snapshot.py        Read-only Neo4j graph snapshot export.
+
+eval/
+  generate_predictions.py         Standard prediction JSONL generator.
+  run_eval.py                     Constraint/retrieval/evidence/report eval.
+  run_migration_eval.py           Exploratory migration evaluation.
+  audit_context_pack_v0_12.py     ContextPack hallucination/governance audit.
+  validate_*.py                   Protocol validators.
+  gold_*.jsonl                    Gold query sets.
+
+docs/
+  schema.md                       Graph and evidence governance schema.
+  evidence_curation_verification.md Candidate curation verification notes.
+  migration_eval_protocol_*.md    Frozen migration evaluation protocols.
+  roadmap_v0_12.md                Hybrid KG-RAG / context-pack roadmap.
 ```
 
-## 知识图谱模型
+## Governance Rules
 
-当前 Neo4j 中主要使用以下节点和关系：
+The project follows the rules in `AGENTS.md`. The short version:
 
-```text
-(:Tool)-[:PERFORMS_TASK]->(:Task)
-(:Tool)-[:SUPPORTS_MODALITY]->(:Modality)
-(:Tool)-[:WRITTEN_IN]->(:Language)
-(:Tool)-[:REQUIRES_HARDWARE]->(:Hardware)
-(:Tool)-[:OPERATES_ON]->(:Resolution)
-(:Tool)-[:IMPLEMENTS_ALGORITHM]->(:Algorithm)
-(:Tool)-[:SUPPORTED_BY]->(:Evidence)
-```
+- Do not make recommendation-grade claims without structured evidence.
+- Candidate evidence under `data/evidence_candidates/` is not trusted evidence.
+- Candidate evidence must not be auto-promoted into `data/tool_publications.tsv`, `data/tool_benchmarks.tsv`, AuraDB, or Neo4j.
+- Formal evidence tables must preserve field order from `core/evidence_schemas.py`.
+- Approved formal review statuses are `reviewed`, `verified`, and `human_reviewed`.
+- Rejected/deprecated evidence must not enter recommendation pathways.
+- GitHub activity alone is not enough for strong scientific recommendation claims.
+- Migration paths are exploratory hypotheses unless separately reviewed and validated.
+- Reports must be auditable against `Evidence`, `scored_tools`, workflow state, migration paths, and `EvidenceContextPack`.
 
-`Algorithm` 节点保存算法特征文本和 embedding，用于后续的同构性迁移检索。`Tool` 节点保存 description、github_stars、license、publish_year 等基础属性。
+## Evidence Layers
 
-`Evidence` 是一级实体，用来记录 GitHub、文献、Benchmark、文档、LLM 抽取和人工审核等证据。后续推荐结果必须绑定 Evidence 或显式声明 missing evidence。
+The project separates evidence into layers:
 
-## 数据来源与规模
+| Layer | Meaning | Allowed use |
+| --- | --- | --- |
+| `trusted_core` | Human-reviewed or otherwise trusted formal evidence. | Retrieval, ranking, recommendation, report, if policy gates pass. |
+| `review_needed` | Candidate or source-based material needing human review. | Retrieval/review only. |
+| `experimental` | LLM extraction, derived similarity, synthetic templates, migration hypotheses. | Exploration only. |
 
-当前仓库包含两类核心数据：
+Formal table approval is still not sufficient by itself. The main recommendation path also checks source type, metric, canonical scope, authority tier, recommendation eligibility, and use flags through `core/evidence_policy.py`.
 
-- `data/scrna_tools.tsv`：单细胞工具清单，共 1843 行，字段包括工具名、平台、代码地址、描述、许可证、加入时间和更新时间。
-- `data/scKG_embeddings_backup.jsonl`：图谱抽取与向量备份，共 1698 条记录，包含工具名、GitHub URL、LLM 抽取结果、算法特征 embedding 和额外元数据。
+## Configuration
 
-`loader_log.out` 记录了历史批量入库过程，可用于排查数据构建是否完整。
+Use Python 3.10+.
 
-## 运行方式
-
-建议使用 Python 3.10+。
-
-如果使用现有 conda 环境：
-
-```bash
-conda activate /Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env
-```
-
-安装固定依赖：
+The current dependency file is:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-准备 `.env`。先复制模板，再填真实值：
+Create local configuration from the template:
 
 ```bash
 cp .env.example .env
 ```
 
-核心配置统一从 `core/settings.py` 读取，不要在业务代码里直接写 `os.getenv`、默认密钥、默认密码或绝对路径。
+Important environment variables:
 
 ```env
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
-NEO4J_PASSWORD=your_password
+NEO4J_PASSWORD=change_me
+
 OPENAI_API_BASE=https://api.deepseek.com
-OPENAI_API_KEY=your_deepseek_key
-DEEPSEEK_API_KEY=your_deepseek_key
+OPENAI_API_KEY=change_me
+DEEPSEEK_API_KEY=change_me
 MODEL_NAME=deepseek-v4-pro
 EXTRACT_MODEL=deepseek-v4-pro
 CHAT_API_BASE=https://api.deepseek.com
+
+EMBEDDING_API_KEY=change_me
+SILICONFLOW_API_KEY=
+EMBEDDING_MODEL=BAAI/bge-m3
+EMBEDDING_API_BASE=https://api.siliconflow.cn/v1/embeddings
+
+LOG_LEVEL=INFO
+KG_VERSION=v0.1
+EMBEDDING_VERSION=bge-m3-v0.1
+OFFLINE_GRAPH_FALLBACK=true
+SCKG_OFFLINE_LLM=false
+DISABLE_LLM_CALLS=false
 ```
 
-DeepSeek V4 当前官方 OpenAI-compatible 模型名包括 `deepseek-v4-pro` 和 `deepseek-v4-flash`。本项目默认使用 `deepseek-v4-pro`，更适合知识抽取、报告生成和复杂科研约束解析。
+`core/settings.py` is the only configuration entry point. Avoid adding direct `os.getenv` calls in business logic.
 
-也可以用脚本更新本地 `.env`：
+## Running the App
+
+From the repository root:
 
 ```bash
-python script/configure_deepseek.py --api-key <your_deepseek_key> --model deepseek-v4-pro
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B -m streamlit run app.py
 ```
 
-测试 LLM：
-
-```bash
-python script/test_llm.py
-```
-
-测试 Neo4j：
-
-```bash
-python script/test_neo4j.py
-```
-
-写入少量 mock 数据：
-
-```bash
-python script/init_mock_data.py
-```
-
-从 JSONL 备份恢复算法特征：
-
-```bash
-python data_pipeline/hybrid_loader.py
-```
-
-运行命令行 MVP：
-
-```bash
-python main.py
-```
-
-运行 Streamlit 前端：
+or, if your shell has the environment activated:
 
 ```bash
 streamlit run app.py
 ```
 
-运行离线评测：
+The UI has two main views:
+
+- Chat view: evidence-governed assistant, file upload context, local chat history, project memory, and optional user API config.
+- Graph view: entered from the sidebar Knowledge graph card. The default graph shows only the formal trusted Tool-Task trunk. Publication and Benchmark nodes stay hidden until the user searches or changes filters.
+
+The local user store lives under `.sckg_user/`. It contains chat sessions, project memory, working context, and encrypted user API configuration.
+
+## KG Quality Audit
+
+Phase 1 KG quality governance is read-only. It audits formal TSVs and writes review outputs under `data/evidence_candidates/`.
+
+Run:
 
 ```bash
-python eval/run_eval.py
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B data_pipeline/kg_quality_audit.py
 ```
 
-先生成标准化系统预测，再计算检索、证据和 workflow 指标：
+Outputs:
+
+```text
+data/evidence_candidates/kg_quality_audit_report.tsv
+data/evidence_candidates/kg_quality_review_actions.tsv
+```
+
+Current audit highlights:
+
+| Issue type | Count |
+| --- | ---: |
+| `candidate_marker_in_formal_table` | 28 |
+| `missing_task` | 7 |
+| `missing_work_group_id` | 14 |
+| `missing_pmid` | 28 |
+| `missing_paper_pmid` | 14 |
+| `duplicate_tool_task_edge` | 6 |
+| `high_degree_hub` | 1 |
+
+This script does not modify `data/tool_publications.tsv`, `data/tool_benchmarks.tsv`, AuraDB, or Neo4j. Every generated review action keeps `formal_table_mutation_allowed=false`.
+
+## Formal Evidence Workflow
+
+Preferred evidence workflow:
+
+```text
+generate candidates
+  -> normalize records
+  -> group duplicates
+  -> generate review actions
+  -> human review
+  -> promote reviewed evidence
+  -> backfill structured graph
+  -> run evaluation
+  -> run semantic hallucination audit
+```
+
+Useful commands:
 
 ```bash
-python eval/generate_predictions.py --output eval/predictions.jsonl
-python eval/run_eval.py --predictions eval/predictions.jsonl
+# Candidate crawl. Network access required.
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  data_pipeline/evidence_candidate_crawler.py --help
+
+# Build publication review packet.
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  data_pipeline/build_publication_review_packet.py --help
+
+# Build benchmark review packet.
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  data_pipeline/build_benchmark_review_packet.py --help
+
+# Promote only after explicit human review.
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  data_pipeline/promote_publication_evidence.py --help
+
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  data_pipeline/promote_benchmark_evidence.py --help
 ```
 
-预测 JSONL 使用固定机器契约：`query_id`、`user_query`、`parsed_constraints`、`candidate_tools`、`scored_tools`、`migration_paths`、`recommendation_type`、`evidence_bundle`、`workflow_recommendation`、`final_report`、`missing_components`、`clarification_needed` 和 `execution_status`。兼容评测字段包括 `id`、`recommendation_kind`、`recommended_tools`、`evidence_coverage`、`workflow_steps`、`claim_count` 和 `unsupported_claims`。
+Do not hand-edit formal TSV schemas casually. If columns change, update `core/evidence_schemas.py`, promotion scripts, backfill scripts, tests, and docs together.
 
-## 当前工作流
+## Graph and Neo4j
 
-1. `parse_intent_node` 使用 LLM 将用户问题转为结构化约束，例如 `task` 和 `modality`。
-2. `hard_constraint_node` 基于 Neo4j 查询直接满足任务和模态的工具候选集。
-3. 如果存在候选工具，`mcdm_scoring_node` 读取图谱中的工程指标，并用 MCDM 做综合排序。
-4. 如果没有候选工具，`migration_reasoning_node` 将需求转为 BGE-M3 embedding，并与图谱中算法特征做余弦相似度检索。
-5. `generate_report_node` 基于结构化中间结果生成最终科研决策报告。
+The recommendation pipeline can query Neo4j through `connectors/graph_client.py`. If `OFFLINE_GRAPH_FALLBACK=true`, connection failures fall back to `connectors/offline_graph.py`, which reads local data files.
 
-## 当前不足
+Connectivity check:
 
-这个原型已经有正确方向，但还没有达到稳定基础设施标准。最需要优先处理的问题是：
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B -c \
+"from neo4j import GraphDatabase; from core.settings import get_settings; s=get_settings(); uri,user,pwd=s.require_neo4j(); d=GraphDatabase.driver(uri, auth=(user,pwd)); d.verify_connectivity(); print('neo4j_connectivity_ok'); d.close()"
+```
 
-- 密钥管理：当前仓库中存在 `.env`，部分代码也有硬编码默认密钥或密码，应尽快迁移到安全配置方案，并清理 Git 历史中的敏感信息。
-- 依赖管理：当前缺少 `requirements.txt` 或 `pyproject.toml`，环境不可复现。
-- Prompt 约束过窄：意图解析只支持少量 task 和 modality，无法覆盖真实单细胞分析场景。
-- 状态模型偏松：`ScKGAgentState` 只是 TypedDict，缺少字段校验、错误类型、证据对象和版本信息。
-- 数据可信度不足：LLM 抽取结果缺少来源引用、置信度、人工审核状态和数据版本。
-- MCDM 证据不完整：citations 和 benchmark_rank 目前仍是占位值，排序结果不能直接当作科研结论。
-- 向量检索可扩展性有限：当前从 Neo4j 拉取所有 embedding 后在本地做 NumPy 相似度，数据量增大后应迁移到向量索引。
-- 前后端耦合：Streamlit 中有较多状态解析和兜底逻辑，后续应拆出 API 层和标准响应 schema。
-- 测试体系不足：目前只有连通性脚本，没有单元测试、集成测试和固定样例回归集。
-- 可观测性不足：工作流依赖 `print`，缺少结构化日志、trace id、节点耗时和失败重试策略。
+Read-only graph snapshot export:
 
-## 下一阶段路线图
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  data_pipeline/export_graph_snapshot.py --help
+```
 
-### 第一阶段：把原型变成可复现实验系统
+Reviewed Tool/Evidence sync scripts exist, but they should be run only when the formal TSV evidence has passed review.
 
-- 新增 `requirements.txt` 或 `pyproject.toml`，固定依赖版本。
-- 新增 `.env.example`，并停止追踪真实 `.env`。
-- 去除代码中的硬编码密钥、密码和绝对路径。
-- 为 Neo4j schema、数据字段和关系类型建立文档。
-- 为 MCDM、意图解析 JSON 清洗、GitHub URL 解析写单元测试。
+## Evaluation
 
-### 第二阶段：把图谱变成可信科研数据资产
+Latest local evaluation artifacts indicate that the trustworthiness layer is now being measured explicitly, not just described in code:
 
-- 为每个 Tool、Task、Modality、Algorithm 增加 `source_url`、`source_type`、`extraction_model`、`extraction_time`、`confidence`、`review_status`。
-- 建立数据版本号，例如 `kg_version` 和 `embedding_version`。
-- 加入文献数据源，例如 PubMed、bioRxiv、OpenAlex 或 Semantic Scholar。
-- 把 citations、benchmark_rank、last_updated、license、maintenance_status 做成真实证据字段。
-- 设计人工审核闭环：自动抽取 -> 低置信度标记 -> 人工校验 -> 入库。
+| Artifact | Snapshot |
+| --- | --- |
+| `eval/ablation_deepseek_aura_v0_2_blind_after_mcdm_qual_benchmark_fix_v2/ablation_summary.json` | 12 blind recommendation queries. `full_kg_pipeline`: top-k hit 1.0000, recommendation type accuracy 0.9167, hallucination rate 0.0058, high hallucination rate 0.0000, semantic audit pass rate 0.8333, blocked report rate 0.2500. `evidence_gate_auditor`: hallucination rate 0.0000 and semantic audit pass rate 1.0000. |
+| `eval/context_pack_v0_12_full_offline_audit_summary_v2.json` | 35 context-pack predictions audited. Context pack present rate 1.0000, retrieval rankable violations 0, trusted non-main violations 0, bad migration decision violations 0, failed queries 0. |
+| `eval/context_pack_v0_12_full_offline_migration_eval_summary_v2.json` | 35 migration/boundary queries. Mixed decision accuracy 1.0000, positive source-tool hit 1.0000, negative false migration rate 0.0000, clarification success rate 1.0000, trap avoidance rate 1.0000, semantic audit pass rate 1.0000. |
 
-### 第三阶段：增强推理稳定性
+These numbers support the current **C-stage** claim, but they do not make the system production-complete. The eval sets are still bounded, and formal reviewed evidence coverage remains intentionally small.
 
-- 将意图解析 schema 扩展为任务、模态、平台、输入数据对象、样本规模、噪声类型、硬件约束、物种、分析目标。
-- 使用 Pydantic 或类似机制校验 LLM 输出，失败时走可解释的 fallback。
-- 将每个推荐结论绑定证据对象，报告生成只能引用证据对象，减少幻觉。
-- 为常见任务构建 golden set，做推荐结果回归测试。
-- 在报告中区分“直接证据”“间接证据”“算法迁移假设”。
+## Production Agent Engineering Highlights
 
-### 第四阶段：提升检索与决策能力
+The current engineering upgrade adds a job-ready Agent layer without weakening evidence governance:
 
-- 将 embedding 检索迁移到 Neo4j Vector Index、FAISS、Milvus 或 Qdrant。
-- MCDM 权重从前端滑块传入后端，并写入最终报告。
-- 引入任务特异性 Benchmark 数据，而不是统一占位 rank。
-- 增加工具兼容性推理，例如 AnnData、SeuratObject、SingleCellExperiment、h5ad、loom。
-- 支持 workflow 推荐，不只推荐单个工具，例如 QC -> normalization -> integration -> clustering -> annotation。
+- Typed Tool Use: `ToolSpec`, `ToolCall`, `ToolResult`, `ToolRegistry`, and `ToolExecutor` wrap key agent operations with schema names, argument hashes, status, latency, and result sizing.
+- Traceable governed multi-agent workflow: deterministic prediction runs now expose role handoffs for `IntentAgent`, `RetrievalAgent`, `EvidenceGateAgent`, `RankingAgent`, `WorkflowPlannerAgent`, `MigrationAgent`, `ReportAgent`, and `AuditorAgent`.
+- Guardrail-first auditing: `AuditorAgent` can mark a run as `blocked_by_guardrail`; high/critical semantic hallucination findings are replaced by a safe blocked report.
+- AgentRun evaluation: `eval/run_agent_eval.py` reports task success, progress, Pass@1, tool-call accuracy, trajectory match, invalid action rate, average steps, latency, hallucination rates, blocked report rate, and recovery success.
+- Controlled RAG baseline: formal TSV rows are chunked, retrieved with an offline lexical fallback, reranked deterministically, and inserted only into `EvidenceContextPack.retrieval_context`.
 
-### 第五阶段：产品化与自动化
+This is intentionally **not** an open-ended AutoGPT/AutoGen-style free conversation between agents. It is a governed LangGraph-compatible handoff model: every role has a narrow responsibility, evidence boundaries remain explicit, and candidate evidence cannot be promoted automatically.
 
-- 将 LangGraph 后端拆成 API 服务，Streamlit 只负责展示。
-- 增加任务队列，用于批量爬取、抽取、embedding、入库和质量检查。
-- 增加结构化日志、审计日志、失败重试和运行监控。
-- 建立每日/每周自动更新流程，持续刷新 GitHub 和文献证据。
-- 增加导出功能：推荐报告、证据表、Cypher 查询结果、可复现实验脚本。
+Generate deterministic predictions:
 
-## 建议的近期优先级
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/generate_predictions.py \
+  --gold eval/gold_queries.jsonl \
+  --output eval/predictions.jsonl \
+  --offline-llm
+```
 
-近期不要急着继续堆 UI 或扩大 Prompt。最值得先做的是：
+Evaluate predictions:
 
-1. 先补工程地基：依赖文件、配置模板、密钥清理、路径清理、基础测试。
-2. 再补数据可信度：来源、版本、置信度、人工审核状态。
-3. 再补推理 schema：把用户需求从两个字段扩展到真实科研决策所需字段。
-4. 再补证据排序：把 citations、benchmark、维护状态、许可证、硬件成本纳入真实 MCDM。
-5. 最后再扩前端：前端应该展示证据链和决策过程，而不是只包装聊天体验。
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/run_eval.py \
+  --gold eval/gold_queries.jsonl \
+  --predictions eval/predictions.jsonl
+```
 
-只有先把这五件事做好，scKG-Atlas 才能从一个 MVP 逐步长成真正可维护、可扩展、可验证的单细胞智能决策基础设施。
+Run a migration sealed evaluation:
+
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/generate_predictions.py \
+  --gold eval/gold_migration_sealed_v0_11.jsonl \
+  --output eval/migration_sealed_v0_11_predictions.jsonl \
+  --offline-llm \
+  --blind-migration
+
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/run_migration_eval.py \
+  --gold eval/gold_migration_sealed_v0_11.jsonl \
+  --predictions eval/migration_sealed_v0_11_predictions.jsonl \
+  --output eval/migration_sealed_v0_11_eval_summary.tsv \
+  --json-output eval/migration_sealed_v0_11_eval_summary.json \
+  --per-query-output eval/migration_sealed_v0_11_eval_per_query.tsv
+```
+
+Run context-pack audit:
+
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/audit_context_pack_v0_12.py --help
+```
+
+Run AgentRun engineering evaluation:
+
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/run_agent_eval.py \
+  --gold eval/gold_queries_v0_2_blind.jsonl \
+  --predictions eval/predictions.jsonl \
+  --json-output eval/agent_run_eval_summary.json \
+  --output eval/agent_run_eval_summary.tsv \
+  --per-query-output eval/agent_run_eval_per_query.tsv
+```
+
+Prediction JSONL records follow `core.models.PredictionRecord` and include:
+
+```text
+query_id, user_query, parsed_constraints, candidate_tools, scored_tools,
+migration_paths, recommendation_type, evidence_bundle, context_pack,
+workflow_recommendation, final_report, missing_components,
+clarification_needed, execution_status, recommended_tools,
+claim_count, unsupported_claims, hallucination_audit, trace_id,
+agent_trace_summary, tool_call_count, failed_tool_call_count,
+mean_tool_latency_ms, invalid_action_count, blocked_by_guardrail
+```
+
+## Validation Before Major Changes
+
+At minimum:
+
+```bash
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B -m py_compile \
+  app.py \
+  agent/workflow.py \
+  core/models.py \
+  core/agent_runtime.py \
+  core/evidence_policy.py \
+  engine/context_pack_builder.py \
+  engine/evidence_rag_pipeline.py \
+  engine/knowledge_graph_view.py \
+  data_pipeline/kg_quality_audit.py \
+  eval/generate_predictions.py \
+  eval/run_eval.py \
+  eval/run_agent_eval.py
+
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B data_pipeline/kg_quality_audit.py
+
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/generate_predictions.py --limit 3 --offline-llm --output /tmp/sckg_smoke_predictions.jsonl
+
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/run_eval.py --predictions /tmp/sckg_smoke_predictions.jsonl
+
+/Data/Omics/dengjingye/tools/miniconda3/envs/sckg_env/bin/python -B \
+  eval/run_agent_eval.py \
+  --predictions /tmp/sckg_smoke_predictions.jsonl \
+  --json-output /tmp/sckg_agent_run_eval_summary.json \
+  --output /tmp/sckg_agent_run_eval_summary.tsv \
+  --per-query-output /tmp/sckg_agent_run_eval_per_query.tsv
+```
+
+For UI work, also start Streamlit and check:
+
+- chat view still loads;
+- history and new chat switch back to chat view;
+- sidebar Knowledge graph card switches to graph view;
+- default graph shows Tool/Task only;
+- searching a tool expands publication/benchmark evidence;
+- candidate evidence is shown only as a count.
+
+## Known Gaps
+
+Current priority gaps:
+
+- Formal publication rows still carry candidate-origin markers.
+- Some publication rows lack task mappings and therefore cannot create Tool-Task trunk edges.
+- Benchmark rows still need conservative `work_group_id` assignment.
+- PMID fields are currently blank for formal publication and benchmark rows.
+- Candidate/review files are numerous and need continued normalization.
+- Neo4j/AuraDB sync governance should be treated as phase 2 after local TSV audit stabilizes.
+
+Non-goals for the next step:
+
+- Do not expand the graph before evidence quality improves.
+- Do not auto-promote candidate evidence.
+- Do not loosen hallucination audit gates to improve surface fluency.
+- Do not use GitHub popularity as a substitute for scientific evidence.
+
+## Recommended Next Work
+
+1. Use `kg_quality_review_actions.tsv` as the work queue.
+2. Human-review and normalize candidate-origin markers in formal publication rows.
+3. Assign conservative benchmark `work_group_id` values.
+4. Fill missing task mappings only when source-supported.
+5. Add DOI/PMID metadata where available, or record explicit no-PMID notes.
+6. Re-run `kg_quality_audit.py`, then run smoke predictions and hallucination audit.
+7. Only after the local TSV layer is clean, sync reviewed evidence into Neo4j/AuraDB.
+
+The north star is not maximal automation. It is trustworthy scientific recommendation: traceable evidence, conservative reasoning, reproducible outputs, and clear boundaries between formal evidence, retrieval-only context, and exploratory hypotheses.

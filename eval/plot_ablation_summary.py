@@ -37,6 +37,24 @@ def load_summary(path: Path) -> List[Dict[str, str]]:
         return list(csv.DictReader(handle, delimiter="\t"))
 
 
+def filter_rows(
+    rows: List[Dict[str, str]],
+    include_modes: str = "",
+    exclude_modes: str = "",
+) -> List[Dict[str, str]]:
+    include = {item.strip() for item in include_modes.split(",") if item.strip()}
+    exclude = {item.strip() for item in exclude_modes.split(",") if item.strip()}
+    filtered = []
+    for row in rows:
+        mode = row.get("mode", "")
+        if include and mode not in include:
+            continue
+        if mode in exclude:
+            continue
+        filtered.append(row)
+    return filtered
+
+
 def parse_float(value: str) -> Optional[float]:
     if value is None:
         return None
@@ -177,19 +195,24 @@ def render_panel(
     return "\n".join(parts)
 
 
-def render_svg(rows: List[Dict[str, str]], summary_path: Path, subtitle: str) -> str:
+def render_svg(
+    rows: List[Dict[str, str]],
+    summary_path: Path,
+    subtitle: str,
+    title: str,
+    takeaway: str,
+) -> str:
     width = 1480
     height = 1440
     panel_w = 680
     panel_h = 360
-    title = "DeepSeek V4 Ablation: Evidence Gate and Auditor"
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="#f3f4f6"/>',
         f'<text x="60" y="68" font-size="34" font-weight="800" fill="#111827">{esc(title)}</text>',
         f'<text x="60" y="102" font-size="18" fill="#4b5563">{esc(subtitle)}</text>',
         '<rect x="60" y="126" width="1360" height="58" rx="16" fill="#ecfdf5" stroke="#10b981"/>',
-        '<text x="84" y="162" font-size="20" font-weight="700" fill="#065f46">Takeaway: B is the ranker core; C preserves safety while improving benchmark-backed evidence coverage; D remains slower and more intervention-heavy.</text>',
+        f'<text x="84" y="162" font-size="20" font-weight="700" fill="#065f46">{esc(takeaway)}</text>',
     ]
     positions = [(60, 218), (740, 218), (60, 610), (740, 610), (60, 1002), (740, 1002)]
     for (panel, position) in zip(PANELS, positions):
@@ -223,9 +246,36 @@ def main() -> None:
         "--subtitle",
         default="Ablation evaluation. Default route: C = DeepSeek V4 + evidence gate + semantic auditor.",
     )
+    parser.add_argument(
+        "--title",
+        default="DeepSeek V4 Ablation: Evidence Gate and Auditor",
+    )
+    parser.add_argument(
+        "--takeaway",
+        default="Takeaway: B is the ranker core; C preserves safety while improving benchmark-backed evidence coverage; D remains slower and more intervention-heavy.",
+    )
+    parser.add_argument(
+        "--include-modes",
+        default="",
+        help="Optional comma-separated mode list to include.",
+    )
+    parser.add_argument(
+        "--exclude-modes",
+        default="",
+        help="Optional comma-separated mode list to exclude.",
+    )
     args = parser.parse_args()
-    rows = load_summary(args.summary)
-    args.output.write_text(render_svg(rows, args.summary, args.subtitle), encoding="utf-8")
+    rows = filter_rows(
+        load_summary(args.summary),
+        include_modes=args.include_modes,
+        exclude_modes=args.exclude_modes,
+    )
+    if not rows:
+        raise ValueError("No ablation rows left after mode filtering.")
+    args.output.write_text(
+        render_svg(rows, args.summary, args.subtitle, args.title, args.takeaway),
+        encoding="utf-8",
+    )
     print(f"wrote {args.output}")
 
 
