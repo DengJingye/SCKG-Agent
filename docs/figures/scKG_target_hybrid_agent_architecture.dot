@@ -1,0 +1,138 @@
+digraph TargetHybridAgentArchitecture {
+  graph [
+    rankdir=TB,
+    bgcolor="white",
+    pad=0.24,
+    nodesep=0.4,
+    ranksep=0.55,
+    splines=polyline,
+    fontname="Helvetica",
+    labelloc=t,
+    fontsize=20,
+    label="Figure 2. Target architecture: governed hybrid scientific agent"
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=11,
+    color="#334155",
+    penwidth=1.2,
+    fillcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+
+  edge [
+    fontname="Helvetica",
+    fontsize=9,
+    color="#475569",
+    arrowsize=0.7,
+    penwidth=1.2
+  ];
+
+  subgraph cluster_clients {
+    label="Entry surfaces";
+    color="#cbd5e1";
+    style="rounded";
+    { rank=same;
+      streamlit [label="Streamlit UI\nhuman exploration", fillcolor="#e0f2fe"];
+      cli [label="CLI\nbatch eval", fillcolor="#e0f2fe"];
+      mcp_client [label="MCP clients\nClaude Code / Cursor", fillcolor="#e0f2fe"];
+      fastapi [label="FastAPI\ninternal trial", fillcolor="#e0f2fe"];
+    }
+  }
+
+  subgraph cluster_governance {
+    label="Central governance layer";
+    color="#bfdbfe";
+    style="rounded";
+    orchestrator [
+      label="Central Orchestrator\nStateGraph + typed state",
+      fillcolor="#dbeafe",
+      penwidth=1.8
+    ];
+    registry [label="Typed tool registry\nstable contracts", fillcolor="#eff6ff"];
+    policy [label="Evidence policy\nsource of truth", fillcolor="#fef3c7", color="#d97706"];
+    context_pack [label="EvidenceContextPack\ntrusted / retrieval / migration / gaps", fillcolor="#ecfeff", color="#0891b2"];
+    audit_gate [label="Audit gate\nclaim and ranking veto", fillcolor="#ffe4e6", color="#e11d48"];
+    { rank=same; registry; orchestrator; policy; }
+    { rank=same; context_pack; audit_gate; }
+  }
+
+  subgraph cluster_agents {
+    label="Specialist agents and typed tools";
+    color="#ddd6fe";
+    style="rounded";
+    { rank=same;
+      intent_agent [label="Intent / constraint agent", fillcolor="#ede9fe"];
+      kg_agent [label="KG reasoning agent\nhard constraints + paths", fillcolor="#dcfce7"];
+      evidence_agent [label="Evidence retrieval agent\nhybrid KG-RAG", fillcolor="#ccfbf1"];
+      ranking_agent [label="Ranking agent\nMCDM + penalties", fillcolor="#ede9fe"];
+    }
+    { rank=same;
+      migration_agent [label="Migration agent\nexploratory only", fillcolor="#fee2e2", color="#dc2626"];
+      workflow_agent [label="Workflow planning agent\nPlanChain, plan-only", fillcolor="#fef9c3"];
+      execution_agent [label="Sandboxed execution agent\nfuture dry-run first", fillcolor="#f1f5f9", color="#64748b"];
+    }
+  }
+
+  subgraph cluster_data {
+    label="Knowledge, retrieval, and evaluation plane";
+    color="#bbf7d0";
+    style="rounded";
+    { rank=same;
+      formal_store [label="Formal evidence store\npublications + benchmarks", fillcolor="#f0fdf4"];
+      kg [label="scKG Neo4j\nTool / Task / Evidence graph", fillcolor="#dcfce7"];
+      hybrid_index [label="Hybrid evidence index\nBM25 + dense + RRF", fillcolor="#ccfbf1"];
+      trace_store [label="Trace and eval store\ngold queries + bad cases", fillcolor="#f1f5f9"];
+      providers [label="Pluggable providers\nLLM / embedding / graph", fillcolor="#faf5ff"];
+    }
+  }
+
+  subgraph cluster_outputs {
+    label="Governed outputs";
+    color="#e2e8f0";
+    style="rounded";
+    { rank=same;
+      rec_report [label="Recommendation report\nranked tools + caveats", fillcolor="#f8fafc"];
+      workflow_report [label="Workflow plan\nstep evidence + gaps", fillcolor="#fefce8"];
+      gap_report [label="Evidence gap board\nreview queue", fillcolor="#fff7ed"];
+      safe_block [label="Safe blocked report\nunsupported claims removed", fillcolor="#fee2e2", color="#dc2626"];
+    }
+  }
+
+  streamlit -> orchestrator;
+  cli -> orchestrator;
+  mcp_client -> registry;
+  fastapi -> orchestrator;
+  registry -> orchestrator;
+
+  orchestrator -> intent_agent;
+  intent_agent -> kg_agent;
+  kg_agent -> evidence_agent;
+  evidence_agent -> ranking_agent;
+  evidence_agent -> migration_agent;
+  kg_agent -> workflow_agent;
+  workflow_agent -> execution_agent [style=dashed, label="future"];
+
+  formal_store -> policy;
+  policy -> orchestrator;
+  policy -> audit_gate;
+  kg -> kg_agent;
+  hybrid_index -> evidence_agent;
+  providers -> intent_agent [style=dashed];
+  providers -> evidence_agent [style=dashed];
+
+  ranking_agent -> context_pack;
+  migration_agent -> context_pack;
+  workflow_agent -> context_pack;
+  context_pack -> audit_gate;
+  audit_gate -> rec_report [label="pass"];
+  audit_gate -> workflow_report [label="pass"];
+  audit_gate -> gap_report [label="missing evidence"];
+  audit_gate -> safe_block [label="veto"];
+
+  orchestrator -> trace_store [style=dashed];
+  audit_gate -> trace_store [style=dashed];
+}

@@ -1,0 +1,125 @@
+digraph HybridKGRAGFlow {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad=0.24,
+    nodesep=0.42,
+    ranksep=0.66,
+    splines=polyline,
+    fontname="Helvetica",
+    labelloc=t,
+    fontsize=20,
+    label="Figure 3. Evidence-governed Hybrid KG-RAG flow"
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=11,
+    color="#334155",
+    penwidth=1.2,
+    fillcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+
+  edge [
+    fontname="Helvetica",
+    fontsize=9,
+    color="#475569",
+    arrowsize=0.7,
+    penwidth=1.2
+  ];
+
+  subgraph cluster_ingestion {
+    label="Offline ingestion and curation";
+    color="#cbd5e1";
+    style="rounded";
+    publications [label="Reviewed papers\nformal TSV / PDFs", fillcolor="#f0fdf4"];
+    benchmarks [label="Reviewed benchmarks\nmetrics + datasets", fillcolor="#f0fdf4"];
+    protocols [label="Protocols and docs\nworkflow support", fillcolor="#f8fafc"];
+    tool_meta [label="Tool metadata\nname, task, modality", fillcolor="#f8fafc"];
+    loaders [label="Pluggable loaders\nTSV / PDF / protocol", fillcolor="#eff6ff"];
+    chunks [label="EvidenceChunk\nclaim boundary + provenance", fillcolor="#ecfeff", color="#0891b2"];
+    review_gate [label="Human / rule review\nno auto-promotion", fillcolor="#fef3c7", color="#d97706"];
+  }
+
+  subgraph cluster_indexes {
+    label="Indexes and graph";
+    color="#bbf7d0";
+    style="rounded";
+    kg_sync [label="scKG sync\nTool-Evidence-Task graph", fillcolor="#dcfce7"];
+    bm25 [label="BM25 sparse index\nexact terms", fillcolor="#ccfbf1"];
+    dense [label="Dense vector index\nsemantic recall", fillcolor="#ccfbf1"];
+    chunk_store [label="Evidence chunk store\ntraceable records", fillcolor="#f0fdf4"];
+  }
+
+  subgraph cluster_runtime {
+    label="Runtime query flow";
+    color="#bfdbfe";
+    style="rounded";
+    query [label="User query", fillcolor="#e0f2fe"];
+    parser [label="Constraint parser\ntask / modality / scale", fillcolor="#dbeafe"];
+    kg_recall [label="KG hard filter\ncandidate tools + paths", fillcolor="#dcfce7"];
+    sparse_search [label="Sparse evidence search", fillcolor="#ccfbf1"];
+    dense_search [label="Dense evidence search", fillcolor="#ccfbf1"];
+    fusion [label="RRF fusion\nmerge sparse + dense", fillcolor="#fef9c3"];
+    rerank [label="Governance-aware rerank\ntrust + relevance + coverage", fillcolor="#fef3c7", color="#d97706"];
+    pack [label="EvidenceContextPack\ntrusted / retrieval / migration / gaps", fillcolor="#ecfeff", color="#0891b2"];
+  }
+
+  subgraph cluster_decision {
+    label="Decision and generation";
+    color="#ddd6fe";
+    style="rounded";
+    evidence_gate [label="Evidence gate\nrecommendation eligible?", fillcolor="#fef3c7", color="#d97706"];
+    mcdm [label="MCDM ranking\nformal evidence only", fillcolor="#ede9fe"];
+    report [label="LLM report generation\nuses pack boundaries", fillcolor="#f8fafc"];
+    auditor [label="Semantic auditor\nblocks unsupported claims", fillcolor="#ffe4e6", color="#e11d48"];
+    final [label="Final report\nrecommendations + caveats", fillcolor="#f8fafc"];
+    blocked [label="Blocked / gap report", fillcolor="#fee2e2", color="#dc2626"];
+  }
+
+  guardrail [
+    label="Guardrail: RAG snippets explain evidence;\nthey cannot directly upgrade rank or trust.",
+    fillcolor="#fff7ed",
+    color="#f97316",
+    shape=note
+  ];
+
+  publications -> loaders;
+  benchmarks -> loaders;
+  protocols -> loaders;
+  tool_meta -> loaders;
+  loaders -> chunks;
+  chunks -> review_gate;
+  review_gate -> kg_sync;
+  review_gate -> bm25;
+  review_gate -> dense;
+  review_gate -> chunk_store;
+
+  query -> parser;
+  parser -> kg_recall;
+  kg_sync -> kg_recall;
+  chunk_store -> sparse_search;
+  chunk_store -> dense_search;
+  bm25 -> sparse_search;
+  dense -> dense_search;
+  parser -> sparse_search;
+  parser -> dense_search;
+  sparse_search -> fusion;
+  dense_search -> fusion;
+  fusion -> rerank;
+  rerank -> pack;
+  kg_recall -> evidence_gate;
+  pack -> evidence_gate;
+  evidence_gate -> mcdm;
+  mcdm -> report;
+  pack -> report;
+  report -> auditor;
+  pack -> auditor;
+  auditor -> final [label="pass"];
+  auditor -> blocked [label="veto"];
+  guardrail -> rerank [style=dashed];
+  guardrail -> mcdm [style=dashed];
+}

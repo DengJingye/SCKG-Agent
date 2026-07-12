@@ -1,4 +1,9 @@
 args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 1L && args[[1L]] == "--help") {
+  cat("Usage: Rscript scdblfinder.R r_request.json\n")
+  cat("Runs the fixed maintainer-only synthetic qualification request.\n")
+  quit(status = 0L)
+}
 if (length(args) != 1L || args[[1L]] != "r_request.json") {
   stop("scDblFinder wrapper requires fixed r_request.json")
 }

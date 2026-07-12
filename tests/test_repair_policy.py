@@ -144,7 +144,7 @@ def test_run_budget_enforces_12_4_2_18():
 
 def test_scdblfinder_repair_never_uses_scrublet_parameters(tmp_path):
     contract = ToolContractRegistry(environment_registry=EnvironmentRegistry()).load(
-        "scDblFinder", "not_installed"
+        "scDblFinder", "1.24.0"
     )
     run = _run(
         tmp_path,

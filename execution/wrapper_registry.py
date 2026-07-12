@@ -67,10 +67,10 @@ def _scdblfinder_definition() -> WrapperDefinition:
     conda_root = conda_exe.parent.parent
     python_executable = conda_root / "envs" / "scRNAseq" / "bin" / "python"
     return WrapperDefinition(
-        wrapper_id="scdblfinder_not_installed",
+        wrapper_id="scdblfinder_v1_24_0",
         environment_id="scDblFinder-R",
         tool_name="scDblFinder",
-        tool_version="not_installed",
+        tool_version="1.24.0",
         module="execution.wrappers.scdblfinder",
         python_executable=python_executable,
     )

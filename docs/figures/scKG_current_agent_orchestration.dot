@@ -1,0 +1,112 @@
+digraph CurrentAgentOrchestration {
+  graph [
+    rankdir=LR,
+    bgcolor="white",
+    pad=0.24,
+    nodesep=0.45,
+    ranksep=0.68,
+    splines=polyline,
+    fontname="Helvetica",
+    labelloc=t,
+    fontsize=20,
+    label="Figure 1. Current scKG-Agent orchestration"
+  ];
+
+  node [
+    shape=rect,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=11,
+    color="#334155",
+    penwidth=1.2,
+    fillcolor="#f8fafc",
+    margin="0.12,0.08"
+  ];
+
+  edge [
+    fontname="Helvetica",
+    fontsize=9,
+    color="#475569",
+    arrowsize=0.7,
+    penwidth=1.2
+  ];
+
+  subgraph cluster_input {
+    label="User and context";
+    color="#cbd5e1";
+    style="rounded";
+    user_query [label="User query", fillcolor="#e0f2fe"];
+    session_context [label="Project memory\nUploads\nConversation context", fillcolor="#eff6ff"];
+    context_guard [label="Context-only rule\nnot scientific evidence", fillcolor="#fff7ed", color="#f97316"];
+  }
+
+  subgraph cluster_stategraph {
+    label="Central StateGraph workflow";
+    color="#bfdbfe";
+    style="rounded";
+    intent [label="Intent parser\nLLM or offline fallback", fillcolor="#dbeafe"];
+    constraints [label="Normalized constraints\nTask / modality / platform", fillcolor="#dbeafe"];
+    kg_filter [label="Hard-constraint retrieval\nTool-Task-Modality", fillcolor="#dcfce7"];
+    evidence_gate [label="Evidence gate\ntrusted_core required", fillcolor="#fef3c7", color="#d97706"];
+    candidate_gate [shape=diamond, label="Candidates?", fillcolor="#fefce8", margin="0.06,0.04"];
+    mcdm [label="MCDM scorer\nranked tools + breakdown", fillcolor="#ede9fe"];
+    migration [label="Migration engine\nexploratory hypotheses", fillcolor="#fee2e2", color="#dc2626"];
+    report [label="Report generator\nDecisionReport + narrative", fillcolor="#f8fafc"];
+    auditor [label="Semantic auditor\nveto unsupported claims", fillcolor="#ffe4e6", color="#e11d48"];
+    context_pack [label="EvidenceContextPack\nlayered provenance", fillcolor="#ecfeff", color="#0891b2"];
+  }
+
+  subgraph cluster_knowledge {
+    label="Knowledge and evidence stores";
+    color="#bbf7d0";
+    style="rounded";
+    neo4j [label="Neo4j Aura KG\nruntime graph", fillcolor="#dcfce7"];
+    offline_graph [label="Offline graph\nfallback TSV cache", fillcolor="#f0fdf4"];
+    formal_pub [label="Formal publications TSV", fillcolor="#f0fdf4"];
+    formal_bench [label="Formal benchmarks TSV", fillcolor="#f0fdf4"];
+    task_ontology [label="Task ontology\nreviewed hints", fillcolor="#f0fdf4"];
+  }
+
+  subgraph cluster_output {
+    label="Outputs";
+    color="#e2e8f0";
+    style="rounded";
+    ranked_output [label="Ranked tool report", fillcolor="#f8fafc"];
+    migration_output [label="Exploratory migration report", fillcolor="#fff1f2"];
+    blocked_output [label="Blocked safe report\nwhen audit fails", fillcolor="#fee2e2", color="#dc2626"];
+    trace [label="AgentRun trace\nfor eval and debugging", fillcolor="#f1f5f9"];
+  }
+
+  user_query -> intent;
+  session_context -> intent;
+  session_context -> context_guard;
+  context_guard -> intent [style=dashed, label="constraint only"];
+  intent -> constraints;
+  constraints -> kg_filter;
+
+  neo4j -> kg_filter;
+  offline_graph -> kg_filter [style=dashed, label="fallback"];
+  task_ontology -> kg_filter [style=dashed, label="hints"];
+  formal_pub -> evidence_gate;
+  formal_bench -> evidence_gate;
+
+  kg_filter -> evidence_gate;
+  evidence_gate -> candidate_gate;
+  candidate_gate -> mcdm [label="yes"];
+  candidate_gate -> migration [label="no"];
+  mcdm -> report;
+  migration -> report;
+  report -> context_pack;
+  context_pack -> auditor;
+
+  auditor -> ranked_output [label="pass"];
+  auditor -> migration_output [label="pass"];
+  auditor -> blocked_output [label="high / critical"];
+
+  intent -> trace [style=dashed];
+  kg_filter -> trace [style=dashed];
+  evidence_gate -> trace [style=dashed];
+  mcdm -> trace [style=dashed];
+  migration -> trace [style=dashed];
+  auditor -> trace [style=dashed];
+}

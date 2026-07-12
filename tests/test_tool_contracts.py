@@ -35,25 +35,28 @@ def test_contract_registry_resolves_sources_and_environment():
     contracts = registry.load_all()
 
     assert [contract.contract_id for contract in contracts] == [
-        "scdblfinder:not_installed",
+        "scdblfinder:1.24.0",
         "scrublet:0.2.3",
     ]
     assert all(registry.planning_gate(contract).allowed for contract in contracts)
 
 
-def test_scdblfinder_contract_is_honestly_blocked_by_missing_runtime():
+def test_scdblfinder_contract_is_qualified_but_execution_disabled():
     registry = ToolContractRegistry(environment_registry=EnvironmentRegistry())
-    contract = registry.load("scDblFinder", "not_installed")
+    contract = registry.load("scDblFinder", "1.24.0")
     gate = registry.execution_gate(contract)
 
-    assert contract.tool_version == "not_installed"
-    assert contract.wrapper_status == "implemented"
-    assert contract.environment_status == "missing"
-    assert contract.execution_status == "untested"
+    assert contract.tool_version == "1.24.0"
+    assert contract.wrapper_status == "smoke_passed"
+    assert contract.environment_status == "smoke_passed"
+    assert contract.execution_status == "integration_passed"
     assert contract.scientific_validation_status == "not_evaluated"
     assert contract.enabled_for_execution is False
     assert gate.allowed is False
-    assert "environment_not_integration_passed:missing" in gate.reasons
+    assert set(gate.reasons) == {
+        "contract_execution_disabled",
+        "environment_execution_disabled",
+    }
 
 
 def test_execution_gate_cannot_be_opened_by_flipping_contract_flag_alone():

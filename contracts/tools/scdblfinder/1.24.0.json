@@ -1,12 +1,12 @@
 {
-  "contract_id": "scdblfinder:not_installed",
-  "contract_version": "0.1.0-phase5a-blocked",
+  "contract_id": "scdblfinder:1.24.0",
+  "contract_version": "1.0.0-phase5b-qualified",
   "tool_name": "scDblFinder",
-  "tool_version": "not_installed",
+  "tool_version": "1.24.0",
   "task": "doublet_detection",
   "language": "r",
   "environment_id": "scDblFinder-R",
-  "wrapper_id": "scdblfinder_not_installed",
+  "wrapper_id": "scdblfinder_v1_24_0",
   "input_object": "AnnData",
   "required_fields": [
     "raw non-negative integer count matrix",
@@ -37,7 +37,7 @@
     "log-normalized or scaled input without raw counts",
     "negative, non-finite, or non-integer counts",
     "arbitrary R expressions or user-provided commands",
-    "user data in Phase 5A qualification"
+    "user data in Phase 5B qualification"
   ],
   "output_artifacts": [
     {
@@ -84,12 +84,12 @@
       "value_or_range": "raw UMI counts represented as genes by cells in SingleCellExperiment",
       "origin_type": "source_bound_prior",
       "source_type": "official_tutorial",
-      "source_id": "https://bioconductor.org/packages/scDblFinder",
+      "source_id": "https://bioconductor.org/packages/3.22/bioc/html/scDblFinder.html",
       "source_span": "package landing page and vignette input sections",
-      "tool_version": null,
-      "applicable_scope": "Phase 5A contract design only",
+      "tool_version": "1.24.0",
+      "applicable_scope": "maintainer synthetic qualification",
       "limitations": [
-        "No local scDblFinder runtime is installed, so defaults and signatures remain unqualified."
+        "Synthetic engineering metrics do not establish biological performance."
       ]
     }
   ],
@@ -125,33 +125,34 @@
     "qualification_timeout_seconds": 180,
     "qualification_max_cores": 4,
     "memory_enforcement": "monitor_only",
-    "runtime_boundary": "qualification fixture only",
+    "runtime_boundary": "maintainer synthetic qualification only",
     "memory_boundary": "peak RSS observation only"
   },
   "source_refs": [
-    "https://bioconductor.org/packages/scDblFinder",
-    "https://bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html"
+    "https://bioconductor.org/packages/3.22/bioc/html/scDblFinder.html",
+    "https://bioconductor.org/packages/3.22/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html"
   ],
   "execution_critical_review": {
-    "reviewer": "codex_environment_check_2026_07_12",
+    "reviewer": "codex_phase5b_runtime_review_2026_07_12",
     "review_scope": [
       "raw-count input boundary",
-      "fixed adapter and R wrapper schema",
-      "blocked environment state"
+      "scDblFinder 1.24.0 function boundary",
+      "fixed Python adapter and R wrapper schema",
+      "Conda/Bioconductor runtime versions"
     ],
     "sources": [
-      "official Bioconductor package page",
-      "official scDblFinder vignette",
-      "read-only local Conda environment scan"
+      "official Bioconductor package page and vignette",
+      "installed scDblFinder 1.24.0 package",
+      "isolated scDblFinder-R environment smoke"
     ],
-    "claim_boundary": "Contract scaffold only; no installed runtime version or execution qualification is claimed."
+    "claim_boundary": "Execution review is limited to maintainer synthetic qualification; user execution remains disabled."
   },
   "schema_status": "valid",
-  "source_review_status": "partial",
-  "execution_critical_fields_reviewed": false,
-  "wrapper_status": "implemented",
-  "environment_status": "missing",
-  "execution_status": "untested",
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "smoke_passed",
+  "environment_status": "smoke_passed",
+  "execution_status": "integration_passed",
   "scientific_validation_status": "not_evaluated",
   "enabled_for_execution": false
 }

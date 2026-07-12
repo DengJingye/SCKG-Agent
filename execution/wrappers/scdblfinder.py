@@ -45,9 +45,9 @@ def main(argv: list[str] | None = None) -> int:
             f"invalid worker request fields; unknown={unknown}, missing={missing}"
         )
     if request["purpose"] != "synthetic_qualification":
-        raise ValueError("Phase 5A scDblFinder adapter only permits synthetic qualification")
+        raise ValueError("scDblFinder adapter only permits synthetic qualification")
     if bool(request["public_dataset"]):
-        raise ValueError("Phase 5A scDblFinder adapter forbids scientific or user datasets")
+        raise ValueError("scDblFinder adapter forbids scientific or user datasets")
 
     run_dir = Path.cwd().resolve()
     input_path = Path(request["input_path"]).resolve(strict=True)
@@ -156,7 +156,7 @@ def validate_parameters(parameters: dict[str, Any]) -> dict[str, Any]:
     if not 0.001 <= float(dbr) <= 0.5:
         raise ValueError("dbr outside allowed range")
     if merged["clusters"] is not False:
-        raise ValueError("clusters must remain false in Phase 5A")
+        raise ValueError("clusters must remain false for this qualification contract")
     for name, minimum, maximum in (
         ("n_cores", 1, 4),
         ("random_state", 0, 2_147_483_647),

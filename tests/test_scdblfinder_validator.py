@@ -53,7 +53,7 @@ def _case(tmp_path, *, corrupt):
         allowed_output_root=tmp_path / "probes",
     )
     contract = ToolContractRegistry(environment_registry=EnvironmentRegistry()).load(
-        "scDblFinder", "not_installed"
+        "scDblFinder", "1.24.0"
     )
     parameters = {**contract.default_parameters, "random_state": 901}
     run_dir = tmp_path / "run"
@@ -82,7 +82,7 @@ def _case(tmp_path, *, corrupt):
                 "input_hash": probe.probe_hash,
                 "qualification_mode": True,
                 "scdblfinder_actually_executed": True,
-                "scdblfinder_version": "not_installed",
+                "scdblfinder_version": "1.24.0",
                 "synthetic_fixture": True,
                 "user_data_used": False,
             }

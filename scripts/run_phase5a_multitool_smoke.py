@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,7 +29,7 @@ from tests.fixtures.anndata_factory import write_phase1_fixtures
 
 def main() -> int:
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
-    root = PROJECT_ROOT / ".sckg_exec" / "phase5a" / timestamp
+    root = PROJECT_ROOT / ".sckg_exec" / "phase5b" / timestamp
     fixtures = write_phase1_fixtures(root / "fixtures")
     profile = AnnDataProfiler().profile(fixtures["raw_x"])
     probe = ProbeBuilder().build(
@@ -46,7 +45,7 @@ def main() -> int:
         allowed_output_root=root / "probes",
     )
     artifact = QualificationArtifact(
-        artifact_id="phase5a-shared-probe",
+        artifact_id="phase5b-shared-probe",
         fixture_id=probe.source_fixture_id,
         path=probe.probe_artifact_path,
         sha256=probe.probe_hash,
@@ -55,7 +54,7 @@ def main() -> int:
         expected_cells=probe.n_probe_cells,
     )
     requirement = RequirementSpec(
-        request_id=f"phase5a-{timestamp}",
+        request_id=f"phase5b-{timestamp}",
         query="maintainer multi-tool doublet qualification",
         input_path=str(fixtures["raw_x"]),
         input_object_type="AnnData",
@@ -65,7 +64,7 @@ def main() -> int:
     environments = EnvironmentRegistry()
     contracts = ToolContractRegistry(environment_registry=environments)
     scrublet_contract = contracts.load("Scrublet", "0.2.3")
-    scdblfinder_contract = contracts.load("scDblFinder", "not_installed")
+    scdblfinder_contract = contracts.load("scDblFinder", "1.24.0")
     scrublet_environment = environments.get(scrublet_contract.environment_id)
     scdblfinder_environment = environments.get(scdblfinder_contract.environment_id)
     scrublet_gate = contracts.planning_gate(scrublet_contract, data_profile=profile)
@@ -137,7 +136,7 @@ def main() -> int:
     ]
     seeds = [601, 602, 603]
     scrublet_batch = scrublet_runner.run(
-        experiment_id=f"phase5a-scrublet-{timestamp}",
+        experiment_id=f"phase5b-scrublet-{timestamp}",
         configurations=scrublet_configs,
         seeds=seeds,
         probe=probe,
@@ -145,10 +144,10 @@ def main() -> int:
         contract=scrublet_contract,
         environment=scrublet_environment,
         planning_gate=scrublet_gate,
-        plan_id=f"phase5a-plan-{timestamp}",
+        plan_id=f"phase5b-plan-{timestamp}",
     )
     scdblfinder_batch = scdblfinder_runner.run(
-        experiment_id=f"phase5a-scdblfinder-{timestamp}",
+        experiment_id=f"phase5b-scdblfinder-{timestamp}",
         configurations=scdblfinder_configs,
         seeds=seeds,
         probe=probe,
@@ -156,7 +155,7 @@ def main() -> int:
         contract=scdblfinder_contract,
         environment=scdblfinder_environment,
         planning_gate=scdblfinder_gate,
-        plan_id=f"phase5a-plan-{timestamp}",
+        plan_id=f"phase5b-plan-{timestamp}",
     )
     aggregator = CandidateAggregator()
     candidates = [
@@ -175,7 +174,7 @@ def main() -> int:
     )
     cross_tool_complete = actual_scrublet_runs > 0 and actual_scdblfinder_runs > 0
     package = ReproducibilityPackager().build_multitool(
-        package_id=f"phase5a-multitool-{timestamp}",
+        package_id=f"phase5b-multitool-{timestamp}",
         requirement=requirement,
         data_profile=profile,
         shared_probe=probe,
@@ -185,7 +184,7 @@ def main() -> int:
         candidate_evaluations=candidates,
         decision_result=decision,
         environment_check=r_environment,
-        rerun_command="python scripts/run_phase5a_multitool_smoke.py",
+        rerun_command="python scripts/run_phase5b_multitool_qualification.py",
         cross_tool_comparison_complete=cross_tool_complete,
     )
     package_contracts = json.loads(
@@ -213,16 +212,31 @@ def main() -> int:
             for item in scdblfinder_batch.validation_results
         ),
         "scrublet_actual_runs_6": actual_scrublet_runs == 6,
-        "scdblfinder_actual_runs_0_when_r_missing": (
-            actual_scdblfinder_runs == 0 and not r_environment["rscript_available"]
+        "scdblfinder_actual_runs_6": actual_scdblfinder_runs == 6,
+        "all_validations_passed": all(
+            item.passed
+            for item in [
+                *scrublet_batch.validation_results,
+                *scdblfinder_batch.validation_results,
+            ]
         ),
-        "scdblfinder_candidate_blocked": all(
-            not item.eligible_for_decision
+        "both_tools_have_eligible_candidate": all(
+            any(
+                item.eligible_for_decision and item.tool_name == tool_name
+                for item in candidates
+            )
+            for tool_name in ("Scrublet", "scDblFinder")
+        ),
+        "cross_tool_comparison_complete": cross_tool_complete
+        and not any(
+            "incomplete" in item.casefold()
+            for item in decision.limitations
+        ),
+        "all_scdblfinder_candidates_eligible": all(
+            item.eligible_for_decision
             for item in candidates
             if item.tool_name == "scDblFinder"
         ),
-        "cross_tool_comparison_not_claimed": not cross_tool_complete
-        and any("incomplete" in item for item in decision.limitations),
         "package_contains_both_tools": set(package_contracts)
         == {"Scrublet", "scDblFinder"},
         "package_complete": package.complete and package.manifest_hashes_valid,
@@ -241,7 +255,7 @@ def main() -> int:
     }
     summary = {
         "ok": all(checks.values()),
-        "phase": "Phase 5A multi-tool qualification smoke",
+        "phase": "Phase 5B real multi-tool qualification",
         "environment": r_environment,
         "checks": checks,
         "shared_probe": {
@@ -255,6 +269,20 @@ def main() -> int:
             "scdblfinder_actual": actual_scdblfinder_runs,
             "scdblfinder_blocked": sum(
                 run.status == "blocked" for run in scdblfinder_batch.execution_runs
+            ),
+            "succeeded": sum(
+                run.status == "succeeded"
+                for run in [
+                    *scrublet_batch.execution_runs,
+                    *scdblfinder_batch.execution_runs,
+                ]
+            ),
+            "failed_or_blocked": sum(
+                run.status != "succeeded"
+                for run in [
+                    *scrublet_batch.execution_runs,
+                    *scdblfinder_batch.execution_runs,
+                ]
             ),
         },
         "candidates": [item.model_dump(mode="json") for item in candidates],
@@ -274,16 +302,18 @@ def main() -> int:
 
 def _r_environment_check() -> dict:
     registered = Path("/opt/anaconda3/envs/scDblFinder-R/bin/Rscript")
-    detected = shutil.which("Rscript")
+    environment = EnvironmentRegistry().get("scDblFinder-R")
     return {
-        "rscript_available": bool(detected or registered.is_file()),
-        "rscript_path": detected or (str(registered) if registered.is_file() else None),
-        "scdblfinder_version": "not_installed",
-        "SingleCellExperiment": "not_installed",
-        "Matrix": "not_installed",
-        "jsonlite": "not_installed",
-        "status": "BLOCKED",
-        "reason": "Rscript is absent from all detected Conda environments",
+        "rscript_available": registered.is_file(),
+        "rscript_path": str(registered) if registered.is_file() else None,
+        "r_version": environment.package_versions["r"],
+        "scdblfinder_version": environment.package_versions["scdblfinder"],
+        "SingleCellExperiment": environment.package_versions["singlecellexperiment"],
+        "Matrix": environment.package_versions["matrix"],
+        "jsonlite": environment.package_versions["jsonlite"],
+        "status": str(environment.qualification_status),
+        "integration_test_passed": environment.integration_test_passed,
+        "enabled_for_execution": environment.enabled_for_execution,
     }
 
 

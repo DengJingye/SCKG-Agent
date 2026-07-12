@@ -26,11 +26,13 @@ def test_environment_registry_loads_all_records():
     ]
 
 
-def test_scdblfinder_environment_records_missing_r_without_enablement():
+def test_scdblfinder_environment_is_integration_qualified_but_disabled():
     environment = EnvironmentRegistry().get("scDblFinder-R")
-    assert environment.qualification_status == "missing"
-    assert environment.package_versions["rscript"] == "not_installed"
-    assert environment.package_versions["scdblfinder"] == "not_installed"
+    assert environment.qualification_status == "integration_passed"
+    assert environment.import_smoke_passed is True
+    assert environment.integration_test_passed is True
+    assert environment.package_versions["rscript"] == "4.5.3"
+    assert environment.package_versions["scdblfinder"] == "1.24.0"
     assert environment.enabled_for_execution is False
 
 
