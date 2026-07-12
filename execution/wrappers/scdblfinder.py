@@ -44,10 +44,17 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError(
             f"invalid worker request fields; unknown={unknown}, missing={missing}"
         )
-    if request["purpose"] != "synthetic_qualification":
-        raise ValueError("scDblFinder adapter only permits synthetic qualification")
-    if bool(request["public_dataset"]):
-        raise ValueError("scDblFinder adapter forbids scientific or user datasets")
+    purpose = request["purpose"]
+    if purpose == "synthetic_qualification":
+        if bool(request["public_dataset"]):
+            raise ValueError("synthetic qualification cannot use a public dataset")
+    elif purpose == "scientific_pilot":
+        if request["accession"] != "GSE108313" or not bool(
+            request["public_dataset"]
+        ):
+            raise ValueError("scientific pilot requires allowlisted GSE108313")
+    else:
+        raise ValueError("unsupported scDblFinder execution purpose")
 
     run_dir = Path.cwd().resolve()
     input_path = Path(request["input_path"]).resolve(strict=True)
@@ -73,10 +80,18 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("adapter requires maintainer-approved fixture")
     if not bool(fixture.get("qualification_mode", False)):
         raise ValueError("adapter requires qualification mode")
-    if not bool(fixture.get("synthetic", False)) or bool(
-        fixture.get("user_data", True)
-    ):
-        raise ValueError("adapter only accepts synthetic non-user qualification data")
+    if bool(fixture.get("user_data", True)):
+        raise ValueError("adapter forbids user data")
+    if purpose == "synthetic_qualification":
+        if not bool(fixture.get("synthetic", False)):
+            raise ValueError("synthetic qualification requires synthetic fixture")
+    else:
+        if bool(fixture.get("synthetic", True)):
+            raise ValueError("scientific pilot requires real public data")
+        if not bool(fixture.get("public_dataset", False)):
+            raise ValueError("scientific pilot requires public data")
+        if fixture.get("accession") != "GSE108313":
+            raise ValueError("scientific fixture accession is not allowlisted")
     if adata.n_obs != int(request["expected_cells"]):
         raise ValueError("expected cell count mismatch")
     matrix = adata.X.tocsr() if sparse.issparse(adata.X) else sparse.csr_matrix(adata.X)
@@ -114,9 +129,13 @@ def main(argv: list[str] | None = None) -> int:
         "counts_path": "r_input/counts.mtx",
         "expected_cells": adata.n_obs,
         "fixture_id": request["fixture_id"],
+        "accession": request["accession"] or "",
+        "ground_truth_path": "r_input/ground_truth.tsv",
         "input_hash": request["expected_input_hash"],
         "parameters": parameters,
-        "purpose": request["purpose"],
+        "public_dataset": bool(request["public_dataset"]),
+        "purpose": purpose,
+        "synthetic_fixture": bool(fixture.get("synthetic", False)),
         "user_data_used": False,
     }
     r_request_path = run_dir / "r_request.json"

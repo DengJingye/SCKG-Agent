@@ -226,11 +226,11 @@ def classify_hto_counts(
 
 def scientific_pilot_limitations() -> list[str]:
     return [
-        "HTO labels identify cross-sample multiplets only.",
+        "HTO labels primarily identify cross-sample multiplets.",
         "Same-donor doublets may be labeled as singlets.",
-        "HTO and demuxlet classifications have a small reported disagreement.",
+        "Labels are produced by the recorded deterministic HTO fraction rule.",
         "Results apply only to GSE108313 PBMCs and the recorded preprocessing.",
-        "The pilot cannot establish that Scrublet is optimal for all datasets.",
+        "The pilot cannot establish that any tool is generally optimal.",
     ]
 
 

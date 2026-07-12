@@ -128,16 +128,29 @@ class ScDblFinderValidator:
             failures.append("parameter_snapshot_mismatch")
 
         metadata = _read_json(run.artifact_paths.get("result_metadata.json"))
+        is_scientific = run.execution_purpose == "scientific_pilot"
         metadata_checks = {
             "scdblfinder_actually_executed": metadata.get(
                 "scdblfinder_actually_executed"
             )
             is True,
             "qualification_mode": metadata.get("qualification_mode") is True,
-            "synthetic_fixture": metadata.get("synthetic_fixture") is True,
             "user_data_not_used": metadata.get("user_data_used") is False,
             "input_hash_matches": metadata.get("input_hash") == run.input_hash,
         }
+        if is_scientific:
+            metadata_checks.update(
+                {
+                    "public_dataset": metadata.get("public_dataset") is True,
+                    "accession_allowlisted": metadata.get("accession")
+                    == "GSE108313",
+                    "non_synthetic": metadata.get("synthetic_fixture") is False,
+                }
+            )
+        else:
+            metadata_checks["synthetic_fixture"] = (
+                metadata.get("synthetic_fixture") is True
+            )
         if self.contract is not None and self.contract.tool_version != "not_installed":
             metadata_checks["tool_version_matches"] = (
                 metadata.get("scdblfinder_version") == self.contract.tool_version
@@ -153,15 +166,17 @@ class ScDblFinderValidator:
             precision = tp / (tp + fp) if tp + fp else 0.0
             recall = tp / (tp + fn) if tp + fn else 0.0
             f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+            prefix = (
+                "scientific_pilot" if is_scientific else "synthetic_engineering"
+            )
             task_metrics.update(
                 {
                     "predicted_doublet_call_rate": sum(predicted) / expected_cells,
-                    "synthetic_engineering_ground_truth_rate": sum(truth)
-                    / expected_cells,
-                    "synthetic_engineering_auprc": _average_precision(truth, scores),
-                    "synthetic_engineering_precision": precision,
-                    "synthetic_engineering_recall": recall,
-                    "synthetic_engineering_f1": f1,
+                    f"{prefix}_ground_truth_rate": sum(truth) / expected_cells,
+                    f"{prefix}_auprc": _average_precision(truth, scores),
+                    f"{prefix}_precision": precision,
+                    f"{prefix}_recall": recall,
+                    f"{prefix}_f1": f1,
                 }
             )
 
@@ -175,7 +190,9 @@ class ScDblFinderValidator:
         if run.peak_memory_mb is None:
             failures.append("memory_observation_missing")
         warnings.append(
-            "synthetic engineering metrics do not establish biological performance"
+            "scientific pilot metrics are dataset-specific and not a universal performance claim"
+            if is_scientific
+            else "synthetic engineering metrics do not establish biological performance"
         )
         unique_failures = sorted(set(failures))
         return ValidationResult(
@@ -189,7 +206,11 @@ class ScDblFinderValidator:
             warnings=warnings,
             failures=unique_failures,
             eligible_for_candidate_aggregation=not unique_failures,
-            metric_authority="synthetic_engineering_metric",
+            metric_authority=(
+                "scientific_pilot_metric"
+                if is_scientific
+                else "synthetic_engineering_metric"
+            ),
             validation_version="scdblfinder-validator-v1",
         )
 

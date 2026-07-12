@@ -7,10 +7,10 @@ from core.execution_models import CandidateEvaluation, DecisionResult, Preferenc
 
 
 PREFERENCE_WEIGHTS = {
-    "performance": {"performance": 0.50, "stability": 0.25, "success": 0.15, "runtime": 0.03, "memory": 0.02, "reproducibility": 0.05},
-    "stability": {"performance": 0.25, "stability": 0.45, "success": 0.20, "runtime": 0.03, "memory": 0.02, "reproducibility": 0.05},
-    "resource": {"performance": 0.15, "stability": 0.15, "success": 0.15, "runtime": 0.20, "memory": 0.30, "reproducibility": 0.05},
-    "fast_local": {"performance": 0.20, "stability": 0.15, "success": 0.15, "runtime": 0.35, "memory": 0.10, "reproducibility": 0.05},
+    "performance": {"auprc": 0.30, "f1": 0.20, "stability": 0.25, "success": 0.15, "runtime": 0.03, "memory": 0.02, "reproducibility": 0.05},
+    "stability": {"auprc": 0.15, "f1": 0.10, "stability": 0.45, "success": 0.20, "runtime": 0.03, "memory": 0.02, "reproducibility": 0.05},
+    "resource": {"auprc": 0.10, "f1": 0.05, "stability": 0.15, "success": 0.15, "runtime": 0.20, "memory": 0.30, "reproducibility": 0.05},
+    "fast_local": {"auprc": 0.12, "f1": 0.08, "stability": 0.15, "success": 0.15, "runtime": 0.35, "memory": 0.10, "reproducibility": 0.05},
 }
 
 
@@ -45,13 +45,13 @@ class ParetoDecisionEngine:
             finalists = pareto
             if preference_value == "performance":
                 best_performance = max(
-                    vectors[item.candidate_id]["performance"] for item in pareto
+                    vectors[item.candidate_id]["auprc"] for item in pareto
                 )
                 finalists = [
                     item
                     for item in pareto
                     if abs(
-                        vectors[item.candidate_id]["performance"] - best_performance
+                        vectors[item.candidate_id]["auprc"] - best_performance
                     )
                     <= 1e-12
                 ]
@@ -136,18 +136,20 @@ class ParetoDecisionEngine:
 
 
 def _vector(candidate: CandidateEvaluation) -> dict[str, float]:
-    performance = (
+    auprc = (
         candidate.metric_summaries.get("scientific_pilot_auprc")
         or candidate.metric_summaries.get("synthetic_engineering_auprc")
-        or candidate.metric_summaries.get("scientific_pilot_f1")
-        or candidate.metric_summaries.get("synthetic_engineering_f1")
     )
+    f1 = candidate.metric_summaries.get(
+        "scientific_pilot_f1"
+    ) or candidate.metric_summaries.get("synthetic_engineering_f1")
+    if auprc is None:
+        auprc = f1
+    if f1 is None:
+        f1 = auprc
     return {
-        "performance": float(
-            performance.mean
-            if performance and performance.mean is not None
-            else 0.0
-        ),
+        "auprc": float(auprc.mean if auprc and auprc.mean is not None else 0.0),
+        "f1": float(f1.mean if f1 and f1.mean is not None else 0.0),
         "stability": float(candidate.seed_stability.get("stability_score", 0.0)),
         "success": candidate.execution_success_rate,
         "runtime": float(candidate.runtime_summary.median or float("inf")),
@@ -157,7 +159,7 @@ def _vector(candidate: CandidateEvaluation) -> dict[str, float]:
 
 
 def _dominates(left: dict[str, float], right: dict[str, float]) -> bool:
-    maximize = ("performance", "stability", "success", "reproducibility")
+    maximize = ("auprc", "f1", "stability", "success", "reproducibility")
     minimize = ("runtime", "memory")
     no_worse = all(left[key] >= right[key] for key in maximize) and all(
         left[key] <= right[key] for key in minimize
@@ -172,7 +174,8 @@ def _preference_scores(candidates, vectors, preference: str) -> dict[str, float]
     weights = PREFERENCE_WEIGHTS[preference]
     normalized: dict[str, dict[str, float]] = {candidate.candidate_id: {} for candidate in candidates}
     for objective in (
-        "performance",
+        "auprc",
+        "f1",
         "stability",
         "success",
         "runtime",

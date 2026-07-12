@@ -50,7 +50,7 @@ def test_scdblfinder_contract_is_qualified_but_execution_disabled():
     assert contract.wrapper_status == "smoke_passed"
     assert contract.environment_status == "smoke_passed"
     assert contract.execution_status == "integration_passed"
-    assert contract.scientific_validation_status == "not_evaluated"
+    assert contract.scientific_validation_status == "scientific_pilot"
     assert contract.enabled_for_execution is False
     assert gate.allowed is False
     assert set(gate.reasons) == {

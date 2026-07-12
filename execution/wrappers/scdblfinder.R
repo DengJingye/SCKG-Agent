@@ -23,21 +23,36 @@ if (!all(available)) {
 
 request <- jsonlite::read_json(args[[1L]], simplifyVector = TRUE)
 expected_fields <- sort(c(
+  "accession",
   "artifacts_dir",
   "cell_ids_path",
   "counts_path",
   "expected_cells",
   "fixture_id",
+  "ground_truth_path",
   "input_hash",
   "parameters",
+  "public_dataset",
   "purpose",
+  "synthetic_fixture",
   "user_data_used"
 ))
 if (!identical(sort(names(request)), expected_fields)) {
   stop("invalid R request fields")
 }
-if (request$purpose != "synthetic_qualification" || isTRUE(request$user_data_used)) {
-  stop("wrapper only permits synthetic qualification")
+if (isTRUE(request$user_data_used)) {
+  stop("wrapper forbids user data")
+}
+if (request$purpose == "synthetic_qualification") {
+  if (!isTRUE(request$synthetic_fixture) || isTRUE(request$public_dataset)) {
+    stop("synthetic qualification requires a synthetic fixture")
+  }
+} else if (request$purpose == "scientific_pilot") {
+  if (request$accession != "GSE108313" || !isTRUE(request$public_dataset) || isTRUE(request$synthetic_fixture)) {
+    stop("scientific pilot requires allowlisted public GSE108313")
+  }
+} else {
+  stop("unsupported execution purpose")
 }
 if (request$artifacts_dir != "artifacts" || request$counts_path != "r_input/counts.mtx") {
   stop("wrapper paths are fixed")
@@ -45,8 +60,12 @@ if (request$artifacts_dir != "artifacts" || request$counts_path != "r_input/coun
 
 counts <- Matrix::readMM(request$counts_path)
 cell_ids <- readLines(request$cell_ids_path, warn = FALSE)
-if (nrow(counts) != request$expected_cells || length(cell_ids) != request$expected_cells) {
+ground_truth <- readLines(request$ground_truth_path, warn = FALSE)
+if (nrow(counts) != request$expected_cells || length(cell_ids) != request$expected_cells || length(ground_truth) != request$expected_cells) {
   stop("input cell count mismatch")
+}
+if (any(!ground_truth %in% c("true", "false"))) {
+  stop("ground truth labels must be boolean")
 }
 if (any(!is.finite(counts@x)) || any(counts@x < 0) || any(counts@x != round(counts@x))) {
   stop("counts must be finite non-negative integers")
@@ -83,8 +102,10 @@ if (length(scores) != length(cell_ids) || length(classes) != length(cell_ids)) {
 predicted <- classes == "doublet"
 result <- data.frame(
   cell_id = cell_ids,
+  obs_id = cell_ids,
   doublet_score = scores,
   predicted_doublet = ifelse(predicted, "true", "false"),
+  ground_truth_doublet = ground_truth,
   stringsAsFactors = FALSE
 )
 dir.create("artifacts", showWarnings = FALSE)
@@ -110,7 +131,9 @@ metadata <- list(
   scdblfinder_actually_executed = TRUE,
   scdblfinder_version = as.character(utils::packageVersion("scDblFinder")),
   execution_purpose = request$purpose,
-  synthetic_fixture = TRUE,
+  public_dataset = isTRUE(request$public_dataset),
+  accession = request$accession,
+  synthetic_fixture = isTRUE(request$synthetic_fixture),
   user_data_used = FALSE
 )
 jsonlite::write_json(

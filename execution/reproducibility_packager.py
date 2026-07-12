@@ -488,6 +488,180 @@ class ReproducibilityPackager:
             manifest_hashes_valid=hashes_valid,
         )
 
+    def build_multitool_scientific_pilot(
+        self,
+        *,
+        package_id: str,
+        requirement: RequirementSpec,
+        data_profile: DataProfile,
+        workflow_plans: dict[str, WorkflowPlan],
+        contracts: list[ToolContract],
+        environments: list[EnvironmentRecord],
+        dataset_manifest: ScientificDatasetManifest,
+        label_report: ScientificLabelReport,
+        exclusion_report_path: Path,
+        split_manifest: ScientificSplitManifest,
+        configuration_catalog: list[dict],
+        batches: Iterable[ExperimentBatchResult],
+        scientific_evaluations: list[ScientificEvaluationResult],
+        prediction_paths: list[Path],
+        candidate_evaluations: list[CandidateEvaluation],
+        decision_result: DecisionResult,
+        rerun_command: str,
+    ) -> ReproducibilityPackageResult:
+        """Build a Level 2 package for a frozen two-tool scientific pilot."""
+
+        package_dir = (self.package_root / package_id).resolve()
+        _require_within(package_dir, self.package_root)
+        if package_dir.exists():
+            raise FileExistsError(f"package already exists: {package_dir}")
+        if len({item.tool_name for item in contracts}) != 2:
+            raise ValueError("multitool scientific package requires two tools")
+        package_dir.mkdir(parents=True)
+        predictions_dir = package_dir / "predictions"
+        predictions_dir.mkdir()
+        batches = list(batches)
+        runs = [run for batch in batches for run in batch.execution_runs]
+        validations = [item for batch in batches for item in batch.validation_results]
+        if any(run.user_data_used for run in runs):
+            raise ValueError("scientific pilot package cannot include user data")
+        if any(run.execution_purpose != "scientific_pilot" for run in runs):
+            raise ValueError("package contains a non-scientific execution run")
+
+        _write_model(package_dir / "requirement.json", requirement)
+        _write_model(package_dir / "data_profile.json", data_profile)
+        _write_json(
+            package_dir / "workflow_plans.json",
+            {name: plan.model_dump(mode="json") for name, plan in workflow_plans.items()},
+        )
+        _write_json(
+            package_dir / "contract_snapshots.json",
+            {item.tool_name: item.model_dump(mode="json") for item in contracts},
+        )
+        _write_json(
+            package_dir / "environment_snapshots.json",
+            {item.environment_id: item.model_dump(mode="json") for item in environments},
+        )
+        _write_model(package_dir / "dataset_manifest.json", dataset_manifest)
+        _write_model(package_dir / "label_mapping.json", label_report)
+        _write_model(package_dir / "split_manifest.json", split_manifest)
+        _write_json(package_dir / "frozen_configs.json", configuration_catalog)
+        _write_jsonl(package_dir / "execution_runs.jsonl", runs)
+        _write_jsonl(package_dir / "validation_results.jsonl", validations)
+        _write_json(
+            package_dir / "scientific_metrics.json",
+            [item.model_dump(mode="json") for item in scientific_evaluations],
+        )
+        _write_json(
+            package_dir / "bootstrap_ci.json",
+            {
+                item.run_id: {
+                    name: interval.model_dump(mode="json")
+                    for name, interval in item.bootstrap_ci.items()
+                }
+                for item in scientific_evaluations
+            },
+        )
+        _write_json(
+            package_dir / "candidate_evaluations.json",
+            [item.model_dump(mode="json") for item in candidate_evaluations],
+        )
+        _write_model(package_dir / "decision_result.json", decision_result)
+        shutil.copy2(exclusion_report_path, package_dir / "exclusion_report.tsv")
+        for path in prediction_paths:
+            shutil.copy2(path, predictions_dir / path.name)
+        _write_json(
+            package_dir / "artifact_manifest.json",
+            _execution_artifact_manifest(runs),
+        )
+        (package_dir / "limitations.md").write_text(
+            "# Scientific Pilot Limitations\n\n"
+            + "\n".join(f"- {item}" for item in label_report.limitations)
+            + "\n",
+            encoding="utf-8",
+        )
+        (package_dir / "rerun_instructions.md").write_text(
+            "# Rerun Instructions\n\n"
+            f"```bash\n{rerun_command}\n```\n\n"
+            "This command reuses the recorded GSE108313 split and does not enable user execution.\n",
+            encoding="utf-8",
+        )
+
+        file_hashes = {
+            str(path.relative_to(package_dir)): _sha256(path)
+            for path in sorted(package_dir.rglob("*"))
+            if path.is_file() and path.name != "reproducibility_manifest.json"
+        }
+        _write_json(
+            package_dir / "reproducibility_manifest.json",
+            {
+                "package_id": package_id,
+                "reproducibility_level": "Level 2",
+                "pilot_type": "multitool_scientific",
+                "accession": dataset_manifest.accession,
+                "doi": dataset_manifest.doi,
+                "split_manifest_hash": split_manifest.manifest_hash,
+                "tools": [
+                    {
+                        "name": item.tool_name,
+                        "version": item.tool_version,
+                        "scientific_validation_status": item.scientific_validation_status,
+                        "enabled_for_execution": item.enabled_for_execution,
+                    }
+                    for item in contracts
+                ],
+                "environments": [item.model_dump(mode="json") for item in environments],
+                "raw_scores_compared_directly": False,
+                "evaluation_parameters_frozen": True,
+                "bootstrap_iterations": 500,
+                "git": _git_metadata(self.repository_root),
+                "rerun_command": rerun_command,
+                "user_data_copied": False,
+                "file_hashes": file_hashes,
+            },
+        )
+        all_hashes = {
+            str(path.relative_to(package_dir)): _sha256(path)
+            for path in sorted(package_dir.rglob("*"))
+            if path.is_file()
+        }
+        required = [
+            "dataset_manifest.json",
+            "label_mapping.json",
+            "exclusion_report.tsv",
+            "split_manifest.json",
+            "frozen_configs.json",
+            "contract_snapshots.json",
+            "environment_snapshots.json",
+            "workflow_plans.json",
+            "execution_runs.jsonl",
+            "validation_results.jsonl",
+            "scientific_metrics.json",
+            "bootstrap_ci.json",
+            "candidate_evaluations.json",
+            "decision_result.json",
+            "artifact_manifest.json",
+            "reproducibility_manifest.json",
+            "limitations.md",
+            "rerun_instructions.md",
+        ]
+        hashes_valid = all(
+            (package_dir / name).is_file()
+            and _sha256(package_dir / name) == expected
+            for name, expected in file_hashes.items()
+        )
+        complete = all((package_dir / name).is_file() for name in required) and bool(
+            list(predictions_dir.glob("*.tsv"))
+        )
+        return ReproducibilityPackageResult(
+            package_id=package_id,
+            package_path=str(package_dir),
+            required_files=required,
+            artifact_hashes=all_hashes,
+            complete=complete,
+            manifest_hashes_valid=hashes_valid,
+        )
+
     def build_orchestrated(
         self,
         *,
