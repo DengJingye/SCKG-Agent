@@ -13,8 +13,15 @@ from typing import Any, Dict, List, Optional
 import streamlit as st
 import streamlit.components.v1 as components
 
-from agent.workflow import build_sckg_graph
+try:
+    from agent.traced_runner import run_sckg_workflow_traced
+    AGENT_IMPORT_ERROR = ""
+except ModuleNotFoundError as exc:
+    run_sckg_workflow_traced = None
+    AGENT_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
+from core.reflection_memory import reflect_agent_run
 from core.settings import get_settings
+from core.trace_context import TraceCollector, TraceContext
 from core.user_store import (
     ApiConfigError,
     clear_conversation,
@@ -38,6 +45,11 @@ from engine.knowledge_graph_view import (
     build_knowledge_graph_html,
     build_knowledge_graph_view,
 )
+from engine.workflow_decision import (
+    DEFAULT_WORKFLOW_CANDIDATE_TOOLS,
+    build_workflow_decision_response,
+)
+from observability.dashboard.services import EvidenceRecoveryService, ReflectionService, TraceService
 
 
 st.set_page_config(
@@ -833,24 +845,64 @@ def _run_agent(
     uploaded_context: Optional[Dict[str, Any]] = None,
     user_runtime_config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
+    if run_sckg_workflow_traced is None:
+        raise RuntimeError(
+            "LangGraph runtime is unavailable in the current Python environment. "
+            "Use `conda run -n sckg_env python -m streamlit run app.py`, "
+            "or install project dependencies from requirements.txt. "
+            f"Import error: {AGENT_IMPORT_ERROR}"
+        )
     previous = os.environ.get("SCKG_OFFLINE_LLM")
     if offline_llm:
         os.environ["SCKG_OFFLINE_LLM"] = "true"
         get_settings.cache_clear()
+    trace = TraceContext(
+        trace_type="agent_run",
+        metadata={
+            "query": user_query,
+            "source": "streamlit",
+            "offline_llm": offline_llm,
+            "architecture": "bounded_centralized_parent_agent",
+        },
+    )
     try:
-        app = build_sckg_graph()
-        return dict(
-            app.invoke(
-                _initial_state(
-                    user_query,
-                    conversation_context=conversation_context,
-                    project_memory=project_memory,
-                    uploaded_context=uploaded_context,
-                    user_runtime_config=user_runtime_config,
-                )
-            )
+        state = run_sckg_workflow_traced(
+            _initial_state(
+                user_query,
+                conversation_context=conversation_context,
+                project_memory=project_memory,
+                uploaded_context=uploaded_context,
+                user_runtime_config=user_runtime_config,
+            ),
+            trace,
         )
+        try:
+            with trace.stage_timer(
+                "reflect",
+                method="core.reflection_memory.reflect_agent_run",
+                provider="local_sqlite_jsonl",
+                input_summary={
+                    "has_final_report": bool(state.get("final_report")),
+                    "has_audit": bool(state.get("hallucination_audit")),
+                },
+            ) as payload:
+                reflection = reflect_agent_run(state, trace)
+                state["reflection_event"] = reflection.model_dump(mode="json")
+                payload["output_summary"] = {
+                    "memory_event_count": len(reflection.memory_events),
+                    "skill_candidate_count": len(reflection.skill_candidates),
+                    "missing_evidence_count": len(reflection.missing_evidence),
+                }
+                payload["warnings"] = reflection.warnings
+        except Exception as exc:
+            state["reflection_error"] = f"{type(exc).__name__}: {exc}"
+        return dict(state)
+    except Exception as exc:
+        trace.metadata["error"] = f"{type(exc).__name__}: {exc}"
+        raise
     finally:
+        trace.finish()
+        TraceCollector().collect(trace)
         if offline_llm:
             if previous is None:
                 os.environ.pop("SCKG_OFFLINE_LLM", None)
@@ -1507,6 +1559,12 @@ def _render_context_status(
         _render_chip("offline mode", "good")
     else:
         _render_chip("paid LLM enabled", "warn")
+    if AGENT_IMPORT_ERROR:
+        _render_chip("agent runtime missing", "bad")
+        st.markdown(
+            '<div class="memory-note">Use conda env <code>sckg_env</code> for the full LangGraph agent.</div>',
+            unsafe_allow_html=True,
+        )
     if uploads:
         names = [
             str(item.get("file_name", "file"))
@@ -1562,6 +1620,359 @@ def _render_knowledge_graph_panel() -> None:
     if graph.truncated:
         st.caption("Graph is truncated for readability. Use search or raise Max nodes to inspect more.")
     components.html(build_knowledge_graph_html(graph), height=790, scrolling=True)
+
+
+def _safe_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, str]]:
+    safe: List[Dict[str, str]] = []
+    for row in rows:
+        safe.append(
+            {
+                str(key): _safe_cell(value)
+                for key, value in row.items()
+            }
+        )
+    return safe
+
+
+def _safe_cell(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (dict, list, tuple, set)):
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
+    return str(value)
+
+
+def _read_json_artifact(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def _read_tsv_artifact(path: Path) -> List[Dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _format_percent(value: Any) -> str:
+    try:
+        return f"{float(value) * 100:.1f}%"
+    except Exception:
+        return "0.0%"
+
+
+def _render_admin_header(kicker: str, title: str, subtitle: str) -> None:
+    st.markdown(
+        f"""
+<div class="chat-app-header">
+  <div class="chat-app-kicker">{escape(kicker)}</div>
+  <div class="chat-app-title">{escape(title)}</div>
+  <div class="chat-app-subtitle">{escape(subtitle)}</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+
+def _workflow_candidate_tools_from_state(state: Dict[str, Any]) -> List[str]:
+    names: List[str] = []
+    for key in ("candidate_tools", "tool_candidates", "scored_tools"):
+        for item in _state_get_list(state, key):
+            if isinstance(item, str):
+                names.append(item)
+            else:
+                row = _as_dict(item)
+                name = row.get("tool_name") or row.get("name")
+                if name:
+                    names.append(str(name))
+    if not names:
+        names = list(DEFAULT_WORKFLOW_CANDIDATE_TOOLS)
+    deduped: List[str] = []
+    seen = set()
+    for name in names:
+        key = name.casefold()
+        if key not in seen:
+            deduped.append(name)
+            seen.add(key)
+    return deduped[:20]
+
+
+def _attach_workflow_decision(
+    *,
+    query: str,
+    state: Dict[str, Any],
+    project_memory: Dict[str, Any],
+) -> Optional[Dict[str, Any]]:
+    constraints = {
+        **project_memory,
+        **_constraints(state),
+    }
+    if "output_goal" not in constraints:
+        constraints["output_goal"] = "auditable workflow decision report"
+    try:
+        return build_workflow_decision_response(
+            query=query,
+            constraints=constraints,
+            candidate_tools=_workflow_candidate_tools_from_state(state),
+            max_snippets_per_step=4,
+        )
+    except Exception as exc:
+        return {
+            "response_type": "workflow_decision_error",
+            "error": f"{type(exc).__name__}: {exc}",
+            "query": query,
+            "metrics": {
+                "workflow_steps": 0,
+                "retrieval_snippets": 0,
+                "source_bound_retrieval_snippets": 0,
+                "evidence_boundary_violation_count": 0,
+            },
+            "workflow_steps": [],
+            "guardrail": "Workflow decision card failed to render; main agent answer is unchanged.",
+        }
+
+
+def _render_workflow_decision_card(response: Dict[str, Any]) -> None:
+    if not response:
+        return
+    st.markdown("### Workflow Decision")
+    if response.get("error"):
+        st.warning(response.get("error"))
+        return
+    metrics = response.get("metrics") or {}
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Steps", metrics.get("workflow_steps", 0))
+    c2.metric("Candidates", metrics.get("candidate_tool_count", 0))
+    c3.metric("Snippets", metrics.get("retrieval_snippets", 0))
+    c4.metric("Source Chunks", metrics.get("source_bound_retrieval_snippets", 0))
+    c5.metric("Boundary", metrics.get("evidence_boundary_violation_count", 0))
+    if metrics.get("evidence_boundary_violation_count", 0):
+        st.error("Evidence boundary violation detected. Treat this workflow as invalid until fixed.")
+    else:
+        st.success("Plan-only workflow generated; evidence boundary is intact.")
+    st.caption(response.get("guardrail", ""))
+
+    steps = response.get("workflow_steps") or []
+    if steps:
+        st.dataframe(
+            _safe_rows(
+                [
+                    {
+                        "order": step.get("order"),
+                        "step": step.get("name", ""),
+                        "task": step.get("task", ""),
+                        "candidate_tools": ", ".join(step.get("candidate_tools") or []),
+                        "snippets": step.get("snippet_count", 0),
+                        "source_chunks": step.get("source_bound_snippet_count", 0),
+                        "status": step.get("status", ""),
+                    }
+                    for step in steps
+                ]
+            ),
+            use_container_width=True,
+        )
+        for step in steps:
+            with st.expander(f"{step.get('order')}. {step.get('name')}"):
+                st.table(
+                    _safe_rows(
+                        [
+                            {"field": "task", "value": step.get("task", "")},
+                            {"field": "required_input", "value": ", ".join(step.get("required_input") or [])},
+                            {"field": "produced_output", "value": ", ".join(step.get("produced_output") or [])},
+                            {"field": "candidate_tools", "value": ", ".join(step.get("candidate_tools") or [])},
+                            {"field": "rag_mode", "value": step.get("rag_mode", "")},
+                        ]
+                    )
+                )
+                snippets = step.get("snippets") or []
+                if snippets:
+                    st.dataframe(_safe_rows(snippets), use_container_width=True)
+                else:
+                    st.info("No retrieval snippets for this step yet.")
+    with st.expander("Markdown decision report", expanded=False):
+        st.code(response.get("markdown_report", ""), language="markdown")
+
+
+def _render_evidence_admin_panel() -> None:
+    _render_admin_header(
+        "Admin · Evidence & RAG",
+        "证据与混合 RAG 管线状态",
+        "查看 source chunks、PDF/HTML 获取状态、source registry、metadata mismatch 和 extraction failure。",
+    )
+    service = EvidenceRecoveryService()
+    core = service.load_source_coverage()
+    literature = service.load_literature_source_coverage()
+    registry = service.load_source_registry_status()
+    chunks_path = get_settings().data_dir / "indexes" / "evidence_chunks.jsonl"
+    vectors_path = get_settings().data_dir / "indexes" / "evidence_vectors.jsonl"
+    chunk_count = sum(1 for _ in chunks_path.open("r", encoding="utf-8")) if chunks_path.exists() else 0
+    vector_count = sum(1 for _ in vectors_path.open("r", encoding="utf-8")) if vectors_path.exists() else 0
+
+    core_summary = core.get("summary") or {}
+    literature_summary = literature.get("summary") or {}
+    acquisition = registry.get("acquisition_summary") or {}
+    extraction = registry.get("extraction_summary") or {}
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Evidence Chunks", chunk_count)
+    c2.metric("Dense Vectors", vector_count)
+    c3.metric("Core Covered", core_summary.get("covered_tools", 0))
+    c4.metric("Literature Text", literature_summary.get("source_text_available", 0))
+    c5.metric("Quarantine", acquisition.get("candidate_quarantine_rows", 0))
+    st.info(
+        "混合 RAG discovery 路线已打通：local evidence_chunks.jsonl + sparse retrieval + optional dense vectors + governance rerank。"
+        "当前 dense vectors 为 0，说明还没有正式批量调用 embedding API。"
+    )
+
+    st.markdown("#### Core Tool Source Coverage")
+    rows = core.get("rows") or []
+    if rows:
+        st.dataframe(_safe_rows(rows), use_container_width=True)
+    else:
+        st.info("No core source coverage manifest found.")
+
+    st.markdown("#### Paper / Benchmark Source Coverage")
+    lit_rows = literature.get("rows") or []
+    if lit_rows:
+        st.dataframe(_safe_rows(lit_rows), use_container_width=True)
+    else:
+        st.info("No literature source coverage artifact found.")
+
+    st.markdown("#### Source Registry / Validation")
+    c6, c7, c8 = st.columns(3)
+    c6.metric("Source Records", acquisition.get("source_records", len(registry.get("registry_rows") or [])))
+    c7.metric("Text Sources", extraction.get("source_text_available", 0))
+    c8.metric("Extract Failures", extraction.get("pdf_extraction_failed", 0))
+    validation_rows = registry.get("validation_rows") or []
+    if validation_rows:
+        st.dataframe(_safe_rows(validation_rows), use_container_width=True)
+    with st.expander("PDF acquisition policy"):
+        st.markdown(
+            """
+- 自动：只做候选发现、开放 PDF/HTML 获取、标题/DOI 校验、抽取、入 source chunk index。
+- 手动：paywall、登录、metadata mismatch、PDF 抽取失败、题文不一致。
+- 下载后仍需检查：PDF/HTML title、DOI、source span、tool/source 映射、是否可晋升 formal evidence。
+- RAG chunk 永远只是 evidence discovery，不能直接改推荐排名。
+"""
+        )
+
+
+def _render_evaluation_admin_panel() -> None:
+    _render_admin_header(
+        "Admin · Evaluation",
+        "评测与失败队列",
+        "把 workflow decision 的成功标准、失败场景和 evidence boundary 检查放在同一个用户应用里。",
+    )
+    eval_dir = Path("eval")
+    summary = _read_json_artifact(eval_dir / "workflow_eval_v0_1_summary.json")
+    if summary:
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("Scenarios", summary.get("scenario_count", 0))
+        c2.metric("Pass Rate", _format_percent(summary.get("pass_rate")))
+        c3.metric("Step Recall", _format_percent(summary.get("required_step_recall")))
+        c4.metric("Tool Recall", _format_percent(summary.get("candidate_tool_recall")))
+        c5.metric("Boundary Violations", summary.get("evidence_boundary_violation_count", 0))
+        st.caption(summary.get("guardrail", ""))
+    else:
+        st.info("No workflow eval summary found. Run `python eval/run_workflow_eval.py`.")
+    per_rows = _read_tsv_artifact(eval_dir / "workflow_eval_v0_1_per_scenario.tsv")
+    if per_rows:
+        st.markdown("#### Per Scenario")
+        st.dataframe(_safe_rows(per_rows), use_container_width=True)
+    failure_rows = _read_tsv_artifact(eval_dir / "workflow_eval_v0_1_failure_queue.tsv")
+    if failure_rows:
+        st.markdown("#### Failure Queue")
+        st.dataframe(_safe_rows(failure_rows), use_container_width=True)
+    else:
+        st.success("Failure queue is empty.")
+
+
+def _render_memory_admin_panel() -> None:
+    _render_admin_header(
+        "Admin · Memory",
+        "受控自进化记忆",
+        "查看 reflection events、private operational memory 和 review-only skill candidates。",
+    )
+    service = ReflectionService()
+    reflections = service.list_reflections()
+    memory_events = service.list_memory_events()
+    skill_candidates = service.list_skill_candidates()
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Reflections", len(reflections))
+    c2.metric("Memory Events", len(memory_events))
+    c3.metric("Skill Candidates", len(skill_candidates))
+    st.info(
+        "记忆板块已经加入：聊天主流程每次正式 agent run 后会执行 reflect。"
+        "这些 memory 只能影响 operational context，不能成为 scientific authority。"
+    )
+    st.markdown("#### Memory Events")
+    if memory_events:
+        st.dataframe(_safe_rows(memory_events), use_container_width=True)
+    else:
+        st.info("No memory events yet. Run a normal chat query first.")
+    st.markdown("#### Recent Reflections")
+    for event in reflections[:8]:
+        with st.expander(f"{event.get('created_at', '')[:19]} · {event.get('trace_id', '')}"):
+            st.json(event)
+    st.markdown("#### Skill Candidates")
+    if skill_candidates:
+        st.dataframe(_safe_rows(skill_candidates), use_container_width=True)
+    else:
+        st.info("No skill candidates yet.")
+
+
+def _render_architecture_admin_panel() -> None:
+    _render_admin_header(
+        "Admin · Architecture",
+        "有边界的中心化 Agent 路线图",
+        "明确当前已经实现什么、还没实现什么，以及多智能体后续如何进入系统。",
+    )
+    rows = [
+        {
+            "component": "Current user app",
+            "status": "implemented",
+            "notes": "Original chat app + KG view + workflow decision card + admin panels.",
+        },
+        {
+            "component": "Hybrid RAG",
+            "status": "implemented discovery layer",
+            "notes": "Evidence chunks JSONL, sparse retrieval, optional dense vectors, governance rerank.",
+        },
+        {
+            "component": "PDF/source acquisition",
+            "status": "semi-automated",
+            "notes": "Open sources can be discovered/acquired; wrong DOI, paywall, login, extraction failure remain manual review tasks.",
+        },
+        {
+            "component": "Memory",
+            "status": "implemented operational memory",
+            "notes": "Reflection writes private memory and skill candidates; cannot update formal evidence.",
+        },
+        {
+            "component": "Subagents",
+            "status": "contract/test exists; runtime default off",
+            "notes": "Next step: read-only evidence-search/critique subagents under Parent Agent budget.",
+        },
+        {
+            "component": "MCP",
+            "status": "planned",
+            "notes": "Useful later for tool/service packaging; not required before workflow decision + evidence recovery are stable.",
+        },
+    ]
+    st.dataframe(_safe_rows(rows), use_container_width=True)
+    st.markdown("#### Recommended Implementation Order")
+    st.markdown(
+        """
+1. Attach trace logging to the integrated workflow decision card.
+2. Expand workflow eval from 8 to 20-30 scenarios.
+3. Continue source acquisition for core tools and keep source registry validation strict.
+4. Add read-only subagents for evidence search and report critique.
+5. Only after local workflow is stable, package selected capabilities as MCP tools/server.
+"""
+    )
 
 
 def _render_graph_dashboard_card() -> None:
@@ -1772,6 +2183,22 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
+    st.markdown('<div class="sidebar-section">Workspace</div>', unsafe_allow_html=True)
+    nav_buttons = [
+        ("Chat", "chat"),
+        ("Knowledge Graph", "graph"),
+        ("Evidence & RAG", "evidence_admin"),
+        ("Evaluation", "evaluation_admin"),
+        ("Memory", "memory_admin"),
+        ("Architecture", "architecture_admin"),
+    ]
+    for label, view_name in nav_buttons:
+        marker = "● " if st.session_state.current_view == view_name else ""
+        if st.button(f"{marker}{label}", key=f"nav_{view_name}", width="stretch", type="tertiary"):
+            st.session_state.current_view = view_name
+            st.rerun()
+
+    st.divider()
     _render_graph_dashboard_card()
 
     st.divider()
@@ -1819,6 +2246,11 @@ with st.sidebar:
             help="只有关闭 Offline LLM mode 后才可启用。",
         )
         show_sources = st.checkbox("Show sources under answers", value=True)
+        attach_workflow_card = st.checkbox(
+            "Attach workflow decision card",
+            value=True,
+            help="在正式回答下方附加 plan-only workflow/RAG/source chunk 决策卡。",
+        )
         debug_visible = st.checkbox("Show raw debug state", value=False)
 
     _render_context_status(offline_llm=offline_llm, run_live=run_live)
@@ -1879,6 +2311,13 @@ if st.session_state.current_view == "chat":
                     runtime=message.get("runtime"),
                     show_debug=debug_visible,
                 )
+            if (
+                attach_workflow_card
+                and message.get("state")
+                and isinstance(message.get("state"), dict)
+                and message["state"].get("workflow_decision")
+            ):
+                _render_workflow_decision_card(message["state"]["workflow_decision"])
             if message.get("followups"):
                 message_key = f"history_{st.session_state.session_id}_{message_index}"
                 _render_followups(
@@ -1971,6 +2410,12 @@ if st.session_state.current_view == "chat":
                             uploaded_context=uploaded_context,
                             user_runtime_config=runtime_config,
                         )
+                        if attach_workflow_card:
+                            state["workflow_decision"] = _attach_workflow_decision(
+                                query=query,
+                                state=state,
+                                project_memory=project_memory,
+                            )
                         status.update(label="Analysis complete", state="complete")
                     except Exception as exc:
                         state = {
@@ -1997,6 +2442,8 @@ if st.session_state.current_view == "chat":
                 _render_assistant_report(report)
                 if show_sources:
                     _render_sources_and_caveats(state, runtime=elapsed, show_debug=debug_visible)
+                if attach_workflow_card and state.get("workflow_decision"):
+                    _render_workflow_decision_card(state["workflow_decision"])
                 live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
                 _render_followups(followups, key_prefix=live_key, source_query=query)
 
@@ -2031,3 +2478,11 @@ if st.session_state.current_view == "chat":
         )
 elif st.session_state.current_view == "graph":
     _render_knowledge_graph_panel()
+elif st.session_state.current_view == "evidence_admin":
+    _render_evidence_admin_panel()
+elif st.session_state.current_view == "evaluation_admin":
+    _render_evaluation_admin_panel()
+elif st.session_state.current_view == "memory_admin":
+    _render_memory_admin_panel()
+elif st.session_state.current_view == "architecture_admin":
+    _render_architecture_admin_panel()

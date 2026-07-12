@@ -1,6 +1,6 @@
 # scKG-Atlas Agent
 
-scKG-Atlas Agent is an evidence-governed recommendation and workflow prototype for single-cell, spatial, and multi-omics tool selection. It is not meant to behave like an unconstrained chatbot. Its core job is to convert a research request into structured constraints, retrieve only governed evidence, rank cautiously, expose missing evidence, and prevent unsupported scientific claims from entering the final report.
+scKG-Atlas Agent is currently an evidence-governed recommendation and workflow prototype for single-cell, spatial, and multi-omics tool selection. The active 2.0 roadmap is transforming it into an evidence-grounded executable Agent that can profile AnnData, compile tool contracts into runnable plans, validate bounded probe runs, repair permitted failures, and package reproducible outputs. See `docs/DEV_SPEC_2.0.md` for the implementation baseline.
 
 The current system combines:
 
@@ -121,6 +121,13 @@ eval/
   gold_*.jsonl                    Gold query sets.
 
 docs/
+  DEV_SPEC_scKG.md                Frozen English project-level specification reference.
+  DEV_SPEC_scKG_CN.md             Frozen 1.x Chinese architecture and evolution record.
+  DEV_SPEC_2.0.md                 Active Chinese specification for the executable Agent transition.
+  status/PROJECT_STATUS_2.0.md     Current implementation, environment, test, and blocker snapshot.
+  eval/RESEARCH_EVAL_PROTOCOL.md  Research hypotheses, baselines, anti-leakage, and metrics.
+  security/EXECUTION_SECURITY_MODEL.md Application-level executor threat model and limits.
+  figures/                        Versioned Graphviz sources and exported SVG/PDF/PNG figures.
   schema.md                       Graph and evidence governance schema.
   evidence_curation_verification.md Candidate curation verification notes.
   migration_eval_protocol_*.md    Frozen migration evaluation protocols.

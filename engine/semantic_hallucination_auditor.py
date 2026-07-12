@@ -16,6 +16,7 @@ from core.models import (
 
 
 SEVERITY_ORDER = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+MAIN_BENCHMARK_METRICS = {"benchmark_rank", "benchmark_score"}
 
 COMMON_TOOL_ALIASES = {
     "cellrank": "CellRank",
@@ -337,7 +338,6 @@ class _EvidenceSummary:
             source_kind = str(snippet.get("source_kind") or "")
             if source_kind == "benchmark":
                 source_types.add("benchmark")
-                metric_names.add("benchmark_result")
             if source_kind == "publication":
                 source_types.add("paper")
                 metric_names.add("paper_support")
@@ -362,11 +362,7 @@ class _EvidenceSummary:
 
     @property
     def has_benchmark(self) -> bool:
-        return (
-            "benchmark" in self.source_types
-            or any(name.startswith("benchmark") for name in self.metric_names)
-            or bool({"benchmark_rank", "benchmark_score", "benchmark_result"} & self.metric_names)
-        )
+        return bool(MAIN_BENCHMARK_METRICS & self.metric_names)
 
     @property
     def has_paper(self) -> bool:
@@ -509,7 +505,7 @@ def _audit_benchmark(
             issue_type="unsupported_benchmark_claim",
             severity="critical",
             sentence=sentence,
-            expected_evidence="benchmark evidence with benchmark_rank, benchmark_score, or benchmark_result",
+            expected_evidence="numeric benchmark evidence with benchmark_rank or benchmark_score",
             found_evidence=sorted(evidence.metric_names),
             suggestion="Downgrade the benchmark wording or attach benchmark evidence before making comparative claims.",
         )

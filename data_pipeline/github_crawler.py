@@ -1,3 +1,4 @@
+import base64
 import re
 import os
 import time
@@ -13,6 +14,7 @@ class GitHubCrawler:
     def __init__(self):
         self.headers = {
             "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "scKG-Agent evidence source crawler; local-research-use",
         }
         token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
         if token:
@@ -69,6 +71,62 @@ class GitHubCrawler:
                 
         except Exception as e:
             return {"error": f"网络异常: {str(e)}"}
+
+    def fetch_readme_text(self, url: str, timeout: int = 15) -> Dict:
+        """Fetch README markdown/text for a GitHub repository URL.
+
+        README text is source-bound evidence discovery material. It is not formal
+        evidence and must not promote TSV rows or recommendation support by itself.
+        """
+        repo_path = self.extract_repo_path(url)
+        if not repo_path:
+            return {"error": f"无法从 {url} 解析出仓库路径"}
+
+        api_url = f"https://api.github.com/repos/{repo_path}/readme"
+        try:
+            response = requests.get(api_url, headers=self.headers, timeout=timeout)
+            if response.status_code == 200:
+                data = response.json()
+                text = decode_github_readme_content(data)
+                if not text and data.get("download_url"):
+                    raw_response = requests.get(
+                        str(data["download_url"]),
+                        headers={"User-Agent": self.headers.get("User-Agent", "")},
+                        timeout=timeout,
+                    )
+                    if raw_response.status_code == 200:
+                        text = raw_response.text
+                if not text:
+                    return {"error": "README 内容为空或无法解码"}
+                return {
+                    "repo_full_name": data.get("repository", {}).get("full_name") or repo_path,
+                    "readme_name": data.get("name", "README"),
+                    "readme_path": data.get("path", "README"),
+                    "source_url": data.get("html_url") or f"https://github.com/{repo_path}",
+                    "download_url": data.get("download_url", ""),
+                    "sha": data.get("sha", ""),
+                    "text": text,
+                }
+            if response.status_code == 403:
+                return {"error": "API 请求频率超限！请配置 GitHub Token。"}
+            if response.status_code == 404:
+                return {"error": "仓库 README 不存在，可能项目没有 README 或仓库已迁移。"}
+            return {"error": f"README 请求失败，状态码 {response.status_code}"}
+        except Exception as e:
+            return {"error": f"网络异常: {str(e)}"}
+
+
+def decode_github_readme_content(data: Dict) -> str:
+    content = data.get("content") or ""
+    if not content:
+        return ""
+    if data.get("encoding") == "base64":
+        try:
+            compact = "".join(str(content).split())
+            return base64.b64decode(compact).decode("utf-8", errors="replace")
+        except Exception:
+            return ""
+    return str(content)
 
 
 def maintenance_status(pushed_at: Optional[str], now: Optional[datetime] = None) -> str:

@@ -1,0 +1,157 @@
+{
+  "contract_id": "scdblfinder:not_installed",
+  "contract_version": "0.1.0-phase5a-blocked",
+  "tool_name": "scDblFinder",
+  "tool_version": "not_installed",
+  "task": "doublet_detection",
+  "language": "r",
+  "environment_id": "scDblFinder-R",
+  "wrapper_id": "scdblfinder_not_installed",
+  "input_object": "AnnData",
+  "required_fields": [
+    "raw non-negative integer count matrix",
+    "stable cell identifiers"
+  ],
+  "optional_fields": [
+    "synthetic ground-truth label for qualification metrics"
+  ],
+  "preconditions": [
+    {
+      "rule_id": "scdblfinder_counts_required",
+      "field": "selected_count_source",
+      "operator": "matrix_state",
+      "expected": "raw_counts",
+      "blocking": true,
+      "message": "scDblFinder requires a deterministically identified raw count matrix."
+    },
+    {
+      "rule_id": "scdblfinder_nonempty_matrix",
+      "field": "matrix_shape",
+      "operator": "gte",
+      "expected": 2,
+      "blocking": true,
+      "message": "The selected count matrix must contain at least two cells and genes."
+    }
+  ],
+  "not_supported": [
+    "log-normalized or scaled input without raw counts",
+    "negative, non-finite, or non-integer counts",
+    "arbitrary R expressions or user-provided commands",
+    "user data in Phase 5A qualification"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "scdblfinder_doublet_results",
+      "artifact_type": "cell_annotation_table",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "scdblfinder_result_schema_v1"
+    },
+    {
+      "artifact_id": "scdblfinder_parameter_snapshot",
+      "artifact_type": "parameter_snapshot",
+      "format": "json",
+      "required": true,
+      "validator_id": "parameter_snapshot_schema_v1"
+    },
+    {
+      "artifact_id": "scdblfinder_result_metadata",
+      "artifact_type": "execution_metadata",
+      "format": "json",
+      "required": true,
+      "validator_id": "scdblfinder_result_metadata_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "dbr": {"type": "number", "minimum": 0.001, "maximum": 0.5},
+      "clusters": {"type": "boolean", "enum": [false]},
+      "n_cores": {"type": "integer", "minimum": 1, "maximum": 4},
+      "random_state": {"type": "integer", "minimum": 0, "maximum": 2147483647}
+    }
+  },
+  "default_parameters": {
+    "dbr": 0.1,
+    "clusters": false,
+    "n_cores": 1,
+    "random_state": 0
+  },
+  "paper_parameters": [
+    {
+      "parameter_name": "input_matrix",
+      "value_or_range": "raw UMI counts represented as genes by cells in SingleCellExperiment",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "https://bioconductor.org/packages/scDblFinder",
+      "source_span": "package landing page and vignette input sections",
+      "tool_version": null,
+      "applicable_scope": "Phase 5A contract design only",
+      "limitations": [
+        "No local scDblFinder runtime is installed, so defaults and signatures remain unqualified."
+      ]
+    }
+  ],
+  "searchable_parameters": {
+    "dbr": {"minimum": 0.02, "maximum": 0.2},
+    "n_cores": {"minimum": 1, "maximum": 4}
+  },
+  "failure_checks": [
+    "rscript_missing",
+    "required_r_package_missing",
+    "missing_count_source",
+    "non_finite_or_negative_counts",
+    "cell_id_order_mismatch",
+    "output_missing",
+    "score_non_finite_or_out_of_range",
+    "label_invalid",
+    "input_or_artifact_hash_mismatch"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "cell_id_order_match",
+    "synthetic_engineering_auprc",
+    "synthetic_engineering_precision",
+    "synthetic_engineering_recall",
+    "synthetic_engineering_f1",
+    "runtime_seconds",
+    "peak_memory_mb"
+  ],
+  "resource_requirements": {
+    "cpu_only_supported": true,
+    "gpu_required": false,
+    "qualification_max_cells": 1000,
+    "qualification_timeout_seconds": 180,
+    "qualification_max_cores": 4,
+    "memory_enforcement": "monitor_only",
+    "runtime_boundary": "qualification fixture only",
+    "memory_boundary": "peak RSS observation only"
+  },
+  "source_refs": [
+    "https://bioconductor.org/packages/scDblFinder",
+    "https://bioconductor.org/packages/release/bioc/vignettes/scDblFinder/inst/doc/scDblFinder.html"
+  ],
+  "execution_critical_review": {
+    "reviewer": "codex_environment_check_2026_07_12",
+    "review_scope": [
+      "raw-count input boundary",
+      "fixed adapter and R wrapper schema",
+      "blocked environment state"
+    ],
+    "sources": [
+      "official Bioconductor package page",
+      "official scDblFinder vignette",
+      "read-only local Conda environment scan"
+    ],
+    "claim_boundary": "Contract scaffold only; no installed runtime version or execution qualification is claimed."
+  },
+  "schema_status": "valid",
+  "source_review_status": "partial",
+  "execution_critical_fields_reviewed": false,
+  "wrapper_status": "implemented",
+  "environment_status": "missing",
+  "execution_status": "untested",
+  "scientific_validation_status": "not_evaluated",
+  "enabled_for_execution": false
+}

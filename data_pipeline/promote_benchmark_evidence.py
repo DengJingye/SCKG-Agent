@@ -110,8 +110,10 @@ def validate_promotable(review: Dict[str, str]) -> None:
     ]
     if missing:
         raise ValueError(f"{benchmark_id} is missing required formal fields: {','.join(missing)}")
-    if not any((review.get(field) or "").strip() for field in RESULT_FIELDS):
-        raise ValueError(f"{benchmark_id} is missing result evidence: rank, score, normalized_score, or result_text")
+    if not any((review.get(field) or "").strip() for field in ["rank", "score", "normalized_score"]):
+        raise ValueError(
+            f"{benchmark_id} is missing numeric result evidence: rank, score, or normalized_score"
+        )
     if not any((review.get(field) or "").strip() for field in COMPARISON_FIELDS):
         raise ValueError(f"{benchmark_id} is missing comparison context: n_tools_compared or rank_scope")
     if normalize_bool(review.get("recommendation_use_allowed_now", "")) != "true":
@@ -149,9 +151,7 @@ def formal_row(review: Dict[str, str]) -> Dict[str, str]:
             "kg_version": review.get("kg_version", "") or "v0.1",
             "notes": append_note(
                 review.get("notes", ""),
-                "formal_benchmark_ingest_from_human_review; qualitative_result_allowed"
-                if not any((review.get(field) or "").strip() for field in ["rank", "score", "normalized_score"])
-                else "formal_benchmark_ingest_from_human_review",
+                "formal_benchmark_ingest_from_human_review",
             ),
         }
     )

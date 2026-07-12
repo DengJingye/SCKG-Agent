@@ -39,6 +39,19 @@ PredictionExecutionMode = Literal[
     "full_kg_pipeline",
 ]
 ToolCallStatus = Literal["ok", "error", "blocked"]
+MemoryEventType = Literal[
+    "user_preference",
+    "project_state",
+    "failure_lesson",
+    "evidence_gap",
+    "skill_candidate",
+]
+SubagentTaskType = Literal[
+    "evidence_search",
+    "benchmark_span_check",
+    "workflow_compatibility_check",
+    "report_critique",
+]
 
 
 class ScientificBaseModel(BaseModel):
@@ -387,6 +400,81 @@ class AgentRunTrace(ScientificBaseModel):
                 if event.status in {"error", "blocked"}
             ],
         }
+
+
+class MemoryEvent(ScientificBaseModel):
+    """Private operational memory. It cannot become scientific evidence."""
+
+    event_id: str
+    event_type: MemoryEventType
+    key: str
+    value: Any
+    source: str = "agent_reflection"
+    trace_id: str = ""
+    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    can_affect_scientific_authority: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class SkillCandidate(ScientificBaseModel):
+    """Review-only procedural memory candidate."""
+
+    candidate_id: str
+    title: str
+    trigger: str
+    proposed_steps: List[str] = Field(default_factory=list)
+    evidence_boundary: str = (
+        "Skill candidates are review-only and cannot update formal evidence, "
+        "trusted_core claims, or recommendation ranking."
+    )
+    source_trace_id: str = ""
+    status: str = "review_needed"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ReflectionEvent(ScientificBaseModel):
+    """Hermes-like reflect output for one Parent Agent run."""
+
+    reflection_id: str
+    trace_id: str
+    user_query: str = ""
+    learned_facts: List[str] = Field(default_factory=list)
+    failure_lessons: List[str] = Field(default_factory=list)
+    memory_events: List[MemoryEvent] = Field(default_factory=list)
+    skill_candidates: List[SkillCandidate] = Field(default_factory=list)
+    missing_evidence: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    can_affect_scientific_authority: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class SubagentRequest(ScientificBaseModel):
+    """Read-only specialist request controlled by the Parent Agent."""
+
+    request_id: str
+    parent_trace_id: str
+    task_type: SubagentTaskType
+    query: str
+    depth: int = Field(default=1, ge=1, le=2)
+    max_tool_calls: int = Field(default=8, ge=1, le=8)
+    candidate_context: Dict[str, Any] = Field(default_factory=dict)
+
+
+class SubagentResult(ScientificBaseModel):
+    """Subagent output. Parent Agent decides whether to use it."""
+
+    request_id: str
+    parent_trace_id: str
+    task_type: SubagentTaskType
+    status: ToolCallStatus = "blocked"
+    candidate_context: Dict[str, Any] = Field(default_factory=dict)
+    warnings: List[str] = Field(default_factory=list)
+    depth: int = Field(default=1, ge=1, le=2)
+    tool_call_count: int = Field(default=0, ge=0)
+    can_update_recommendation_rank: bool = False
+    can_update_formal_evidence: bool = False
+    can_update_trusted_evidence: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class AgentRunEvalMetric(ScientificBaseModel):

@@ -7,6 +7,11 @@ from typing import Any, Dict, Iterable, List, Optional
 
 from core.models import EvidenceBundle, MigrationPath, derived_evidence
 from core.settings import get_settings
+from engine.algorithm_representation_v2 import (
+    load_tool_representations,
+    norm_name as _rep_norm_name,
+    score_representation_for_migration,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -613,6 +618,7 @@ def build_migration_hypotheses(
 ) -> List[MigrationPath]:
     profiles = _load_profiles()
     reviews = _load_reviews()
+    representations = load_tool_representations()
     target_task = constraints.get("task", "Unknown")
     target_modality = constraints.get("modality", "Unknown")
     expected = list(expected_source_tools or [])
@@ -648,10 +654,13 @@ def build_migration_hypotheses(
             continue
 
         mechanism_score = _mechanism_query_score(profile, review, constraints)
+        rep = representations.get(_rep_norm_name(profile.tool_name))
+        rep_score = score_representation_for_migration(rep, constraints) if rep else {}
         vector_similarity = max(
             _profile_mechanism_score(profile, constraints),
             base_relevance,
             mechanism_score,
+            float(rep_score.get("algorithm_mechanism_similarity") or 0.0),
         )
         graph_jaccard = 0.0
         if review and _normalize_text(review.graph_jaccard) not in {"", "pending"}:
@@ -665,17 +674,36 @@ def build_migration_hypotheses(
                 graph_jaccard = 0.22
             else:
                 graph_jaccard = 0.18
+        if rep_score:
+            graph_jaccard = max(graph_jaccard, float(rep_score.get("graph_neighborhood_overlap") or 0.0))
         io_compatibility = _to_float(
             review.io_compatibility if review else None,
             default=_profile_i_o_compatibility(profile, constraints),
         )
+        if rep_score:
+            io_compatibility = max(io_compatibility, float(rep_score.get("input_output_compatibility") or 0.0))
         evidence_support = 0.65 if profile.review_status == "profile_validated" else 0.35
+        if rep_score:
+            evidence_support = max(
+                evidence_support,
+                min(
+                    0.85,
+                    0.25
+                    + 0.35 * float(rep_score.get("source_coverage_score") or 0.0)
+                    + 0.25 * float(rep_score.get("empirical_support") or 0.0),
+                ),
+            )
         novelty_relevance = _profile_novelty_relevance(review) if review else max(
             0.65 if profile.tool_name in expected else 0.25,
             min(0.75, 0.25 + 0.35 * transfer_prior + 0.25 * mechanism_score),
         )
         risk_level = review.risk_level if review else "exploratory"
         risk_penalty = _risk_penalty(risk_level, profile)
+        if rep_score:
+            risk_penalty = min(
+                0.45,
+                risk_penalty + 0.35 * float(rep_score.get("known_blocker_penalty") or 0.0),
+            )
         score = (
             0.35 * vector_similarity
             + 0.25 * graph_jaccard
@@ -685,25 +713,47 @@ def build_migration_hypotheses(
             - risk_penalty
         )
         score = max(0.0, min(1.0, score))
-        evidence = EvidenceBundle(
-            items=[
+        evidence_items = [
+            derived_evidence(
+                evidence_id=f"migration:{tool_name}:{target_task}:profile",
+                metric_name="migration_plausibility_score",
+                metric_value=score,
+                extraction_method="engine.migration_hypothesis_engine.build_migration_hypotheses",
+                source_title=f"Migration hypothesis for {tool_name} -> {target_task}",
+                confidence=0.55,
+                kg_version=get_settings().kg_version,
+                graph_layer="experimental",
+                evidence_strength="exploratory",
+                use_for=["retrieval"],
+            )
+        ]
+        if rep_score:
+            evidence_items.append(
                 derived_evidence(
-                    evidence_id=f"migration:{tool_name}:{target_task}:profile",
-                    metric_name="migration_plausibility_score",
-                    metric_value=score,
-                    extraction_method="engine.migration_hypothesis_engine.build_migration_hypotheses",
-                    source_title=f"Migration hypothesis for {tool_name} -> {target_task}",
-                    confidence=0.55,
+                    evidence_id=f"migration:{tool_name}:{target_task}:algorithm_representation_v2",
+                    metric_name="algorithm_representation_v2_migration_similarity",
+                    metric_value=rep_score,
+                    extraction_method="engine.algorithm_representation_v2.score_representation_for_migration",
+                    source_title=f"ToolRepresentationV2 exploratory signal for {tool_name}",
+                    confidence=0.45,
                     kg_version=get_settings().kg_version,
                     graph_layer="experimental",
                     evidence_strength="exploratory",
                     use_for=["retrieval"],
                 )
-            ],
-            missing_evidence=[
-                "structured_algorithm_compatibility" if graph_jaccard == 0 else "",
-                "full_benchmark_validation",
-            ],
+            )
+        missing_evidence = [
+            "structured_algorithm_compatibility" if graph_jaccard == 0 else "",
+            "full_benchmark_validation",
+        ]
+        if rep_score:
+            missing_evidence.extend(
+                flag for flag in rep_score.get("quality_flags", [])
+                if flag in {"low_source_coverage", "dense_embedding_missing", "structured_profile_missing"}
+            )
+        evidence = EvidenceBundle(
+            items=evidence_items,
+            missing_evidence=list(missing_evidence),
         )
         evidence.missing_evidence = [item for item in evidence.missing_evidence if item]
         ranked.append(
@@ -717,6 +767,12 @@ def build_migration_hypotheses(
                 limitations=[
                     profile.known_limitations,
                     review.reviewer_notes if review else "Profile-only exploratory candidate; no migration-vector review packet row yet.",
+                    (
+                        "Algorithm Representation v2 signal is exploratory only; "
+                        f"quality_flags={','.join(rep_score.get('quality_flags', []))}"
+                    )
+                    if rep_score
+                    else "No ToolRepresentationV2 record found; legacy/profile fallback only.",
                 ],
                 source_task=profile.supported_task,
                 target_task=target_task,

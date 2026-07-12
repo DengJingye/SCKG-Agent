@@ -1,3 +1,4 @@
+import os
 import time
 from urllib.parse import urlparse, urlunparse
 
@@ -25,6 +26,13 @@ class Neo4jClient:
 
     def connect(self):
         """建立数据库连接"""
+        if _bool_from_env("SCKG_FORCE_OFFLINE_GRAPH", False):
+            if get_settings().offline_graph_fallback:
+                logger.info("SCKG_FORCE_OFFLINE_GRAPH=true; using offline graph store.")
+                self.offline_store = OfflineGraphStore()
+                self.driver = None
+                return
+            raise RuntimeError("SCKG_FORCE_OFFLINE_GRAPH=true requires OFFLINE_GRAPH_FALLBACK=true")
         attempts = 3
         last_error = None
         total_attempts = 0
@@ -235,3 +243,10 @@ def _connection_uri_candidates(uri: str) -> list[str]:
     if direct_uri == uri:
         return [uri]
     return [uri, direct_uri]
+
+
+def _bool_from_env(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}

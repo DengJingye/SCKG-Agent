@@ -54,6 +54,10 @@ def normalize_name(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", value.lower())
 
 
+def normalize_space(value: str) -> str:
+    return " ".join((value or "").split())
+
+
 def evidence_safe_id(value: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9_.:-]+", "_", value.strip())
     return cleaned.strip("_") or "unknown"
@@ -225,33 +229,30 @@ def build_publication_evidence(
             continue
         if not is_approved_for_ingest(row):
             continue
-        citations = parse_number(row.get("citations"))
-        metric_name = "citations" if citations is not None else "paper_support"
-        metric_value: Any = citations if citations is not None else "present"
         identifier = (
             row.get("publication_id")
             or row.get("pmid")
             or row.get("doi")
             or row.get("title")
-            or metric_name
+            or "paper_support"
         )
         paper_url = (
             clean_optional(row.get("paper_url"))
             or clean_optional(row.get("source_url"))
             or doi_url(row.get("doi"))
         )
-        graph_trust, graph_layer, use_for = trust_policy(row)
+        graph_trust, graph_layer, use_for = publication_trust_policy(row)
         evidence_items.append(
             Evidence(
                 evidence_id=f"paper:{evidence_safe_id(tool_name)}:{evidence_safe_id(identifier)}",
                 source_type="paper",
                 source_url=paper_url,
                 source_title=clean_optional(row.get("title")) or f"Publication evidence for {tool_name}",
-                metric_name=metric_name,
-                metric_value=metric_value,
-                metric_unit="count" if citations is not None else "boolean",
+                metric_name="paper_support",
+                metric_value="present",
+                metric_unit="boolean",
                 dataset_scope=publication_dataset_scope(row),
-                evidence_strength="strong" if citations is not None else "medium",
+                evidence_strength="medium",
                 confidence=parse_float(row.get("confidence"), 0.9),
                 trust_level=graph_trust,
                 graph_layer=graph_layer,
@@ -268,6 +269,38 @@ def build_publication_evidence(
                 audit_support_level=clean_optional(row.get("audit_support_level")) or "",
             )
         )
+        citations = parse_number(row.get("citations"))
+        if citations is not None:
+            evidence_items.append(
+                Evidence(
+                    evidence_id=(
+                        f"paper_citations:{evidence_safe_id(tool_name)}:"
+                        f"{evidence_safe_id(identifier)}"
+                    ),
+                    source_type="paper",
+                    source_url=paper_url,
+                    source_title=clean_optional(row.get("title")) or f"Publication citations for {tool_name}",
+                    metric_name="paper_citations",
+                    metric_value=citations,
+                    metric_unit="count",
+                    dataset_scope=publication_dataset_scope(row),
+                    evidence_strength="medium",
+                    confidence=parse_float(row.get("confidence"), 0.85),
+                    trust_level="source_based",
+                    graph_layer="review_needed",
+                    use_for=["retrieval", "ranking"],
+                    extraction_method=clean_optional(row.get("citation_source"))
+                    or "data_pipeline/evidence_backfill.py:publication_citations",
+                    review_status=review_status(row.get("review_status"), "human_reviewed"),
+                    kg_version=get_settings().kg_version,
+                    human_review_decision=clean_optional(row.get("human_review_decision")) or "",
+                    canonical_scope=clean_optional(row.get("canonical_scope")) or "",
+                    evidence_category=clean_optional(row.get("evidence_category")) or "",
+                    recommendation_eligible=False,
+                    authority_tier=clean_optional(row.get("authority_tier")) or "",
+                    audit_support_level="source_bound_metric_only",
+                )
+            )
     return evidence_items
 
 
@@ -398,16 +431,22 @@ def benchmark_evidence_item(
 
 def benchmark_has_minimum_context(row: Dict[str, str]) -> bool:
     has_context = all(clean_optional(row.get(field)) for field in BENCHMARK_CONTEXT_FIELDS)
-    has_numeric_result = any(parse_number(row.get(field)) is not None for field in BENCHMARK_RESULT_FIELDS)
-    has_qualitative_result = any(clean_optional(row.get(field)) for field in BENCHMARK_QUALITATIVE_RESULT_FIELDS)
-    has_result = has_numeric_result or has_qualitative_result
+    has_result = benchmark_has_numeric_result(row) or any(
+        clean_optional(row.get(field)) for field in BENCHMARK_QUALITATIVE_RESULT_FIELDS
+    )
     has_comparison = any(clean_optional(row.get(field)) for field in BENCHMARK_COMPARISON_FIELDS)
     return has_context and has_result and has_comparison
+
+
+def benchmark_has_numeric_result(row: Dict[str, str]) -> bool:
+    return any(parse_number(row.get(field)) is not None for field in BENCHMARK_RESULT_FIELDS)
 
 
 def benchmark_trust_policy(row: Dict[str, str]) -> tuple[str, str, List[str]]:
     if not benchmark_has_minimum_context(row):
         return "source_based", "review_needed", RETRIEVAL_USE
+    if not benchmark_has_numeric_result(row):
+        return "verified", "trusted_core", RETRIEVAL_USE
     trust = (clean_optional(row.get("trust_level")) or "review_needed").lower()
     if trust == "trusted_core":
         return "verified", "trusted_core", RECOMMENDATION_USE
@@ -501,6 +540,63 @@ def trust_policy(row: Dict[str, str]) -> tuple[str, str, List[str]]:
     if trust == "retrieval_only":
         return "inferred", "experimental", RETRIEVAL_USE
     return "model_extracted", "experimental", RETRIEVAL_USE
+
+
+def publication_trust_policy(row: Dict[str, str]) -> tuple[str, str, List[str]]:
+    if not publication_runtime_recommendation_allowed(row):
+        if (clean_optional(row.get("recommendation_eligible")) or "").lower() in {"false", "no", "0"}:
+            return "verified", "trusted_core", RETRIEVAL_USE
+        return "source_based", "review_needed", RETRIEVAL_USE
+    return "verified", "trusted_core", RECOMMENDATION_USE
+
+
+def publication_runtime_recommendation_allowed(row: Dict[str, str]) -> bool:
+    recommendation_eligible = (clean_optional(row.get("recommendation_eligible")) or "").lower()
+    canonical_scope = (clean_optional(row.get("canonical_scope")) or "").lower()
+    evidence_category = (clean_optional(row.get("evidence_category")) or "").lower()
+    authority_tier = (clean_optional(row.get("authority_tier")) or "").lower()
+    if recommendation_eligible not in {"true", "yes", "1"}:
+        return False
+    if canonical_scope not in RECOMMENDATION_ELIGIBLE_SCOPES:
+        return False
+    if evidence_category not in RECOMMENDATION_ELIGIBLE_CATEGORIES:
+        return False
+    if authority_tier not in RECOMMENDATION_ELIGIBLE_AUTHORITY_TIERS:
+        return False
+    if not publication_is_source_bound(row):
+        return False
+    if publication_has_title_only_claim(row):
+        return False
+    if publication_has_unclear_reviewer(row):
+        return False
+    return True
+
+
+def publication_is_source_bound(row: Dict[str, str]) -> bool:
+    has_identifier = bool(
+        clean_optional(row.get("doi"))
+        or clean_optional(row.get("pmid"))
+        or clean_optional(row.get("arxiv_id"))
+    )
+    has_url = bool(clean_optional(row.get("source_url")) or clean_optional(row.get("paper_url")))
+    has_title = bool(clean_optional(row.get("title")))
+    return has_identifier and has_url and has_title
+
+
+def publication_has_title_only_claim(row: Dict[str, str]) -> bool:
+    claim_text = clean_optional(row.get("claim_text"))
+    claim_span = clean_optional(row.get("claim_span"))
+    title = clean_optional(row.get("title"))
+    if claim_text:
+        return False
+    if not claim_span:
+        return True
+    return normalize_space(claim_span).lower() == normalize_space(title or "").lower()
+
+
+def publication_has_unclear_reviewer(row: Dict[str, str]) -> bool:
+    reviewed_by = (clean_optional(row.get("reviewed_by")) or "").lower()
+    return reviewed_by in {"", "human_review", "gpt", "chatgpt", "ai", "llm"}
 
 
 def publication_dataset_scope(row: Dict[str, str]) -> str:

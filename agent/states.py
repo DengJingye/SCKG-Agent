@@ -29,6 +29,7 @@ class ScKGAgentStateModel(BaseModel):
     project_memory: Dict[str, Any] = Field(default_factory=dict)
     uploaded_context: Dict[str, Any] = Field(default_factory=dict)
     user_runtime_config: Dict[str, Any] = Field(default_factory=dict)
+    kg_diagnostics: Dict[str, Any] = Field(default_factory=dict)
     final_report: str = ""
     hallucination_audit: Dict[str, Any] = Field(default_factory=dict)
     current_step: str = "init"
@@ -64,6 +65,7 @@ class ScKGAgentState(TypedDict):
     project_memory: Dict[str, Any]
     uploaded_context: Dict[str, Any]
     user_runtime_config: Dict[str, Any]
+    kg_diagnostics: Dict[str, Any]
     
     # 6. 最终输出层
     workflow_recommendations: List[Dict[str, Any]]

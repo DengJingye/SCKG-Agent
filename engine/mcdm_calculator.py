@@ -3,50 +3,6 @@ from typing import Any, Dict, List, Optional
 from core.evidence_policy import bundle_main_recommendation_priority
 
 
-QUALITATIVE_BENCHMARK_SUPPORT = 0.6
-SCOPED_QUALITATIVE_BENCHMARK_SUPPORT = 0.45
-CAVEAT_BENCHMARK_SUPPORT = 0.0
-
-POSITIVE_BENCHMARK_TYPES = {
-    "comparative_benchmark",
-    "third_party_comparative_benchmark",
-}
-SCOPED_BENCHMARK_TYPES = {
-    "comparative_interpretability_benchmark",
-}
-CAVEAT_BENCHMARK_TYPES = {
-    "negative_control_and_assumption_benchmark",
-    "caveat_benchmark",
-    "assumption_benchmark",
-}
-CAVEAT_TEXT_MARKERS = {
-    "negative-control",
-    "negative control",
-    "caveat evidence",
-    "critique",
-    "must include caveats",
-    "not positive ranking evidence",
-    "not as a positive performance ranking",
-    "fails",
-    "reverse known",
-    "reverse trajectories",
-    "assumption",
-    "sensitivity",
-}
-SCOPED_TEXT_MARKERS = {
-    "bounded",
-    "context dependent",
-    "context-dependent",
-    "not be described as the overall best",
-    "not overall best",
-    "not universal superiority",
-    "do not claim unique best",
-    "alongside",
-    "moderate",
-    "minimal causal regulatory logic",
-}
-
-
 class MCDMCalculator:
     """
     多准则决策 (MCDM) 引擎
@@ -78,75 +34,9 @@ class MCDMCalculator:
         return (value - min_val) / (max_val - min_val)
 
     def _component_weight(self, name: str) -> float:
-        if name in {
-            "benchmark_score",
-            "qualitative_benchmark_support",
-            "scoped_qualitative_benchmark_support",
-            "caveat_benchmark_support",
-        }:
+        if name == "benchmark_score":
             return self.weights["benchmark_rank"]
         return self.weights[name]
-
-    def _benchmark_result_items(self, evidence_bundle: Any) -> List[Any]:
-        if evidence_bundle is None:
-            return []
-        return [
-            item
-            for item in (getattr(evidence_bundle, "items", []) or [])
-            if getattr(item, "metric_name", "") == "benchmark_result"
-            and getattr(item, "can_support_recommendation", False)
-        ]
-
-    def _qualitative_benchmark_support(
-        self,
-        evidence_bundle: Any,
-    ) -> tuple[Optional[str], Optional[float], List[str]]:
-        result_items = self._benchmark_result_items(evidence_bundle)
-        if not result_items:
-            return None, None, ["benchmark"]
-
-        benchmark_types = {
-            str(getattr(item, "benchmark_type", "") or "").strip().lower()
-            for item in result_items
-            if str(getattr(item, "benchmark_type", "") or "").strip()
-        }
-        result_text = " ".join(
-            str(getattr(item, "metric_value", "") or "")
-            for item in result_items
-        ).lower()
-        source_text = " ".join(
-            str(getattr(item, "source_title", "") or "")
-            for item in result_items
-        ).lower()
-        combined_text = f"{source_text} {result_text}"
-
-        if benchmark_types & CAVEAT_BENCHMARK_TYPES or any(
-            marker in combined_text for marker in CAVEAT_TEXT_MARKERS
-        ):
-            return (
-                "caveat_benchmark_support",
-                CAVEAT_BENCHMARK_SUPPORT,
-                ["numeric_benchmark_rank", "positive_benchmark_evidence"],
-            )
-        if benchmark_types & SCOPED_BENCHMARK_TYPES or any(
-            marker in combined_text for marker in SCOPED_TEXT_MARKERS
-        ):
-            return (
-                "scoped_qualitative_benchmark_support",
-                SCOPED_QUALITATIVE_BENCHMARK_SUPPORT,
-                ["numeric_benchmark_rank"],
-            )
-        if benchmark_types & POSITIVE_BENCHMARK_TYPES:
-            return (
-                "qualitative_benchmark_support",
-                QUALITATIVE_BENCHMARK_SUPPORT,
-                ["numeric_benchmark_rank"],
-            )
-        return (
-            "scoped_qualitative_benchmark_support",
-            SCOPED_QUALITATIVE_BENCHMARK_SUPPORT,
-            ["numeric_benchmark_rank", "benchmark_type"],
-        )
 
     def _numeric_evidence_value(self, evidence_bundle: Any, metric_names: set[str]) -> Optional[float]:
         if evidence_bundle is None:
@@ -205,7 +95,7 @@ class MCDMCalculator:
         score = self._numeric_evidence_value(evidence_bundle, {"benchmark_score"})
         if score is not None:
             return ("benchmark_score", score, missing)
-        return self._qualitative_benchmark_support(evidence_bundle)
+        return None, None, ["numeric_benchmark"]
 
     def calculate_scores(self, tools_metrics: List[Dict]) -> List[Dict]:
         """

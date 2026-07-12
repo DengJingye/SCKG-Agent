@@ -90,7 +90,17 @@ class IsomorphismAnalyzer:
             tools_scored.append({
                 "tool_name": row["tool_name"],
                 "features": row["features"],
-                "similarity": float(cos_sim)
+                "similarity": float(cos_sim),
+                "representation_source": "legacy_algorithm_embedding",
+                "legacy_embedding_only": True,
+                "recommendation_grade": False,
+                "can_rank_mcdm": False,
+                "allowed_use": ["candidate_recall", "visualization", "clustering_exploration"],
+                "forbidden_use": ["recommendation", "formal_evidence_promotion", "migration_validity_claim"],
+                "claim_boundary": (
+                    "Exploratory legacy embedding recall only; not source-bound evidence "
+                    "and not a migration validity claim."
+                ),
             })
 
         # 4. 按相似度倒序排列，返回 Top K

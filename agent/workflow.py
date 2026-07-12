@@ -1,5 +1,6 @@
 # agent/workflow.py
 import json
+from collections import Counter
 from typing import Any, List
 
 from langgraph.graph import StateGraph, END
@@ -130,11 +131,17 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
     candidates = []
     tool_candidates = []
     retrieval_results = []
+    raw_candidate_rows = []
+    candidate_diagnostics = []
+    blocked_reason_counts = Counter()
+    kg_provider = "not_queried"
+    kg_error = ""
     
     # 2. 如果条件合法，就去查 Neo4j
     if task != "Unknown" and modality != "Unknown":
         try:
             client = Neo4jClient()
+            kg_provider = "offline_graph" if client.offline_store is not None else "neo4j"
             modality_queries = [modality]
             # 兼容旧图谱：早期数据可能把 Nanopore/PacBio 这类平台写进 Modality。
             if platform != "Unknown" and platform not in modality_queries:
@@ -177,6 +184,7 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
                 rows_by_tool[tool_name]["matched_tasks"].extend(tool_task_hints(tool_name))
                 rows_by_tool[tool_name]["retrieval_sources"].append("task_hint")
             results = list(rows_by_tool.values())
+            raw_candidate_rows = results
             raw_candidates = [record["tool_name"] for record in results]
             evidence_by_tool = client.fetch_tool_evidence(raw_candidates)
             client.close()
@@ -184,9 +192,27 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
             # 把查到的结果组装成列表
             for record in results:
                 tool_name = record["tool_name"]
+                diagnostic = {
+                    "tool_name": tool_name,
+                    "matched_tasks": sorted(set(record.get("matched_tasks", []))),
+                    "matched_modalities": sorted(set(record.get("matched_modalities", []))),
+                    "retrieval_sources": sorted(set(record.get("retrieval_sources", []))),
+                    "gate_status": "blocked",
+                    "gate_reasons": [],
+                    "task_alignment": 0.0,
+                    "evidence_metric_names": [],
+                    "evidence_source_types": [],
+                    "evidence_graph_layers": [],
+                }
                 if _is_blocked_main_tool(tool_name, task, user_query):
+                    diagnostic["gate_reasons"] = ["blocked_main_tool_policy"]
+                    blocked_reason_counts.update(diagnostic["gate_reasons"])
+                    candidate_diagnostics.append(diagnostic)
                     continue
                 evidence_items = list(evidence_by_tool.get(tool_name, []))
+                diagnostic["evidence_metric_names"] = sorted({item.metric_name for item in evidence_items})
+                diagnostic["evidence_source_types"] = sorted({item.source_type for item in evidence_items})
+                diagnostic["evidence_graph_layers"] = sorted({item.graph_layer for item in evidence_items})
                 alignment = _candidate_task_alignment(
                     task_terms=task_terms,
                     tool_name=tool_name,
@@ -197,7 +223,11 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
                     ),
                     evidence_items=evidence_items,
                 )
+                diagnostic["task_alignment"] = round(float(alignment), 3)
                 if not _passes_task_specific_gate(task, alignment, evidence_items):
+                    diagnostic["gate_reasons"] = ["task_specific_gate_failed"]
+                    blocked_reason_counts.update(diagnostic["gate_reasons"])
+                    candidate_diagnostics.append(diagnostic)
                     continue
                 evidence = derived_evidence(
                     evidence_id=f"hard_constraint:{tool_name}:{task}:{modality}",
@@ -231,8 +261,13 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
                     items=[evidence, alignment_evidence, *evidence_items],
                 )
                 if not has_main_recommendation_evidence(evidence_bundle):
+                    diagnostic["gate_reasons"] = _main_gate_block_reasons(evidence_items, evidence_bundle)
+                    blocked_reason_counts.update(diagnostic["gate_reasons"])
+                    candidate_diagnostics.append(diagnostic)
                     continue
                 candidates.append(tool_name)
+                diagnostic["gate_status"] = "admitted"
+                candidate_diagnostics.append(diagnostic)
                 tool_candidates.append(
                     ToolCandidate(
                         tool_name=tool_name,
@@ -264,8 +299,11 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
                 print("   ⚠️ 图谱中未找到可进入主推荐的 trusted_core 工具。")
         except Exception as e:
             print(f"   ❌ Neo4j 查询异常: {e}")
+            kg_error = f"{type(e).__name__}: {e}"
+            blocked_reason_counts.update(["kg_query_error"])
     else:
         print("   ⚠️ 提取的意图信息不完整，无法进行图谱匹配。")
+        blocked_reason_counts.update(["incomplete_constraints"])
         
     # 3. 将查到的候选工具更新到状态总线中
     return {
@@ -288,7 +326,48 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
             reverse=True,
         )[:MAIN_RECOMMENDATION_TOP_K],
         "retrieval_results": retrieval_results,
+        "kg_diagnostics": {
+            "provider": kg_provider,
+            "task": task,
+            "task_family": family,
+            "task_terms": task_terms,
+            "modality": modality,
+            "platform": platform,
+            "raw_candidate_count": len(raw_candidates),
+            "admitted_candidate_count": len(candidates),
+            "raw_candidate_tools": raw_candidates[:50],
+            "admitted_candidate_tools": candidates[:50],
+            "blocked_reason_counts": dict(blocked_reason_counts),
+            "candidate_diagnostics": candidate_diagnostics[:50],
+            "raw_candidate_row_count": len(raw_candidate_rows),
+            "error": kg_error,
+        },
     }
+
+
+def _main_gate_block_reasons(evidence_items: List[Any], bundle: EvidenceBundle) -> List[str]:
+    reasons = []
+    audit = audit_evidence(bundle)
+    metric_names = {item.metric_name for item in evidence_items}
+    if not evidence_items:
+        reasons.append("no_formal_evidence")
+    if not audit.recommendation_evidence:
+        reasons.append("no_recommendation_grade_evidence")
+    if audit.recommendation_evidence and not audit.main_recommendation_evidence:
+        reasons.append("recommendation_evidence_not_main_gate_eligible")
+    if "benchmark_result" in metric_names and not {"benchmark_rank", "benchmark_score"} & metric_names:
+        reasons.append("qualitative_benchmark_only")
+    if (
+        {"citations", "paper_citations"} & metric_names
+        and "paper_support" not in metric_names
+    ):
+        reasons.append("citation_only_publication_signal")
+    if "paper_support" in metric_names and not any(
+        item.metric_name == "paper_support" and item in audit.main_recommendation_evidence
+        for item in evidence_items
+    ):
+        reasons.append("publication_not_source_bound_or_not_canonical")
+    return reasons or ["no_main_trusted_core_evidence"]
 
 def mcdm_scoring_node(state: ScKGAgentState) -> ScKGAgentState:
     """节点 3 (分支 A)：软约束打分 (基于图谱真实工程指标)"""

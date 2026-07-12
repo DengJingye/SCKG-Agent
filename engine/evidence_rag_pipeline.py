@@ -8,6 +8,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence, Set
 
+from engine.evidence_discovery_index import search_hybrid_evidence
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PUBLICATIONS_PATH = PROJECT_ROOT / "data" / "tool_publications.tsv"
@@ -37,10 +39,22 @@ def build_controlled_rag_context(
 ) -> Dict[str, Any]:
     """Run a minimal governed RAG pipeline over formal evidence TSVs.
 
-    This baseline intentionally uses lexical retrieval/rerank so it works in
-    offline smoke tests. It does not mutate evidence, rank tools, or promote
-    candidate records.
+    The local hybrid evidence-discovery path is preferred when available. The
+    lexical path below remains as a deterministic fallback for offline smoke
+    tests. Neither path mutates evidence, ranks tools, or promotes candidate
+    records.
     """
+
+    try:
+        hybrid_context = search_hybrid_evidence(
+            constraints=constraints,
+            tool_names=tool_names,
+            max_snippets=max_snippets,
+        )
+        if hybrid_context.get("snippets"):
+            return hybrid_context
+    except Exception:
+        pass
 
     started = time.perf_counter()
     chunks = list(_formal_chunks())

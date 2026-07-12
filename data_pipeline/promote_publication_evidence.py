@@ -209,6 +209,10 @@ def validate_promotable(candidate: Dict[str, str], review: Dict[str, str]) -> No
         raise ValueError(f"{publication_id} is not canonical and cannot be formally promoted")
     if candidate.get("duplicate_of"):
         raise ValueError(f"{publication_id} has duplicate_of populated and cannot be formally promoted")
+    if has_title_only_claim(candidate):
+        raise ValueError(
+            f"{publication_id} needs claim_text or a source span beyond the title before formal promotion"
+        )
     if not review.get("canonical_scope") or not review.get("evidence_category"):
         raise ValueError(f"{publication_id} is missing Schema V2 governance fields")
     recommendation_eligible = normalize_bool_text(review.get("recommendation_eligible", ""))
@@ -236,6 +240,21 @@ def expected_recommendation_eligible(review: Dict[str, str]) -> str:
     ):
         return "true"
     return "false"
+
+
+def has_title_only_claim(row: Dict[str, str]) -> bool:
+    claim_text = normalize_space(row.get("claim_text", ""))
+    claim_span = normalize_space(row.get("claim_span", ""))
+    title = normalize_space(row.get("title", ""))
+    if claim_text:
+        return False
+    if not claim_span:
+        return True
+    return claim_span.lower() == title.lower()
+
+
+def normalize_space(value: str) -> str:
+    return " ".join((value or "").split())
 
 
 def authority_tier(review: Dict[str, str]) -> str:

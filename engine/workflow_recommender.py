@@ -23,7 +23,7 @@ def build_minimal_workflow_recommendation(
     data_object = constraints.get("data_object", "Unknown")
     output_goal = constraints.get("output_goal", "Unknown")
     candidate_tools = candidate_tools or []
-    steps = _steps_for_task(task, modality, data_object, output_goal, candidate_tools)
+    steps = _steps_for_task(task, modality, data_object, output_goal, candidate_tools, constraints)
     warnings = _compatibility_warnings(constraints)
     evidence = derived_evidence(
         evidence_id=f"workflow_template:{task}:{modality}",
@@ -53,7 +53,9 @@ def _steps_for_task(
     data_object: str,
     output_goal: str,
     candidate_tools: List[str],
+    constraints: Dict[str, Any] | None = None,
 ) -> List[WorkflowStep]:
+    constraints = constraints or {}
     templates = {
         "QC": [
             ("input validation", "QC", [data_object], ["validated object"]),
@@ -144,12 +146,7 @@ def _steps_for_task(
             ("joint representation learning", "Multiome Integration", ["normalized modality matrices"], ["joint embedding"]),
             ("clustering and annotation on joint space", "Cell Type Annotation", ["joint embedding"], [output_goal]),
         ],
-        "Workflow Planning": [
-            ("QC", "QC", [data_object], ["filtered object"]),
-            ("normalization", "Normalization", ["filtered object"], ["normalized matrix"]),
-            ("batch correction or integration if needed", "Data Integration", ["normalized matrix"], ["analysis embedding"]),
-            ("downstream analysis", "Workflow Planning", ["analysis embedding"], [output_goal]),
-        ],
+        "Workflow Planning": _workflow_planning_steps(data_object, output_goal, constraints),
         "Workflow Compatibility": [
             ("source object inspection", "Workflow Compatibility", [data_object], ["source schema"]),
             ("metadata and assay mapping", "Workflow Compatibility", ["source schema"], ["mapped schema"]),
@@ -172,12 +169,155 @@ def _steps_for_task(
             task=step_task,
             required_input=required_input,
             produced_output=produced_output,
-            candidate_tools=candidate_tools if index == len(raw_steps) else [],
+            candidate_tools=_candidate_tools_for_step(step_task, candidate_tools),
             modality=modality,
         )
         for index, (name, step_task, required_input, produced_output)
         in enumerate(raw_steps, start=1)
     ]
+
+
+def _workflow_planning_steps(
+    data_object: str,
+    output_goal: str,
+    constraints: Dict[str, Any],
+) -> List[tuple[str, str, List[str], List[str]]]:
+    text = _constraint_text(constraints)
+    steps: List[tuple[str, str, List[str], List[str]]] = [
+        ("input and metadata QC", "QC", [data_object], ["validated object"]),
+    ]
+    if _mentions(text, "doublet", "multiplet"):
+        steps.append(
+            (
+                "doublet detection and threshold review",
+                "Doublet Detection",
+                ["validated object"],
+                ["doublet-filtered object"],
+            )
+        )
+    if _mentions(text, "ambient", "contamination", "soup"):
+        steps.append(
+            (
+                "ambient RNA contamination review",
+                "Ambient RNA Removal",
+                ["validated object"],
+                ["decontaminated object"],
+            )
+        )
+    steps.append(
+        (
+            "normalization and feature selection",
+            "Normalization",
+            ["doublet-filtered object" if _mentions(text, "doublet", "multiplet") else "validated object"],
+            ["feature set"],
+        )
+    )
+    if _mentions(text, "batch", "integration", "multi-sample", "multisample", "multiple sample"):
+        steps.append(
+            (
+                "batch-aware integration",
+                "Data Integration",
+                ["feature set"],
+                ["analysis embedding"],
+            )
+        )
+    if _mentions(text, "multiome", "multi-ome", "atac", "protein", "cite-seq"):
+        steps.append(
+            (
+                "joint multiome representation",
+                "Multiome Integration",
+                ["modality-specific matrices"],
+                ["joint embedding"],
+            )
+        )
+    if _mentions(text, "annotation", "cell type", "label", "reference"):
+        steps.append(
+            (
+                "cell type annotation and marker review",
+                "Cell Type Annotation",
+                ["analysis embedding"],
+                ["cell type labels"],
+            )
+        )
+    if _mentions(text, "velocity", "spliced", "unspliced"):
+        steps.append(
+            (
+                "RNA velocity analysis",
+                "RNA Velocity",
+                ["spliced/unspliced layers"],
+                ["velocity estimates"],
+            )
+        )
+    if _mentions(text, "trajectory", "pseudotime", "fate"):
+        steps.append(
+            (
+                "trajectory or fate-state review",
+                "Trajectory Inference",
+                ["analysis embedding"],
+                ["trajectory or fate states"],
+            )
+        )
+    if _mentions(text, "differential", "de ", "marker genes", "contrast"):
+        steps.append(
+            (
+                "differential expression contrast",
+                "Differential Expression",
+                ["annotated groups"],
+                ["differentially expressed genes"],
+            )
+        )
+    steps.append(
+        (
+            "evidence audit and reproducible report",
+            "Workflow Planning",
+            ["analysis outputs"],
+            [output_goal],
+        )
+    )
+    return steps
+
+
+def _candidate_tools_for_step(step_task: str, candidate_tools: List[str]) -> List[str]:
+    if not candidate_tools:
+        return []
+    tool_task_terms = {
+        "QC": {"scanpy", "seurat", "soupx"},
+        "Normalization": {"scanpy", "seurat", "scvi-tools"},
+        "Doublet Detection": {"scrublet", "doubletfinder"},
+        "Ambient RNA Removal": {"soupx"},
+        "Data Integration": {"harmony", "scvi-tools", "seurat", "scanpy"},
+        "Cell Type Annotation": {"celltypist", "singler", "seurat"},
+        "Spatial Deconvolution": {"cell2location"},
+        "RNA Velocity": {"scvelo"},
+        "Trajectory Inference": {"scvelo", "cellrank", "wot", "tradeseq"},
+        "Optimal Transport Trajectory": {"wot", "moscot"},
+        "Differential Expression": {"scanpy", "seurat", "tradeseq", "mimosca"},
+        "Trajectory Differential Expression": {"tradeseq"},
+        "Perturbation Differential Expression": {"mimosca"},
+        "Foundation Model Representation": {"scgpt", "cellplm"},
+        "Multiome Integration": {"seurat", "mofa2", "scvi-tools"},
+        "Workflow Compatibility": {"seuratdisk", "zellkonverter", "sceasy", "anndata", "seurat"},
+    }
+    allowed = tool_task_terms.get(step_task, set())
+    if not allowed:
+        return candidate_tools if step_task == "Workflow Planning" else []
+    return [tool for tool in candidate_tools if tool.casefold() in allowed]
+
+
+def _constraint_text(constraints: Dict[str, Any]) -> str:
+    values: List[str] = []
+    for value in constraints.values():
+        if isinstance(value, list):
+            values.extend(str(item) for item in value)
+        elif isinstance(value, dict):
+            values.extend(str(item) for item in value.values())
+        else:
+            values.append(str(value))
+    return " ".join(values).casefold()
+
+
+def _mentions(text: str, *terms: str) -> bool:
+    return any(term.casefold() in text for term in terms)
 
 
 def _step(

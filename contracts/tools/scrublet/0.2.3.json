@@ -1,0 +1,264 @@
+{
+  "contract_id": "scrublet:0.2.3",
+  "contract_version": "1.2.0-phase3a-qualified",
+  "tool_name": "Scrublet",
+  "tool_version": "0.2.3",
+  "task": "doublet_detection",
+  "language": "python",
+  "environment_id": "scRNAseq",
+  "wrapper_id": "scrublet_v0_2_3",
+  "input_object": "AnnData",
+  "required_fields": [
+    "raw non-negative integer count matrix"
+  ],
+  "optional_fields": [
+    "obs batch key for reporting only"
+  ],
+  "preconditions": [
+    {
+      "rule_id": "scrublet_counts_required",
+      "field": "selected_count_source",
+      "operator": "matrix_state",
+      "expected": "raw_counts",
+      "blocking": true,
+      "message": "Scrublet planning requires a deterministically identified raw count matrix."
+    },
+    {
+      "rule_id": "scrublet_nonempty_matrix",
+      "field": "matrix_shape",
+      "operator": "gte",
+      "expected": 1,
+      "blocking": true,
+      "message": "The selected count matrix must contain cells and genes."
+    }
+  ],
+  "not_supported": [
+    "log-normalized matrix without a raw count source",
+    "scaled expression matrix without a raw count source",
+    "negative or non-finite count values",
+    "remote URLs and non-AnnData objects"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "scrublet_doublet_results",
+      "artifact_type": "cell_annotation_table",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "doublet_result_schema_v1"
+    },
+    {
+      "artifact_id": "scrublet_parameter_snapshot",
+      "artifact_type": "parameter_snapshot",
+      "format": "json",
+      "required": true,
+      "validator_id": "parameter_snapshot_schema_v1"
+    },
+    {
+      "artifact_id": "scrublet_result_metadata",
+      "artifact_type": "execution_metadata",
+      "format": "json",
+      "required": true,
+      "validator_id": "scrublet_result_metadata_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "expected_doublet_rate": {
+        "type": "number",
+        "minimum": 0.001,
+        "maximum": 0.25
+      },
+      "stdev_doublet_rate": {
+        "type": "number",
+        "minimum": 0.001,
+        "maximum": 0.2
+      },
+      "random_state": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483647
+      },
+      "min_cells": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20
+      },
+      "min_counts": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20
+      },
+      "min_gene_variability_pctl": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 100.0
+      },
+      "n_prin_comps": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 100
+      },
+      "sim_doublet_ratio": {
+        "type": "number",
+        "minimum": 1.0,
+        "maximum": 10.0
+      },
+      "synthetic_doublet_umi_subsampling": {
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 1.0
+      },
+      "use_approx_neighbors": {
+        "type": "boolean"
+      },
+      "distance_metric": {
+        "type": "string",
+        "enum": [
+          "euclidean",
+          "cosine"
+        ]
+      },
+      "log_transform": {
+        "type": "boolean"
+      },
+      "mean_center": {
+        "type": "boolean"
+      },
+      "normalize_variance": {
+        "type": "boolean"
+      },
+      "svd_solver": {
+        "type": "string",
+        "enum": [
+          "arpack"
+        ]
+      }
+    }
+  },
+  "default_parameters": {
+    "distance_metric": "euclidean",
+    "expected_doublet_rate": 0.1,
+    "log_transform": false,
+    "mean_center": true,
+    "min_cells": 3,
+    "min_counts": 3,
+    "min_gene_variability_pctl": 85.0,
+    "n_prin_comps": 30,
+    "normalize_variance": true,
+    "random_state": 0,
+    "sim_doublet_ratio": 2.0,
+    "stdev_doublet_rate": 0.02,
+    "svd_solver": "arpack",
+    "synthetic_doublet_umi_subsampling": 1.0,
+    "use_approx_neighbors": true
+  },
+  "paper_parameters": [
+    {
+      "parameter_name": "input_matrix",
+      "value_or_range": "raw unnormalized UMI count matrix; cells x genes",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "data/evidence_sources/text/core_docs/Scrublet_github_readme.txt",
+      "source_span": "Quick start, paragraphs 1-2",
+      "tool_version": "0.2.3",
+      "applicable_scope": "Scrublet qualification and future reviewed execution",
+      "limitations": [
+        "Source text establishes the input contract, not scientific performance."
+      ]
+    },
+    {
+      "parameter_name": "api_defaults",
+      "value_or_range": {
+        "expected_doublet_rate": 0.1,
+        "min_cells": 3,
+        "min_counts": 3,
+        "min_gene_variability_pctl": 85,
+        "n_prin_comps": 30,
+        "sim_doublet_ratio": 2.0
+      },
+      "origin_type": "source_bound_prior",
+      "source_type": "official_default",
+      "source_id": "scRNAseq:importlib.metadata:scrublet:0.2.3",
+      "source_span": "Scrublet.__init__ and Scrublet.scrub_doublets runtime signatures",
+      "tool_version": "0.2.3",
+      "applicable_scope": "Exact installed Scrublet 0.2.3 runtime",
+      "limitations": [
+        "Runtime API signature is qualification metadata, not benchmark evidence."
+      ]
+    }
+  ],
+  "searchable_parameters": {
+    "expected_doublet_rate": {
+      "minimum": 0.02,
+      "maximum": 0.15
+    },
+    "n_prin_comps": {
+      "minimum": 20,
+      "maximum": 50
+    },
+    "sim_doublet_ratio": {
+      "minimum": 1.0,
+      "maximum": 4.0
+    }
+  },
+  "failure_checks": [
+    "missing_count_source",
+    "empty_matrix",
+    "non_finite_counts",
+    "negative_counts",
+    "insufficient_cells_or_genes",
+    "output_missing",
+    "score_non_finite",
+    "score_out_of_range",
+    "label_count_mismatch",
+    "input_hash_mismatch"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "doublet_score_finite_fraction",
+    "predicted_doublet_call_rate",
+    "synthetic_engineering_precision",
+    "synthetic_engineering_recall",
+    "synthetic_engineering_f1"
+  ],
+  "resource_requirements": {
+    "cpu_only_supported": true,
+    "gpu_required": false,
+    "qualification_max_cells": 1000,
+    "qualification_timeout_seconds": 120,
+    "memory_enforcement": "monitor_only",
+    "runtime_boundary": "qualification fixture only; measured runtime must be recorded",
+    "memory_boundary": "peak RSS observation only; no hard memory enforcement"
+  },
+  "source_refs": [
+    "data/evidence_sources/text/core_docs/Scrublet_github_readme.txt",
+    "data/evidence_sources/text/Scrublet_CAND_PUB_Scrublet_137a56b00546.txt"
+  ],
+  "schema_status": "valid",
+  "execution_critical_review": {
+    "reviewer": "codex_source_bound_review_2026_07_11",
+    "review_scope": [
+      "input raw-count requirement",
+      "Scrublet 0.2.3 API parameter types and defaults",
+      "wrapper-exposed parameter bounds",
+      "output score and boolean label fields",
+      "failure checks and engineering validation metrics",
+      "qualification timeout and memory observation boundary"
+    ],
+    "sources": [
+      "data/evidence_sources/text/core_docs/Scrublet_github_readme.txt",
+      "data/evidence_sources/text/Scrublet_CAND_PUB_Scrublet_137a56b00546.txt",
+      "installed Scrublet 0.2.3 runtime signatures in scRNAseq"
+    ],
+    "claim_boundary": "Execution contract review only; no formal evidence promotion or scientific performance claim."
+  },
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "smoke_passed",
+  "environment_status": "smoke_passed",
+  "execution_status": "integration_passed",
+  "scientific_validation_status": "scientific_pilot",
+  "enabled_for_execution": false
+}

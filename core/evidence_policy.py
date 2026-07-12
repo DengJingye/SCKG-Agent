@@ -6,7 +6,6 @@ from core.models import Evidence, EvidenceBundle
 
 RECOMMENDATION_EVIDENCE_METRICS = {
     "benchmark_rank",
-    "benchmark_result",
     "benchmark_score",
     "citations",
     "paper_citations",
@@ -24,6 +23,8 @@ MAIN_RECOMMENDATION_CANONICAL_SCOPES = {"core_tool", "major_version"}
 MAIN_RECOMMENDATION_EVIDENCE_CATEGORIES = {"architectural_core"}
 MAIN_RECOMMENDATION_AUTHORITY_TIERS = {"canonical_primary", "canonical_secondary"}
 MAIN_RECOMMENDATION_SOURCE_TYPES = {"paper", "benchmark"}
+MAIN_PUBLICATION_METRICS = {"paper_support"}
+MAIN_BENCHMARK_METRICS = {"benchmark_rank", "benchmark_score"}
 AUTHORITY_TIER_PRIORITY = {
     "canonical_primary": 1.0,
     "canonical_secondary": 0.9,
@@ -102,7 +103,7 @@ def is_main_publication_evidence(item: Evidence) -> bool:
         return False
     if item.graph_layer != "trusted_core":
         return False
-    if item.metric_name not in RECOMMENDATION_EVIDENCE_METRICS:
+    if item.metric_name not in MAIN_PUBLICATION_METRICS:
         return False
     return (
         item.recommendation_eligible is True
@@ -118,7 +119,7 @@ def is_main_benchmark_evidence(item: Evidence) -> bool:
         item.source_type == "benchmark"
         and item.can_support_recommendation
         and item.graph_layer == "trusted_core"
-        and item.metric_name in RECOMMENDATION_EVIDENCE_METRICS
+        and item.metric_name in MAIN_BENCHMARK_METRICS
     )
 
 
