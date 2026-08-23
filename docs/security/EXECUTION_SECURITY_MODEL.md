@@ -1,43 +1,37 @@
 # scKG-Agent 2.0 执行安全模型
 
-版本：0.2  
-状态：Phase 0 current-state threat model；`LocalControlledExecutor` not implemented  
-适用范围：当前控制平面，以及未来 `LocalControlledExecutor` 的最低安全要求  
-主规约：`docs/DEV_SPEC_2.0.md`  
+版本：0.4
+状态：Phase 6 local trusted-wrapper model；Mac Beta clean-prefix release candidate
+适用范围：当前本地控制平面、`LocalControlledExecutor` 与 Runtime Pack provisioning
+主规约：`docs/DEV_SPEC_2.0.md`
 
 > Phase 3 的执行器提供应用层控制，不提供操作系统级 sandbox。只有容器或独立受限 worker 落地并验收后，系统才可以声明 OS-level isolation。
 
 ## 0. 当前真实实现
 
-Phase 0 没有 `execution/`、`contracts/`、`LocalControlledExecutor`、wrapper allowlist、job manager、process-tree cleanup 或 execution run directory。当前没有任何可供用户授权的真实生信执行入口。
+当前已实现 `ToolContract`、wrapper allowlist、`LocalControlledExecutor`、fixed argv + `shell=False`、approved roots、run ownership、timeout/process-tree cleanup、artifact hash、Validator、bounded Repair、数据授权、plan-specific approval、取消和 retention audit。Scrublet、scDblFinder、Harmony 与 Scanorama 只有在固定 contract/environment pair 下具备条件资格；全局 `ExecutionPolicy` 默认仍为 `disabled`。
 
-现有 `core.agent_runtime.ToolExecutor` 只提供：
+2026-07-18 新增 Runtime Pack control plane：
 
-- 注册 Python 函数；
-- 可选 Pydantic 参数校验；
-- tool-call 次数预算；
-- 重复 fingerprint 阻断；
-- 函数结果和 latency trace。
+- 三个 task-family manifest 与 checksum 固定 lock；
+- 缺环境路由到 `WAITING_ENVIRONMENT_APPROVAL`，不创建 `ExecutionRequest`；
+- 环境 plan/approval 一次性、可撤销、过期并绑定 manifest digest；
+- 安装命令来自 registry 固定 argv，用户与 LLM 不能提供 executable、shell command、channel 或 lock path；
+- 环境安装 approval 不能复用为数据 execution approval；
+- Runtime Pack 位于 `SCKG_HOME`，用户数据和 run/package 使用独立 workspace。
 
-它不提供：
+2026-07-19 clean-prefix 验收补充：控制平面由固定 Micromamba 2.8.1 archive SHA256、minimal explicit conda lock 和 hash-complete pip lock 重建，不依赖用户预装 Anaconda。安装脚本只有维护者固定 argv，未提供确认参数时不创建安装目录。三个 Runtime Pack 已在当前 Mac 禁止 legacy fallback 后完成真实安装、import smoke、卸载和重建；第二台干净机器复验仍未完成。
 
-- shell/argv 执行控制；
-- 文件路径隔离；
-- timeout 和进程树终止；
-- Conda/R/Python worker 环境选择；
-- 文件 hash 和 artifact manifest；
-- memory/network/filesystem isolation。
-
-因此当前安全声明只能是：
+当前安全声明是：
 
 ```text
-no external bioinformatics execution surface implemented
-offline/online Agent function calls are application code in the control process
-ToolExecutor != LocalControlledExecutor
-no sandbox is implemented
+single-user / allowlisted-local-user trusted-wrapper execution
+application-level path, process, approval and artifact controls
+LocalControlledExecutor != OS sandbox
+network_not_os_isolated
 ```
 
-现有 Agent/RAG 路径仍可能调用 Neo4j、LLM 或 embedding API，取决于 `.env` 与 offline flags；这与未来 execution worker 的“wrapper 不主动联网”不是同一个网络边界。
+Agent/RAG 外发采用 `STRICT_OFFLINE / LOCAL_HYBRID / CLOUD_ASSISTED` gate。默认 `LOCAL_HYBRID` 且外部网络许可为 false；外部模型调用必须有脱敏 disclosure 和会话授权。矩阵、barcode、完整路径和上传文件正文禁止进入 payload，audit 只保存 hash。但是第三方 native worker 仍未由操作系统强制禁网，因此不能声称“绝无数据泄露”。
 
 ---
 
@@ -63,7 +57,7 @@ no sandbox is implemented
 
 ---
 
-## 2. Phase 3 目标能力（当前尚未实现）
+## 2. 已实现的应用层执行控制
 
 - wrapper allowlist；
 - structured request；
@@ -106,7 +100,7 @@ shell=False != process isolation
 
 ## 4. 路径策略
 
-以下是 `LocalControlledExecutor` 的目标要求。Phase 0 当前没有 approved input root 或 `.sckg_exec` enforcement。
+`DataRegistry`、`UserWorkspaceService` 与 `LocalControlledExecutor` 已执行 approved input root、ownership 和 `.sckg_exec` enforcement。
 
 ExecutionRequest 只保存 artifact ID，不直接信任用户路径。控制平面必须：
 
@@ -126,9 +120,9 @@ ExecutionRequest 只保存 artifact ID，不直接信任用户路径。控制平
 
 ---
 
-## 5. Command 策略
+## 5. Command 与环境安装策略
 
-当前控制平面没有用户可调用的外部生信 command API。以下规则在 Phase 3 实现时成为强制 gate。
+当前没有匿名、远程或公共 command API。以下规则是现行强制 gate。
 
 禁止：
 
@@ -147,11 +141,13 @@ ExecutionRequest 只保存 artifact ID，不直接信任用户路径。控制平
 - contract validated parameters；
 - 固定 module entrypoint。
 
+Runtime Pack provisioning 是“自动安装依赖”禁令的唯一受控例外，但必须同时满足：维护者版本化 manifest、detached signature、lock SHA256、lock URL host allowlist、空间与平台 gate、显式环境审批、`shell=False` 和 import smoke。它不接受 LLM 或用户拼接安装命令。控制平面 bootstrap 是发布方固定、digest 校验的本地安装脚本，只接受 `--accept-reviewed-install`，不能安装任意 channel/package。
+
 ---
 
 ## 6. Process 生命周期
 
-本节当前为 design requirement；尚无实现或测试结果。
+本节已由 `LocalControlledExecutor` 和 cancellation tests 实现应用层控制；CPU/RAM hard enforcement 仍未实现。
 
 Executor 必须：
 
@@ -229,7 +225,7 @@ network_not_os_isolated
 
 ## 10. 安全测试
 
-这些是未来 controlled executor 的验收测试。Phase 0 的 38 个测试没有执行这些 case，不得标记为通过。
+现有回归已覆盖 executor、authorization、approval、ownership、cancellation、repair budget、Runtime Pack approval/digest 与 release privacy。容器级 isolation case 尚未通过，不得混入应用层验收结论。
 
 至少覆盖：
 
@@ -259,7 +255,7 @@ repair budget violation = 0
 
 ## 11. 部署声明
 
-Phase 3 只支持：
+当前只支持：
 
 ```text
 single-user local trusted-wrapper execution
@@ -271,7 +267,7 @@ single-user local trusted-wrapper execution
 untrusted multi-user execution
 public internet execution API
 arbitrary uploaded code
-remote package installation
+unreviewed or user-defined package installation
 ```
 
 达到容器隔离、鉴权、job quota、network policy 和审计要求后，才能讨论组内多用户执行服务。
@@ -282,21 +278,22 @@ remote package installation
 
 ### 当前能防御
 
-- `ToolExecutor` 对同一 node/tool/args fingerprint 的重复调用；
-- `ToolExecutor` 的 tool-call 迭代预算；
-- 未注册 Python tool name；
-- 已接 Pydantic input model 的类型错误；
+- 未知 wrapper、固定 argv 外的 executable 和 shell command；
+- input/output path traversal、symlink escape 与 cross-user artifact/run/package 访问；
+- 未授权、审批 scope 不匹配、过期、撤销和 replay；
+- timeout、process-tree cancellation 与有界 repair budget；
+- Runtime Pack 未审批安装、manifest/lock digest 改变、平台/空间不满足；
+- `STRICT_OFFLINE` 外部调用和 LOCAL_HYBRID 未授权外发；
 - evidence gate 对 retrieval-only/frozen evidence 的主推荐越权；
 - Subagent 默认关闭，输出不能修改 formal evidence 或 recommendation rank。
 
 ### 当前不能防御
 
-- 任意第三方 Python 函数在控制进程内的文件、网络或系统行为；
-- 用户路径 traversal 或 symlink escape，因为 execution path policy 尚不存在；
-- 外部进程 timeout、child process leak、CPU/memory/disk exhaustion；
+- 审核过的第三方 Python/R package 在 native worker 权限内的未知行为；
+- CPU/memory/disk 的 OS-level hard enforcement；
 - 操作系统级文件系统和网络隔离；
 - 恶意/被污染 package；
-- 多租户身份、job ownership、quota 和数据隔离。
+- 不可信远程多租户和公共服务隔离。
 
 ## 13. 多用户服务前的强制补项
 
@@ -312,3 +309,26 @@ remote package installation
 10. 独立安全评审和 abuse tests。
 
 在这些条件完成前，只能声明 `single-user local trusted-wrapper` 目标，不能开放公共 execution API。
+
+## 14. Docker、轻量部署与生成代码边界
+
+Docker/OCI 的价值是环境可复现、文件系统/网络/资源边界和跨机器分发，不等于安装体积天然更小。镜像层可复用并按任务下载，但 Python/R 生信依赖仍占磁盘；产品必须继续采用轻量控制平面加按需 Runtime Pack/OCI image，而不是把全部工具塞进一个镜像。
+
+当前 Agent 的代码运行能力严格限定为：生成或读取受控 synthetic fixture，调用 allowlist 中维护者审核的固定 wrapper，并经过 contract、approval、executor 和 validator。当前**不执行 LLM 任意生成的 Python、R 或 shell 代码**，`LocalControlledExecutor` 也不能改名为 sandbox。
+
+Research Chat 可以展示维护者版本化且 smoke-tested 的 `WorkflowCodeBundle`，供用户在自己的受控环境中复现。该导出脚本不等于产品内执行：它不能创建 `ExecutionRequest`、不能继承环境安装 approval、不能访问已登记 artifact，也不能被 LLM 动态改写后自动送入 `LocalControlledExecutor`。外部 DeepSeek 只参与用户显式授权后的文本综合，workflow recipe 选择、digest 和 smoke 状态均由本地确定性服务提供。
+
+未来只有实现独立 Container Runner 后，才能评估受限生成代码执行。最低边界为：
+
+```text
+固定 image digest + non-root
+read-only input + isolated writable output
+network=none
+CPU/RAM/disk/time/process limits
+no host socket / no arbitrary mount / no package install
+explicit plan-specific approval
+stdout/stderr/artifact hash/lineage audit
+cancel + process-tree cleanup
+```
+
+即使本地部署也不能宣称绝对无泄露：外部 LLM、远程 embedding、远程 Neo4j、允许联网的依赖或用户主动共享目录仍可能外发信息。只有 `STRICT_OFFLINE`、系统级禁网和隔离 runner 同时成立时，才可给出更强的本地隐私声明。

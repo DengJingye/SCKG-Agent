@@ -1,0 +1,83 @@
+{
+  "ai_review_limit": 3,
+  "ai_review_mode": "dry-run",
+  "fetch_limit": 3,
+  "fetch_mode": "none",
+  "ok": true,
+  "ran_at": "2026-06-22T15:08:05.951929+00:00",
+  "steps": [
+    {
+      "command": "eval/audit_formal_publication_evidence.py --json-summary data/evidence_candidates/formal_publication_audit_summary.json",
+      "name": "audit_publications",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"label_counts\": {\n    \"candidate_search_needs_manual_anchor_check\": 18,\n    \"citation_supported\": 18,\n    \"missing_modality\": 10,\n    \"missing_task\": 7,\n    \"non_main_or_incomplete_recommendation_metadata\": 4,\n    \"reviewer_identity_unclear\": 28,\n    \"source_bound\": 28,\n    \"title_only_claim_span\": 28\n  },\n  \"output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/formal_publication_audit.tsv\",\n  \"rows\": 28,\n  \"runtime_recommendation_allowed\": 0\n}"
+    },
+    {
+      "command": "eval/audit_formal_benchmark_evidence.py --json-summary data/evidence_candidates/formal_benchmark_audit_summary.json",
+      "name": "audit_benchmarks",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"label_counts\": {\n    \"negative_control_caveat\": 3,\n    \"qualitative_only\": 14\n  },\n  \"output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/formal_benchmark_audit.tsv\",\n  \"rows\": 14,\n  \"runtime_recommendation_allowed\": 0\n}"
+    },
+    {
+      "command": "data_pipeline/build_evidence_recovery_review_packet.py",
+      "name": "build_review_packet",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"by_kind\": {\n    \"benchmark\": 9,\n    \"publication\": 14\n  },\n  \"by_tool\": {\n    \"CellRank\": 2,\n    \"CellTypist\": 2,\n    \"Harmony\": 2,\n    \"Scanpy\": 3,\n    \"Scrublet\": 2,\n    \"Seurat\": 3,\n    \"SingleR\": 2,\n    \"cell2location\": 2,\n    \"scVelo\": 2,\n    \"scvi-tools\": 3\n  },\n  \"output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_review_packet_v1.tsv\",\n  \"rows\": 23\n}"
+    },
+    {
+      "command": "data_pipeline/build_evidence_source_manifest.py",
+      "name": "build_source_manifest",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"by_kind\": {\n    \"benchmark\": 9,\n    \"publication\": 14\n  },\n  \"by_source_type\": {\n    \"doi_landing_or_open_html\": 23\n  },\n  \"output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_source_manifest_v1.tsv\",\n  \"rows\": 23\n}"
+    },
+    {
+      "command": "data_pipeline/build_evidence_index.py --source-manifest data/evidence_candidates/evidence_source_manifest_v1.tsv",
+      "name": "build_evidence_index",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "/opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field \"model_name\" has conflict with protected namespace \"model_\".\n\nYou may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.\n  warnings.warn(",
+      "stdout": "{\n  \"chunks\": 46,\n  \"chunks_path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/indexes/evidence_chunks.jsonl\",\n  \"documents\": 0,\n  \"embedding_model\": \"BAAI/bge-m3\",\n  \"source_manifest_chunks\": 4,\n  \"vectors\": 0,\n  \"vectors_path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/indexes/evidence_vectors.jsonl\"\n}"
+    },
+    {
+      "command": "data_pipeline/prefill_evidence_review_packet.py",
+      "name": "prefill_review_packet",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "/opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field \"model_name\" has conflict with protected namespace \"model_\".\n\nYou may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.\n  warnings.warn(",
+      "stdout": "{\n  \"allow_formal_fallback\": false,\n  \"benchmark_prefilled\": 2,\n  \"chunks\": 46,\n  \"no_candidate_chunk\": 20,\n  \"output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_review_packet_v1_prefilled.tsv\",\n  \"prefilled_rows\": 3,\n  \"publication_prefilled\": 1,\n  \"rows\": 23\n}"
+    },
+    {
+      "command": "data_pipeline/ai_review_evidence_packet.py --mode dry-run --limit 3",
+      "name": "ai_review_dry-run",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "None of PyTorch, TensorFlow >= 2.0, or Flax have been found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.\n/opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field \"model_name\" has conflict with protected namespace \"model_\".\n\nYou may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.\n  warnings.warn(",
+      "stdout": "{\n  \"eligible_rows\": 3,\n  \"errors\": [],\n  \"input\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_review_packet_v1_prefilled.tsv\",\n  \"limit\": 3,\n  \"mode\": \"dry-run\",\n  \"output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_review_packet_v1_ai_reviewed.tsv\",\n  \"output_is_promotion_input\": false,\n  \"report_output\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_review_packet_v1_ai_review_report.md\",\n  \"reviewed_rows\": 3,\n  \"rows\": 23,\n  \"skipped_rows\": 20,\n  \"status_counts\": {\n    \"dry_run_not_reviewed\": 3,\n    \"skipped_no_source_span\": 20\n  }\n}"
+    },
+    {
+      "command": "data_pipeline/promote_recovered_evidence.py",
+      "name": "promotion_dry_run",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\n  \"apply\": false,\n  \"benchmark_promoted\": 0,\n  \"benchmarks\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/tool_benchmarks.tsv\",\n  \"non_promote_rows\": 23,\n  \"publication_promoted\": 0,\n  \"publications\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/tool_publications.tsv\",\n  \"review_rows\": 23,\n  \"validation_errors\": []\n}"
+    },
+    {
+      "command": "eval/run_evidence_recovery_smoke.py",
+      "name": "conservative_smoke",
+      "ok": true,
+      "returncode": 0,
+      "stderr": "/opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field \"model_name\" has conflict with protected namespace \"model_\".\n\nYou may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.\n  warnings.warn(",
+      "stdout": "{\n  \"audit_freeze\": {\n    \"benchmark_qualitative_only_rows\": 14,\n    \"benchmark_rows\": 14,\n    \"benchmark_runtime_allowed\": 0,\n    \"publication_rows\": 28,\n    \"publication_runtime_allowed\": 0,\n    \"publication_title_only_rows\": 28,\n    \"publication_unclear_reviewer_rows\": 28\n  },\n  \"gate\": {\n    \"per_tool\": {\n      \"CellRank\": {\n        \"benchmark_items\": 0,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 4\n      },\n      \"CellTypist\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 1\n      },\n      \"Harmony\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 2\n      },\n      \"Scanpy\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 4\n      },\n      \"Scrublet\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 2\n      },\n      \"Seurat\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 2\n      },\n      \"SingleR\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 1\n      },\n      \"cell2location\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 2\n      },\n      \"scVelo\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 1\n      },\n      \"scvi-tools\": {\n        \"benchmark_items\": 1,\n        \"main_benchmark_items\": 0,\n        \"main_publication_items\": 0,\n        \"publication_items\": 4\n      }\n    },\n    \"trusted_non_main_violation_count\": 0,\n    \"violations\": []\n  },\n  \"passed\": true,\n  \"rag_smoke\": [\n    {\n      \"boundary_violation_count\": 0,\n      \"boundary_violations\": [],\n      \"expected_tools\": [\n        \"Seurat\",\n        \"Harmony\",\n        \"scvi-tools\"\n      ],\n      \"id\": \"V01_GQ001\",\n      \"matched_tools\": [\n        \"Harmony\",\n        \"Seurat\",\n        \"scvi-tools\"\n      ],\n      \"mode\": \"local_hybrid_evidence_retrieval\",\n      \"snippet_count\": 5\n    },\n    {\n      \"boundary_violation_count\": 0,\n      \"boundary_violations\": [],\n      \"expected_tools\": [\n        \"CellTypist\",\n        \"SingleR\"\n      ],\n      \"id\": \"V01_GQ002\",\n      \"matched_tools\": [\n        \"CellTypist\",\n        \"SingleR\",\n        \"cell2location\"\n      ],\n      \"mode\": \"local_hybrid_evidence_retrieval\",\n      \"snippet_count\": 5\n    },\n    {\n      \"boundary_violation_count\": 0,\n      \"boundary_violations\": [],\n      \"expected_tools\": [\n        \"Scrublet\",\n        \"DoubletFinder\"\n      ],\n      \"id\": \"V01_GQ003\",\n      \"matched_tools\": [\n        \"DoubletFinder\",\n        \"Harmony\",\n        \"Scrublet\"\n      ],\n      \"mode\": \"local_hybrid_evidence_retrieval\",\n      \"snippet_count\": 5\n    },\n    {\n      \"boundary_violation_count\": 0,\n      \"boundary_violations\": [],\n      \"expected_tools\": [\n        \"SoupX\"\n      ],\n      \"id\": \"V01_GQ004\",\n      \"matched_tools\": [\n        \"CellTypist\",\n        \"DoubletFinder\",\n        \"SoupX\"\n      ],\n      \"mode\": \"local_hybrid_evidence_retrieval\",\n      \"snippet_count\": 5\n    },\n    {\n      \"boundary_violation_count\": 0,\n      \"boundary_violations\": [],\n      \"expected_tools\": [\n        \"scVelo\"\n      ],\n      \"id\": \"V01_GQ005\",\n      \"matched_tools\": [\n        \"CellTypist\",\n        \"scVelo\",\n        \"tradeSeq\",\n        \"wot\"\n      ],\n      \"mode\": \"local_hybrid_evidence_retrieval\",\n      \"snippet_count\": 5\n    }\n  ]\n}"
+    }
+  ],
+  "workflow": "Evidence Recovery Sprint v1"
+}

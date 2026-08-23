@@ -1,7 +1,7 @@
 import json
 
 from core.trace_context import TraceCollector, TraceContext
-from observability.dashboard.services import EvidenceRecoveryService, TraceService
+from observability.dashboard.services import EvidenceRecoveryService, InterviewDemoService, TraceService
 
 
 def test_dashboard_service_extracts_kg_gate_summary(tmp_path):
@@ -42,6 +42,43 @@ def test_dashboard_service_extracts_kg_gate_summary(tmp_path):
     assert summary["admitted_candidate_tools"] == ["Scrublet"]
     assert summary["blocked_reason_counts"] == {"qualitative_benchmark_only": 1}
     assert summary["candidate_diagnostics"][0]["tool_name"] == "DoubletFinder"
+
+
+def test_interview_demo_service_reads_latest_portfolio_bundle(tmp_path):
+    portfolio = tmp_path / "portfolio"
+    bundle = portfolio / "rc-2.7.2-test" / "interview"
+    bundle.mkdir(parents=True)
+    required = {
+        "interview_summary.json": {
+            "status": "passed",
+            "case_count": 4,
+            "trace_completeness": 1.0,
+            "blocked_execution_request_count": 0,
+            "execution_policy_default": "disabled",
+        },
+        "benchmark_summary.json": {"baselines": []},
+        "trace_audit.json": {"minimum_applicable_stage_completeness": 1.0},
+        "package_integrity.json": {"all_complete": True},
+        "limitations.json": {"limitations": ["dataset scoped"]},
+    }
+    for case_id in (
+        "doublet_detection_success",
+        "batch_integration_success",
+        "bounded_repair",
+        "correctly_blocked",
+    ):
+        required[f"{case_id}.json"] = {"title": case_id, "status": "COMPLETED"}
+    for name, row in required.items():
+        (bundle / name).write_text(json.dumps(row), encoding="utf-8")
+
+    loaded = InterviewDemoService(
+        root=tmp_path / "missing-demos",
+        portfolio_root=portfolio,
+    ).latest_bundle()
+
+    assert loaded["bundle_id"] == "rc-2.7.2-test"
+    assert loaded["status"] == "passed"
+    assert len(loaded["cases"]) == 4
 
 
 def test_evidence_recovery_service_loads_core_source_coverage(tmp_path):

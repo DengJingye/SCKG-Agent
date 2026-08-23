@@ -15,22 +15,22 @@ DEFAULT_OUTPUT = PROJECT_ROOT / "data" / "evidence_candidates" / "core_tool_sour
 DEFAULT_SUMMARY = PROJECT_ROOT / "data" / "evidence_candidates" / "core_tool_source_manifest_v2_summary.json"
 DEFAULT_LOCAL_ROOT = "data/evidence_sources/text/core_docs"
 DEFAULT_CORE_TOOLS = (
+    "Scrublet",
+    "scDblFinder",
+    "Harmony",
+    "Scanorama",
     "Seurat",
     "Scanpy",
-    "Harmony",
     "scvi-tools",
     "CellTypist",
     "SingleR",
     "cell2location",
     "scVelo",
     "CellRank",
-    "Scrublet",
-    "DoubletFinder",
-    "MIMOSCA",
-    "tradeSeq",
     "MOFA2",
     "moscot",
-    "wot",
+    "tradeSeq",
+    "DoubletFinder",
 )
 DEFAULT_OFFICIAL_DOCS_URLS = {
     "mofa2": "https://biofam.github.io/MOFA2/",
@@ -85,7 +85,9 @@ def build_manifest_rows(
         if not catalog_row:
             missing_tools.append(requested_tool)
             continue
-        tool_name = clean(catalog_row.get("Tool")) or requested_tool
+        # Preserve the reviewed display name instead of inheriting catalog casing
+        # such as ``scanorama``. Matching remains case-insensitive.
+        tool_name = requested_tool
         repo_url = clean(catalog_row.get("Code"))
         if "github.com/" not in repo_url.lower():
             skipped_no_github.append(tool_name)

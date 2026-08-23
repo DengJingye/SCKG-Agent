@@ -22,6 +22,10 @@ class Neo4jClient:
         self.active_uri = None
         self.driver = None
         self.offline_store = None
+        self.governed_store = OfflineGraphStore()
+        self.candidate_provider = (
+            "kg_v2_hybrid_local" if self.governed_store.kg_v2_available else "neo4j"
+        )
         self.connect()
 
     def connect(self):
@@ -29,7 +33,7 @@ class Neo4jClient:
         if _bool_from_env("SCKG_FORCE_OFFLINE_GRAPH", False):
             if get_settings().offline_graph_fallback:
                 logger.info("SCKG_FORCE_OFFLINE_GRAPH=true; using offline graph store.")
-                self.offline_store = OfflineGraphStore()
+                self.offline_store = self.governed_store
                 self.driver = None
                 return
             raise RuntimeError("SCKG_FORCE_OFFLINE_GRAPH=true requires OFFLINE_GRAPH_FALLBACK=true")
@@ -87,7 +91,7 @@ class Neo4jClient:
                     total_attempts,
                     last_error or e,
                 )
-                self.offline_store = OfflineGraphStore()
+                self.offline_store = self.governed_store
                 self.driver = None
             else:
                 logger.exception("Neo4j connection failed")
@@ -127,6 +131,13 @@ class Neo4jClient:
         对应开题报告 4.2.2：基于集合论的硬约束筛选 (Feasibility Reasoning)
         这里暂时写一个简单的模板查询，后续我们有了真实节点再丰富它。
         """
+        # KG v2 JSONL is canonical until the governed snapshot is explicitly
+        # promoted into Neo4j. This prevents stale Neo4j relations from
+        # bypassing the evidence audit.
+        if self.governed_store.kg_v2_available:
+            self.candidate_provider = "kg_v2_hybrid_local"
+            return self.governed_store.find_candidates(task=task, modality=modality)
+        self.candidate_provider = "offline_graph" if self.offline_store is not None else "neo4j"
         # 假设图谱里的逻辑是：(t:Tool)-[:IMPLEMENTS]->(Task) AND (t:Tool)-[:SUPPORTS]->(Modality)
         query = """
         MATCH (tool:Tool)-[:PERFORMS_TASK]->(task:Task {name: $task})
@@ -192,6 +203,12 @@ class Neo4jClient:
                 logger.warning("Skipping invalid evidence for %s: %s", row["tool_name"], exc)
                 continue
             grouped.setdefault(row["tool_name"], []).append(evidence)
+        governed = self.governed_store.get_tool_evidence(tool_names)
+        for tool_name, evidence_items in governed.items():
+            known = {item.evidence_id for item in grouped.get(tool_name, [])}
+            grouped.setdefault(tool_name, []).extend(
+                item for item in evidence_items if item.evidence_id not in known
+            )
         return grouped
 
     def upsert_evidence(self, tool_name: str, evidence: Evidence) -> None:

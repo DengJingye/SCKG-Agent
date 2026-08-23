@@ -22,6 +22,7 @@ from execution.experiment_runner import ExperimentRunner, build_configuration
 from execution.local_controlled_executor import LocalControlledExecutor
 from execution.probe_builder import ProbeBuilder
 from execution.reproducibility_packager import ReproducibilityPackager
+from execution.runtime_pack_resolver import RuntimePackResolver
 from execution.validators.doublet import DoubletValidator
 from execution.validators.scdblfinder import ScDblFinderValidator
 from tests.fixtures.anndata_factory import write_phase1_fixtures
@@ -301,11 +302,12 @@ def main() -> int:
 
 
 def _r_environment_check() -> dict:
-    registered = Path("/opt/anaconda3/envs/scDblFinder-R/bin/Rscript")
+    resolver = RuntimePackResolver()
+    registered = resolver.rscript("doublet-r") if resolver.ready("doublet-r") else None
     environment = EnvironmentRegistry().get("scDblFinder-R")
     return {
-        "rscript_available": registered.is_file(),
-        "rscript_path": str(registered) if registered.is_file() else None,
+        "rscript_available": bool(registered and registered.is_file()),
+        "rscript_path": "[runtime-pack]/bin/Rscript" if registered else None,
         "r_version": environment.package_versions["r"],
         "scdblfinder_version": environment.package_versions["scdblfinder"],
         "SingleCellExperiment": environment.package_versions["singlecellexperiment"],

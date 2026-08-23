@@ -1,0 +1,80 @@
+[
+  {
+    "case_id": "conversation.scrublet.input.001",
+    "dataset_version": "conversation-v1.0.1",
+    "source": "source_bound_adjudicated",
+    "split": "development",
+    "input": {"query": "Scrublet 应该输入 raw counts 还是归一化矩阵？"},
+    "conversation_state": [],
+    "applicable_metrics": ["routing.domain", "routing.intent", "claim.scientific_precision", "claim.scientific_recall", "citation.precision", "citation.coverage", "answer.response_shape"],
+    "routing_gold": {"domain": "SINGLE_CELL", "intent": "evidence_qa", "task": "doublet_detection"},
+    "answer_gold": [
+      {
+        "claim_id": "scrublet.raw_counts",
+        "claim_text": "Scrublet 的算法从 raw count matrix 开始，再模拟 doublet 并计算近邻 doublet score。",
+        "claim_type": "input_output",
+        "source_span_ids": ["sourcev2:c9b0d3b1e0f6a7048a22"],
+        "scope": "Scrublet method general approach for scRNA-seq",
+        "importance": "critical",
+        "allowed_uncertainty": ["需要先确认 AnnData 中实际 count source"]
+      }
+    ],
+    "safety_gold": null,
+    "expected_trajectory": null,
+    "expected_artifacts": [],
+    "risk_level": "medium",
+    "metadata": {"tool": "Scrublet"}
+  },
+  {
+    "case_id": "conversation.harmony.input.001",
+    "dataset_version": "conversation-v1.0.1",
+    "source": "source_bound_adjudicated",
+    "split": "evaluation",
+    "input": {"query": "Harmony 需要什么输入，输出是什么？"},
+    "conversation_state": [],
+    "applicable_metrics": ["routing.domain", "routing.intent", "claim.scientific_precision", "claim.scientific_recall", "citation.precision", "citation.coverage", "answer.response_shape"],
+    "routing_gold": {"domain": "SINGLE_CELL", "intent": "evidence_qa", "task": "batch_integration"},
+    "answer_gold": [
+      {
+        "claim_id": "harmony.embedding_input_output",
+        "claim_text": "Harmony 接收细胞低维表示和每个细胞的协变量标签，并返回同尺寸的校正坐标矩阵。",
+        "claim_type": "input_output",
+        "source_span_ids": ["sourcev2:bd5f8132711c97b4e432"],
+        "scope": "Harmony embedding-level integration",
+        "importance": "critical",
+        "allowed_uncertainty": ["具体预处理取决于上游 PCA 流程"]
+      }
+    ],
+    "safety_gold": null,
+    "expected_trajectory": null,
+    "expected_artifacts": [],
+    "risk_level": "medium",
+    "metadata": {"tool": "Harmony"}
+  },
+  {
+    "case_id": "conversation.scanorama.input.001",
+    "dataset_version": "conversation-v1.0.1",
+    "source": "source_bound_adjudicated",
+    "split": "evaluation",
+    "input": {"query": "Scanorama 在 Scanpy 里会把整合结果放在哪里？"},
+    "conversation_state": [],
+    "applicable_metrics": ["routing.domain", "routing.intent", "claim.scientific_precision", "claim.scientific_recall", "citation.precision", "citation.coverage", "answer.response_shape"],
+    "routing_gold": {"domain": "SINGLE_CELL", "intent": "evidence_qa", "task": "batch_integration"},
+    "answer_gold": [
+      {
+        "claim_id": "scanorama.obsm_output",
+        "claim_text": "Scanorama 的 Scanpy integration helper 会在每个 AnnData 的 obsm 中加入 X_scanorama。",
+        "claim_type": "input_output",
+        "source_span_ids": ["sourcev2:b9f757749c16210255c0"],
+        "scope": "Scanorama Scanpy integration helper",
+        "importance": "major",
+        "allowed_uncertainty": []
+      }
+    ],
+    "safety_gold": null,
+    "expected_trajectory": null,
+    "expected_artifacts": [],
+    "risk_level": "low",
+    "metadata": {"tool": "Scanorama"}
+  }
+]

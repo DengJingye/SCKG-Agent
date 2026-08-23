@@ -1,0 +1,2109 @@
+[PDF_PAGE 1]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845 1836
+nature methods
+Article
+https://doi.org/10.1038/s41592-025-02799-9
+Scvi-hub: an actionable repository for 
+model-driven single-cell analysis
+ 
+Can Ergen   1,2,7 , Valeh Valiollah Pour Amiri1,7, Martin Kim   1, Ori Kronfeld3, 
+Aaron Streets   1,4,5, Adam Gayoso   1,6 & Nir Yosef   1,2,3 
+The growing availability of single-cell omics datasets presents new 
+opportunities for reuse, while challenges in data transfer, normalization 
+and integration remain a barrier. Here we present scvi-hub: a platform for 
+efficiently sharing and accessing single-cell omics datasets using pretrained 
+probabilistic models. It enables immediate execution of fundamental tasks 
+like visualization, imputation, annotation and deconvolution on new query 
+datasets using state-of-the-art methods, with massively reduced storage 
+and compute requirements. We show that pretrained models support 
+efficient analysis of large references, including the CZI CELLxGENE Discover 
+Census. Scvi-hub is built within the scvi-tools open-source environment 
+and integrated into scverse. Scvi-hub offers a scalable and user-friendly 
+framework for accessing and contributing to a growing ecosystem of 
+ready-to-use models and datasets, thus putting the power of atlas-level 
+analysis at the fingertips of a broad community of users.
+Machine learning models have been central to efforts to catalog cell 
+states in health and disease with single-cell omics technologies 1–3. 
+These models are able to perform a variety of analysis tasks includ -
+ing dimensionality reduction, differential expression comparison, 
+automated cell-type annotation, denoising, deconvolution of spatial 
+data and modality imputation3. With the growth of single-cell data 
+corpora, transfer learning will be an essential technique for accomplish-
+ing such tasks by leveraging large-scale datasets as reference atlases 
+in a computationally efficient and performant manner. At present, 
+transfer learning is primarily used for projecting cells onto a common 
+low-dimensional representation that is used for tasks such as annota-
+tion or trajectory inference4–6. However, moving forward, additional 
+applications will become more prevalent, such as interpretation of 
+spatial data7 prediction of perturbation outcome8, prediction of multi-
+modal information from single-modality data9, detection of anomalous 
+cellular subsets10 or analysis of differential expression11.
+Methods for transfer learning in single-cell omics broadly fall into 
+two categories: non-parametric and parametric. In the non-parametric 
+case, the algorithm uses the reference data directly to remove unwanted 
+sources of variation. For example, Seurat and FastMNN integration 
+utilize mutual nearest neighbors between reference and query data 
+to remove query-specific effects6,12. In the second case, the algorithm 
+uses a parametrized model like a conditional variational autoencoder to 
+reduce the dimension of the reference data as well as remove unwanted 
+variation. This same model can then be leveraged to project new 
+data onto the same low-dimensional space. This approach is used by 
+methods like scVI + scArches4,13,14, and can be efficiently designed, so 
+that at query time only the query dataset is used, and not the original, 
+potentially large, reference dataset. These models can regenerate 
+normalized raw count data with high fidelity from the low-dimensional 
+representation and can be used to analyze the reference data in its 
+original dimension (for example, at the gene level), when only provided 
+with a much smaller (lower dimension) representation of that data.
+While parametric approaches have successfully been used in 
+large-scale analyses 15,16, there remain challenges with realizing the 
+power of reuse of trained models. First, models can be trained using a 
+Received: 13 March 2024
+Accepted: 23 July 2025
+Published online: 8 September 2025
+ Check for updates
+1Center for Computational Biology, University of California, Berkeley, Berkeley, CA, USA. 2Department of Electrical Engineering and Computer Sciences, 
+University of California, Berkeley, Berkeley, CA, USA. 3Department of Systems Immunology, Weizmann Institute of Science, Rehovot, Israel. 4Department 
+of Bioengineering, University of California, Berkeley, Berkeley, CA, USA. 5Chan Zuckerberg Biohub, San Francisco, CA, USA. 6Present address: 
+Google DeepMind, London, UK. 7These authors contributed equally: Can Ergen, Valeh Valiollah Pour Amiri.  e-mail: ergenbehr@gmail.com; 
+adamgayoso@berkeley.edu; nir.yosef@weizmann.ac.il
+
+
+[PDF_PAGE 2]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845
+ 1837
+Article https://doi.org/10.1038/s41592-025-02799-9
+Model contributors have the option to share the data behind 
+their model, enabling downstream analysis (examples in Figs. 2 and 3). 
+The data can be uploaded either in its raw form (count matrix) or in 
+a substantially reduced form, using a new feature we refer to as ‘data 
+minification’ . The low-dimensional posterior parameters of the data 
+can be converted into an approximated and normalized form of the 
+original data, using the generative part of the model. This feature 
+provides a compressed representation of a reference dataset, while still 
+enabling much of the same functionality as with the raw data (Fig. 3). 
+As an example, in scVI, which is based on a conditional variational 
+autoencoder, the minified data would be the latent space coordinates 
+(mean and variance) of each cell. This representation enables efficient 
+downstream analysis such as differential expression, feature correla-
+tion and missing data imputation9,11,13,21,22.
+Notably, the capability of working directly with minified data is 
+becoming essential, as current atlas-level projects contain information 
+on millions of cells, and analysis of those datasets has, therefore, been 
+inherently tied to high-performance computing resources. Data mini-
+fication results in significantly less memory requirements and speeds 
+up generation of expression values (Supplementary Fig. 1), thereby 
+enabling investigation of large-scale atlases on conventional hardware.
+The second set of users scvi-hub caters to are model consumers, 
+who wish to analyze existing (reference) datasets or leverage refer -
+ence datasets to analyze their own (query) data. Model consumers 
+begin by searching and downloading their desired reference model 
+and, if needed, its corresponding data in either minified or raw form. 
+These steps can be done either through the Hugging Face website or 
+directly through the scvi-hub Python API (which internally uses the 
+Hugging Face API). Since scvi-hub is part of the scvi-tools package 
+and the scverse ecosystem23, consumers can seamlessly integrate the 
+downloaded models into existing analysis workflows, which provide 
+a slew of functionalities for exploration, visualization and analysis. 
+Extensive tutorials exist to work with scvi-hub in the R ecosystem as 
+well, thus supporting downstream analysis with Seurat 24 and other 
+popular environments.
+In the following sections, we describe the functionalities for model 
+criticism, which can be used by both contributors (before uploading 
+their models) and consumers (to check existing models before 
+conducting analysis). We then describe the functionalities that are 
+available for consumers through their downloaded models, including 
+both analysis of the reference data (using its minified form) and analysis 
+of user-provided data.
+Evaluation to select models and test their suitability
+Model evaluation is a key feature of scvi-hub, enabling contributors 
+to assess models before uploading and users to judge their relevance 
+and quality. T o support this, we developed scvi.criticism, a module 
+for evaluating models trained with scvi-tools. It implements PPCs, 
+which compare statistics from model-generated data to those from 
+the observed data21,19. Specifically, we compute gene-level and cell-level 
+coefficient of variation and differential expression and assess their 
+similarity. A close match indicates a well-trained model.
+T o demonstrate this, we computed PPC on the Human Lung 
+Cell Atlas (HLCA) dataset25 using the author-provided scANVI model 
+(Fig. 2a,b). The model captured the distribution of observed gene 
+expression well, recovering similar differential expression patterns 
+and even marker expression for regulatory T (Treg) cells, which were not 
+annotated in the original dataset. This shows how pretrained models 
+can recover fine-grained cell types via generated counts (Fig. 2a–f 
+and Supplementary Fig. 2).
+Contributors can use scvi.criticism to compare candidate models 
+(for example, with different hyperparameters) and include these evalu-
+ations in the Model card on Hugging Face. This is particularly helpful for 
+models provided with minified data, where raw counts are unavailable 
+and can provide confidence in the reliability of these generated counts. 
+variety of machine learning libraries and frameworks or use different 
+versions of the same library, making them difficult to quickly ingest and 
+use. Second, there is no standard for how pretrained models should be 
+deposited, which limits reuse to knowledge of a particular publication 
+or model deposition. Finally, it can be difficult to assess the quality of 
+a pretrained model without standardized summary statistics of key 
+performance metrics.
+T o address these issues, we introduce scvi-hub, a platform for 
+sharing and reusing single-cell machine learning models that are imple-
+mented in the scvi-tools codebase14. Scvi-hub provides access to various 
+popular single-cell model architectures spanning the core data analysis 
+tasks, as well as to any future models that will be implemented using 
+the developer API of scvi-tools (for example, refs. 4 ,17,18). Scvi-hub 
+facilitates model sharing through the Hugging Face Model Hub, which 
+offers an efficient, version-controlled and feature-rich programmatic 
+and user-facing interface. Scvi-hub also works with models deposited in 
+cloud-based buckets like AWS S3. Scvi-hub provides functionalities that 
+cater to both model consumers and model contributors. T o the former 
+community, it offers streamlined access to a variety of downstream 
+analysis tasks using the downloaded models. Many of the downstream 
+tasks are also made available in a form that relies on a low-dimensional 
+(minified) version of the reference data (rather than the complete count 
+matrix). This leads to a substantial decrease in requirements for data 
+storage and download bandwidth, thus increasing accessibility and 
+inclusion within the data analysis community. Scvi-hub also offers a 
+collection of tools to enable comparison and evaluation of models 
+before uploading (by contributors) or before use of models for a spe-
+cific analysis (by consumers) as well as a streamlined API for model 
+upload and update (for contributors).
+We demonstrate the utility of scvi-hub in a range of applications. 
+One set of use cases considers reference-based analysis of query 
+datasets—for annotation, differential analysis and deconvolution. A 
+second set of use cases considers only the reference, demonstrating 
+the merit of tissue atlases as resources for making new discoveries. 
+We have seeded scvi-hub with a collection of more than 90 models 
+pretrained on a variety of tissues and experimental conditions from 
+the Tabula Sapiens consortium16 and other large projects (see https://
+huggingface.co/scvi-tools/). Scvi-hub also provides fully featured 
+access to the CELLxGENE Census collection—the largest corpora of 
+single-cell omics datasets assembled to date (mouse and human data at 
+s3://cellxgene-contrib-public/models/scvi).
+Results
+Reusing models pretrained on single-cell datasets
+For the community of contributors, scvi-hub provides features that 
+facilitate both evaluation and sharing of models (Fig. 1). Since all 
+core models in scvi-tools are generative (that is, capable of simulat-
+ing new data), scvi-hub uses posterior predictive checks (PPCs)19 with 
+model-simulated data to evaluate how well it captures the charac -
+teristics of the original input data. Here we implemented previously 
+described metrics like the coefficient of variation20,21 and differential 
+expression-based metrics (Methods). Importantly, these metrics are 
+dataset agnostic, in that they do not require dataset-specific informa-
+tion (such as cell-type labels or sample metadata) and are, therefore, 
+broadly applicable.
+T o share models, scvi-hub leverages the Hugging Face Model Hub, 
+which is a popular platform for sharing and using machine learning 
+models from diverse domains, including natural languages, images and 
+audio. The Hugging Face Model Hub has features that make it ideal for 
+single-cell genomics. One component of this is model discoverability, 
+enabled via an advanced search interface and a uniform documentation 
+and presentation with Model cards (description files that accompany 
+and provide information on the uploaded model). Additionally, the 
+Hugging Face Model Hub provides features for maintaining consistency 
+and backward compatibility through built-in Git-based version control.
+
+
+[PDF_PAGE 3]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845 1838
+Article https://doi.org/10.1038/s41592-025-02799-9
+We illustrate this using the Heart Cell Atlas26, comparing a well-trained 
+model, two poorly trained models and one overfit model (Extended 
+Data Fig. 1 and Methods). Cell-wise coefficient of variation correlations 
+with raw data showed the well-trained model outperformed poorly 
+trained models, while the overfit model failed to generalize to valida-
+tion cells. Differential expression comparisons echoed these results: 
+well-trained and overfit models performed better than poorly trained 
+ones. When cell-type labels were unavailable, we used Leiden clustering 
+for differential expression analysis and find comparable results and 
+conclude that Leiden clusters can be used instead of cell-type labels 
+(Extended Data Fig. 1e,f).
+Another key use of scvi.criticism is evaluating how well a reference 
+model fits a new query dataset. We analyzed epithelial cells from Tabula 
+Sapiens using the HLCA scANVI model as a reference (Extended Data 
+Fig. 2). We projected the data using scArches 4, and then compared 
+model-generated and real expression values. Reassuringly, we observed 
+good performance on lung epithelial cells and airway epithelial cells. 
+These organs are all included in the HLCA reference dataset. For tissues 
+that are not represented in the HLCA, we found substantially worse cor-
+relation, indicating that the model does not capture their underlying 
+distribution of gene expression well. Therefore, criticism allows detect-
+ing reference models that are well suited for the query dataset at hand.
+Scvi-hub can also be extended to multimodal data. For this pur -
+pose, we used the flexible MuData structure, which stores each modal-
+ity separately 21,27. We demonstrate this application using minified 
+models for totalVI that jointly models protein expression and RNA 21. 
+T o highlight its functionalities, we performed an analysis of a large- 
+scale CITE-seq dataset of peripheral blood mononuclear cells in indi-
+viduals with coronavirus disease 2019 (COVID-19)28. We found a good 
+preservation of cell types in totalVI’s latent space (Extended Data 
+Fig. 3a) and found for RNA a high Pearson correlation of both models 
+generated; while for protein expression, we found a lower correlation 
+between both metrics (Extended Data Fig. 3b). T otalVI corrects for 
+unspecific background in CITE-seq measured protein expression; 
+therefore, we expect a lower coefficient of variation and recommend 
+using the corrected estimates as highlighted in the totalVI manuscript.
+Efficient exploration and reanalysis of reference datasets
+The first set of analyses facilitated by scvi-hub is centered on the refer-
+ence datasets, without inclusion of any additional (query) information. 
+obs
+scvi-tools model 
+training
+Hugging Face
+Minify data
+Minified
+qz
+Model.adata
+X
+Evaluate model
+Posterior predictive checks
+obs
+Unified framework for 
+& 
+Model developer 
+Model consumer
+Version control
+Model cards
+Community
+Discoverability
+ 
+Push model
+Pull model
+Exploratory analyses
+Transfer learning
+Knowledge transfer
+x x
+Fig. 1 | Overview of scvi-hub. Depicting the new functionality for model 
+contribution (purple) and retrieval (teal) that is implemented in scvi-hub, and 
+its placement in an analysis workflow. A code snippet is presented for each of 
+the tasks, highlighting the simplicity of this workflow. The workflow for model 
+deposition (for model contributors) consists of training the model on reference 
+data, evaluating model fit, minifying the reference data and uploading the model 
+to the scvi-hub. The training data (minified or raw) can be uploaded as well, either 
+to Hugging Face or using any other online storage system (for example, Zenodo) 
+that can provide a direct link to access the data. This link is included in the Model 
+card (visible through Hugging Face). The workflow for model retrieval (for the 
+model consumer) consists of selecting the desired reference on scvi-hub and 
+using the scvi-hub API for download and analysis. Note that the model consumers 
+do not need to train a model on the reference data, and can also use the minified 
+reference data instead of the raw form, thus lowering the current resource 
+barriers (compute power, time and memory) for analysis. A single line of code 
+switches from the minified version of the data to the full uploaded raw data to 
+allow further downstream analysis.
+
+
+[PDF_PAGE 4]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845
+ 1839
+Article https://doi.org/10.1038/s41592-025-02799-9
+This approach allows for rapid exploration and reanalysis of reference 
+atlases. After searching for a model that fits the user’s specification on 
+Hugging Face (that is, tissue, cell types and a modeling scheme, such as 
+scVI and DestVI), model consumers can pull (download) the model and 
+its corresponding data. Analysis of reference datasets includes opera-
+tions that concern the low-dimensional (latent) representation of cells, 
+such as visualization, clustering, trajectory inference and differential 
+abundance analysis. Additionally, model consumers can perform analy-
+ses at the high-dimensional, omics measurement level by accessing 
+the raw data or by generating count data using the minified format. 
+These high-dimensional representations can then be readily analyzed.
+Downloading minified data and the pretrained model therefore 
+allows preservation of information (compared to downloading raw 
+data) but also the reliance on a much smaller dataset. This permits fast 
+c
+d
+e
+f
+a
+10
+20
+30
+40
+Cell-wise CV (model)
+5
+10
+15
+20
+25
+30
+35
+40
+Cell-wise CV (raw)
+Density
+Identity
+Linear fit
+r2 = 0.84
+Dataset
+20
+40
+60
+80
+100
+Fraction of cells 
+in group (%)
+–5
+0
+5
+log fold change
+B cell lineage
+Dendritic cells
+Macrophages
+Mast cells
+Monocytes
+T cell
+B cell lineage
+Dendritic cells
+Macrophages
+Mast cells
+Monocytes
+T cell lineage
+CD79A
+IGKC
+HLA-DRA
+HLA-DPB1
+TYROBP
+FCER1G
+TPSAB1
+TPSB2
+TYROBP
+SRGN
+IL32
+CD3D
+CD79A
+IGKC
+HLA-DRA
+HLA-DPB1
+TYROBP
+FCER1G
+TPSAB1
+TPSB2
+TYROBP
+SRGN
+IL32
+CD3D
+AT1
+AT2
+B cell lineage
+Basal
+Dendritic cells
+EC arterial
+EC capillary
+EC venous
+Fibroblasts
+Innate lymphoid cell NK
+Lymphatic EC mature
+Lymphatic EC proliferating
+Macrophages
+Mast cells
+Monocytes
+Multi-ciliated lineage
+Myofibroblasts
+None
+Rare
+SM-activated stress response
+Secretory
+SM FAM83D
++
+Submucosal secretory
+T cell lineage
+–1
+TNFRSF4
+TIGIT
+CTLA4
+IL2RA
+Raw expression
+Model expression
+0
+1
+log ratio coeﬀicient of variation
+F1 score
+LFC
+Pearson
+LFC
+Spearman
+auPRC
+0.6
+0.7
+0.8
+0.9
+1.0
+Raw expression
+Model expression
+Cell type
+AT1
+AT2
+B cell lineage
+Basal
+Dendritic cells
+EC arterial
+EC capillary
+EC venous
+Fibroblasts
+Innate lymphoid NK
+LEC diﬀerentiating
+LEC mature
+LEC proliferating
+Macrophages
+Mast cells
+Monocytes
+Multi-ciliated lineage
+Myofibroblasts
+None
+Rare
+SM activated
+Secretory
+SM FAM83D
++
+Submucosal secretory
+T cell lineage
+b
+Banovich_Kropski_2020
+Barbry_Leroy_2020
+Jain_Misharin_2021_10Xv1
+Jain_Misharin_2021_10Xv2
+Krasnow_2020
+Lafyatis_Rojas_2019_10Xv1
+Lafyatis_Rojas_2019_10Xv2
+Meyer_2019
+Misharin_2021
+Misharin_Budinger_2018
+Nawijn_2021
+Seibold_2020_10Xv2
+Seibold_2020_10Xv3
+Teichmann_Meyer_2019
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+7
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+7
+Lymphatic EC diﬀerentiating
+UMAP 1
+UMAP 2
+UMAP 1
+UMAP 2
+UMAP 1
+UMAP 2
+
+
+[PDF_PAGE 5]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845 1840
+Article https://doi.org/10.1038/s41592-025-02799-9
+interaction with the data using all downstream capabilities offered 
+by Scanpy or Seurat, and also all built-in functions in scvi-tools (for 
+example, for differential expression11). As scvi-hub stores the link to 
+the full data object by invoking a single-line function call, the full data 
+can also be downloaded and findings made on minified data can be 
+validated on the full raw data.
+Reference-based analysis of query data by transfer learning
+The most fundamental part in analyzing a query dataset given the 
+appropriate reference is to represent the query data using the refer-
+ence model. In the context of scvi-tools, this is done by calculating the 
+coordinates of each query cell in the latent space of cell states that is 
+encoded by the model and that is initially populated by the reference 
+cells (Fig. 2b). While the encoder networks in scvi-tools can readily 
+provide latent representation for any query cells, these representa-
+tions might be distorted by batch effects. An efficient way to address 
+this is to perform minimal training only to capture these batch effects 
+while leaving the model otherwise unchanged. This procedure, which 
+is implemented by scArches4, effectively produces a joint embedding 
+of the reference and query dataset. Such joint representations can be 
+leveraged for a variety of downstream tasks that are readily available 
+through scvi-hub. Here, we demonstrate the capabilities of scvi-hub 
+to analyze query data with transfer learning, through four such fun-
+damental tasks: visualization, annotation, comparative analysis and 
+deconvolution.
+As a first test case, we used a query dataset of three healthy 
+individuals and three individuals with emphysema 29 and designated 
+the HLCA as the reference. The two datasets (query and reference) 
+are well integrated with use of scArches, leading to an informative, 
+reference-informed, visualization of the query data (Fig. 3a,b ). T o 
+annotate the states of cells in our query, we transferred labels from 
+HLCA using a simple k-nearest-neighbors classifier (using the reference 
+embedding in the joint latent space to identify k -neighborhoods; 
+Fig. 3c and Supplementary Fig. 3). We found that the reference-based 
+annotation is consistent with the labels provided by the original 
+study of the query dataset, yet it adds a great deal of resolution. For 
+instance, cells that were originally labeled as endothelial cells were now 
+divided into venous systemic, venous capillary, arterial and aerocyte 
+capillary (Supplementary Fig. 3a,b).
+The probabilistic representation facilitates comparative analysis 
+within the query dataset. We use Milo (which relies on the integrated 
+embedding space) to compare the composition of cell states in the 
+three healthy query samples versus the three emphysema-affected 
+samples. We found a significant (false discovery rate (FDR) < 10%) and 
+reproducible increase in the abundance of certain states of fibroblasts 
+in the emphysema samples (Fig. 3d and Supplementary Fig. 4a,b). T o 
+get more insights on the shift in cell states, we next used the differential 
+expression function in scvi-tools to explore disease-associated gene 
+expression changes (Fig. 3e). We found that fibroblasts in individuals 
+with emphysema upregulate pro-inflammatory chemokines that 
+attract neutrophils (CXCL1/CXCL2/CXCL8) and monocytes (CCL2, CSF3).
+The original publication highlighted the role of fibroblasts in 
+inducing a niche for resident memory T cells, further corroborated 
+by the fact that depletion of fibroblasts in a mouse model led to a 
+decrease in resident interleukin-17-producing helper T cells. There -
+fore, our reference-powered analysis highlights additional putative 
+mechanisms associated with neutrophils and monocytes. Indeed, 
+neutrophils release granule proteins like neutrophil elastase and 
+myeloperoxidase and have thus been associated with emphysema30. 
+Similarly, monocyte-derived macrophages produce metalloprotein-
+ases leading to tissue remodeling in emphysema31.
+When comparing these insights to differentially expressed genes 
+identified with pseudobulk differential expression analysis or training 
+a scANVI model from scratch (Methods), we were not able to iden -
+tify the same gene signature (Supplementary Figs. 5 and 6). When 
+validating our findings in raw gene expression, we found substantial 
+interindividual variation especially in the control samples (Fig. 3f 
+and Supplementary Fig. 6). Clinical metadata is scarce for healthy 
+Fig. 2 | Reference-only tasks enabled by scvi-hub. Using the HLCA25 as an example 
+for a reference dataset in scvi-hub. The scANVI model object and a minified (latent 
+space only) representation of the HLCA were used for common downstream tasks. 
+a,b, Visualization with uniform manifold approximation and projection (UMAP), 
+with cells colored by data source indicating the original study (a) and with 
+cells colored by cell type (b). c, A single posterior predictive sample is used 
+to estimate model expression. Expression is displayed after library-size 
+normalization and log1p transformation. d, Coefficient of variation (CV) of the 
+HLCA scANVI model. T op: each dot is a cell. The y axis reports the cell-wise CV 
+computed on the raw data. The x axis reports the same metric computed on the 
+generated data. Bottom: discrepancy (log2 ratio) between cell-wise CV evaluated 
+on model-generated counts versus raw data, overlaid on the UMAP embedding. 
+e, PPCs using differential expression between the cell types in b (one versus all); 
+each dot represents metrics for one cell type. Reported are: F1 accuracy, evaluated 
+by overlap of the top 100 genes (using raw data versus generated data for 
+differential expression analysis), Pearson and Spearman correlation coefficients 
+between the log2fold changes (LFCs) evaluated on raw and generated counts, and 
+area under the precision–recall curve (auPRC) with genes identified by analysis of 
+the raw data (adjusted P value below 0.2) as the set of true hits and gene ranking 
+defined by P values evaluated on the generated counts. Box plots show the median 
+(center line), the interquartile range (box bounds represent the 25th and 75th 
+percentiles), the whiskers extend to the minimum and maximum values within 
+1.5 times the interquartile range from the lower and upper quartiles, respectively. 
+Points outside this range are shown as outliers. f, Comparison of top marker genes 
+for all immune cell types (taking the top two for each type). Entries are colored 
+by LFC of the respective one-versus-all comparison and sized by the number of 
+cells with nonzero values for the respective gene in the raw data (left) or model-
+estimated proportion of expressing cells (right; Methods). SM, smooth muscle.
+Fig. 3 | Query-to-reference mapping tasks enabled by scvi-hub. a, Joint 
+embedding and UMAP visualization of the emphysema dataset (as query) and HLCA 
+(as reference); cells are colored by their respective tissue and dataset. Q denotes 
+the query dataset, while R denotes the reference dataset. b, Visualization of 
+the reference cells in the same UMAP coordinates, colored by coarse-level type 
+(ann_level_3 in HLCA). For display purposes, different annotations for smooth 
+muscle cells and lymphatic endothelial cells were summarized to one label. 
+c, UMAP was computed on query cells only. Cells are colored by their transferred 
+cell type (using summary of fine-grained labels to the annotation level of b; 
+Supplementary Fig. 3b). d, Differential abundance computed using Milo between 
+cells from healthy donors versus individuals with emphysema. Plot is colored 
+by the predicted log2fold change for all neighborhoods with a significant 
+change (FDR < 10%). e, Model-based differential gene expression, comparing 
+fibroblasts from the healthy versus diseased samples in the query dataset. Mean 
+log2fold change is displayed on the x axis and probability for non-differential 
+expression on the y axis. T op 20 genes based on their estimated significance 
+are listed. All displayed genes are significant with an FDR < 10%. Genes with a 
+model-estimated mean <1 × 10−4 in both groups are removed before display. 
+f, Violin plots of key differentially expressed genes based on the raw query data 
+(library-size normalized and log1p transformed). g, Embedding of T cells from 
+the cross-tissue immune cell dataset (as query) integrated with HLCA reference 
+dataset. Query cells almost entirely line up with CD3D+ reference cells (that is, 
+lymphoid cells, mostly T cells). CD3D expression is library-size normalized and 
+log1p transformed. h, Confusion matrix between the finest annotation scheme in 
+HLCA (rows) and the labels infused using the query annotations (columns). 
+i, Hand-selected canonical marker genes for cell types in h are displayed. Dot 
+plots are computed based on the raw HLCA data (library-size normalized and 
+log1p transformed). j, Pseudobulk differential expression analysis between 
+TEM/TEMRA CD8 cells from COVID-19-infected samples versus healthy controls 
+using PyDESeq2. DE, differential expression; EC, endothelial cell.
+
+
+[PDF_PAGE 6]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845
+ 1841
+Article https://doi.org/10.1038/s41592-025-02799-9
+controls in the original study and it is not clear whether this deceased 
+donor had any ongoing infection that might explain expression of 
+pro-inflammatory cytokines. Small datasets with few individuals 
+(three donors per group) have limited power to detect disease-specific 
+changes and ideally results should be confirmed using orthogonal 
+assays or a larger cohort.
+Another area of single-cell genomics where a form of transfer 
+learning can be used to gain new insight is spatial transcriptomics. 
+Since the resolution of most sequencing-based spatial transcriptomics 
+protocols is at a level coarser than a single cell, deconvolution is needed 
+to estimate the cellular composition of each measurement unit (often 
+referred to as a spot). Algorithms such as DestVI 7 and Stereoscope32 
+UMAP 1
+UMAP 2
+UMAP 1
+UMAP 2
+UMAP 1
+UMAP 2
+a
+b
+c
+d
+e
+Cell types (R)
+Diﬀ. abundance (Q)
+Predicted cell types (Q)
+−5
+0
+5
+CD3D raw expression
+Data source
+0
+1
+2
+3
+4
+5
+Reference
+Query
+LFC abundance emphysema vs healthy
+0
+1
+2
+3
+4
+5
+0
+2
+4
+6
+0
+1
+2
+3
+4
+5
+6
+0
+1
+2
+3
+4
+5
+6
+0
+2
+4
+6
+0
+2
+4
+6
+Healthy control
+Emphysema
+AT1
+AT2
+B cell
+Basal
+Dendritic cells
+EC arterial
+EC capillary
+EC venous
+Fibroblasts
+ILC/NK
+Lymphatic EC
+Macrophages
+Mast cells
+Monocytes
+Multi-ciliated
+Myofibroblasts
+Secretory
+Smooth muscle
+T cell lineage
+AT1
+AT2
+B cell
+Basal
+Dendritic cells
+EC arterial
+EC capillary
+EC venous
+Fibroblasts
+ILC/NK
+Lymphatic EC
+Macrophages
+Mast cells
+Monocytes
+Multi-ciliated
+Myofibroblasts
+Rare
+Secretory
+T cell lineage
+Tissue (Q + R)
+Nose R
+Lung R
+Airway R
+Lung Q
+−1
+0
+1
+2
+log2fold changes emphysema vs healthy control
+0.4
+0.6
+0.8
+1.0
+1.2
+–log10(probability DE)
+Normalized expression
+CXCL8
+CSF3
+CXCL1
+CCL19
+CCL2
+MMP9
+IL6
+CST1
+ADAMTS4
+CCL11
+CXCL2
+TFPI2
+LIF
+AREG
+CCL20
+AZGP1
+SFRP2
+MT1A
+CXCL3
+VCAM1
+PI16
+NR4A3
+SERPINE2
+20
+40
+60
+80
+100
+Fraction of cells 
+in group (%)
+0
+2.5
+Mean expression 
+in group
+HAS1
+CXCL1
+CXCL2
+CXCL3
+CCL2
+IL6
+SFRP2
+0
+2
+4
+6
+0
+1
+2
+3
+4
+5
+PI16
+Trm_Tgd
+TEM
+/TEMRA
+_CD8
+TRM
+/TEM
+_CD8
+Trm_gut_CD8
+NK_CD56
+hi
+ILC3
+Tγδ_CRTAM
++
+TRM
+_TH
+1/T
+H
+17
+TFH
+T naive/CM_CD8
+T naive/CM_CD4
+T_CD4/CD8
+Treg
+ cells
+Teﬀ
+/EM_CD4
+MAIT
+CD4_activated
+NK_CD16
++
+Cycling T & NK
+Infused label
+CD8
++
+ T cells
+CD4
++
+ T cells
+NK cells
+Proliferating T
+Original annotation
+g
+h
+i
+jf
+−4
+−2
+0
+2
+4
+log2fold changes CD8+ TRM COVID-19 vs healthy
+0
+5.0
+10.0
+15.0
+20.0
+–log10(P value)
+IFI16
+LAG3
+CD38
+TIMD4
+MX1
+MX2
+GBP2
+HAVCR2
+IFI44
+IFNAR2
+KLRB1
+SAMD9L
+XAF1
+RSAD2
+NK_CD16
++
+NK_CD56
+hi
+TEM /TEMRA _CD8
+Tγδ_CRTAM
++
+TRM /TEM _CD8
+Cycling T & NK
+Treg cells
+ILC3
+MAIT
+T naive/CM_CD8
+Teﬀ/EM_CD4
+T naive/CM_CD4
+TFH cells
+CD4_activated
+T_CD4/CD8
+TRM _Tγδ
+TRM _TH 1/TH 17
+TRM _gut_CD8
+CD3E
+CD8A
+TYROBP
+NKG7
+CCR7
+IL2RA
+TIGIT
+CTLA4
+TNFRSF4
+CD40LG
+MKI67
+GZMB
+
+
+[PDF_PAGE 7]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845 1842
+Article https://doi.org/10.1038/s41592-025-02799-9
+were developed to leverage models that are pretrained on non-spatial 
+single-cell RNA-sequencing (scRNA-seq) datasets to perform 
+such deconvolutions. Scvi-hub users can download the scRNA-seq 
+parts of DestVI (CondSCVI) and Stereoscope models and deconvolve 
+their spatial data. We demonstrate this using a spatial dataset of 
+a human prostate, generated with 10x Visium technology 33. DestVI 
+using a pretrained model on prostate data from Tabula sapiens dis -
+tinguishes prostate glands and stromal regions (Extended Data Fig. 3). 
+Beyond deconvolution, the use of DestVI estimates cell-type-specific 
+gene expression inside each relevant spot, thus opening the way for 
+downstream analysis such as comparing how cells of the same type 
+differ between tissue areas7.
+Infusing new insights from query-to-reference datasets
+The joint embedding of query and reference datasets can also be 
+used for an additional, less prevalent procedure, which we termed 
+label infusion. While reference atlases tend to include large numbers of 
+samples and cells, their levels of annotations can be limited in granular-
+ity, at least for some compartments. Conversely, other more narrowly 
+focused datasets may provide higher resolution. By reannotating refer-
+ence datasets, fine cellular subsets can be identified and their function 
+in disease contexts can be better studied leveraging the power of the 
+reference dataset.
+We demonstrate label infusion by refining the cell-type labeling of 
+natural killer (NK) and T cells in the HLCA dataset (Fig. 3g). We used a 
+recent study of immune cells across different organs34, subsetted this 
+study to only NK and T cells across all different organs, and integrated 
+the resulting ‘query’ dataset with the HLCA reference. After integra -
+tion with scArches, we confirm that the query cells are well integrated 
+with NK cells and T cells of the reference dataset. The joint embedding 
+then helped us infuse labels from the query to the reference (Fig. 3h). 
+This analysis confirmed the presence of Treg cells in the HLCA (Supple-
+mentary Fig. 7). We further validated other infused cell-type labels by 
+checking their canonical cell-type marker genes (Fig. 3i). For instance, 
+we confirmed that the cells relabeled as naive T cells indeed express the 
+highest level of CCR7. In addition, we used scTriangulate35 and found 
+that most infused labels are predicted to be an improvement over the 
+original labels (Supplementary Fig. 8).
+T o demonstrate how infused labels can provide additional insights, 
+we focused on a subset of cells that we reannotated as CD8+ resident 
+memory T cells (labeled as TEM/TEMRA CD8 in Fig. 3h). Because the HLCA 
+includes samples from individuals with COVID-19 in addition to healthy 
+donors, we analyzed effects of infection on this more narrowly defined 
+immune subset. Markers of exhaustion of CD8 + T cells (LAG3, CD38, 
+TIMD4 and HAVCR2) and interferon-regulated genes (GBP2, MX1, 
+MX2, IFI16, XAF1, SAMD9L and IFI44; Fig. 3j) were upregulated, both of 
+which are consistent with recent, more targeted, studies of COVID-19 
+infection36,37.
+Scalable access to CZ CELLxGENE Discover Census
+Large single-cell omics collections, like the CELLxGENE Census (CZI, 
+2023), enable a comprehensive view of cell types and states in various 
+tissue contexts, thus starting to realize the potential of the cell atlases38. 
+The census includes over 30 million human cells across diverse tissues, 
+diseases and conditions. Instead of requiring a specific reference data-
+set, users can now compare queries against the full census—in a manner 
+reminiscent of searching DNA sequences in a reference genome.
+T o showcase scvi-hub’s utility with census-scale data, we use an 
+scVI model trained on the entire census, managed by the CELLxGENE 
+Census team and updated regularly. This model is available through 
+scvi-hub, thus providing a way for users to leverage this ever-growing 
+resource that spans diverse populations, tissues, disease contexts and 
+cell subsets (https://chanzuckerberg.github.io/cellxgene-census/). 
+While the full dataset requires 500 GB and hours to download, its 
+minified model form is just 30 GB and downloads in under 30 min, 
+significantly lowering compute and bandwidth barriers for leveraging 
+this potentially transformative resource.
+We analyzed a chimeric antigen receptor T (CAR T) cell dataset39, 
+where scRNA-seq was performed on infusion bags from 24 individuals 
+treated with anti-CD19 CAR therapy. These bags contain diverse 
+CAR T cell states, and linking them to treatment response can inform 
+prognosis and guide therapy optimization40.
+Using scArches via scvi-hub, we mapped the CAR T dataset onto 
+the census without needing to retrain on the remaining 30 million 
+cells. Model criticism revealed good agreement between predicted 
+and observed coefficient of variation, except for low-quality cells 
+with high mitochondrial/nuclear RNA content (Fig. 4a and Supple -
+mentary Fig. 9). The query integrated well into the census immune 
+subsets. For cell-type annotation, we used a high-quality immune 
+cell reference from the census34, and a k-nearest-neighbors classifier 
+on the latent space. Transferred labels matched marker expression 
+patterns and added granularity—for example, reclassifying CD4+ T cells 
+as Treg cells based on FOXP3 expression, and refining CD8 + T cells as 
+terminally differentiated (Fig. 4 and Supplementary Fig. 9).
+We here used a very broad reference dataset spanning the whole 
+CELLxGENE Census as no appropriate reference dataset for CAR T cells 
+existed. We further scrutinize our approach by using a reference model 
+trained only on a cross-organ immune cell atlas34. This approach labeled 
+the same cells as myeloid cells (dendritic cells and macrophages; Sup-
+plementary Fig. 10). However, within T cells we found that the model 
+trained on the full CELLxGENE Census better preserved the original 
+distinction between CD4 + and CD8+ T cells that was experimentally 
+verified39. Therefore, we conclude that for studies that are substan -
+tially different from a reference dataset, using a census-wide model 
+still allows accurate reference mapping and can be used for cell-type 
+label transfer.
+The census-embedded and reannotated representation of the 
+reference data opens a way to further study the association between 
+responses to CAR therapy and the composition of the infusion 
+products. T o this end, we applied Milo41 on the embedding coordi -
+nates of the query dataset to identify cell subsets that are associated 
+with poorer responses. We found that terminally differentiated CD8+ 
+T cells and Treg cells are associated with reduced response (FDR < 10%; 
+Fig. 4e). The findings on terminally differentiated CD8 + T cells 
+align well with the results in the original study, which reported a 
+subcluster C1 with markers of exhaustion in partial responders. The 
+findings on Treg cells also agree with previous reports about negative 
+association between their concentration in the circulating CAR popu-
+lation after infusion, and the success of CAR therapy 42. We addition-
+ally used milo to identify cell states that are significantly (FDR < 10%) 
+associated with cytokine-release syndrome (CRS), which is the most 
+common and potentially life-threatening adverse reaction to CAR T 
+therapy. We identified a subset of CD8+ T cells with high proliferation 
+(MKI67 positive) and expression of CCR7 to be negatively associated 
+with CRS (Fig. 4f). In addition, these cells express higher levels of GZMB, 
+GZMA, LAG3 and CCL5 compared to naive CD8+ T cells (Leiden cluster 2; 
+Fig. 4g,h). We have therefore demonstrated that our reference-based 
+analysis can uncover new cell states associated with treatment response 
+and negative side effects, while reducing manual optimization of vari-
+ous hyperparameters.
+Surprisingly, our reannotation also identified a population of 
+dendritic cells that are positive for CCR7, CCL17 and CCL22 not identi-
+fied in the original study (Fig. 4d and Supplementary Fig. 9). Dendritic 
+cells are not meant to be included in the infusion products. However, 
+overexpression of CCR4 on CAR T cells, which interacts with CCL17 
+and CCL22, has been demonstrated to increase efficiency of T cell 
+treatment43, suggesting a potential beneficial effect in co-stimulation 
+of T cells with activated donor-derived dendritic cells.
+Label infusion to the CELLxGENE Census datasets additionally 
+allows the study of specific cell types across diverse conditions 
+
+
+[PDF_PAGE 8]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845
+ 1843
+Article https://doi.org/10.1038/s41592-025-02799-9
+CD4-positive helper T cell
+CD8 memory T cell
+CD16-pos, CD56-low NK
+Alveolar macrophage
+Dendritic cell, human
+EM CD4-positive, T cell
+CD8-positive T cell terminal
+lymphocyte
+Naive CD4-positive T cell
+Naive CD8-positive T cell
+Other
+Regulatory T cell
+TNFRSF4
+GZMK
+HBB
+XCL1
+MAL
+DST
+HLA-DQA2
+GZMH
+H3C3
+LTB
+HLA-DQA1
+GNLY
+PLK1
+KLRC1
+TTN
+MCTP2
+CCL19
+TMEM176B
+CCL17
+HBA1
+CCL22
+H2AC14
+PECAM1
+CCL4L2
+KLRB1
+EBI3
+XCL2
+H1-5
+CENPA
+H3C2
+HBA2
+CHI3L1
+INHBA
+CSF2
+CCR7
+CCL5
+FOXP3
+IL4I1
+CD8 + T cell subclusters
+2
+4
+5
+6
+7
+8
+10
+Other
+LAG3
+CCR7
+MKI67
+GZMK
+GZMB
+GZMH
+CCL5
+GZMA
+7
+10
+4
+8
+2
+CD8 + T cell subcluster
+6
+5
+Other
+Diﬀerential abundance CRS
+−5
+0
+5
+LFC abundance responder vs nonresponder
+10
+15
+20
+25
+Model expression
+5
+10
+15
+20
+25
+Raw expression
+Density
+Identity
+Linear fit
+r2 = 0.65
+Coeﬀicient of variation (cell)
+Myeloid
+T cell
+Other
+NK cell
+B cell
+Mast cell
+Coarse labels before transfer
+a
+d
+e
+f
+c
+b
+g
+h
+20
+40
+60
+80
+100
+Fraction of cells 
+in group (%)
+0
+2.5
+Mean expression 
+in group
+LFC abundance high CRS vs no CRS
+Enrichment neighborhood
+0.2
+0.4
+0.6
+0.8
+Probability CAR T
+Diﬀerential abundance response
+20
+40
+60
+80
+100
+Fraction of cells 
+in group (%)
+0
+2.5
+Mean expression 
+in group
+−5
+0
+5
+UMAP 1
+UMAP 2
+UMAP 1
+UMAP 2
+UMAP 1
+UMAP 2
+Fig. 4 | Query analysis using a census-level pretrained model. Using a custom 
+model trained on the CELLxGENE Census data to analyze a dataset with CAR T 
+cells. a, CV on query data. Each dot is a cell. The y axis reports the cell-wise CV 
+computed on the raw data and the x axis on generated data. b, Probability that 
+the cell neighborhood contains CAR T cells displayed on a random subset of the 
+census dataset. We concatenated the query data and the same number of cells 
+from the whole census dataset. Cells are colored by the probability that cells in 
+the neighborhood are query cells. Gray cells contained no cells from the query 
+dataset in the neighborhood graph. c, Same embedding as in b colored by the 
+cell-type labels of the cross-tissue immune cell atlas34. Coarse labels are provided 
+(compare Supplementary Fig. 9c). Most CAR T cells overlap with regions with 
+T cells and myeloid cells. d, Marker genes were identified using the differential 
+expression function in scVI. Displayed is the percentage of cells expressing a 
+gene as well as the mean expression after library-size normalization and log1p 
+transformation of raw counts. e, Milo differential abundance analysis. Displayed 
+is the estimated log2fold change in abundance for all cell neighborhoods with 
+an FDR < 10%. f, Similar analysis, while estimating the effect size for individuals 
+without and with high-grade (ICANS grade 3 and 4) CRS. Displayed is the 
+estimated log2fold change for cell neighborhoods with an FDR < 10%. g, Leiden 
+clustering of all clusters annotated manually as CD8+ T cells. Cells in clusters with 
+low quality are annotated as ‘Other’ . h, Hand-selected marker genes are displayed 
+for clusters in g. Cluster 8 is associated with no CRS and good response. Displayed 
+is the percentage of cells expressing a gene as well as the mean expression after 
+library-size normalization and log1p transformation of raw counts.
+
+
+[PDF_PAGE 9]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845 1844
+Article https://doi.org/10.1038/s41592-025-02799-9
+and tissues. We performed label infusion to identify T reg cells in the 
+census dataset. We identified 300,000 Treg cells and linked an activated 
+state with cancer across diverse tissues (Supplementary Informa -
+tion and Extended Data Fig. 5). Comparative studies across diseases 
+and tissues will facilitate identifying common disease patterns in 
+the future.
+Discussion
+With the growing corpus of single-cell omics datasets, including 
+atlas-scale efforts, transfer learning has become pivotal for analyzing 
+new and revisited datasets. Yet, adoption remains limited for two main 
+reasons: first, large reference datasets require significant comput-
+ing resources and integration expertise; second, there is a lack of a 
+platform to facilitate communication and infrastructure to support 
+quality control, and data access between data providers and users. 
+scvi-hub addresses these challenges by providing a platform for sharing 
+not only single-cell data but also pretrained models. The sharing of 
+models helps lower the need for technical expertise and expensive 
+computing resources (for example, to process atlas-scale references 
+and integrate them with query data) and the respective API was 
+designed to facilitate a wide array of analyses.
+The decentralized nature of scvi-hub—leveraging Hugging Face 
+and AWS S3—enables broad community access through user-friendly 
+interfaces. We envision three main user groups: (1) individual resear-
+chers sharing data and making analyses reproducible after publica -
+tion, (2) large-scale atlas efforts using it for advanced analysis and 
+(3) researchers using pretrained models for tasks like cell-type anno-
+tation or spatial deconvolution. T o demonstrate this, we presented 
+several case studies showing that incorporating external references 
+can improve and enrich the analysis of individual datasets and provide 
+new insights into disease mechanisms and the pertaining effects on 
+cell-type composition and gene expression.
+The model-centric approach of scvi-hub enables representation 
+of large reference datasets in a minified format, which enables access 
+with limited memory resources or download bandwidth and thereby 
+accelerates access to those valuable resources. We demonstrate how 
+high-quality gene expression data can be generated from these latent 
+codes. Models within scvi-tools require limited computing resources 
+and inference can be executed on a CPU. This sets these models apart 
+from recent foundational models such as Geneformer or scGPT that 
+require dedicated computing resources and do not generate count 
+data that can be used for downstream analysis 44,45. Recently, scPrint 
+was proposed, a model that can generate count data and allow efficient 
+query mapping; however, scvi-tools-based models outperform it in 
+terms of efficiency and integration performance46. We hope scvi-hub 
+broadens access to single-cell analysis, especially for those with lim -
+ited resources. Validating findings in the original expression space, 
+however, is key and training models using generated data might lead to 
+biased models. Scvi-hub can serve as a central gateway to data reposito-
+ries, like CELLxGENE Discover47, which allows users to access selected 
+portions of very large datasets (for example, genes or subpopulations 
+highlighted by the model-based analysis) for close inspection. We 
+highlight this capability by reanalyzing an existing CAR T dataset. We 
+highlight label harmonization by identifying a Treg population shared 
+across all types of cancer well represented in the current repository. 
+Challenges remain—for example, metadata often mislabel stimulated 
+cells as healthy or tissues with unrelated diseases. Annotation harmo-
+nization, as pursued by projects like HuBMAP48, will be key to enabling 
+more reliable cross-study analysis.
+T o make scvi-hub a valuable resource for the community and 
+improve model-based analysis of single-cell sequencing studies, we 
+provide tutorials in Google Colab highlighting step-by-step guides of 
+common analysis steps. The aim of scvi-hub is to provide a homoge -
+neous API to the user and facilitate easy access to reference models. 
+T o enable this simple API, it is limited to models within the scvi-tools 
+framework and does not extend to other single-cell models like Gen-
+eformer or scGPT44,45.
+An important part of the interface between data providers and 
+consumers is the ability to criticize and reach informed decisions about 
+the merit of a given reference model. We introduce scvi-criticism, a tool 
+for assessing models before uploading and for determining how well 
+a query dataset fits a reference. The purpose of criticism is merely to 
+compare different models on the same dataset instead of discarding the 
+best model for a specific dataset. However, we aim for a cell-wise coeffi-
+cient of variation r2 above 0.4 and a marker gene overlap (measured with 
+F1-score) between model-generated and observed expression beyond 
+80%. If no suitable reference exists, we show that models trained on the 
+CELLxGENE Census generalize well, for example, enabling detection 
+of dendritic cells in CAR T cell data.
+Scvi-hub aims to foster a model-driven paradigm in the single-cell 
+data analysis community—one where models are easy to find, access, 
+develop and share, and can be efficiently leveraged to analyze various 
+aspects of new and existing datasets. We expect it to become a grow-
+ing resource, catering for new types of analyses, use cases and data 
+modalities.
+Online content
+Any methods, additional references, Nature Portfolio reporting sum-
+maries, source data, extended data, supplementary information, 
+acknowledgements, peer review information; details of author contri-
+butions and competing interests; and statements of data and code avail-
+ability are available at https://doi.org/10.1038/s41592-025-02799-9.
+References
+1. Kharchenko, P. V. The triumphs and limitations of computational 
+methods for scRNA-seq. Nat. Methods 18, 723–732 (2021).
+2. Wagner, A., Regev, A. & Yosef, N. Revealing the vectors of cellular 
+identity with single-cell genomics. Nat. Biotechnol. 34, 1145–1160 
+(2016).
+3. Heumos, L. et al. Best practices for single-cell analysis across 
+modalities. Nat. Rev. Genet. 24, 550–572 (2023).
+4. Lotfollahi, M. et al. Mapping single-cell data to reference atlases 
+by transfer learning. Nat. Biotechnol. 40, 121–130 (2022).
+5. Kang, J. B. et al. Efficient and precise single-cell reference atlas 
+mapping with Symphony. Nat. Commun. 12, 5890 (2021).
+6. Hao, Y. et al. Dictionary learning for integrative, multimodal, and 
+scalable single-cell analysis. Nat. Biotechnol. 42, 293–304 (2024).
+7. Lopez, R. et al. DestVI identifies continuums of cell types in spatial 
+transcriptomics data. Nat. Biotechnol. 40, 1360–1369 (2022).
+8. Roohani, Y., Huang, K. & Leskovec, J. Predicting transcriptional 
+outcomes of novel multigene perturbations with GEARS. 
+Nat. Biotechnol. 42, 927–935 (2024).
+9. Ashuach, T. et al. MultiVI: deep generative model for the 
+integration of multimodal data. Nat. Methods 20, 1222–1231 
+(2023).
+10. Dann, E. et al. Precise identification of cell states altered in 
+disease using healthy single-cell references. Nat. Genet. 55, 
+1998–2008 (2023).
+11. Boyeau, P. et al. An empirical Bayes method for differential 
+expression analysis of single cells with deep generative models. 
+Proc. Natl Acad. Sci. USA 120, e2209124120 (2023).
+12. Haghverdi, L., Lun, A. T. L., Morgan, M. D. & Marioni, J. C. Batch 
+effects in single-cell RNA-sequencing data are corrected by 
+matching mutual nearest neighbors. Nat. Biotechnol. 36, 421–427 
+(2018).
+13. Lopez, R., Regier, J., Cole, M. B., Jordan, M. I. & Yosef, N. Deep 
+generative modeling for single-cell transcriptomics. Nat. Methods 
+15, 1053–1058 (2018).
+14. Gayoso, A. et al. A Python library for probabilistic analysis of 
+single-cell omics data. Nat. Biotechnol. 40, 163–166 (2022).
+
+
+[PDF_PAGE 10]
+
+Nature Methods | Volume 22 | September 2025 | 1836–1845
+ 1845
+Article https://doi.org/10.1038/s41592-025-02799-9
+15. Suo, C. et al. Mapping the developing human immune system 
+across organs. Science 376, eabo0510 (2022).
+16. Jones, R. C. et al. The Tabula Sapiens: a multiple-organ, single-cell 
+transcriptomic atlas of humans. Science 376, eabl4896 (2022).
+17. Weinberger, E., Lin, C. & Lee, S.-I. Isolating salient variations of 
+interest in single-cell data with contrastiveVI. Nat. Methods 20, 
+1336–1345 (2023).
+18. Kleshchevnikov, V. et al. Cell2location maps fine-grained cell 
+types in spatial transcriptomics. Nat. Biotechnol. 40, 661–671 
+(2022).
+19. Gelman, A., Meng, X. L. & Stern, H. Posterior predictive 
+assessment of model fitness via realized discrepancies. Stat. Sin. 
+6, 733–807 (1996).
+20. Levitin, H. M. et al. De novo gene signature identification from 
+single-cell RNA-seq with hierarchical Poisson factorization. 
+Mol. Syst. Biol. 15, e8557 (2019).
+21. Gayoso, A. et al. Joint probabilistic modeling of single-cell 
+multi-omic data with totalVI. Nat. Methods 18, 272–282 (2021).
+22. Steier, Z. et al. Single-cell multiomic analysis of thymocyte 
+development reveals drivers of CD4+ T cell and CD8+ T cell 
+lineage commitment. Nat. Immunol. 24, 1579–1590 (2023).
+23. Virshup, I. et al. The scverse project provides a computational 
+ecosystem for single-cell omics data analysis. Nat. Biotechnol. 41, 
+604–606 (2023).
+24. Butler, A., Hoffman, P., Smibert, P., Papalexi, E. & Satija, R. 
+Integrating single-cell transcriptomic data across different 
+conditions, technologies, and species. Nat. Biotechnol. 36, 
+411–420 (2018).
+25. Sikkema, L. et al. An integrated cell atlas of the human lung in 
+health and disease. Nat Med. 29, 1563–1577 (2023).
+26. Litviňuková, M. et al. Cells of the adult human heart. Nature 588, 
+466–472 (2020).
+27. Bredikhin, D., Kats, I. & Stegle, O. MUON: multimodal omics 
+analysis framework. Genome Biol. 23, 42 (2022).
+28. Stephenson, E. et al. Single-cell multi-omics analysis of the 
+immune response in COVID-19. Nat. Med. 27, 904–916 (2021).
+29. Wang, C. et al. Dysregulated lung stroma drives emphysema 
+exacerbation by potentiating resident lymphocytes to suppress 
+an epithelial stem cell reservoir. Immunity 56, 576–591 (2023).
+30. Gernez, Y., Tirouvanziam, R. & Chanez, P. Neutrophils in chronic 
+inflammatory airway diseases: can we target them and how? 
+Eur. Respir. J. 35, 467–469 (2010).
+31. Shapiro, S. D. The macrophage in chronic obstructive pulmonary 
+disease. Am. J. Respir. Crit. Care Med. https://doi.org/10.1164/ 
+ajrccm.160.supplement_1.9 (2012).
+32. Andersson, A. et al. Single-cell and spatial transcriptomics 
+enables probabilistic inference of cell type topography. 
+Commun. Biol. 3, 565 (2020).
+33. FFPE prostate tissue from human (Visium). Spatial gene 
+expression by Space Ranger v2.0.0. 10x Genomics https://www. 
+10xgenomics.com/resources/datasets/human-prostate-cancer- 
+adjacent-normal-section-with-if-staining-ffpe-1-standard/ (2022).
+34. Domínguez Conde, C. et al. Cross-tissue immune cell analysis 
+reveals tissue-specific features in humans. Science 376, eabl5197 
+(2022).
+35. Li, G. et al. Decision-level integration of unimodal and multimodal 
+single cell data with scTriangulate. Nat. Commun. 14, 406 (2023).
+36. Szabo, P. A. et al. Longitudinal profiling of respiratory and 
+systemic immune responses reveals myeloid cell-driven lung 
+inflammation in severe COVID-19. Immunity 54, 797–814 (2021).
+37. Rha, M.-S. & Shin, E.-C. Activation or exhaustion of CD8+ T cells in 
+patients with COVID-19. Cell. Mol. Immunol. 18, 2325–2333 (2021).
+38. Regev, A. et al. The Human Cell Atlas White Paper. Preprint at 
+https://arxiv.org/abs/1810.05192 (2018).
+39. Deng, Q. et al. Characteristics of anti-CD19 CAR T cell infusion 
+products associated with efficacy and toxicity in patients with 
+large B cell lymphomas. Nat. Med. 26, 1878–1887 (2020).
+40. Cappell, K. M. & Kochenderfer, J. N. Long-term outcomes 
+following CAR T cell therapy: what we know so far. Nat. Rev. Clin. 
+Oncol. 20, 359–371 (2023).
+41. Dann, E., Henderson, N. C., Teichmann, S. A., Morgan, M. D. & 
+Marioni, J. C. Differential abundance testing on single-cell data 
+using k-nearest neighbor graphs. Nat. Biotechnol. 40, 245–253 
+(2022).
+42. Good, Z. et al. Post-infusion CAR Treg cells identify patients 
+resistant to CD19-CAR therapy. Nat. Med. 28, 1860–1871 (2022).
+43. Foeng, J., Comerford, I. & McColl, S. R. Harnessing the chemokine 
+system to home CAR-T cells into solid tumors. Cell Rep. Med. 3, 
+100543 (2022).
+44. Cui, H. et al. scGPT: toward building a foundation model for 
+single-cell multi-omics using generative AI. Nat. Methods 21, 
+1470–1480 (2024).
+45. Theodoris, C. V. et al. Transfer learning enables predictions in 
+network biology. Nature 618, 616–624 (2023).
+46. Kalfon, J., Samaran, J., Peyré, G. & Cantini, L. scPRINT: pre-training 
+on 50 million cells allows robust gene network predictions. 
+Nat. Commun. 16, 3607 (2024).
+47. CZI Single-Cell Biology Program et al. CZ CELLxGENE Discover: 
+a single-cell data platform for scalable exploration, analysis and 
+modeling of aggregated data. Preprint at bioRxiv https://doi.org/ 
+10.1101/2023.10.30.563174 (2023).
+48. Human BioMolecular Atlas Program. Nature https://www.nature. 
+com/immersive/d42859-023-00019-y/index.html (2023).
+Publisher’s note Springer Nature remains neutral with regard to 
+jurisdictional claims in published maps and institutional affiliations.
+Open Access This article is licensed under a Creative Commons 
+Attribution-NonCommercial-NoDerivatives 4.0 International License, 
+which permits any non-commercial use, sharing, distribution and 
+reproduction in any medium or format, as long as you give appropriate 
+credit to the original author(s) and the source, provide a link to the 
+Creative Commons licence, and indicate if you modified the licensed 
+material. You do not have permission under this licence to share 
+adapted material derived from this article or parts of it. The images 
+or other third party material in this article are included in the article’s 
+Creative Commons licence, unless indicated otherwise in a credit 
+line to the material. If material is not included in the article’s Creative 
+Commons licence and your intended use is not permitted by statutory 
+regulation or exceeds the permitted use, you will need to obtain 
+permission directly from the copyright holder. To view a copy of this 
+licence, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
+© The Author(s) 2025
+
+
+[PDF_PAGE 11]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Methods
+HubModel
+Scvi-hub is implemented as a lightweight submodule within scvi-tools 
+(scvi.hub), which provides an API for uploading and downloading pre-
+trained models to the Hugging Face Model Hub. T o do so, scvi-hub uses 
+the huggingface_hub Python API. The main construct within scvi.hub is 
+the scvi.hub.HubModel class, which represents a pretrained scvi-tools 
+model hosted on the Hugging Face Model Hub. An instance of this class 
+has properties that can be used to load the model (HubModel.model) 
+and data (HubModel.adata) into memory on demand (that is, only 
+when/if the property is invoked). T o help with new model creation and 
+upload, we also provide a scvi.hub.HubModelCardHelper class, which 
+can be used to auto-generate a template Model card for a new model 
+to be uploaded to the hub, and a scvi.hub.HubMetadata class, which 
+encapsulates metadata required to be uploaded with the model to the 
+hub. Model versioning is built into scvi-hub via usage of Hugging Face 
+as our storage platform, since Hugging Face Hub Models are backed 
+by Git. Hub users can thus request a specific version of the model at 
+download time via the revision argument to the pull_from_hugging -
+face_hub function. We additionally support Hub Models uploaded to 
+an AWS s3 bucket using scvi.hub.HubModel.pull_from_s3. This allows 
+interacting with models that are stored privately inside company buck-
+ets or shared with the community without the requirement to register 
+with Hugging Face.
+Data minification
+We allow storage of the latent posterior parameters (variance and 
+mean in the latent space for each cell). This allows for faster generation 
+of estimated gene expression as the inference function of scvi-tools 
+models aren’t executed and instead the stored latent posteriors are 
+used for the generative parts of the models. In addition, we can reduce 
+the dataset size by removing all count data in the AnnData object. This 
+is performed by setting all expression values to zero and storing count 
+objects as a sparse matrix (therefore, zero entries in the sparse matrix). 
+We additionally allow storing latent posteriors without removing the 
+associated count data. A few functions in scvi-tools rely on computing 
+the reconstruction loss and, therefore, require access to the full count 
+data. These functions are not executable after data minification. All 
+code used throughout the paper is compatible with data minification.
+Evaluation using scvi.criticism
+Scvi.criticism is a new submodule in scvi-tools that can be used to 
+efficiently compute model evaluation metrics for scvi-tools models. 
+Models must inherit from the scvi’s BaseModelClass class and imple-
+ment the posterior_predictive_sample method, which samples from the 
+generative distribution used by the scvi-tools model such as a negative 
+binomial distribution. The main entry point for using scvi.criticism 
+is the PPC class, which computes and stores various metrics for the 
+provided collection of models. The PPC class can be initialized with 
+one or a collection of models (for instance, for model comparison), 
+the raw counts and a host of configuration options (such as number 
+of posterior predictive samples to compute). It internally computes 
+and stores a user-provided number of posterior predictive samples 
+for each model (samples from the generative function of the model 
+with user-provided library size).
+A crucial aspect of this package is integrated support for 
+three-dimensional sparse arrays. As the posterior predictive samples 
+are n_cells × n_features × n_samples data cubes, their size grows linearly 
+with the size of the dataset and the number of posterior predictive sam-
+ples. We use the sparse (https://github.com/pydata/sparse/) and xarray 
+(https://github.com/pydata/xarray/) Python packages to store the raw 
+counts and posterior predictive samples in sparse format in memory, 
+and only hydrate the data one batch at a time (this logic is implemented 
+in the scvi-tools package). Supporting sparse arrays in scvi.criticism 
+enables efficient evaluation of models trained on large-scale datasets.
+Once initialized, the PPC class can be used to compute various 
+metrics on the per-model posterior predictive samples. The class will 
+store a collection of metrics keyed by metric names where each entry 
+is a Pandas DataFrame holding results for all models that the class was 
+initialized with.
+We implemented the coefficient of variation, which is defined as 
+the standard deviation over genes or cells divided by the mean over 
+the same axis. Respectively, the user decides whether the metric is 
+summarized over the different genes or different cells.
+T o generate Fig. 2d, we instantiated the PPC class with the HLCA 
+raw counts data, the pretrained scANVI model and a value of 2 for 
+the number of posterior predictive samples. The top plot shows the 
+coefficient of variation metric computed across the ‘features’ dimen-
+sion, using the coefficient_of_variation method of the PPC class. We 
+generated two-dimensional histograms shown along with the best fit 
+and identity lines. The method also prints out correlation measures 
+(such as R2, Pearson and Spearman correlations, and mean absolute 
+error) between raw and approximated results. Results can be stored 
+as an obs column in AnnData. For Fig. 2d, we computed the log ratio 
+of the coefficient of variation between the scANVI model and raw data 
+(without adding any pseudocounts) and displayed the corresponding 
+values overlaid on UMAP.
+We implemented the differential expression metric. For each of 
+the posterior predictive samples, differentially expressed genes are 
+computed separately. Samples are first library-size normalized and 
+log1p-transformed. We execute scanpy.tl.rank_genes_groups with a 
+user-provided column for the cell types and the respective method 
+for computation, t -test by default. For each sample, we afterwards 
+compute the F1-score of the top 100 overlapping genes, the mean abso-
+lute error, Pearson correlation and Spearman correlation between all 
+estimated log2-fold changes and the area under the receiver operating 
+characteristic curve and the average precision score for all genes with 
+a significant P value computed on the raw expression (P-value thresh-
+old of 0.001, by default). Figure 2e shows the differential expression 
+metric computed using the differential_expression method of the PPC 
+class, ‘ann_level_3’ key for cell types and a P-value threshold of 0.2. We 
+used the plot_diff_exp method of the PPCPlot class to generate the 
+box plot shown. In Fig. 2f, we subsetted the dot plots to the immune 
+cell subtypes, that is, those with a cell-type label in the following list: 
+‘B cell lineage’ , ‘dendritic cells’ , ‘macrophages’ , ‘mast cells’ , ‘monocytes’ 
+and ‘T cell lineage’ and display the log2fold changes of the respective 
+top two marker genes. T o generate the dot plots, we used one sample 
+of the posterior predictive samples
+In Extended Data Fig. 1, we show the results of cell-wise and gene- 
+wise coefficient_of_variation (A, B) and differential_expression 
+metrics (C) computed on a subset of the Heart Cell Atlas dataset 26. 
+We preprocessed the dataset as presented in a tutorial (https://docs.
+scvi-tools.org/en/stable/tutorials/notebooks/api_overview.html) 
+and then trained four models on the preprocessed data as follows: 
+One model was trained with the default maximum number of epochs 
+(400) and latent dimensions (10). The second model was trained with 
+only 5 epochs (and the default number of latent dimensions), the third 
+model was trained with only 2 latent dimensions (and the default 
+maximum number of epochs) and the fourth model was trained for 
+5,000 epochs with 100 latent dimensions, 1,024 hidden nodes (other 
+models 128) and 3 hidden layers (other models 1). Results in A and B 
+were generated in the same way as the two-dimensional histogram 
+shown in Fig. 2e. Results in B were generated in a similar fashion to those 
+in Fig. 2e. For E and F , we performed principal component analysis on 
+log1p-normalized and count-normalized raw expression values and 
+performed Leiden clustering with default resolution. We computed 
+the differential metrics using the Leiden clusters as input.
+In Extended Data Fig. 2, we downloaded all epithelial cells from 
+Tabula Sapiens (https://cellxgene.cziscience.com/collections/ 
+e5f58829-1a66-40b5-a624-9046778e74f5/) and used those cells as 
+
+
+[PDF_PAGE 12]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+query cells for the pretrained HLCA scANVI model. We set the batch_key 
+to the respective tissue to learn independent transfer mappings for each 
+organ. We computed the coefficient of variation over cells separately 
+for each tissue and plotted the results similar to the top plot in Fig. 2d.
+Reference-based analysis
+For this analysis, we used the HLCA 25 dataset and their pretrained 
+scANVI model. We used cellxgene_census to download the dataset 
+(implemented in scvi-tools) and used the raw, unnormalized counts for 
+all analysis. We used scvi-hub to download the model from the Hugging 
+Face Model Hub. The author-provided UMAP embeddings were used 
+and Scanpy was used for downstream analysis. The cell-type UMAP is 
+representative of the ‘ann_level_3’ annotations. T o generate Fig. 2c, 
+we used the minified data from Hugging Face and then generated 
+expression values of the genes displayed using a single sample from 
+the posterior predictive checks. For the displayed raw expression and 
+model-generated values, we computed library-size-normalized and 
+log1p-transformed values.
+Transfer learning analyses
+For all models trained using transfer learning, we used the follow -
+ing parameters: surgery_epochs = 500 (200 for emphysema data -
+set), early_stopping = True, early_stopping_monitor = ‘elbo_train’ , 
+early_stopping_patience = 10, early_stopping_min_delta = 0.001 and 
+weight_decay = 0.0. For Tabula sapiens epithelial cells, each tissue 
+was treated as a separate batch inside scANVI to allow comparisons 
+between the various organs, while for both the emphysema dataset and 
+the cross-organ immune dataset, all cells were treated as a single batch.
+We used the same HLCA reference model as in Fig. 2 as the refer-
+ence data, and the dataset from human lung emphysema as the query 
+data. We used the scArches functionality implemented in scvi-tools 
+to prepare and train a model on the query dataset. We then used the 
+get_latent_representation method of the concatenated reference and 
+query dataset to retrieve coordinates of the query data embeddings 
+in the joint reference/query latent space.
+T o generate Fig. 3a, we computed Scanpy’s nearest neighbors in 
+the combined latent space using n_neighbors = 30 and UMAP using 
+min_dist = 0.3 in the RAPIDS implementation.
+We transferred labels to the query dataset by first learning a 
+nearest-neighbors index on the latent space of the reference atlas, 
+using the NNDescent class of the pynndescent package, and then using 
+the index to compute a nearest-neighbor graph for the query dataset. 
+We then used this graph to assign to each cell in the query dataset, a 
+predicted cell type based on the reference dataset, along with a predic-
+tion uncertainty (we used the ‘ann_level_3’ for the cell-type annotation 
+in the reference dataset). T o this end, we converted nearest-neighbor 
+distances to affinities, and weighted the cell-type labels from adjacent 
+cells using these affinities. For the emphysema dataset, we only use 
+predictions for the confusion matrices with an uncertainty below 
+0.4 (4.8% of cells filtered out for emphysema dataset). For trans -
+ferring labels from the query dataset to the reference dataset, the 
+same function was used but the roles of reference and query dataset 
+were replaced.
+In Fig. 3c, we display summarized cell-type labels after recomput-
+ing UMAP using Scanpy with n_neighbors set to default. In Supplemen-
+tary Fig. 3, we display all labels predicted by label transfer and their 
+confusion matrix with the original labels (normalized by columns). In 
+Fig. 3d, we compute differential abundance using Milo between healthy 
+and diseased cells from the query dataset using 100 neighbors in the 
+latent embedding space, treating donor_id as the sample columns and 
+not correcting for any covariates. Results are displayed for an FDR < 0.1.
+In Fig. 3e, to compute differentially expressed genes, we set Idx1 
+to all fibroblast from diseased individuals and Idx2 to fibroblast from 
+healthy individuals. Fibroblasts were identified as all cells labeled as 
+Distal fibroblast, Proximal fibroblast or Peribronchial fibroblast in the 
+original publication. The differential_expression function of the HLCA 
+model was used filtering for outlier cells and correcting the batch. 
+Of note, ‘weighting = Importance’ requires access to the full expression 
+values of the reference dataset and was deactivated here. Genes were 
+selected to be expressed with an estimated mean (scale in scvi-tools) 
+of >1 × 10−4 in either of both groups. For the volcano plot, decoupler-py 
+was used highlighting the top 20 genes. The mean log2fold changes are 
+displayed on the x axis and proba_not_de on the y axis. In Supplemen-
+tary Fig. 4, we first display UMAP embeddings colored by the donor and 
+disease status to corroborate the differential abundance analysis and 
+display differentially expressed genes overlaid on the UMAP to show 
+that most genes are expressed across fibroblasts. In Supplementary 
+Fig. 4d, we display raw expression values after log1p transformation 
+and library-size normalization as a dot plot split by donor ID using the 
+default plotting in Scanpy. In Fig. 3f , violin plots were created using 
+Scanpy on library-size-normalized and log1p-transformed raw gene 
+expression values.
+In Supplementary Fig. 5, for PyDESeq2, we used decoupler-py and 
+filtered out all genes with min_count = 50 and min_total_count = 150 
+grouped by disease status. Pseudobulk data were computed per donor. 
+All genes were used in the top panel, while for the bottom run we subset-
+ted all genes to the ones incorporated in the reference model before 
+running PyDESeq2.
+In Supplementary Fig. 6, we used the same analysis as in Fig. 3e 
+but changed the reference mapping training to update the full model 
+and not only the default Arches parameters.
+In Extended Data Fig. 4, results of DestVI on prostate tissue 
+are displayed. We accessed the prostate tissue single-cell model from 
+Hugging Face and ran deconvolution using default parameters.
+For Fig. 3g, we downloaded all T cells and innate lymphoid cells 
+from CELLxGENE Discover and subset this object to all cells origi -
+nating from the lung. Analysis was performed as described above. 
+Labels were infused to the extended HLCA dataset and the confusion 
+matrix is displayed in Fig. 3h similar to Supplementary Fig. 3. For Fig. 3i, 
+marker genes were hand-selected and expression is displayed using 
+library-size-normalized and log1p raw expression values. For Fig. 3j, 
+we subset to all cells labeled as T EM/TEMRA_CD8 and used PyDESeq2 
+with same settings as above for Supplementary Fig. 5. Supplementary 
+Fig. 7 contains recomputed UMAPs on query and reference T cells. The 
+label-infused cell types, the original query annotation and the source 
+dataset are displayed as well as the same marker genes of Treg cells as in 
+Fig. 2c. In Supplementary Fig. 8, we used scTriangulate on two cell-type 
+levels of the original HLCA dataset and the label-infused labels. We plot 
+the consensus labels in UMAP and highlight the ratio of reassigned cells 
+per infused label as a bar plot.
+CELLxGENE Census reference model
+We used a custom-trained model trained on the CELLxGENE release 
+and released embedding via CZI with similar quality afterwards. 
+For our training run, we subset the CELLxGENE Census object to all 
+protein-coding genes using the PyBiomart interface in Scanpy as well 
+as subsetting to features included for more than 30 million cells inside 
+the census release (L TS 12/2023). We identified 6,000 highly variable 
+genes using the census highly_variable_gene function and using suspen-
+sion_type and assay as batch keys. We afterwards took the intersection 
+of those highly variable genes and protein-coding genes. We trained 
+the scVI model using the following custom parameters (optimized by 
+visual inspection of multiple training runs): 2 layers, no encoding of 
+covariates, 50 latent dimensions, 512 hidden nodes, batch size of 1,024, 
+early stopping enabled with monitoring elbo_validation, n_epochs_kl_
+warmup of 5 epochs, learning rate of 1 × 10−4, max_epochs of 20, batch 
+key as concatenation of suspension_type, dataset_id, donor_id and 
+assay). We updated the parameters of the scVI model published by CZI 
+afterwards and validated that it yielded similar results to our custom- 
+trained model. In the future, CZI will release new trained models to 
+
+
+[PDF_PAGE 13]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+integrate novel datasets for every L TS model (expected every 6 months). 
+For the CZI-released model, genes are not subset to protein-coding 
+genes, n_epochs_kl_warmup was increased to 20 epochs, max_epochs 
+was increased to 100 epochs and early_stopping was disabled. We made 
+these changes to have reliable training runs for future releases of the 
+census datasets.
+We downloaded the CAR T cell study from CELLxGENE and used 
+transfer learning to embed it running for 1,000 surgery_epochs with 
+early_stopping enabled and using a batch size of 4,096 to accelerate 
+training. The model was stopped early after 556 epochs and it took 
+1 h and 50 min to complete training. A subset of 10% of the primary 
+cells in census and the CAR T cells were concatenated and a joint 
+PyNNDescent index was built and labels propagated to all cells from 
+the census dataset. In Fig. 4a and Supplementary Fig. 9a, we show 
+the cell-wise coefficient of variation after query training and in Sup -
+plementary Fig. 9b we compare raw and model-generated counts for 
+a subset of genes. For Fig. 4b,c, a random subset of 10% of the original 
+cells was used and UMAP was computed using default parameters 
+within the RAPIDS framework in Scanpy. T o reannotate the query 
+dataset, a PyNNDescent index was built on cells from the cross-tissue 
+immune cell atlas and query cells were annotated similarly to Fig. 3. In 
+Fig. 4b, we highlight in the CELLxGENE Census cells the purity of CAR 
+T cells in the neighborhood of each cell. In Fig. 4c, we display coarse 
+labels in the cross-organ immune cell atlas before label transfer, while 
+in Supplementary Fig. 9c we show the original resolution of cell types 
+as well as the expression of PTPRC encoding CD45 in all cells. In Sup -
+plementary Fig. 9d, we highlight the transferred labels and in Fig. 4d, 
+we show manually selected marker genes as well as manually selected 
+genes identified in Scanpy differential expression analysis. In Fig. 4e, 
+we compute differentially abundant regions between responders and 
+nonresponders to CAR T therapy and in Fig. 4f between high CRS and 
+no CRS. We do not correct for covariates here. In Fig. 4g, we performed 
+subclustering of all CD8+ T cells using Leiden clustering, and in Fig. 4h 
+differentially expressed genes were identified using the scvi-tools 
+differential expression function and we display the top three markers 
+with the lowest P value and an estimated scale of the negative binomial 
+distribution above 1 × 10−4. Louvain clustering was performed using 50 
+nearest neighbors and default resolution. Milo was performed using 
+100 nearest neighbors in scVI latent space, treating donor_id as the 
+sample column and not correcting for any covariates. Results are dis-
+played for neighborhoods with an FDR < 10%. Differential abundance 
+for CRS state was compared between no CRS and grade 3 and 4 CRS. 
+Grade 1 and 2 CRS contained diverse cells. T o display marker genes of 
+the Louvain clusters, we hand-selected genes and displayed them using 
+the dot plot plotting function in Scanpy.
+For Supplementary Fig. 10, all steps were the same after training 
+a reference model subset on the cross-tissue immune cell atlas. For 
+the reference model, we performed several trials and found the best 
+integration of both datasets using two hidden layers, 20 latent dimen-
+sions, gene_likelihood nb and a batch_size of 512 with a warmup over 
+30 epochs. We highlight the confusion matrix with the labels yielded 
+in the CELLxGENE Census trained model normalized to the census- 
+model predictions.
+Reanalysis of census dataset
+The same trained model was used as for Fig. 4 in Extended Data Fig. 5. T o 
+build a neighborhood index, we concatenated the cross-tissue immune 
+cell atlas and a similar number of randomly selected cells from the 
+CELLxGENE Census. The other cells were labeled as ‘census’ and built 
+a PyNNDescent index on those cells. We set the number of neighbors 
+to 50 cells. We display hand-selected marker genes in Supplemen -
+tary Fig. 11b. We subset all cells to those cells labeled as T reg cells and 
+provide marker genes for all cell types in Supplementary Fig. 11b for 
+model-generated normalized expression using manually selected 
+genes. We download the raw expression values of these cells. An scVI 
+model was trained on this subset of T cells using the same gene subset 
+as for the large model with default parameters except using two layers 
+and an n_epochs_kl_warmup of 50 epochs. UMAP was computed using 
+20 neighbors and a min_dist of 0.3 in the RAPIDS framework. Subcluster 
+markers were hand-selected. We excluded all clusters with a low expres-
+sion of FOXP3 from further analysis. Bar plots in Extended Data Fig. 5d,f 
+were generated with matplotlib. In Extended Data Fig. 5d, all bars 
+together add up to a width of 1, while in Extended Data Fig. 5f relative 
+proportions per disease category are displayed. Pseudobulk differ -
+ential expression analysis in Extended Data Fig. 5e was performed 
+using PyDESeq2 setting min_cells to 5 and min_counts to 1,000 with 
+the concatenation of dataset_id, donor_id, disease and tissue as the 
+sample column and the identified T reg cell subclusters as the group 
+column. We filtered out genes with a min_total_count of 15 and 2 counts 
+per sex category. Including disease as a covariate drastically increased 
+runtime and we stopped the algorithm after an hour. Therefore, we did 
+not include any covariates in the analysis and only used the T reg cell 
+subclusters in the formula. We display the top 50 genes based on the 
+adjusted P value between ‘activated-Treg’ and ‘memory-Treg’ . In Supple-
+mentary Fig. 12, we show the raw expression after log1p transformation 
+and library-size normalization of manually selected marker genes of 
+the various Treg populations.
+Reporting summary
+Further information on research design is available in the Nature 
+Portfolio Reporting Summary linked to this article.
+Data availability
+We used the HLCA dataset in our analysis (https://cellxgene. 
+cziscience.com/e/066943a2-fdac-4b29-b348-40cede398e4e.cxg/) and 
+their pretrained scANVI model (https://zenodo.org/record/6337966/ 
+files/HLCA_reference_model.zip). As additional single-cell datasets, 
+we used several datasets from CELLxGENE Discover. Namely, we 
+accessed Tabula sapiens data (https://cellxgene.cziscience.com/ 
+e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/) and epithelial cell 
+data (https://cellxgene.cziscience.com/e/97a17473-e2b1-4f31-a544- 
+44a60773e2dd.cxg/). The emphysema dataset was downloaded from 
+https://cellxgene.cziscience.com/collections/03cdc7f4-bd08-49d0- 
+a395-4487c0e5a168/. The cell-type information of AT2 cells was used 
+and all three separate datasets were concatenated and treated as one 
+dataset for query analysis. The cross-tissue immune cell dataset was 
+downloaded from https://cellxgene.cziscience.com/e/ae29ebd0-1973- 
+40a4-a6af-d15a5f77a80f.cxg/. The Heart Cell Atlas was downloaded 
+from https://cellxgene.cziscience.com/collections/b52eb423-5d0d- 
+4645-b217-e1c6d38b2e72/. The Visium dataset for the prostate was 
+downloaded from 10x (https://cf.10xgenomics.com/samples/spatial- 
+exp/2.0.0/Visium_FFPE_Human_Prostate_IF/Visium_FFPE_Human_ 
+Prostate_IF_spatial.tar.gz). All datasets were accessed and used in the 
+version of 1 December 2023 and all files can be shared upon contact 
+with the corresponding author.
+Code availability
+A GitHub repository with extensive code to reproduce all figures is 
+provided at https://github.com/YosefLab/scvi-hub-reproducibility and 
+deposited on Zenodo via https://doi.org/10.5281/zenodo.15229030 
+(ref. 49). As a reference to reproduce key steps in our analysis, we pro-
+vide two tutorials that can be accessed using free computing resources 
+in Google Colab. The first tutorial builds on the Human Lung Cell model 
+as a reference, and includes a step-by-step guide on how to perform 
+query mapping, label transfer and joint (query + ref) embedding and 
+can be found at https://docs.scvi-tools.org/en/stable/tutorials/note 
+books/hub/query_hlca_knn.html. The second tutorial provides an 
+example of working with the minified CELLxGENE Census collection. 
+This provides a guide on how to generate a hypothesis using minified 
+data and validate this hypothesis by accessing a subset of the dataset 
+
+
+[PDF_PAGE 14]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+through the CELLxGENE Census API (https://docs.scvi-tools.org/en/ 
+st/tableutorials/notebooks/hub/cellxgene_census_model.html). 
+We provide tutorials for data minification (https://docs.scvi-tools.org/ 
+en/stable/tutorials/notebooks/minification.html), as well as how to 
+implement this feature for newly developed latent variable models.
+References
+49. Amiri, V. V. P. & Can Ergen, C. YosefLab/scvi-hub-reproducibility: 
+publication. Zenodo https://doi.org/10.5281/zenodo.15229030 
+(2025).
+Acknowledgements
+We thank G. Benegas for the suggestion to host our pretrained 
+models on the Hugging Face Model Hub. We thank P. Boyeau and 
+members of the laboratory of N.Y. for general feedback. We also 
+acknowledge ChatGPT in generating draft code that was afterwards 
+manually adopted. We thank E. Bezzi, B. Martin, A. Tolopko and 
+P. Garcia-Nieto from the Chan Zuckerberg Initiative for their support 
+on making available trained scVI models and their associate latent 
+spaces for all data in CELLxGENE Discover Census (https://cellxgene. 
+cziscience.com/). C.E., V.V.P.A., A.G. and N.Y and the work on this 
+project were supported by the Chan Zuckerberg Initiative Essential 
+Open Source Software Cycle 4 grant (EOSS4-0000000121) and the 
+Chan Zuckerberg Initiative Silicon Valley Community Foundation - 
+Single-Cell Biology Data Insights program (DAF2022-249318). C.E. was 
+supported by a Walter-Benjamin postdoctoral fellowship by the DFG 
+(448802458). A.S. is an investigator at the Chan Zuckerberg Biohub - 
+San Francisco. Research reported in this publication was supported 
+by the National Institute Of General Medical Sciences of the National 
+Institutes of Health under award number R35GM124916 (to A.S.).
+Author contributions
+C.E. and V.V.P.A. contributed equally. C.E., A.G. and N.Y. conceptualized 
+the study. V.V.P.A. and C.E. implemented scVI-hub with the help of A.G., 
+M.K. and O.K. C.E. performed the validation experiments with inputs 
+from N.Y., V.V.P.A. and A.G. N.Y. and A.S. supervised the work. C.E., 
+V.V.P.A. and N.Y. wrote the manuscript with input from A.G., A.S. and M.K.
+Competing interests
+A.G. is currently an employee of Google DeepMind. Google DeepMind 
+has not directed any aspect of this study nor exerts any commercial 
+rights over the results. The other authors declare no competing 
+interests.
+Additional information
+Extended data is available for this paper at 
+https://doi.org/10.1038/s41592-025-02799-9.
+Supplementary information The online version contains supplementary 
+material available at https://doi.org/10.1038/s41592-025-02799-9.
+Correspondence and requests for materials should be addressed to 
+Can Ergen, Adam Gayoso or Nir Yosef.
+Peer review information Nature Methods thanks the anonymous 
+reviewers for their contribution to the peer review of this work. 
+Peer reviewer reports are available. Primary Handling Editor: Lin Tang, 
+in collaboration with the Nature Methods team.
+Reprints and permissions information is available at 
+www.nature.com/reprints.
+
+
+[PDF_PAGE 15]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Extended Data Fig. 1 | See next page for caption.
+
+
+[PDF_PAGE 16]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Extended Data Fig. 1 | Scvi-criticism detects poorly trained models. (a) Cell-
+wise coefficient of variation for 4 different models trained on the Heart Cell 
+Atlas data: the left model is the base model trained for 400 epochs with 10 latent 
+dimensions, the second model is trained for 5 epochs with 10 latent dimensions, 
+the third model is trained for 400 epochs with 2 latent dimensions and the third 
+model is trained for 5000 epochs with 100 latent dimensions, 1024 hidden nodes 
+(other models 128 nodes) and 3 hidden layers (other models 1 layer). The squared 
+Pearson correlation coefficient (PCC) is lower for the second and third model 
+for both train and validation cells. In the overfitted model, the PCC is higher for 
+train cells but lower for validation cells. (b) Gene-wise coefficient of variation 
+evaluated on all cells, the overfit model has the highest value, both underfit 
+models have lower values. (c) Differential expression based metric with first F1-
+score of top-100 genes between the different cell types, second and third Pearson 
+and Spearman correlation coefficient between all estimated log-2 fold-changes, 
+fourth area under the precision-recall curve (auPRC). Metrics are evaluated on 
+validation cells. The overfit model shows the lowest pearson correlation. The 
+model with few latent dimensions and baseline are similar in performance. 
+(d) Same metrics evaluated on train cells. AuPRC is stable between train and 
+validation cells, while all other metrics are higher for train cells, especially 
+Pearson and Spearman correlation of log-fold changes. The overfit model 
+performs better than the other models on train cells. (e) We performed Leiden 
+clustering after principal component analysis, using a resolution parameter of 
+0.8. Displayed is the UMAP calculated on the PCA colored by cell-type labels and 
+Leiden clustering. (f) Similar to c, metrics calculated on validation cells based on 
+the Leiden clusters. Both panels show similar trends.
+
+
+[PDF_PAGE 17]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Extended Data Fig. 2 | Scvi-criticism detects query data not suited for a 
+reference model. We trained a query model based on the HLCA reference model 
+using all epithelial cells from Tabula sapiens. Cell-wise coefficient of variation 
+(CV) is displayed separately for each organ. For lung, trachea and posterior 
+tongue (slightly worse) we find a high correlation of raw and model CV. For all 
+other tissues (top right), we find within each tissue a much worse reproduction 
+of the CV by the trained model. For bladder, parotid gland, kidney, corneal, 
+anterior tongue and eye there’s no correlation between the model estimated CV 
+and the raw data CV with the model estimated CV overestimating the raw data 
+CV. For other organs like prostate gland and exocrine and endocrine pancreas 
+the raw CV is higher than the model estimated CV with a low linear dependency. 
+Of note, highly variable genes were selected initially based on lung tissue and this 
+causes the small CV for cornea and eye epithelial cells. The high correlation when 
+performing computation on all tissues except the lung is solely due to the high CV 
+of model and observed counts in the parotid gland.
+
+
+[PDF_PAGE 18]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Extended Data Fig. 3 | Scvi-hub extends to multi-modal data using totalVI. 
+A model was trained on a COVID PBMC CITE-SEQ dataset. (a) We provide a UMAP 
+based on the latent embeddings colored by cell-types and demonstrate that 
+cell-types are well preserved in this large-scale dataset. (b) Criticism metrics 
+can be computed for both modalities separately. We find high r2 coefficients of 
+variation for both cells and genes in RNA and much lower values for protein data. 
+Protein data contains much fewer marker genes and the coefficient of variation in 
+raw data is higher than in model-generated data.
+
+
+[PDF_PAGE 19]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Extended Data Fig. 4 | Deconvolution of Visium prostate cancer sample using 
+Tabula sapiens reference model. DestVI was used to deconvolve a human 
+prostate cancer Visium sample. T op immunofluorescence image (see 10X data 
+release) and legend in right plot. Tissue structures are annotated overlaid in the 
+right plot. All other plots display the estimated cell-type proportions. There is a 
+clear segregation between stroma (smooth muscle cells and stromal cells), lumen 
+(luminal cells of prostate epithelial and club cells) and a lymphoid like structure 
+in the center (CD8-positive, alpha-beta T cell, mature NK T cells, monocytes and 
+macrophages).
+
+
+[PDF_PAGE 20]
+
+Nature Methods
+Article https://doi.org/10.1038/s41592-025-02799-9
+Extended Data Fig. 5 | Refined analysis of CELLxGENE census using scvi-hub. 
+We transfer labels from a well annotated immune cell dataset to all other datasets 
+and reanalyze those. (a) Labels were transferred using a concatenation of cells 
+from the cross-organ immune cell atlas and the same amount of random census 
+cells labeled ‘census’ . Cells are annotated with an immune cell label if any cell 
+in a neighborhood of 50 cells was annotated by this cell-type and is otherwise 
+labeled ‘census’ . Displayed is a random subset of all census cells as UMAP 
+embedding of 36 million cells can’t be performed on our hardware. (b) Dataset 
+was subset to all cells labeled TREG in a and another scVI model was trained 
+using only these cells. Displayed is the UMAP embedding of these cells, Leiden 
+clustering and our manual annotation of these cell states. (Bottom) Barplots of 
+frequencies within each Louvain cluster in comparison to all cells annotated as 
+regulatory T cell (cluster 0, 3, 4, 6 are regulatory T cells after manual verification 
+and make up ~60% of the annotated cells). (c) Hand-selected marker genes are 
+displayed. Displayed is the percentage of cells expressing cells as well as the 
+mean expression after library size normalization and log1p transformation of raw 
+counts. (d) Cells were subset to Leiden cluster 0, 3 and 4 with marked expression 
+of FOXP3. Displayed is the percentage of total cells annotated with a specific cell-
+type label in the CELLxGENE census data. Bars are colored based on the cell state 
+based on Leiden clustering. (e) Pseudobulk differential expression analysis using 
+PyDESeq2 using Wald test and Benjamini-Hochberg correction. As the sample ID 
+we used the concatenation of donor_id, dataset_id, tissue and assay. Displayed 
+is the comparison of cells annotated as Activated TREG vs cells annotated as 
+memory TREG. T op-50 marker genes are displayed. (f) Displayed are all disease 
+categories with more than 200 cells in Leiden clusters labeled TREG. We display 
+the fraction of each TREG subtype for each disease. In blue we highlight all 
+disease categories of solid tissue cancers.

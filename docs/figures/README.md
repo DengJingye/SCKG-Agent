@@ -6,18 +6,17 @@ This directory stores version-controlled figure sources and exported assets.
 
 | Figure | Source | Purpose |
 | --- | --- | --- |
-| Figure 1 | `scKG_current_agent_orchestration.dot` | Current centralized StateGraph orchestration, Graphviz draft. |
-| Figure 2 | `scKG_target_hybrid_agent_architecture.dot` | Target governed hybrid scientific agent architecture, Graphviz draft. |
-| Figure 3 | `scKG_hybrid_kg_rag_flow.dot` | Evidence-governed Hybrid KG-RAG / GraphRAG flow, Graphviz draft. |
-| Figure 1 publication | `scKG_current_agent_orchestration_publication.svg` | Polished Python/matplotlib version for manuals and paper drafts. |
-| Figure 2 publication | `scKG_target_hybrid_agent_architecture_publication.svg` | Polished Python/matplotlib version for manuals and paper drafts. |
-| Figure 3 publication | `scKG_hybrid_kg_rag_flow_publication.svg` | Polished Python/matplotlib version for manuals and paper drafts. |
+| Authoritative product figure | `scKG_product_mainline_v2_7_2.dot` | Current ASK/PLAN/RUN product loop and deterministic safety boundary. |
+| Historical Figure 1 | `scKG_current_agent_orchestration.dot` | Legacy recommendation-workflow architecture; not the current product entry. |
+| Historical Figure 2 | `scKG_target_hybrid_agent_architecture.dot` | Earlier target design; retained for architecture-evolution discussion only. |
+| Supporting Figure 3 | `scKG_hybrid_kg_rag_flow.dot` | Evidence-governed retrieval subsystem, not the whole product architecture. |
 
 ## Rendering
 
 ```bash
-cd /Users/lris/Desktop/scKG_agent/SCKG-Agent
-bash docs/figures/render_figures.sh
+dot -Tsvg docs/figures/scKG_product_mainline_v2_7_2.dot -o docs/figures/scKG_product_mainline_v2_7_2.svg
+dot -Tpng -Gdpi=180 docs/figures/scKG_product_mainline_v2_7_2.dot -o docs/figures/scKG_product_mainline_v2_7_2.png
+dot -Tpdf docs/figures/scKG_product_mainline_v2_7_2.dot -o docs/figures/scKG_product_mainline_v2_7_2.pdf
 ```
 
 The script exports `.svg`, `.pdf`, and `.png` files when Graphviz is available.
@@ -46,10 +45,6 @@ The publication renderer follows the local Nature-style figure workflow:
 - Use `.png` for quick previews and slides.
 - Keep labels short and mostly English for paper readiness and font stability.
 
-## Chinese Captions
+## Chinese Caption
 
-Figure 1: 当前 scKG-Agent 编排图。该图展示当前系统是一个中心化 `StateGraph` 工作流，包含意图解析、硬约束检索、证据门控、MCDM 排序、迁移假设、报告生成和语义审计。
-
-Figure 2: 目标混合型科研 Agent 架构图。该图展示未来系统应采用中心化治理加专职 agent / typed tools / MCP tools 的混合架构，而不是去中心化多 Agent。
-
-Figure 3: 证据治理型 Hybrid KG-RAG 流程图。该图展示 formal evidence、KG、BM25、dense retrieval、RRF、治理精排、EvidenceContextPack、MCDM 和 semantic auditor 之间的关系。
+当前主图：scKG-Agent 2.7.2 的本地受治理科研闭环。自然语言目标和登记数据通过 ASK/PLAN/RUN 入口进入数据画像、Action Space、WorkflowPlan、确定性 Router 和逐请求审批；只有通过 gate 的请求才能进入固定 Python/R wrapper、Validator、有限 Repair、Pareto 与 Level 2 复现交付。LLM 只能提出候选或组织表达，不能覆盖证据、授权和执行边界。

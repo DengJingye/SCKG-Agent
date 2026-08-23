@@ -1,0 +1,198 @@
+{
+  "contract_id": "singler:2.14.0",
+  "contract_version": "0.2.0-wrapper-implemented",
+  "tool_name": "SingleR",
+  "tool_version": "2.14.0",
+  "task": "cell_type_annotation",
+  "language": "r",
+  "environment_id": "annotation-r",
+  "wrapper_id": "singler_v2_14_0",
+  "input_object": "AnnData",
+  "required_fields": [
+    "cell-by-gene test expression matrix with stable cell and gene identifiers",
+    "explicit reference expression dataset with known labels",
+    "normalized and log-transformed reference expression",
+    "overlapping genes between test and reference",
+    "explicit species and gene identifier mapping"
+  ],
+  "optional_fields": [
+    "test matrix may be untransformed because SingleR scoring uses ranks",
+    "cell ontology labels",
+    "multiple references"
+  ],
+  "preconditions": [
+    {
+      "rule_id": "singler_reference_required",
+      "field": "annotation_reference",
+      "operator": "exists",
+      "expected": true,
+      "blocking": true,
+      "message": "SingleR requires an explicit reference dataset and label field."
+    },
+    {
+      "rule_id": "singler_gene_overlap",
+      "field": "reference_gene_overlap",
+      "operator": "gte",
+      "expected": 1,
+      "blocking": true,
+      "message": "Test and reference must share mapped genes."
+    },
+    {
+      "rule_id": "singler_species_known",
+      "field": "species",
+      "operator": "exists",
+      "expected": true,
+      "blocking": true,
+      "message": "Species must be known before choosing a reference."
+    }
+  ],
+  "not_supported": [
+    "missing reference labels",
+    "reference expression that is not normalized and log-transformed",
+    "test/reference gene identifiers without an explicit mapping",
+    "reference species incompatible with the test data",
+    "claiming pruned labels are biological ground truth"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "singler_predicted_labels",
+      "artifact_type": "cell_annotation_table",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "annotation_label_schema_v1"
+    },
+    {
+      "artifact_id": "singler_score_matrix",
+      "artifact_type": "annotation_score_matrix",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "annotation_score_schema_v1"
+    },
+    {
+      "artifact_id": "singler_result_metadata",
+      "artifact_type": "execution_metadata",
+      "format": "json",
+      "required": true,
+      "validator_id": "annotation_metadata_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "reference_id": {
+        "type": "string"
+      },
+      "label_field": {
+        "type": "string"
+      },
+      "assay_type_test": {
+        "type": "string"
+      },
+      "assay_type_reference": {
+        "type": "string"
+      },
+      "de_method": {
+        "type": "string",
+        "enum": [
+          "classic",
+          "wilcox"
+        ]
+      },
+      "fine_tune": {
+        "type": "boolean"
+      },
+      "prune": {
+        "type": "boolean"
+      }
+    }
+  },
+  "default_parameters": {
+    "reference_id": "singler-immune-reference-v1",
+    "label_field": "label.main",
+    "assay_type_test": "logcounts",
+    "assay_type_reference": "logcounts",
+    "de_method": "classic",
+    "fine_tune": true,
+    "prune": true
+  },
+  "paper_parameters": [
+    {
+      "parameter_name": "reference_and_test",
+      "value_or_range": "reference log-expression with known labels; test expression scored by rank-based similarity",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html",
+      "source_span": "Sections 2-3: built-in and single-cell references",
+      "tool_version": "2.14.0",
+      "applicable_scope": "planning-only SingleR annotation",
+      "limitations": [
+        "Reference choice and label ontology constrain every prediction."
+      ]
+    },
+    {
+      "parameter_name": "pruned_labels",
+      "value_or_range": "low-quality assignments may be replaced with NA",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html",
+      "source_span": "Section 4: Annotation diagnostics",
+      "tool_version": "2.14.0",
+      "applicable_scope": "planning-only SingleR annotation",
+      "limitations": [
+        "Pruning indicates uncertainty; it is not an independent biological validation."
+      ]
+    }
+  ],
+  "searchable_parameters": {
+    "de_method": {}
+  },
+  "failure_checks": [
+    "reference_missing",
+    "reference_label_missing",
+    "species_mismatch",
+    "gene_identifier_mismatch",
+    "insufficient_gene_overlap",
+    "label_count_mismatch",
+    "score_non_finite",
+    "cell_order_mismatch"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "cell_order_preservation",
+    "label_coverage",
+    "pruned_or_unknown_rate",
+    "score_finite_fraction"
+  ],
+  "resource_requirements": {
+    "planning_only": true,
+    "runtime_pack": "annotation-r",
+    "reference_pack_required": true,
+    "network_during_execution": "forbidden",
+    "qualification_timeout_seconds": 900,
+    "max_memory_mb": 4096
+  },
+  "source_refs": [
+    "data/evidence_sources/text/core_docs/SingleR_github_readme.txt",
+    "data/evidence_sources/text/SingleR_CAND_PUB_SingleR_2019_Aran.txt",
+    "https://bioconductor.org/packages/release/bioc/html/SingleR.html",
+    "https://bioconductor.org/packages/release/bioc/vignettes/SingleR/inst/doc/SingleR.html"
+  ],
+  "execution_critical_review": {
+    "reviewer": "codex_source_bound_planning_review_2026_07_23",
+    "review_scope": [
+      "test/reference expression requirements",
+      "gene overlap, species and reference-label requirements",
+      "documented output labels, scores and pruning behavior"
+    ],
+    "claim_boundary": "Execution-critical source fields and a fixed adapter/R wrapper are implemented; runtime, reference, engineering qualification and scientific evaluation remain gated."
+  },
+  "schema_status": "valid",
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "implemented",
+  "environment_status": "missing",
+  "execution_status": "untested",
+  "scientific_validation_status": "not_evaluated",
+  "enabled_for_execution": false
+}

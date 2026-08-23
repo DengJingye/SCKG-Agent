@@ -68,9 +68,11 @@ class CandidateAggregator:
             for validation in validations.values()
             if validation.run_id in run_ids
         )
+        batch_integration = contract.task == "batch_integration"
+        annotation = contract.task == "cell_type_annotation"
         limitations: list[str] = [
             (
-                "Scientific pilot metrics are limited to GSE108313 and the recorded preprocessing."
+                "Scientific pilot metrics are limited to the registered dataset and preprocessing."
                 if scientific
                 else "Synthetic engineering metrics do not establish biological performance."
             )
@@ -114,18 +116,97 @@ class CandidateAggregator:
 
         total = len(run_ids)
         success_rate = len(successful) / total if total else 0.0
-        f1_metric = (
-            "scientific_pilot_f1" if scientific else "synthetic_engineering_f1"
+        if batch_integration:
+            primary_metrics = ("batch_mixing_asw", "biology_conservation_asw")
+            standard_deviations = {
+                name: (
+                    statistics.pstdev(metric_values.get(name, []))
+                    if len(metric_values.get(name, [])) > 1
+                    else None
+                )
+                for name in primary_metrics
+            }
+            observed_deviations = [
+                value for value in standard_deviations.values() if value is not None
+            ]
+            mean_deviation = (
+                statistics.fmean(observed_deviations) if observed_deviations else None
+            )
+            seed_stability = {
+                "successful_seed_count": len(successful),
+                "requested_seed_count": total,
+                **{
+                    f"{name}_standard_deviation": value
+                    for name, value in standard_deviations.items()
+                },
+                "stability_score": (
+                    max(0.0, 1.0 - mean_deviation)
+                    if mean_deviation is not None
+                    else 0.0
+                ),
+            }
+            primary_metrics_available = all(metric_values.get(name) for name in primary_metrics)
+            biology_values = metric_values.get("biology_conservation_asw", [])
+            biology_floor_passed = bool(biology_values) and statistics.fmean(biology_values) >= 0.5
+            if not biology_floor_passed:
+                limitations.append("biology_conservation_below_decision_floor")
+        elif annotation:
+            primary_metrics = ("macro_f1", "balanced_accuracy")
+            standard_deviations = {
+                name: (
+                    statistics.pstdev(metric_values.get(name, []))
+                    if len(metric_values.get(name, [])) > 1
+                    else None
+                )
+                for name in primary_metrics
+            }
+            observed_deviations = [
+                value for value in standard_deviations.values() if value is not None
+            ]
+            mean_deviation = (
+                statistics.fmean(observed_deviations)
+                if observed_deviations
+                else None
+            )
+            seed_stability = {
+                "successful_seed_count": len(successful),
+                "requested_seed_count": total,
+                **{
+                    f"{name}_standard_deviation": value
+                    for name, value in standard_deviations.items()
+                },
+                "stability_score": (
+                    max(0.0, 1.0 - mean_deviation)
+                    if mean_deviation is not None
+                    else 0.0
+                ),
+            }
+            primary_metrics_available = all(
+                metric_values.get(name) for name in primary_metrics
+            )
+            biology_floor_passed = True
+        else:
+            f1_metric = (
+                "scientific_pilot_f1" if scientific else "synthetic_engineering_f1"
+            )
+            f1_values = metric_values.get(f1_metric, [])
+            f1_std = statistics.pstdev(f1_values) if len(f1_values) > 1 else None
+            seed_stability = {
+                "successful_seed_count": len(successful),
+                "requested_seed_count": total,
+                f"{f1_metric}_standard_deviation": f1_std,
+                "stability_score": max(0.0, 1.0 - f1_std) if f1_std is not None else 0.0,
+            }
+            primary_metrics_available = bool(f1_values)
+            biology_floor_passed = True
+        minimum_successful_runs = (
+            1
+            if (batch_integration or annotation)
+            and scientific
+            and split_role == "evaluation"
+            else 2
         )
-        f1_values = metric_values.get(f1_metric, [])
-        f1_std = statistics.pstdev(f1_values) if len(f1_values) > 1 else None
-        seed_stability = {
-            "successful_seed_count": len(successful),
-            "requested_seed_count": total,
-            f"{f1_metric}_standard_deviation": f1_std,
-            "stability_score": max(0.0, 1.0 - f1_std) if f1_std is not None else 0.0,
-        }
-        if len(successful) < 2:
+        if len(successful) < minimum_successful_runs:
             limitations.append("fewer_than_two_successful_seeds")
         if failed:
             limitations.append("partial_or_complete_seed_failure")
@@ -141,11 +222,12 @@ class CandidateAggregator:
         if duplicate_run_ids:
             limitations.append("duplicate_runs_ignored")
         eligible = (
-            total >= 2
-            and len(successful) >= 2
+            total >= minimum_successful_runs
+            and len(successful) >= minimum_successful_runs
             and success_rate >= 0.5
             and hash_consistent
-            and bool(f1_values)
+            and primary_metrics_available
+            and biology_floor_passed
         )
         return CandidateEvaluation(
             candidate_id=f"{contract.tool_name}:{contract.tool_version}:{configuration.configuration_hash[:16]}",

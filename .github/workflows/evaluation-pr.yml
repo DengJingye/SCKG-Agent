@@ -1,0 +1,41 @@
+name: evaluation-pr
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deterministic-evaluation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SCKG_PRIVACY_MODE: strict_offline
+      SCKG_OFFLINE_LLM: "true"
+      DISABLE_LLM_CALLS: "true"
+      SCKG_EXECUTION_POLICY: disabled
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install control-plane dependencies
+        run: pip install -r requirements.txt
+      - name: Verify no external credentials are present
+        run: |
+          test -z "${OPENAI_API_KEY:-}"
+          test -z "${DEEPSEEK_API_KEY:-}"
+          test -z "${SCKG_JUDGE_API_KEY:-}"
+      - name: Run deterministic test suite
+        run: python -m pytest -q
+      - name: Audit versioned evaluation datasets
+        run: |
+          python - <<'PY'
+          from eval.evaluation_dataset import EvaluationDatasetRegistry, audit_registry
+          result = audit_registry(EvaluationDatasetRegistry())
+          print(result)
+          raise SystemExit(0 if result["passed"] else 1)
+          PY

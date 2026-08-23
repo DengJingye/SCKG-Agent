@@ -1,0 +1,1448 @@
+{
+  "agent_boundary": {
+    "architecture": "centralized recursive agent target; deterministic workflow demo in v1",
+    "formal_evidence_authority": "only reviewed TSV/promotion flow can support strong recommendation claims",
+    "kg_authority": "hard constraints and compatibility context",
+    "output_authority": "plan-only unless formal evidence gate allows stronger claims",
+    "rag_authority": "retrieval context only"
+  },
+  "code_skeletons": {
+    "scanpy_python": "import scanpy as sc\n\nadata = sc.read_h5ad('input_raw_counts.h5ad')\nsc.pp.calculate_qc_metrics(adata, inplace=True)\n# Review QC thresholds per sample before filtering.\nsc.pp.filter_cells(adata, min_genes=200)\nsc.pp.filter_genes(adata, min_cells=3)\n# Run doublet detection with Scrublet or another validated tool before integration.\nsc.pp.normalize_total(adata, target_sum=1e4)\nsc.pp.log1p(adata)\nsc.pp.highly_variable_genes(adata, batch_key='sample_id')\nsc.tl.pca(adata)\n# Add Harmony/scVI integration here after checking batch metadata and resources.\nsc.pp.neighbors(adata)\nsc.tl.leiden(adata)\n# Add CellTypist/SingleR-style annotation and marker review.\nadata.write_h5ad('pbmc_decision_workflow_output.h5ad')",
+    "seurat_r": "library(Seurat)\n\nobj <- Read10X(data.dir = 'filtered_feature_bc_matrix/') |> CreateSeuratObject()\nobj[['percent.mt']] <- PercentageFeatureSet(obj, pattern = '^MT-')\n# Review QC thresholds per sample before subsetting.\nobj <- subset(obj, subset = nFeature_RNA > 200)\nobj <- NormalizeData(obj)\nobj <- FindVariableFeatures(obj)\nobj <- ScaleData(obj)\nobj <- RunPCA(obj)\n# Add integration/Harmony/scVI bridge after validating batch metadata.\nobj <- FindNeighbors(obj, dims = 1:30)\nobj <- FindClusters(obj)\n# Add annotation and marker validation.\nsaveRDS(obj, 'pbmc_decision_workflow_output.rds')"
+  },
+  "demo": "decision_workflow_demo_v1",
+  "evaluation_hooks": {
+    "blocked_unsupported_claims": "Strong claims remain blocked when evidence is frozen or source-mismatched.",
+    "evidence_coverage": "Count source-bound snippets and formal main-evidence eligibility per step.",
+    "user_value": "User receives executable plan, alternatives, caveats, and source-backed context.",
+    "workflow_path_quality": "Check that required inputs and produced outputs connect step-to-step."
+  },
+  "generated_at": "2026-07-06T13:22:53.252454+00:00",
+  "global_evidence_coverage": {
+    "formal_main_recommendation_evidence_count": 0,
+    "source_bound_retrieval_snippets": 15,
+    "status": "evidence_limited_plan_only",
+    "steps_with_any_tool_match": 6,
+    "total_retrieval_snippets": 35,
+    "warning_count": 10,
+    "workflow_steps": 7
+  },
+  "guardrail": "This demo does not promote formal TSV evidence, does not write Neo4j, and does not change MCDM ranks.",
+  "next_actions": [
+    "Fix source_metadata_mismatch for CellTypist/SingleR annotation benchmark before using it as strong benchmark support.",
+    "Repair Seurat v3/v4 publication extraction or use publisher HTML/full text.",
+    "Add workflow path eval set for 5-10 single-cell scenarios.",
+    "Add module-level representations for Seurat, Scanpy, and scvi-tools."
+  ],
+  "positioning": "Evidence-governed single-cell analysis decision workflow. This is broader than a ranked tool report: it returns an auditable workflow plan, candidate tools, evidence snippets, code skeletons, and gaps.",
+  "scenario": {
+    "data_object": "raw count matrix / AnnData / SeuratObject",
+    "hardware": [
+      "CPU baseline",
+      "GPU optional for deep latent models"
+    ],
+    "modality": "scRNA-seq",
+    "noise": "medium",
+    "output_goal": "integrated, doublet-filtered, annotated PBMC object with an auditable report",
+    "platform": "10x Genomics",
+    "scale": "multi-sample PBMC; 50k-200k cells",
+    "scenario_id": "pbmc_multibatch_workflow_demo_v1",
+    "species": "Human",
+    "strictness": "evidence_limited",
+    "task": "Workflow Planning",
+    "task_family": "workflow",
+    "user_query": "I have multi-sample 10x PBMC scRNA-seq data and want QC, doublet detection, batch integration, cell type annotation, and optional trajectory analysis."
+  },
+  "tool_cards": [
+    {
+      "benchmark_chunk_count": 0,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 76,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only"
+      ],
+      "retrieval_snippet_count": 2,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 85,
+      "tool_name": "CellRank"
+    },
+    {
+      "benchmark_chunk_count": 1,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 15,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_missing"
+      ],
+      "retrieval_snippet_count": 3,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 86,
+      "tool_name": "CellTypist"
+    },
+    {
+      "benchmark_chunk_count": 1,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 1,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only"
+      ],
+      "retrieval_snippet_count": 3,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 53,
+      "tool_name": "DoubletFinder"
+    },
+    {
+      "benchmark_chunk_count": 29,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 33,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only"
+      ],
+      "retrieval_snippet_count": 3,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 81,
+      "tool_name": "Harmony"
+    },
+    {
+      "benchmark_chunk_count": 9,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 9,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only",
+        "toolkit_requires_module_split"
+      ],
+      "retrieval_snippet_count": 4,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 26,
+      "tool_name": "Scanpy"
+    },
+    {
+      "benchmark_chunk_count": 27,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 22,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only"
+      ],
+      "retrieval_snippet_count": 2,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 53,
+      "tool_name": "Scrublet"
+    },
+    {
+      "benchmark_chunk_count": 29,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 2,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only",
+        "toolkit_requires_module_split"
+      ],
+      "retrieval_snippet_count": 8,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 35,
+      "tool_name": "Seurat"
+    },
+    {
+      "benchmark_chunk_count": 1,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 17,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only"
+      ],
+      "retrieval_snippet_count": 2,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 34,
+      "tool_name": "SingleR"
+    },
+    {
+      "benchmark_chunk_count": 0,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 0,
+      "quality_flags": [],
+      "retrieval_snippet_count": 0,
+      "review_status": "missing_representation",
+      "source_chunk_count": 0,
+      "tool_name": "scKG-Agent"
+    },
+    {
+      "benchmark_chunk_count": 58,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 19,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only"
+      ],
+      "retrieval_snippet_count": 4,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 85,
+      "tool_name": "scVelo"
+    },
+    {
+      "benchmark_chunk_count": 29,
+      "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+      "can_support_strong_recommendation_now": false,
+      "candidate_authority": "workflow_candidate_only",
+      "dense_vector_chunk_count": 0,
+      "publication_chunk_count": 33,
+      "quality_flags": [
+        "dense_embedding_missing",
+        "legacy_embedding_present_recall_only",
+        "toolkit_requires_module_split"
+      ],
+      "retrieval_snippet_count": 4,
+      "review_status": "source_bound_profile",
+      "source_chunk_count": 75,
+      "tool_name": "scvi-tools"
+    }
+  ],
+  "workflow_graph": {
+    "edges": [
+      {
+        "compatibility_status": "needs_runtime_validation",
+        "handoff": "QC metrics -> validated object",
+        "source": "input_qc",
+        "target": "doublet_detection"
+      },
+      {
+        "compatibility_status": "needs_runtime_validation",
+        "handoff": "doublet calls -> doublet-filtered object",
+        "source": "doublet_detection",
+        "target": "normalization_hvg"
+      },
+      {
+        "compatibility_status": "needs_runtime_validation",
+        "handoff": "feature set -> feature set",
+        "source": "normalization_hvg",
+        "target": "batch_integration"
+      },
+      {
+        "compatibility_status": "needs_runtime_validation",
+        "handoff": "batch-corrected embedding -> integrated object",
+        "source": "batch_integration",
+        "target": "cell_annotation"
+      },
+      {
+        "compatibility_status": "needs_runtime_validation",
+        "handoff": "annotation confidence -> annotated object",
+        "source": "cell_annotation",
+        "target": "trajectory_optional"
+      },
+      {
+        "compatibility_status": "needs_runtime_validation",
+        "handoff": "pseudotime or fate probabilities -> workflow plan",
+        "source": "trajectory_optional",
+        "target": "audit_report"
+      }
+    ],
+    "nodes": [
+      {
+        "candidate_tools": [
+          "Scanpy",
+          "Seurat"
+        ],
+        "id": "input_qc",
+        "label": "Input and QC precheck",
+        "status": "plan_only_evidence_limited",
+        "task": "QC"
+      },
+      {
+        "candidate_tools": [
+          "Scrublet",
+          "DoubletFinder"
+        ],
+        "id": "doublet_detection",
+        "label": "Doublet detection",
+        "status": "plan_only_evidence_limited",
+        "task": "Doublet Detection"
+      },
+      {
+        "candidate_tools": [
+          "Scanpy",
+          "Seurat",
+          "scvi-tools"
+        ],
+        "id": "normalization_hvg",
+        "label": "Normalization and HVG selection",
+        "status": "plan_only_evidence_limited",
+        "task": "Normalization"
+      },
+      {
+        "candidate_tools": [
+          "Harmony",
+          "scvi-tools",
+          "Seurat"
+        ],
+        "id": "batch_integration",
+        "label": "Batch-aware integration",
+        "status": "plan_only_evidence_limited",
+        "task": "Data Integration"
+      },
+      {
+        "candidate_tools": [
+          "CellTypist",
+          "SingleR",
+          "Seurat"
+        ],
+        "id": "cell_annotation",
+        "label": "Cell type annotation",
+        "status": "plan_only_evidence_limited",
+        "task": "Cell Type Annotation"
+      },
+      {
+        "candidate_tools": [
+          "scVelo",
+          "CellRank"
+        ],
+        "id": "trajectory_optional",
+        "label": "Optional trajectory and fate analysis",
+        "status": "plan_only_evidence_limited",
+        "task": "Trajectory Inference"
+      },
+      {
+        "candidate_tools": [
+          "scKG-Agent"
+        ],
+        "id": "audit_report",
+        "label": "Evidence audit and report",
+        "status": "plan_only_evidence_limited",
+        "task": "Evidence Governance"
+      }
+    ]
+  },
+  "workflow_steps": [
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 9,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 9,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 26,
+          "tool_name": "Scanpy"
+        },
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 2,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 3,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 35,
+          "tool_name": "Seurat"
+        }
+      ],
+      "candidate_tools": [
+        "Scanpy",
+        "Seurat"
+      ],
+      "decision_policy": "Use the ecosystem that matches downstream execution; do not mix object schemas without validation.",
+      "default_candidate": "Scanpy",
+      "evidence_coverage": {
+        "candidate_tool_count": 2,
+        "coverage_ratio": 1.0,
+        "formal_snippet_count": 3,
+        "matched_tool_count": 2,
+        "matched_tools": [
+          "Scanpy",
+          "Seurat"
+        ],
+        "missing_tools": [],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 2
+      },
+      "name": "Input and QC precheck",
+      "order": 1,
+      "produced_output": [
+        "validated object",
+        "QC metrics"
+      ],
+      "purpose": "Validate count matrix, metadata, mitochondrial/ribosomal metrics, and per-sample quality distribution.",
+      "required_input": [
+        "raw count matrix",
+        "sample metadata"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "under the same hardware conditions, it takes less time for tools on the Scanpy platform to process scRNA-seq data. In this study, we selected four commonly used and relatively well-developed Scanpy-based algorithms: Re- gress_Out (Wolf et al. 2018), ComBat...",
+            "relevance_score": 0.055152,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:2",
+            "title": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+            "tool_name": "Scanpy"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data Native and wrapped Scanpy methods provide highly scalable batch correction. Quantitative comparison of algorithm efficiency and integration performance Batch mixi...",
+            "relevance_score": 0.165525,
+            "source_kind": "benchmark",
+            "source_span": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+            "title": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+            "tool_name": "Scanpy"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.056393,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics High biological conservation, moderate to high batch correction via CCA/RPCA. scIB benchmarking pipeline evaluating batch correction vs biology Batch mixing and biological conservation Data I...",
+            "relevance_score": 0.166944,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Comprehensive Integration of Single-Cell Data",
+            "relevance_score": 0.165376,
+            "source_kind": "publication",
+            "source_span": "Comprehensive Integration of Single-Cell Data",
+            "title": "Comprehensive Integration of Single-Cell Data",
+            "tool_name": "Seurat"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "input_qc",
+      "task": "QC",
+      "warnings": [
+        "Scanpy is a broad toolkit; module-level representation is required before precise migration claims.",
+        "Seurat is a broad toolkit; module-level representation is required before precise migration claims."
+      ]
+    },
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 27,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 22,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 53,
+          "tool_name": "Scrublet"
+        },
+        {
+          "benchmark_chunk_count": 1,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 1,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only"
+          ],
+          "retrieval_snippet_count": 3,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 53,
+          "tool_name": "DoubletFinder"
+        }
+      ],
+      "candidate_tools": [
+        "Scrublet",
+        "DoubletFinder"
+      ],
+      "decision_policy": "Prefer tools with source text and benchmark evidence discovery; thresholds require sample-aware review.",
+      "default_candidate": "Scrublet",
+      "evidence_coverage": {
+        "candidate_tool_count": 2,
+        "coverage_ratio": 1.0,
+        "formal_snippet_count": 3,
+        "matched_tool_count": 2,
+        "matched_tools": [
+          "DoubletFinder",
+          "Scrublet"
+        ],
+        "missing_tools": [],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 2
+      },
+      "name": "Doublet detection",
+      "order": 2,
+      "produced_output": [
+        "doublet scores",
+        "doublet calls"
+      ],
+      "purpose": "Estimate doublet risk before integration so artificial hybrid cells do not distort batch correction.",
+      "required_input": [
+        "validated object",
+        "raw counts"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "The parameter n_iters was set to 5, as larger values were found to increase the running time signiﬁcantly, but with little improve- ment in performance. Doublet scores were obtained from the function doubletdetection.BoostClassiﬁer.ﬁt. DoubletFinder: The me...",
+            "relevance_score": 0.055385,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:23",
+            "title": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data",
+            "tool_name": "Scrublet"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data Highly competitive accuracy with extremely fast execution times. Comparison against sample-multiplexing experimental ground truth Area Under the Precision-Recall Curve...",
+            "relevance_score": 0.210204,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data",
+            "title": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data",
+            "tool_name": "Scrublet"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "1. Stoeckius M, Zheng S, Houck-Loomis B, Hao S, Yeung BZ, Smibert P, Satija R. Cell Hashing with barcoded antibodies enables multiplexing and doublet detection for single cell genomics. Genome Biology. 2018. 19:224.",
+            "relevance_score": 0.046711,
+            "source_kind": "source_docs",
+            "source_span": "paragraph:46",
+            "title": "DoubletFinder official GitHub README",
+            "tool_name": "DoubletFinder"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data Highest overall doublet detection accuracy among tested algorithms. Comparison against sample-multiplexing experimental ground truth Area Under the Precision-Recall Cur...",
+            "relevance_score": 0.210309,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data",
+            "title": "Benchmarking Computational Doublet-Detection Methods for Single-Cell RNA Sequencing Data",
+            "tool_name": "DoubletFinder"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "DoubletFinder: Doublet Detection in Single-Cell RNA Sequencing Data Using Artificial Nearest Neighbors",
+            "relevance_score": 0.170101,
+            "source_kind": "publication",
+            "source_span": "DoubletFinder: Doublet Detection in Single-Cell RNA Sequencing Data Using Artificial Nearest Neighbors",
+            "title": "DoubletFinder: Doublet Detection in Single-Cell RNA Sequencing Data Using Artificial Nearest Neighbors",
+            "tool_name": "DoubletFinder"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "doublet_detection",
+      "task": "Doublet Detection",
+      "warnings": []
+    },
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 9,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 9,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 26,
+          "tool_name": "Scanpy"
+        },
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 2,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 35,
+          "tool_name": "Seurat"
+        },
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 33,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 1,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 75,
+          "tool_name": "scvi-tools"
+        }
+      ],
+      "candidate_tools": [
+        "Scanpy",
+        "Seurat",
+        "scvi-tools"
+      ],
+      "decision_policy": "Keep normalization assumptions consistent with the chosen integration method.",
+      "default_candidate": "Scanpy",
+      "evidence_coverage": {
+        "candidate_tool_count": 3,
+        "coverage_ratio": 1.0,
+        "formal_snippet_count": 2,
+        "matched_tool_count": 3,
+        "matched_tools": [
+          "Scanpy",
+          "Seurat",
+          "scvi-tools"
+        ],
+        "missing_tools": [],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 3
+      },
+      "name": "Normalization and HVG selection",
+      "order": 3,
+      "produced_output": [
+        "normalized expression matrix",
+        "feature set"
+      ],
+      "purpose": "Normalize library size effects and choose variable features for integration.",
+      "required_input": [
+        "doublet-filtered object"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "under the same hardware conditions, it takes less time for tools on the Scanpy platform to process scRNA-seq data. In this study, we selected four commonly used and relatively well-developed Scanpy-based algorithms: Re- gress_Out (Wolf et al. 2018), ComBat...",
+            "relevance_score": 0.051628,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:2",
+            "title": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+            "tool_name": "Scanpy"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data Native and wrapped Scanpy methods provide highly scalable batch correction. Quantitative comparison of algorithm efficiency and integration performance Batch mixi...",
+            "relevance_score": 0.164274,
+            "source_kind": "benchmark",
+            "source_span": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+            "title": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+            "tool_name": "Scanpy"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.056129,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics High biological conservation, moderate to high batch correction via CCA/RPCA. scIB benchmarking pipeline evaluating batch correction vs biology Batch mixing and biological conservation Data I...",
+            "relevance_score": 0.165682,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.056393,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "scvi-tools"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "normalization_hvg",
+      "task": "Normalization",
+      "warnings": [
+        "Scanpy is a broad toolkit; module-level representation is required before precise migration claims.",
+        "Seurat is a broad toolkit; module-level representation is required before precise migration claims.",
+        "scvi-tools is a broad toolkit; module-level representation is required before precise migration claims."
+      ]
+    },
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 33,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 81,
+          "tool_name": "Harmony"
+        },
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 33,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 75,
+          "tool_name": "scvi-tools"
+        },
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 2,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 1,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 35,
+          "tool_name": "Seurat"
+        }
+      ],
+      "candidate_tools": [
+        "Harmony",
+        "scvi-tools",
+        "Seurat"
+      ],
+      "decision_policy": "Use graph/task compatibility plus benchmark source context; do not treat integration score as universal across datasets.",
+      "default_candidate": "Harmony",
+      "evidence_coverage": {
+        "candidate_tool_count": 3,
+        "coverage_ratio": 1.0,
+        "formal_snippet_count": 2,
+        "matched_tool_count": 3,
+        "matched_tools": [
+          "Harmony",
+          "Seurat",
+          "scvi-tools"
+        ],
+        "missing_tools": [],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 3
+      },
+      "name": "Batch-aware integration",
+      "order": 4,
+      "produced_output": [
+        "batch-corrected embedding"
+      ],
+      "purpose": "Align multi-sample PBMC data while preserving biological cell-state structure.",
+      "required_input": [
+        "feature set",
+        "batch metadata"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellRank",
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "MOFA2",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "cell2location",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.056129,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Harmony"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics Top-tier performance in overall integration score and computational efficiency. scIB benchmarking pipeline evaluating batch correction vs biology Batch mixing (iLISI) and biological conservat...",
+            "relevance_score": 0.206667,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Harmony"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.056393,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "scvi-tools"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics scVI and scANVI variants are top-tier methods for balancing batch correction and biological conservation in the scIB benchmark. scIB benchmarking pipeline evaluating batch correction versus b...",
+            "relevance_score": 0.20813,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "scvi-tools"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.055873,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "batch_integration",
+      "task": "Data Integration",
+      "warnings": [
+        "scvi-tools is a broad toolkit; module-level representation is required before precise migration claims.",
+        "Seurat is a broad toolkit; module-level representation is required before precise migration claims."
+      ]
+    },
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 1,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 15,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_missing"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 86,
+          "tool_name": "CellTypist"
+        },
+        {
+          "benchmark_chunk_count": 1,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 17,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 34,
+          "tool_name": "SingleR"
+        },
+        {
+          "benchmark_chunk_count": 29,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 2,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only",
+            "toolkit_requires_module_split"
+          ],
+          "retrieval_snippet_count": 1,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 35,
+          "tool_name": "Seurat"
+        }
+      ],
+      "candidate_tools": [
+        "CellTypist",
+        "SingleR",
+        "Seurat"
+      ],
+      "decision_policy": "Use annotation tools as candidates only until benchmark DOI/source mismatch is fixed for the frozen benchmark rows.",
+      "default_candidate": "CellTypist",
+      "evidence_coverage": {
+        "candidate_tool_count": 3,
+        "coverage_ratio": 1.0,
+        "formal_snippet_count": 2,
+        "matched_tool_count": 3,
+        "matched_tools": [
+          "CellTypist",
+          "Seurat",
+          "SingleR"
+        ],
+        "missing_tools": [],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 3
+      },
+      "name": "Cell type annotation",
+      "order": 5,
+      "produced_output": [
+        "cell type labels",
+        "annotation confidence"
+      ],
+      "purpose": "Assign PBMC cell labels with reference-based and marker-based cross-checks.",
+      "required_input": [
+        "integrated object",
+        "reference labels or marker set"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellPLM",
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "MOFA2",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "cell2location",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "in the gd T cell compartment, manual cura- tion after automated annotation still has a role to play in revealing specific cell subtypes t h a tm a yb ea b s e n tf r o mt h et r a i n i n gs e t .T o reduce the need for this manual curation, in the longer t...",
+            "relevance_score": 0.053158,
+            "source_kind": "source_publication",
+            "source_span": "paragraph:11",
+            "title": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "tool_name": "CellTypist"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "relevance_score": 0.210526,
+            "source_kind": "publication",
+            "source_span": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "title": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "tool_name": "CellTypist"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "ArticlesNATuRe IMMuNology Methods Mice. Ai14 (Rosa26-LSL-tdTomato), DTA (Gt(ROSA)26Sortm1(DTA)Lky), CX3CR1- CreERT2 (Cx3cr1tm2.1(cre/ERT2)Jung), and TRF1fl/fl, all on C57BL/6 background, wild-type C57BL/6, and wild-type 129S1 mice were obtained from the Jac...",
+            "relevance_score": 0.055152,
+            "source_kind": "source_publication",
+            "source_span": "paragraph:12",
+            "title": "Reference-based analysis of lung single-cell sequencing reveals a transitional profibrotic macrophage",
+            "tool_name": "SingleR"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "A comprehensive benchmarking of cell type annotation methods for single-cell RNA sequencing SingleR remains among high-performing supervised annotation methods, including top-tier F1-score and accuracy across multiple benchmark settings. Cross-validation an...",
+            "relevance_score": 0.207634,
+            "source_kind": "benchmark",
+            "source_span": "A comprehensive benchmarking of cell type annotation methods for single-cell RNA sequencing",
+            "title": "A comprehensive benchmarking of cell type annotation methods for single-cell RNA sequencing",
+            "tool_name": "SingleR"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained...",
+            "relevance_score": 0.056393,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:17",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "cell_annotation",
+      "task": "Cell Type Annotation",
+      "warnings": [
+        "CellTypist/SingleR benchmark source currently has a wrong DOI/source mismatch; keep benchmark claims blocked.",
+        "Seurat is a broad toolkit; module-level representation is required before precise migration claims."
+      ]
+    },
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 58,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 19,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only"
+          ],
+          "retrieval_snippet_count": 3,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 85,
+          "tool_name": "scVelo"
+        },
+        {
+          "benchmark_chunk_count": 0,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 76,
+          "quality_flags": [
+            "dense_embedding_missing",
+            "legacy_embedding_present_recall_only"
+          ],
+          "retrieval_snippet_count": 2,
+          "review_status": "source_bound_profile",
+          "source_chunk_count": 85,
+          "tool_name": "CellRank"
+        }
+      ],
+      "candidate_tools": [
+        "scVelo",
+        "CellRank"
+      ],
+      "decision_policy": "Treat as optional because PBMC steady-state analysis often does not require trajectory inference.",
+      "default_candidate": "scVelo",
+      "evidence_coverage": {
+        "candidate_tool_count": 2,
+        "coverage_ratio": 1.0,
+        "formal_snippet_count": 3,
+        "matched_tool_count": 2,
+        "matched_tools": [
+          "CellRank",
+          "scVelo"
+        ],
+        "missing_tools": [],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 2
+      },
+      "name": "Optional trajectory and fate analysis",
+      "order": 6,
+      "produced_output": [
+        "pseudotime or fate probabilities"
+      ],
+      "purpose": "If biology requires dynamic state transitions, run velocity/fate tools after QC and annotation.",
+      "required_input": [
+        "annotated object",
+        "spliced/unspliced layers if velocity is used"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellRank",
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "MOFA2",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "To characterize its stability, we test the quantitative effects of tuning hyperparameters and using different software implementations on real datasets. Our findings on RNA velocity have implications for other scRNA-seq analyses. On one hand, the theory beh...",
+            "relevance_score": 0.054706,
+            "source_kind": "source_benchmark",
+            "source_span": "paragraph:5",
+            "title": "RNA velocity unraveled",
+            "tool_name": "scVelo"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Generalizing RNA velocity to transient cell states through dynamical modeling",
+            "relevance_score": 0.20565,
+            "source_kind": "publication",
+            "source_span": "Generalizing RNA velocity to transient cell states through dynamical modeling",
+            "title": "Generalizing RNA velocity to transient cell states through dynamical modeling",
+            "tool_name": "scVelo"
+          },
+          {
+            "claim_boundary": "Evidence discovery chunk only; manual review packet validation is required before promotion.",
+            "claim_span": "Articles NAtuRE MEtHODS visualize the data and was not supplied to CellRank to compute the transition matrix or any downstream quantities. We did not use BBKNN to correct the graph we used for velocity computation as it is an open question how to do batch c...",
+            "relevance_score": 0.056393,
+            "source_kind": "source_publication",
+            "source_span": "paragraph:24",
+            "title": "CellRank for directed single-cell fate mapping",
+            "tool_name": "CellRank"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "CellRank 2: unified fate mapping in multiview single-cell data",
+            "relevance_score": 0.132571,
+            "source_kind": "publication",
+            "source_span": "CellRank 2: unified fate mapping in multiview single-cell data",
+            "title": "CellRank 2: unified fate mapping in multiview single-cell data",
+            "tool_name": "CellRank"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Author Summary and Results discussion of human embryonic forebrain direction reversal, informal theoretical foundations, and workflow sensitivity; use as caveat/negative-control evidence, not positive ranking evidence.",
+            "relevance_score": 0.167937,
+            "source_kind": "benchmark",
+            "source_span": "Author Summary and Results discussion of human embryonic forebrain direction reversal, informal theoretical foundations, and workflow sensitivity; use as caveat/negative-control evidence, not positive ranking evidence.",
+            "title": "RNA velocity unraveled",
+            "tool_name": "scVelo"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "trajectory_optional",
+      "task": "Trajectory Inference",
+      "warnings": []
+    },
+    {
+      "candidate_cards": [
+        {
+          "benchmark_chunk_count": 0,
+          "boundary": "Tool card can support planning and evidence discovery. It cannot by itself support a strong recommendation.",
+          "can_support_strong_recommendation_now": false,
+          "candidate_authority": "workflow_candidate_only",
+          "dense_vector_chunk_count": 0,
+          "publication_chunk_count": 0,
+          "quality_flags": [],
+          "retrieval_snippet_count": 0,
+          "review_status": "missing_representation",
+          "source_chunk_count": 0,
+          "tool_name": "scKG-Agent"
+        }
+      ],
+      "candidate_tools": [
+        "scKG-Agent"
+      ],
+      "decision_policy": "RAG snippets explain context; only reviewed formal evidence can support strong recommendation wording.",
+      "default_candidate": "scKG-Agent",
+      "evidence_coverage": {
+        "candidate_tool_count": 1,
+        "coverage_ratio": 0.0,
+        "formal_snippet_count": 5,
+        "matched_tool_count": 0,
+        "matched_tools": [],
+        "missing_tools": [
+          "scKG-Agent"
+        ],
+        "snippet_count": 5,
+        "source_bound_snippet_count": 0
+      },
+      "name": "Evidence audit and report",
+      "order": 7,
+      "produced_output": [
+        "auditable decision report"
+      ],
+      "purpose": "Separate executable workflow advice from formal recommendation claims and list evidence gaps.",
+      "required_input": [
+        "workflow plan",
+        "retrieval snippets",
+        "evidence gate diagnostics"
+      ],
+      "retrieval": {
+        "matched_tools": [
+          "CellTypist",
+          "DoubletFinder",
+          "Harmony",
+          "MAESTRO",
+          "MIMOSCA",
+          "MOFA2",
+          "Scanpy",
+          "Scrublet",
+          "Seurat",
+          "SeuratExtend",
+          "SingleR",
+          "SoupX",
+          "scGPT",
+          "scIB",
+          "scVelo",
+          "scvi-tools",
+          "tradeSeq",
+          "wot"
+        ],
+        "mode": "local_hybrid_evidence_retrieval",
+        "pipeline": [
+          "evidence_chunks_jsonl",
+          "sparse_evidence_retrieval",
+          "dense_evidence_retrieval_skipped",
+          "rrf_fusion",
+          "governance_aware_rerank",
+          "retrieval_context"
+        ],
+        "snippet_count": 5,
+        "snippets": [
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Author Summary and Results discussion of human embryonic forebrain direction reversal, informal theoretical foundations, and workflow sensitivity; use as caveat/negative-control evidence, not positive ranking evidence.",
+            "relevance_score": 0.092346,
+            "source_kind": "benchmark",
+            "source_span": "Author Summary and Results discussion of human embryonic forebrain direction reversal, informal theoretical foundations, and workflow sensitivity; use as caveat/negative-control evidence, not positive ranking evidence.",
+            "title": "RNA velocity unraveled",
+            "tool_name": "scVelo"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics Top-tier performance in overall integration score and computational efficiency. scIB benchmarking pipeline evaluating batch correction vs biology Batch mixing (iLISI) and biological conservat...",
+            "relevance_score": 0.08625,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Harmony"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics High biological conservation, moderate to high batch correction via CCA/RPCA. scIB benchmarking pipeline evaluating batch correction vs biology Batch mixing and biological conservation Data I...",
+            "relevance_score": 0.086211,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "Seurat"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Benchmarking atlas-level data integration in single-cell genomics scVI and scANVI variants are top-tier methods for balancing batch correction and biological conservation in the scIB benchmark. scIB benchmarking pipeline evaluating batch correction versus b...",
+            "relevance_score": 0.086173,
+            "source_kind": "benchmark",
+            "source_span": "Benchmarking atlas-level data integration in single-cell genomics",
+            "title": "Benchmarking atlas-level data integration in single-cell genomics",
+            "tool_name": "scvi-tools"
+          },
+          {
+            "claim_boundary": "Retrieval/discovery only; cannot promote evidence or change ranking.",
+            "claim_span": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "relevance_score": 0.086135,
+            "source_kind": "publication",
+            "source_span": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "title": "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+            "tool_name": "CellTypist"
+          }
+        ]
+      },
+      "status": "plan_only_evidence_limited",
+      "step_id": "audit_report",
+      "task": "Evidence Governance",
+      "warnings": [
+        "Some candidate tools have no retrieved source snippet for this step."
+      ]
+    }
+  ]
+}

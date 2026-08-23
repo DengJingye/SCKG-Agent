@@ -1,0 +1,157 @@
+{
+  "contract_id": "harmony:2.0.0",
+  "contract_version": "0.3.0-phase5-scientific-pilot",
+  "tool_name": "Harmony",
+  "tool_version": "2.0.0",
+  "task": "batch_integration",
+  "language": "python",
+  "environment_id": "sckg-batch-cpu",
+  "wrapper_id": "harmony_v2_0_0",
+  "input_object": "AnnData",
+  "required_fields": [
+    "obs batch key with at least two non-empty batches",
+    "finite cell-by-PC representation"
+  ],
+  "optional_fields": [
+    "obs biology label for conservation evaluation"
+  ],
+  "preconditions": [
+    {
+      "rule_id": "harmony_batch_key_required",
+      "field": "batch_key",
+      "operator": "exists",
+      "expected": true,
+      "blocking": true,
+      "message": "Harmony requires an obs column identifying batches."
+    },
+    {
+      "rule_id": "harmony_multi_batch_required",
+      "field": "batch_count",
+      "operator": "gte",
+      "expected": 2,
+      "blocking": true,
+      "message": "Harmony requires at least two batches."
+    },
+    {
+      "rule_id": "harmony_nonempty_matrix",
+      "field": "matrix_shape",
+      "operator": "gte",
+      "expected": 2,
+      "blocking": true,
+      "message": "The AnnData matrix must contain at least two cells and genes."
+    }
+  ],
+  "not_supported": [
+    "single-batch data",
+    "missing batch labels",
+    "non-finite PCA embeddings",
+    "remote URLs and non-AnnData objects"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "harmony_integrated_embedding",
+      "artifact_type": "cell_embedding_table",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "integration_embedding_schema_v1"
+    },
+    {
+      "artifact_id": "harmony_parameter_snapshot",
+      "artifact_type": "parameter_snapshot",
+      "format": "json",
+      "required": true,
+      "validator_id": "parameter_snapshot_schema_v1"
+    },
+    {
+      "artifact_id": "harmony_result_metadata",
+      "artifact_type": "execution_metadata",
+      "format": "json",
+      "required": true,
+      "validator_id": "integration_result_metadata_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "theta": {"type": "number", "minimum": 0.0, "maximum": 20.0},
+      "sigma": {"type": "number", "minimum": 0.01, "maximum": 2.0},
+      "max_iter_harmony": {"type": "integer", "minimum": 1, "maximum": 50},
+      "max_iter_kmeans": {"type": "integer", "minimum": 1, "maximum": 100},
+      "epsilon_harmony": {"type": "number", "minimum": 0.000001, "maximum": 1.0},
+      "ncores": {"type": "integer", "minimum": 1, "maximum": 8}
+    }
+  },
+  "default_parameters": {
+    "theta": 2.0,
+    "sigma": 0.1,
+    "max_iter_harmony": 10,
+    "max_iter_kmeans": 4,
+    "epsilon_harmony": 0.01,
+    "ncores": 1
+  },
+  "paper_parameters": [
+    {
+      "parameter_name": "input_representation",
+      "value_or_range": "finite PCA embedding plus batch metadata",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "https://pypi.org/project/harmonypy/",
+      "source_span": "Usage with Scanpy and Parameters",
+      "tool_version": "2.0.0",
+      "applicable_scope": "Harmony 2.0.0 direct Python API",
+      "limitations": [
+        "Execution seed is supplied separately from the configuration hash."
+      ]
+    }
+  ],
+  "searchable_parameters": {
+    "theta": {"minimum": 0.0, "maximum": 8.0},
+    "sigma": {"minimum": 0.05, "maximum": 0.5}
+  },
+  "failure_checks": [
+    "missing_batch_key",
+    "single_batch",
+    "missing_batch_labels",
+    "missing_pca_representation",
+    "non_finite_embedding",
+    "cell_order_mismatch",
+    "input_hash_mismatch"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "embedding_finite_fraction",
+    "embedding_cell_alignment",
+    "batch_mixing_metric",
+    "biology_conservation_metric_when_labels_available"
+  ],
+  "resource_requirements": {
+    "cpu_only_supported": true,
+    "gpu_required": false,
+    "planning_max_cells": 100000,
+    "qualification_max_cells": 5000,
+    "qualification_timeout_seconds": 180,
+    "memory_enforcement": "monitor_only"
+  },
+  "source_refs": [
+    "https://pypi.org/project/harmonypy/",
+    "doi:10.1038/s41592-019-0619-0"
+  ],
+  "execution_critical_review": {
+    "reviewer": "codex_execution_source_review_2026_07_16",
+    "review_scope": [
+      "PCA and batch metadata input semantics",
+      "harmonypy.run_harmony 2.0.0 argument and output semantics",
+      "corrected embedding output semantics"
+    ],
+    "claim_boundary": "Engineering execution contract only; scientific performance requires an independent pilot."
+  },
+  "schema_status": "valid",
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "smoke_passed",
+  "environment_status": "smoke_passed",
+  "execution_status": "integration_passed",
+  "scientific_validation_status": "scientific_pilot",
+  "enabled_for_execution": true
+}

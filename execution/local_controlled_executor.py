@@ -8,7 +8,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import psutil
 
@@ -24,6 +24,8 @@ from core.settings import PROJECT_ROOT
 from core.tool_contract_registry import ToolContractRegistry
 from execution.environment_registry import EnvironmentRegistry
 from execution.wrapper_registry import WrapperRegistry
+from execution.approval_service import ApprovalScope, parameter_hash
+from execution.execution_policy import ExecutionPolicy
 
 
 DEFAULT_RUN_ROOT = PROJECT_ROOT / ".sckg_exec" / "runs"
@@ -44,6 +46,7 @@ class LocalControlledExecutor:
         wrapper_registry: WrapperRegistry | None = None,
         contract_registry: ToolContractRegistry | None = None,
         environment_registry: EnvironmentRegistry | None = None,
+        execution_policy: ExecutionPolicy | None = None,
     ) -> None:
         self.run_root = Path(run_root).resolve()
         self.approved_input_root = Path(approved_input_root).resolve()
@@ -52,6 +55,7 @@ class LocalControlledExecutor:
         self.contract_registry = contract_registry or ToolContractRegistry(
             environment_registry=self.environment_registry
         )
+        self.execution_policy = execution_policy or ExecutionPolicy()
 
     def execute(
         self,
@@ -60,6 +64,7 @@ class LocalControlledExecutor:
         artifact: QualificationArtifact,
         contract: ToolContract,
         router_decision: RouterDecision,
+        cancellation_checker: Callable[[], str | None] | None = None,
     ) -> ExecutionRun:
         started = datetime.now(timezone.utc)
         preflight_error = self._preflight(
@@ -107,6 +112,7 @@ class LocalControlledExecutor:
             "expected_input_hash": artifact.sha256,
             "fixture_id": artifact.fixture_id,
             "input_path": str(input_path),
+            "execution_seed": request.execution_seed,
             "parameters": parameters,
             "public_dataset": artifact.public_dataset,
             "purpose": request.qualification.purpose,
@@ -116,7 +122,18 @@ class LocalControlledExecutor:
             encoding="utf-8",
         )
 
-        argv = wrapper.command(worker_request_path.name)
+        try:
+            argv = wrapper.command(worker_request_path.name)
+            wrapper_environment = wrapper.worker_environment()
+        except (FileNotFoundError, KeyError, RuntimeError) as exc:
+            return self._blocked(
+                request,
+                artifact,
+                contract,
+                started,
+                "runtime_pack_not_ready",
+                str(exc),
+            )
         cleanup = ProcessCleanup()
         peak_memory_mb = 0.0
         process: subprocess.Popen[str] | None = None
@@ -125,7 +142,7 @@ class LocalControlledExecutor:
         error_message: str | None = None
         status = "failed"
         monotonic_start = time.monotonic()
-        env = self._worker_environment(run_dir)
+        env = self._worker_environment(run_dir, wrapper_environment)
         try:
             with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open(
                 "w", encoding="utf-8"
@@ -143,8 +160,21 @@ class LocalControlledExecutor:
                 )
                 while process.poll() is None:
                     peak_memory_mb = max(peak_memory_mb, _process_tree_rss_mb(process.pid))
+                    cancellation_reason = (
+                        cancellation_checker() if cancellation_checker is not None else None
+                    )
+                    if cancellation_reason:
+                        cleanup = _terminate_process_tree(
+                            process,
+                            cancellation_triggered=True,
+                            cancellation_reason=cancellation_reason,
+                        )
+                        status = "cancelled"
+                        error_type = "cancelled"
+                        error_message = cancellation_reason
+                        break
                     if time.monotonic() - monotonic_start > request.timeout_seconds:
-                        cleanup = _terminate_process_tree(process)
+                        cleanup = _terminate_process_tree(process, timeout_triggered=True)
                         status = "timeout"
                         error_type = "timeout"
                         error_message = f"wrapper exceeded {request.timeout_seconds}s timeout"
@@ -152,7 +182,7 @@ class LocalControlledExecutor:
                     time.sleep(0.05)
                 exit_code = process.poll()
                 peak_memory_mb = max(peak_memory_mb, _process_tree_rss_mb(process.pid))
-                if status != "timeout":
+                if status not in {"timeout", "cancelled"}:
                     status = "succeeded" if exit_code == 0 else "failed"
                     if exit_code != 0:
                         error_type = "wrapper_exit_nonzero"
@@ -187,6 +217,7 @@ class LocalControlledExecutor:
             environment_id=request.environment_id,
             command_argv_redacted=[Path(argv[0]).name, "-m", wrapper.module, "--request-json", worker_request_path.name],
             parameters=parameters,
+            execution_seed=request.execution_seed,
             parameter_provenance=request.parameter_provenance,
             input_hash=artifact.sha256,
             start_time=started,
@@ -202,11 +233,18 @@ class LocalControlledExecutor:
             error_type=error_type,
             error_message=error_message,
             process_cleanup=cleanup,
+            qualification_mode=request.qualification.mode,
             fixture_id=artifact.fixture_id,
             synthetic_fixture=artifact.synthetic,
             public_dataset=artifact.public_dataset,
             user_data_used=artifact.user_data,
             execution_purpose=request.qualification.purpose,
+            owner_user_id=(
+                request.user_execution.user_id if request.user_execution else None
+            ),
+            approval_id=(
+                request.user_execution.approval_id if request.user_execution else None
+            ),
         )
         (run_dir / "execution_run.json").write_text(
             run.model_dump_json(indent=2) + "\n", encoding="utf-8"
@@ -221,6 +259,13 @@ class LocalControlledExecutor:
         contract: ToolContract,
         router_decision: RouterDecision,
     ) -> tuple[str, str] | None:
+        if request.execution_mode == "restricted_local_user":
+            return self._preflight_restricted_user(
+                request=request,
+                artifact=artifact,
+                contract=contract,
+                router_decision=router_decision,
+            )
         if not (
             router_decision.execution_allowed
             and router_decision.qualification_only
@@ -241,8 +286,13 @@ class LocalControlledExecutor:
         elif request.qualification.purpose == "scientific_pilot":
             if artifact.synthetic or not artifact.public_dataset:
                 return "public_scientific_dataset_required", "scientific pilot requires public real data"
-            if artifact.accession != "GSE108313":
+            if artifact.accession not in {"GSE108313", "scIB-pancreas", "Zheng68K"}:
                 return "scientific_dataset_not_allowlisted", str(artifact.accession)
+        elif request.qualification.purpose == "representative_preview":
+            return (
+                "representative_preview_requires_restricted_user_route",
+                "representative Preview execution cannot use qualification authorization",
+            )
         if artifact.fixture_id != request.qualification.fixture_id:
             return "fixture_id_mismatch", "request and artifact fixture ids differ"
         if request.wrapper_id != contract.wrapper_id:
@@ -250,6 +300,8 @@ class LocalControlledExecutor:
         if not self.wrapper_registry.contains(request.wrapper_id):
             return "unknown_wrapper", f"wrapper is not allowlisted: {request.wrapper_id}"
         wrapper = self.wrapper_registry.get(request.wrapper_id)
+        if not wrapper.is_runtime_ready():
+            return "runtime_pack_not_ready", "required runtime pack is missing or unverified"
         if wrapper.environment_id != request.environment_id:
             return "wrapper_environment_mismatch", "wrapper and request environments differ"
         if not self.environment_registry.contains(request.environment_id):
@@ -284,7 +336,97 @@ class LocalControlledExecutor:
             return "input_path_invalid", str(exc)
         return None
 
-    def _worker_environment(self, run_dir: Path) -> dict[str, str]:
+    def _preflight_restricted_user(
+        self,
+        *,
+        request: ExecutionRequest,
+        artifact: QualificationArtifact,
+        contract: ToolContract,
+        router_decision: RouterDecision,
+    ) -> tuple[str, str] | None:
+        context = request.user_execution
+        if not (
+            router_decision.execution_allowed
+            and router_decision.route == "RESTRICTED_USER_EXECUTION"
+            and not router_decision.qualification_only
+        ):
+            return "restricted_user_route_blocked", "; ".join(router_decision.reasons)
+        if request.actor.role != "user" or context is None:
+            return "unauthorized_execution", "restricted local user context required"
+        if not context.approval_consumed:
+            return "approval_not_consumed", "approval must be consumed before execution"
+        if context.user_id != request.actor.actor_id:
+            return "user_context_mismatch", "actor and approval user differ"
+        if context.artifact_id != request.input_artifact_id:
+            return "artifact_scope_mismatch", "approval artifact differs from request"
+        if context.tool_name != contract.tool_name or context.tool_version != contract.tool_version:
+            return "tool_scope_mismatch", "approval tool differs from contract"
+        if context.contract_version != contract.contract_version:
+            return "contract_scope_mismatch", "approval contract version changed"
+        if context.environment_id != request.environment_id:
+            return "environment_scope_mismatch", "approval environment changed"
+        try:
+            parameters = self.contract_registry.validate_parameters(
+                contract, request.parameters
+            )
+        except ValueError as exc:
+            return "invalid_parameter", str(exc)
+        if context.parameter_hash != parameter_hash(parameters):
+            return "parameter_scope_mismatch", "approval parameter hash changed"
+        scope = ApprovalScope(
+            user_id=context.user_id,
+            artifact_id=context.artifact_id,
+            plan_id=request.plan_id,
+            tool_name=context.tool_name,
+            tool_version=context.tool_version,
+            contract_version=context.contract_version,
+            environment_id=context.environment_id,
+            parameter_hash=context.parameter_hash,
+        )
+        if scope.fingerprint != context.request_fingerprint:
+            return "approval_fingerprint_mismatch", "approval fingerprint changed"
+        if request.wrapper_id != contract.wrapper_id:
+            return "wrapper_contract_mismatch", "request wrapper differs from contract"
+        if not self.wrapper_registry.contains(request.wrapper_id):
+            return "unknown_wrapper", f"wrapper is not allowlisted: {request.wrapper_id}"
+        wrapper = self.wrapper_registry.get(request.wrapper_id)
+        if wrapper.environment_id != request.environment_id:
+            return "wrapper_environment_mismatch", "wrapper and request environments differ"
+        if not self.environment_registry.contains(request.environment_id):
+            return "unknown_environment", request.environment_id
+        environment = self.environment_registry.get(request.environment_id)
+        policy = self.execution_policy.authorize(
+            actor_role=request.actor.role,
+            access_origin=context.access_origin,
+            user_allowlisted=True,
+            contract=contract,
+            environment=environment,
+        )
+        if not policy.allowed:
+            return "execution_policy_blocked", ";".join(policy.reasons)
+        runtime_key = contract.tool_name.casefold()
+        if environment.package_versions.get(runtime_key) != contract.tool_version:
+            return "runtime_version_mismatch", "runtime and contract versions differ"
+        max_timeout = int(contract.resource_requirements.get("qualification_timeout_seconds", 0))
+        if request.timeout_seconds > max_timeout:
+            return "user_execution_budget_exceeded", "timeout exceeds contract boundary"
+        if not artifact.allowlisted:
+            return "artifact_not_allowlisted", "registered artifact is not approved"
+        try:
+            path = Path(artifact.path)
+            if path.is_symlink():
+                return "symlink_input_forbidden", "user input cannot be a symlink"
+            resolved = path.resolve(strict=True)
+            _require_within(resolved, self.approved_input_root, "input artifact")
+            if not resolved.is_file() or _sha256(resolved) != artifact.sha256:
+                return "input_hash_mismatch", "registered user artifact changed"
+        except (OSError, ValueError) as exc:
+            return "input_path_invalid", str(exc)
+        return None
+
+    def _worker_environment(
+        self, run_dir: Path, runtime_environment: dict[str, str] | None = None
+    ) -> dict[str, str]:
         env = {
             "HOME": str(run_dir),
             "LANG": os.environ.get("LANG", "C.UTF-8"),
@@ -298,6 +440,7 @@ class LocalControlledExecutor:
             cache_dir = self.run_root.parent / ".qualification_cache" / name.casefold()
             cache_dir.mkdir(parents=True, exist_ok=True)
             env[name] = str(cache_dir)
+        env.update(runtime_environment or {})
         return env
 
     def _blocked(
@@ -323,6 +466,7 @@ class LocalControlledExecutor:
             environment_id=request.environment_id,
             command_argv_redacted=[],
             parameters=request.parameters,
+            execution_seed=request.execution_seed,
             parameter_provenance=request.parameter_provenance,
             input_hash=artifact.sha256,
             start_time=started,
@@ -333,11 +477,18 @@ class LocalControlledExecutor:
             status="blocked",
             error_type=error_type,
             error_message=error_message,
+            qualification_mode=request.qualification.mode,
             fixture_id=artifact.fixture_id,
             synthetic_fixture=artifact.synthetic,
             public_dataset=artifact.public_dataset,
             user_data_used=artifact.user_data,
             execution_purpose=request.qualification.purpose,
+            owner_user_id=(
+                request.user_execution.user_id if request.user_execution else None
+            ),
+            approval_id=(
+                request.user_execution.approval_id if request.user_execution else None
+            ),
         )
 
 
@@ -368,10 +519,30 @@ def _process_tree_rss_mb(pid: int) -> float:
         return 0.0
 
 
-def _terminate_process_tree(process: subprocess.Popen[str]) -> ProcessCleanup:
+def _terminate_process_tree(
+    process: subprocess.Popen[str],
+    *,
+    timeout_triggered: bool = False,
+    cancellation_triggered: bool = False,
+    cancellation_reason: str | None = None,
+) -> ProcessCleanup:
     children: list[psutil.Process] = []
     try:
         children = psutil.Process(process.pid).children(recursive=True)
+    except (psutil.Error, PermissionError):
+        pass
+    known_pids = {item.pid for item in children}
+    try:
+        candidates = psutil.process_iter(["pid"])
+        for candidate in candidates:
+            if candidate.pid == process.pid:
+                continue
+            try:
+                if os.getpgid(candidate.pid) == process.pid and candidate.pid not in known_pids:
+                    children.append(candidate)
+                    known_pids.add(candidate.pid)
+            except (OSError, psutil.Error, PermissionError):
+                continue
     except (psutil.Error, PermissionError):
         pass
     try:
@@ -391,13 +562,21 @@ def _terminate_process_tree(process: subprocess.Popen[str]) -> ProcessCleanup:
         process.wait(timeout=2.0)
     except subprocess.TimeoutExpired:
         pass
-    residual = [child.pid for child in children if child.is_running()]
+    residual = []
+    for child in children:
+        try:
+            if child.is_running() and child.status() != psutil.STATUS_ZOMBIE:
+                residual.append(child.pid)
+        except (psutil.Error, PermissionError):
+            continue
     return ProcessCleanup(
-        timeout_triggered=True,
+        timeout_triggered=timeout_triggered,
         terminate_sent=terminate_sent,
         kill_sent=kill_sent,
         child_processes_seen=len(children),
         residual_processes=residual,
+        cancellation_triggered=cancellation_triggered,
+        cancellation_reason=cancellation_reason,
     )
 
 

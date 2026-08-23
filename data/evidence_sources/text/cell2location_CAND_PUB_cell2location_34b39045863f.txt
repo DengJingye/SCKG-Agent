@@ -1,0 +1,2710 @@
+[PDF_PAGE 1]
+
+Articles
+https:/ / doi.org/10.1038/s41587-021-01139-4
+1Wellcome Sanger Institute, Hinxton, Cambridge, UK. 2Moscow State University, Leninskie Gory, Moscow, Russia. 3Centre for Immunobiology, Blizard 
+Institute, Queen Mary University of London, London, UK. 4European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Hinxton, 
+UK. 5European Molecular Biology Laboratory, Genome Biology Unit, Heidelberg, Germany. 6Center for Computational Biology, University of California, 
+Berkeley, Berkeley CA, USA. 7Theory of Condensed Matter, Department of Physics, Cavendish Laboratory, University of Cambridge, Cambridge, UK. 
+8Division of Computational Genomics and Systems Genetics, German Cancer Research Center (DKFZ), Heidelberg, Germany. 
+✉e-mail: oliver.stegle@embl.de; ob5@sanger.ac.uk
+T
+he cellular architecture of tissues, where distinct cell types 
+are organized in space, underlies cell–cell communication, 
+organ function and pathology. Emerging spatial transcrip
+-
+tomics technologies provide key opportunities to map resident cell 
+types and cell signaling in situ in a scalable manner. Despite existing 
+proof-of-concept applications of these technologies
+1–6, it remains 
+a challenge to define spatial transcriptomics workflows that allow 
+comprehensive mapping of resident cell types in tissues. One reason 
+is the enormous cellular diversity across organs, including myriad 
+fine-grained cell types such as immune
+7,8, stromal 7,9 and neuro -
+nal10,11 subpopulations. These fine cell types, marked by subtle tran-
+scription differences, are often specialized across tissues and yield 
+large potential for discoveries. Another reason is the diversity of 
+spatial tissue architecture, ranging from the brain featuring discrete 
+anatomical regions with distinct cell types to immune organs fea
+-
+turing dynamically modified microenvironments with fine-grained 
+cell types. To create comprehensive cellular wiring diagrams of tis-
+sues with spatial transcriptomics, it is necessary to establish experi-
+mental and computational methods that are sufficiently sensitive to 
+resolve fine-grained differences in cell types across diverse tissues.
+Strategies that generate coupled single-cell and spatially resolved 
+transcriptomics offer a scalable approach to address these chal
+-
+lenges. The key principle is to first identify resident cell types 
+based on single-cell RNA sequencing (scRNA-seq) from dissoci
+-
+ated tissues and then map the identified cell types to their tissue 
+positions in situ based on spatial transcriptomic profiles
+12. Here, 
+spatial RNA-seq technologies, such as Visium 13, HDST14 and Slide 
+sequencing (Slide-seq) 2, where mRNAs are positionally captured 
+from thin tissue sections using microarray or bead array grids, pro-
+vide transcriptome-wide data at high throughput and rely on simple 
+histology and molecular biology protocols.
+A key limitation of existing grid-based profiling methods is the 
+lack of single-cell resolution, as spatial RNA-seq measurements 
+combine multiple cells (Visium and Tomo-Seq)
+13,15 or fractions 
+of multiple cells (Slide-seq and HDST) 2,14 at each tissue location. 
+This challenge can be overcome by the computational integration 
+of spatial RNA-seq with the reference transcriptome signatures of 
+cell types obtained from coupled scRNA-seq profiles. Although, 
+recently, several computational methods have been proposed for 
+this task
+1–3,5,6, it is not clear whether these methods offer sufficient 
+sensitivity to resolve fine-grained cell types in complex tissues, 
+which is critical to make full use of the discovery potential of spatial 
+transcriptomic data. Additionally, different confounding sources 
+of variation need to be accounted for, which enables more com
+-
+plex integration tasks of data that consist of multiple experiments, 
+including variable cell numbers across tissue positions and variable 
+total mRNA content across cell types and individual cells
+16,17.
+To address the aforementioned challenges, we present cell2lo -
+cation, a Bayesian model that is designed to resolve fine-grained 
+cell types in spatial transcriptomic data and create cellular maps 
+of diverse tissues. Cell2location can handle complex experimental 
+settings, performing joint analysis of multiple scRNA-seq and spa
+-
+tial transcriptomic datasets. Unique to the model is a hierarchical 
+design to borrow statistical strength across locations, which yields 
+Cell2location maps fine-grained cell types in 
+spatial transcriptomics
+Vitalii Kleshchevnikov   1, Artem Shmatko   1,2, Emma Dann   1, Alexander Aivazidis1, 
+Hamish W. King   1,3, T ong Li   1, Rasa Elmentaite   1, Artem Lomakin   4,5, Veronika Kedlian1, 
+Adam Gayoso   6, Mika Sarkin Jain1,7, Jun Sung Park   1,4, Lauma Ramona1, Elizabeth T uck1, 
+Anna Arutyunyan   1, Roser Vento-T ormo  1, Moritz Gerstung   4,5, Louisa James   3, Oliver Stegle   1,5,8 ✉ 
+and Omer Ali Bayraktar   1 ✉
+Spatial transcriptomic technologies promise to resolve cellular wiring diagrams of tissues in health and disease, but compre-
+hensive mapping of cell types in situ remains a challenge. Here we present сell2location, a Bayesian model that can resolve 
+fine-grained cell types in spatial transcriptomic data and create comprehensive cellular maps of diverse tissues. Cell2location 
+accounts for technical sources of variation and borrows statistical strength across locations, thereby enabling the integration 
+of single-cell and spatial transcriptomics with higher sensitivity and resolution than existing tools. We assessed cell2location 
+in three different tissues and show improved mapping of fine-grained cell types. In the mouse brain, we discovered fine regional 
+astrocyte subtypes across the thalamus and hypothalamus. In the human lymph node, we spatially mapped a rare pre-germinal 
+center B cell population. In the human gut, we resolved fine immune cell populations in lymphoid follicles. Collectively, our 
+results present сell2location as a versatile analysis tool for mapping tissue architectures in a comprehensive manner.
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology 661
+
+
+[PDF_PAGE 2]
+
+Articles NaTure BIoTeCHNology
+improved resolution and sensitivity, in particular for resolving 
+fine-grained cell types in complex tissues. Here we assess cell2loca-
+tion in three different tissues, where we consistently show improved 
+sensitivity for mapping fine-grained cell types. Moreover, we map 
+rare B cell states in the human lymph nodes and identify regional 
+astrocyte subtypes in the mouse brain.
+Pearson R: 0.866
+Average JSD: 0.17
+0 0.25 0.50 0.75 1.00
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+Pearson R: 0.572
+Average JSD: 0.47
+0 0.25 0.50 0.75 1.00
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+Pearson R: 0.855
+Average JSD: 0.32
+0 0.25 0.50 0.75 1.00
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+Pearson R: 0.44
+Average JSD: 0.51
+0 0.25 0.50 0.75 1.00
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+High cell abundance Low cell abundance
+Simulated cell proportion
+b
+c
+Estimated cell proportion
+Ubiquitous
+n = 5n = 3
+High cell abundance Low cell abundance
+Regional (smooth tissue zones)
+n = 32
+n = 9
+a
+sc/snRNA-seq
+Spatial transcriptomics
+Tissue
+Tissue
+regions
+Co-occuring 
+cell type 
+combinations
+Tissue
+Array
+x
+y
+Cell2location
+Estimated abundances
+of cell types in spatial data
+0
+0.2
+0.4
+0.6
+0.8Pearson R
+Cell2location Stereoscope Seurat RCTD SPOTlight NNLS
+Fig. 1 | Cell2location overview and validation using simulated data. a, Overview of the spatial mapping approach and the analysis workflow of cell2location. 
+From left to right: scRNA-seq and spatial transcriptomics profiles are generated from the same or related tissues. Cell2location takes reference cell type 
+signatures derived from scRNA-seq and spatial transcriptomics data as input. The model then decomposes spatially resolved multi-cell RNA count matrices 
+into the reference cell type signatures, thereby estimating cell abundance of individual cell types across locations. b, Model validation using simulated 
+data. A benchmark dataset is constructed by combining cells drawn from 49 reference cell types (obtained from mouse brain scRNA-seq; Fig. 2b), using 
+alternative cell type abundance patterns. T op: four alternative cell type abundance patterns considered for data simulation (see also Supplementary Fig. 2) 
+and the number of cell types assigned to each pattern (Methods). Bottom: 2D histogram plots, displaying the concordance between simulated (x axis) and 
+estimated (y axis) cell type proportions across 2,500 locations, aggregated for cell types assigned to the respective pattern. Color denotes 2D histogram 
+count (50 bins along both the x axis and y axis). Pearson R denotes Pearson correlation, and JSD denotes Jensen–Shannon divergence. c, Assessment of 
+cell2location and alternative methods for estimation of cell type proportions for 49 cell types from the four respective abundance patterns (columns, x axis, 
+2,500 locations and 49 cell types). Shown are bar plots of Pearson correlation coefficients (y axis, R) between simulated and estimated cell type proportions 
+for individual cell types across locations, considering alternative methods (color, x axis). Bar height denotes the average correlation coefficient across cell 
+types; error bars denote standard errors.
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology662
+
+
+[PDF_PAGE 3]
+
+ArticlesNaTure BIoTeCHNology
+Results
+Cell2location: a Bayesian model for spatial mapping of cell types. 
+Cell2location maps the spatial distribution of cell types by integrat-
+ing single-cell or nuclei RNA-seq and spatial transcriptomic data 
+from a given tissue (Fig. 1a). The first step of the cell2location work
+-
+flow is to estimate reference cell type signatures from single-cell and 
+single-nucleus RNA-seq profiles, which correspond to gene expres
+-
+sion profiles for a set of user-provided cell types and subpopula -
+tions identified using conventional clustering or other methods. By 
+default, cell2location uses negative binomial regression for this step, 
+which allows robust combination of data across technologies and 
+batches (Methods and Supplementary Fig. 1). In a second step, cell
+-
+2location uses these reference signatures and one or multiple spa -
+tial transcriptomic datasets as input to decompose mRNA counts 
+at individual spatial locations into reference cell types (Fig. 1a and 
+Supplementary Fig. 1).
+Although cell2location is related to existing transcriptomic 
+decomposition methods
+1,3,5,6,18, it offers features to (1) borrow sta -
+tistical strength across locations with similar cell composition, 
+(2) account for batch variation across slides as well as variation 
+in mRNA detection sensitivity and (3) estimate absolute cell type 
+abundances by incorporating prior information about the analyzed 
+tissues (see Supplementary Methods for details). In addition, cell
+-
+2location is computationally efficient, owing to variational approxi-
+mate inference and GPU acceleration. The cell2location software is 
+integrated with the scvi-tools framework
+19 and comes with a suite of 
+downstream analysis tools, including the identification of groups of 
+co-located cell types.
+To validate cell2location, we initially considered simulated data 
+that were generated to reflect diverse cell abundance patterns across 
+ubiquitous and spatially restricted cell types (Fig. 1b). In brief, 
+we created a spatial transcriptomics dataset with 2,500 locations 
+by sampling cells from 49 reference cell types, using a combina
+-
+tion of ubiquitous abundance patterns and cell types distributed 
+according to smooth ‘tissue zones’ as observed in real data (Fig. 1b, 
+Supplementary Fig. 2 and Methods). Reference cell type signatures 
+and other simulation parameters were adapted from a mouse brain 
+scRNA-seq dataset (Methods). Of note, unlike most benchmark 
+datasets on real data (see below), this synthetic dataset provides 
+ground truth information on the presence and absence of cell types 
+as well as on quantitative abundance.
+We then used the cell2location to estimate cell type proportions 
+for different cell types at individual locations. Comparison of these 
+estimates to the simulated (true) cell type proportions revealed that 
+cell2location mapped cell types with high accuracy, irrespective of 
+the cell abundance pattern (Fig. 1b), including low abundant and 
+regional cell types.
+Next, we compared cell2location to recently proposed meth
+-
+ods for the estimation of relative cell type abundance from spa -
+tial transcriptomics data (Stereoscope 3, Seurat 1, RCTD 5, NNLS 
+(AutoGeneS)18,20 and SpotLIGHT 6). Across the considered cell 
+abundance patterns, we found that cell2location yielded more accu-
+rate estimates of the cell type proportions across locations than other 
+methods (Fig. 1c). In addition to this quantitative assessment of cell 
+type proportions, we also assessed the ability of alternative methods 
+to determine locations where individual cell types are present—that 
+is, have non-zero cell abundance—which yielded a consistent rank
+-
+ing of methods (Supplementary Fig. 3b).
+We note that, in addition to estimating relative cell type propor-
+tions, cell2location can incorporate prior information about the 
+tissue to estimate absolute cell type abundance, which, again, were 
+highly concordant with the simulated ground truth (Supplementary 
+Fig. 4a). Finally, we explored how specific design choices of cell
+-
+2location contribute to its performance (Supplementary Fig. 4b), 
+and we assessed the robustness of the model to incomplete refer -
+ence cell type sets (Supplementary Fig. 4c) as well as variation in 
+hyper-parameter settings (Supplementary Fig. 5).
+Cell2location accurately maps mouse brain cell types. To validate 
+cell2location in a real tissue, we first applied the model to data from 
+the mouse brain, which features diverse neural cell types organized 
+in a well-characterized spatial architecture across brain areas, thus 
+presenting a canonical use case to test spatial genomics
+1,3,5,6. We gen-
+erated matched single nucleus (sn) and Visium spatial RNA-seq (10x 
+Genomics) profiles of adjacent mouse brain sections that contain 
+multiple regions from the telencephalon and diencephalon (Fig. 2a). 
+To assess the biological and intra-organ technical variation in spa
+-
+tial mapping, we assayed two mouse brains and serial tissue sections 
+from each brain (total of three and two matched sections from two 
+animals, respectively, and an extra section for snRNA-seq), creating 
+a rich multi-modal and replicated transcriptomic dataset.
+To define reference cell type signatures, we pooled snRNA-seq 
+data across replicate animals and tissue sections (40,532 nuclei) and 
+applied a conventional scRNA-seq workflow followed by Louvain 
+clustering (Methods). This identified 51 putative cell type clusters, 
+which were well represented across replicates (Supplementary Fig. 6). 
+ 
+Of these, 44 clusters could be identified as expected cell types in the 
+brain (Fig. 2b, Supplementary Fig. 7 and Methods), including astro
+-
+cytes, excitatory or inhibitory neurons or glia subtypes, annotated 
+by markers from prior literature
+10,16,21. The two astrocyte clusters 
+Fig. 2 | Comprehensive and accurate spatial mapping of cell types in the mouse brain. a, Experimental workflow. Adjacent tissue sections from two mice 
+were used to generate single-nucleus and spatial data, across a total of five pairings of Visium and snRNA-seq, respectively (and an extra section for 
+snRNA-seq). b, UMAP representation (x and y axis) of broad cell type classes (right) and 59 cell subtypes (left; see Supplementary Fig. 6a for labels), as 
+identified by Louvain clustering of the integrated snRNA-seq dataset across sections from a. c, Mouse brain regions present in the assayed section. H&E 
+image of the tissue section and the outlines of brain regions are shown. Scale bar, 1 mm. d, Estimated cell abundances (color intensity) of major cell types 
+(color) across regions. e, Estimated cell abundances (color intensity) of sparse inhibitory neurons (color). f, Estimated cell abundances (color intensity) 
+of cortical excitatory neurons (color). Small panels show the estimated cell abundance (color) for two select subtypes on the region indicated with the 
+white bounding box. g, Consistency of cell2location cell abundance estimates across replicate slides (x and y axis), considering either replicate animals 
+(left) or consecutive serial sections from the same animal (right). Considered are cell abundance estimates across 59 reference cell types across cortical 
+layers; R denotes Pearson correlation. h, Spatial mapping in the Slide-seq V2 data. Left, estimated cell abundances (color intensity) of hippocampal neuron 
+types (Hpc subtypes) and a thalamic habenular neuron type (Inh_6). Right, estimated cell abundances (color intensity) of cortical excitatory neurons. 
+i, Benchmarking workflow for assessing the spatial mapping specificity of cell2location and alternative methods. scRNA-seq reference cell types
+11 from 
+manually dissected SSp cortex layers (top, positive set) and the par-/ post-/ pre-subiculum divisions of the hippocampus (bottom, negative set) were 
+mapped to Visium data from the SSp cortex. j, Distribution of estimated cell type proportions at locations with high abundance of each cell type in the 
+spatial data for positive cell types (SSp cortex, orange, x axis, n = 98) and negative cell types (hippocampus, blue, x axis, n = 23) in the SSp cortex region for 
+alternative methods. Box plots show the distribution of cell proportions (99.8% quantile across locations within the SSp cortex) for each cell type and each 
+replicate section (Supplementary Fig. 11e; n = 5 sections). Fold changes denote the difference in average 99.8% quantile of cell type proportions between 
+positive and negative cell types. Box center, bounds and whiskers show median, quartiles and data points that lie within 1.5× interquartile range of the 
+lower and upper quartiles, respectively. The observations that fall outside this range are displayed as dots.
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology 663
+
+
+[PDF_PAGE 4]
+
+Articles NaTure BIoTeCHNology
+could be further subdivided into ten transcriptional subtypes (see 
+next section). Collectively, this resulted in reference cell type signa-
+tures for 59 distinct and annotated cell subtypes, which comprehen-
+sively cover the profiled brain areas (Supplementary Fig. 7).
+We applied cell2location to map these cell types to spatial loca -
+tions of the mouse brain Visium data, across replicate animals and 
+sections. The resulting cell type mapping was markedly consistent 
+with anatomical locations expected from prior literature (Fig. 2c–f 
+and Supplementary Files 1–6). Our results captured diverse cell 
+type patterns, resolving broad regional cell types such as excit
+-
+atory neurons of thalamus and oligodendrocytes of white matter 
+(Fig. 2d)10,22, rare subtypes such as cortical interneurons (Fig. 2e)23,24 
+and sub-regional subtypes such as excitatory neurons across cor -
+tical layers (Fig. 2f and Supplementary Fig. 8e) 23,24. The cell type 
+0 3.16 6.33
+Hpc_CA1
+0 0.41 0.83
+Hpc_CA2
+0 1.82 3.63
+Hpc_CA3
+0 3.19 6.39
+Hpc_DG1
+0 2.53 5.06
+Inh_6
+0 0.55 1.11
+Ext_L23
+0 0.14 0.28
+Ext_L25
+0 0.54 1.08
+Ext_L5_2
+0 1.26 2.53
+Ext_L56
+0 0.18 0.36
+Ext_L6B
+0 0.35 0.70
+Inh_Sst
+0 0.22 0.43
+Inh_Lamp5
+0 0.18 0.37
+Inh_Vip0 3.45 6.90
+Oligo_2
+0 1.21 2.41
+Inh_Meis2_3
+0 1.95 3.91
+Inh_4
+0 2.9 5.8
+Ext_Thal_1
+0 2.48 4.96
+Ext_L23
+0 1.85 3.69
+Ext_L56
+0
+1
+2
+3
+4
+5
+6
+7
+0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+4.0
+0 1.85 3.69
+Ext_L56
+0 0.59 1.18
+Ext_L6B
+0 2.95 5.89
+Ext_L25
+0 0.71 1.41
+Ext_L5_2
+0 2.48 4.96
+Ext_L23
+a
+snRNA-seq (10x 3/uni2032 v3)
+Visium spatial (10x)
+x
+y
+10200 µm
+55 µm 100 µm 
+Cell2location
+Consecutive 
+sections
+Sagittal view
+Mouse
+brain
+Profiled 
+region
+b
+Major regional subtypes Fine anatomical subtypesSparse cell types
+d fec
+Slide-seq V2 (Stickels et al.)
+h
+i
+Estimated cell density per cell type per layer
+Biological replicates Consecutive sections
+L1
+L2–3
+L4
+L5
+L6
+Anatomical regions
+CTX
+HPC
+THA
+HYP
+STR
+WM
+AMY
+PFC
+L1L2-3
+L4
+L5
+L6
+P56
+L1
+L2–3
+L4
+L5
+L6
+Ext_L56
+Ext_L4
+g
+CTX
+HPC
+THA Hab
+j
+Cortex (positive) Hippocampal (negative)
+Somatosensory 
+cortex
+cell types 
+(positive)
+Hippocampal 
+cell types
+(negative)
+Cortex vs hippocampus
+scRNA-seq reference
+Cortex
+visium data
+Cell2location
+vs
+other
+methods
+Expected
+mapping
+Yes
+No
+Fold change (pos/neg)
+0 5
+Mouse 1, section 1
+0
+2
+4
+6
+8
+Mouse 2, section 2
+Pearson R: 0.981
+0 2.5 5.0
+Mouse 1, section 1
+0
+2
+4
+6
+Mouse 1, section 2
+Pearson R: 0.991
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+Cell types Broad class
+Estimated mapping: positive versus negative cell types
+Cell types
+Cell2location RCTD Stereoscope Seurat SPOTlight NNSL
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+Mean cell proportion
+5.32 1.83 1.07 1.71 0.69 2.26
+Astrocytes
+Endo
+Excitatory
+Inhibitory
+Micro
+Oligo-OPC
+Other
+Endo
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology664
+
+
+[PDF_PAGE 5]
+
+ArticlesNaTure BIoTeCHNology
+abundance estimates were highly concordant across adjacent tissue 
+sections and replicate animals, as quantified across cortical layers 
+(Fig. 2g and Supplementary Fig. 9). Finally, we clustered tissue 
+locations based on their estimated cell type abundance profiles 
+(Methods), which yielded clusters that recapitulate the anatomical 
+brain areas, with the reference cell types mapping to the expected 
+tissue regions (Supplementary Fig. 10).
+Next, to assess the specificity of cell2location and alterna
+-
+tive methods, we mapped a large existing scRNA-seq dataset that 
+includes cell types from multiple brain regions
+11, only some of 
+which are present in our spatial data (Fig. 2i). Consequently, this 
+dataset spans ‘positive’ cell types from the somatosensory (SSp) cor
+-
+tex (n = 98) as well as ‘negative’ cell types that are exclusively present 
+in the hippocampus (n = 23)11. When mapping these cell types to 
+our SSp cortex Visium data, we would expect that negative cell types 
+are excluded and only positive cell types are assigned substantial cell 
+type proportions.
+Indeed, cell2location mapping yielded substantially lower cell 
+proportion estimates for the negative compared to the positive cell 
+types (Fig. 2j; positive/negative fold change = 5.1). By contrast, 
+other methods yielded a substantially weaker contrast between neg
+-
+ative and positive cell types (Fig. 2j; positive/negative fold change = 
+0.7–1.9 for other methods; Supplementary Fig. 11). This indicates 
+that cell2location accurately excludes reference cell types that should 
+not be present in a spatial dataset, whereaas other methods tend 
+to ‘overfit’ reference cell types. We also used cell type proportion 
+estimates derived from the scRNA-seq data, which were generated 
+from manually dissected cortical layers, to confirm the quantitative 
+cell type proportions estimated by cell2location (Supplementary 
+Fig. 11 and Supplementary File 7).
+Finally, to show the versatility of cell2location across spatial tran
+-
+scriptomic technologies, we mapped our mouse brain snRNA-seq 
+reference to a Slide-seq dataset of the mouse brain that offers 10-µm 
+spatial resolution
+25. Cell2location resolved cell types in Slide-seq 
+spatial data, including fine anatomical subtypes across hippocampal 
+divisions and cortical layers (Fig. 2h, Supplementary Fig. 12a and 
+Supplementary Files 8 and 9). Moreover, cell2location revealed that 
+more than 50% of Slide-seq ‘beads’ (that is, 10-µm-diameter spa
+-
+tial locations) contained more than one cell type (Supplementary 
+Fig. 12b), consistent with previous observations5.
+Collectively, our results show that cell2location maps diverse 
+brain cell types with high accuracy and reproducibility and that the 
+method is broadly applicable to spatial transcriptomic technologies.
+Identification of regional astrocyte subtypes. Next, we assessed 
+cell2location for mapping fine-grained cell types in the mouse 
+brain. We focused on the heterogeneity of astrocytes, which is the 
+largest class of glial cells that intimately regulate neuronal circuit 
+development and function
+26. Although astrocytes were historically 
+considered to be a homogeneous cell type, recent evidence sug -
+gests that astrocytes are regionally diversified across the brain 26, 
+including fine anatomical divisions such as cortical layers 27–29. 
+However, the extent of the regional heterogeneity of astrocytes is 
+largely unknown, as existing studies have primarily compared their 
+ 
+prevalence across selected brain areas30,31 or described broad astro -
+cyte subtypes across major brain divisions (for example, telencepha-
+lon versus diencephalon)10,32.
+To identify regionally enriched astrocytes, we annotated and 
+spatially mapped ten molecularly and spatially distinct astrocyte 
+subtypes that were identified based on our snRNA-seq reference. 
+In brief, we considered 3,013 cells annotated as astrocytes in our 
+initial analysis (Fig. 2b). We then applied BBKNN
+33 to further 
+refine the integration of these cells across all six snRNA-seq data -
+sets (Methods), followed by Leiden clustering, which identified 17 
+transcriptomically defined subclusters (Supplementary Fig. 13). 
+Next, we performed an initial mapping of these putative cell sub
+-
+types using cell2location, merging clusters that were not sufficiently 
+distinct in both their mapped spatial locations and marker gene 
+expression profiles (Supplementary Figs. 13 and 14 and Methods). 
+This resulted in ten molecularly and spatially distinct astrocyte sub
+-
+types (Fig. 3a,b and Supplementary Fig. 15), which we considered 
+for further analysis. The extent of molecular heterogeneity across 
+these subtypes (measured by the number of marker genes) was sub
+-
+stantially lower than across neuronal subpopulations, confirming 
+the transcriptionally fine-grained nature of these cell populations 
+(Supplementary Fig. 13d).
+We identified gray matter astrocyte subtypes that were spatially 
+enriched in the thalamus (THAL), hypothalamus (HYPO), cor
+-
+tex (CTX), amygdala (AMY), hippocampus (HPC) and striatum 
+(STR) as well as white matter astrocytes (Fig. 3b and Supplementary 
+ 
+Fig. 15). These subtypes expressed expected regional astrocyte 
+markers
+10, such as Foxg1 in the telencephalon (CTX, AMY , HPC 
+and STR) and Slc6a11 and Agt in the diencephalon (THAL and 
+HYPO) (Supplementary Fig. 15). Moreover, they stratified to finer 
+regional subtypes based on the expression of subtype-specific genes 
+such as Angpt1 and combinatorially expressed markers such as 
+Gria1 (Supplementary Fig. 15; see below).
+We focused on diencephalic astrocyte subtypes, as only one type 
+of gray matter astrocyte subtype has been described in this brain 
+area to date
+10. Notably, our data revealed four regionally distinct 
+gray matter astrocyte subpopulations across the diencephalon 
+(Fig. 3c and Supplementary Fig. 15). HYPO astrocytes were 
+mainly located in the hypothalamus and, to a lesser extent, in 
+the midline thalamic nuclei and the lateral habenula, and they 
+were marked by Ttll3 expression. Three THAL subtypes occu
+-
+pied different regions of the thalamus. THAL_hab astrocytes, a 
+rare cell population in our reference (Supplementary Fig. 6d), 
+were restricted to the medial habenula and ventral white matter 
+tracts and specifically expressed Angpt1 . THAL_med astrocytes 
+were enriched in the medial thalamic nuclei and were marked by 
+Lgr6 expression. Finally, THAL_lat astrocytes, although present 
+throughout the thalamus and the subthalamus, were most preva
+-
+lent in ventrolateral thalamic nuclei and were marked by elevated 
+Aldh1a1 expression compared to other subtypes (Fig. 3c and 
+Supplementary Fig. 15).
+We validated the identity and distribution of diencephalic astro
+-
+cyte subtypes using single-molecule fluorescence in situ hybrid -
+ization (smFISH)27. We used Agt smFISH to specifically label and 
+Fig. 3 | Spatial discovery of regional astrocyte subtypes. a, UMAP representation (x and y axis) of ten molecularly and spatially distinct astrocyte 
+subtypes (color) identified in our snRNA-seq reference data. b, Estimated cell abundances (color intensity) of selected regional astrocyte subtypes (left 
+hemisphere) and brain regions as identified using clustering of locations (right hemisphere). Scale bar, 1 mm. c, Estimated cell abundances (color intensity) 
+of four diencephalic astrocyte subtypes. Thal_med and Thal_lat are shown from a more representative section from the same mouse brain. d, smFISH 
+validation. T op panels: Small map shows locations of diencephalic astrocytes segmented based on Agt smFISH. Large maps show quantified subtype 
+marker expression (color intensity) at a single-astrocyte level (dots). yellow dashed line indicates the medial boundary of high Aldh1a1 expression. Bottom 
+panels, close-up images of diencephalic astrocyte subtypes. First columns show smFISH for astrocyte marker Agt and subtype markers. Second columns 
+show astrocyte segmentation masks (blue) transparently overlaid on subtype genes. n = 1 mouse and n = 3 technical replicate tissue sections for each 
+marker independently imaged. Scale bar, 10 µm. e, Estimated cell proportions (color intensity) for mapping THAL_hab astrocyte subtypes, considering the 
+four best-performing methods (columns). Red arrows indicate the location of the medial habenula.
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology 665
+
+
+[PDF_PAGE 6]
+
+Articles NaTure BIoTeCHNology
+segment astrocytes throughout the diencephalon10 (Supplementary 
+Figs. 16 and 17) and then quantified the expression of co-stained 
+subtype markers at single-astrocyte resolution (Fig. 3d). The in situ 
+expression patterns of regional astrocyte markers (Ttll3 , Angpt1, 
+Lgr6 and Aldh1a1) validated the spatial mapping of their respective 
+astrocyte subtypes by cell2location (Fig. 3d). Finally, we also con -
+sidered alternative tools for spatially mapping regional astrocytes, 
+finding that cell2location was the only transcriptomic decomposi -
+tion method that accurately mapped THAL_hab astrocytes to their 
+validated tissue location (Fig. 3e and Supplementary Fig. 18).
+0 0.03 0.06
+THAL_hab
+0 0.06 0.12
+THAL_hab
+0
+0.69
+1.38
+0
+0.29
+0.59
+0
+0.67
+1.34
+0
+0.21
+0.42
+UMAP1
+UMAP2
+a Regional astrocytes
+AMY
+AMY_CTX CTX
+HPC
+HYPO
+STR
+THAL_hab
+THAL_lat
+THAL_med
+WM
+b Astrocyte subtypes Brain regions 
+c
+Visium - cell2location
+Thalamus
+Hypothal
+Agt Angptl1 Angptl1Agt Ttll3 Ttll3 Agt Lgr6 Lgr6 Agt Aldh1a1 Aldh1a1
+Hypo
+Med thal
+Hab
+Med thal
+Med thal
+Lat thal Med thal
+Lat thal
+119 178 236
+Ttll3
+122 233 344
+Angpt1
+120 182 243
+Aldh1a1
+Subthal
+Hypothal
+Medial 
+habenula
+Lateral 
+thal 
+nuclei
+Medial
+thal
+nuclei Midline
+thal
+nuclei
+Agt
+White
+matter
+d
+smFISH quantification
+122 235 347
+Lgr6
+HYPO THAL_hab THAL_med THAL_lat
+Cell density
+Diencephalon
+0 0.59 1.18
+HYPO
+0 0.36 0.71
+CTX
+0 0.18 0.36
+HPC
+0 0.54 1.07
+THAL_lat
+0 0.12 0.23
+THAL_hab
+e
+0 0.04 0.08
+THAL_hab
+Cell2location RCTD scvi Stereoscope Seurat V3
+0 0.03 0.06
+THAL_hab
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology666
+
+
+[PDF_PAGE 7]
+
+ArticlesNaTure BIoTeCHNology
+These results validate diencephalic astrocyte subtypes and show 
+that cell2location can spatially map fine-grained cell types.
+Resolving the cellular compartments of the human lymph node. 
+To test cell2location on diverse tissue architectures, we applied the 
+model to spatially map tissue microenvironments of the human 
+lymph node. Unlike the mouse brain, the human lymph node is 
+characterized by dynamic microenvironments with many spa
+-
+tially interlaced cell populations. We analyzed a publicly available 
+Visium dataset of the human lymph node from 10x Genomics34 and 
+spatially mapped a comprehensive atlas of 34 reference cell types 
+derived by integration of scRNA-seq datasets from human sec
+-
+ondary lymphoid organs composed of 73,260 cells 35–37 (Fig. 4a,b , 
+Supplementary Fig. 19 and Methods).
+Histological examination of the lymph node Visium sample 
+revealed multiple germinal centers (GCs). Correspondingly, after 
+mapping with cell2location, the expected major regions within the 
+lymph node tissue could be readily identified, including T cell and 
+B cell zones and GCs with follicular dendritic cells (FDCs) (Fig. 4c, 
+right panel, and Supplementary Files 10 and 11).
+Next, we used the cell2location mapping results to identify the 
+spatial co-occurrence of cell types to better understand the tis
+-
+sue organization and predict cellular interactions. We performed 
+non-negative matrix factorization (NMF) of the cell type abundance 
+estimates from cell2location (Fig. 4d). Similarly to the established 
+benefits of applying NMF to conventional scRNA-seq
+38,39, the addi-
+tive NMF decomposition yielded a grouping of spatial cell type 
+abundance profiles into components that capture co-localized cell 
+types. This NMF-based decomposition naturally accounts for the 
+fact that multiple cell types and microenvironments can co-exist at 
+the same Visium locations (Supplementary Fig. 20) while sharing 
+information across tissue areas (for example, individual GCs).
+We observed that the groups of cell types identified by NMF cor
+-
+responded to known functionally relevant cellular compartments of 
+the lymph node (Fig. 4d). Furthermore, the NMF output enabled 
+the dissection of the spatial compartments of B cell maturation. 
+Specifically, naive B cells were mapped to a B follicle zone distinct 
+from GCs (Fig. 4e , panel 1). We also identified the GC dark zone 
+where B cells clonally expand and proliferate (Fig. 4e , panel 2) as 
+well as the GC light zone where they undergo selection by T follicu
+-
+lar helper cells and FDCs to differentiate into antibody-producing 
+plasmablasts (Fig. 4e, panel 3).
+In addition to confirming known biology, the cell2location 
+combined with the NMF decomposition enabled the fine-grained 
+spatial mapping of a rare secondary activation B cell state, which 
+was recently reported as primed to undergo class switch recom
+-
+bination preceding the GC entry 37,40. Our data indicate that this 
+population (termed here ‘preGC’) occupies a different tissue 
+compartment from the upstream activated cells and downstream 
+GC cells (Fig. 4e, panel 4), suggesting that it is more likely to initiate 
+new GC reactions rather than to join existing ones. Finally, our analy-
+sis was capable of distinguishing blood vessel zones containing endo-
+thelial and vascular smooth muscle cells (Supplementary Fig. 21a, 
+panel 5) from the adjacent perivascular zone enriched in T helper 
+and B memory cells (Supplementary Fig. 21a, panel 6).
+Taken together, our results show that cell2location can map 
+complex tissues characterized by spatially interlaced cell types and 
+aid biological interpretation by identifying putatively interacting 
+ 
+cell types.
+Benchmarking cell2location for mapping fine immune cell 
+types. Cell atlasing studies have greatly expanded the catalog of 
+fine-grained cell types across human tissues, which are often of 
+key interest for understanding tissue function and pathology
+7,9,11. 
+To quantitatively benchmark cell2location and alternative methods 
+for mapping transcriptionally fine-grained cell types, we considered 
+immune cell populations across two human tissues where many 
+ 
+fine subtypes with specialized immune functions can be identi -
+fied7–9. For example, T follicular helper cells differ from the clas -
+sical CD4 + T cells in their ability to enter the GCs and guide B 
+cell differentiation into plasma cells and memory B cells to ensure 
+long-lasting immunity41.
+Initially, we examined GC-specific immune cell types in the 
+human lymph node (Fig. 4). We classified six known GC cell types 
+as either transcriptionally fine or transcriptionally distinct, based 
+on the Euclidean distance of their expression signatures to the clos-
+est other cell type (Supplementary Fig. 22a and Methods). We anno-
+tated the anatomical locations of GCs using Visium histology images 
+(Fig. 4f) and assessed the accuracy of alternative methods in map
+-
+ping the six GC cell types to the expected GC locations. Although all 
+considered methods achieved high accuracy for mapping distinct 
+cell types such as FDCs (Fig. 4h), cell2location was markedly more 
+accurate in mapping fine-grained cell types such as GC T follicular 
+helper cells (Fig. 4f–h and Supplementary Figs. 22–24).
+To extend our benchmarking to a second tissue with a 
+larger number of fine-grained cell types, we examined immune 
+cell populations in the human gut (Fig. 5a and Supplementary 
+ 
+Figs. 25 and 26). The human gut presents a challenging applica -
+tion for spatial mapping as it contains a larger number of tran -
+scriptionally fine-grained immune and non-immune cell types, 
+with the immune cells enriched in relatively small tissue areas 
+across lymphoid follicles (for example, ~1% of tissue locations in 
+our dataset).
+We defined comprehensive cell type reference signatures by 
+combining scRNA-seq datasets from pediatric and adult human 
+intestinal tract, which was enriched for immune (CD45
++) cells to 
+Fig. 4 | Mapping the cellular compartments of the human lymph node. a, Analysis workflow and downstream analysis. b, UMAP representation (x and 
+y axis) of 34 immune and non-immune cell subtypes (color), combining scRNA-seq data from three studies used to define reference gene expression 
+signatures of cell types (Methods). c, Major tissue zones of the lymph node, including T cell and B cell zones, and GC reactions with FDCs. Left, H&E 
+image of the tissue section. Right, estimated cell abundance (color intensity) of cell types (color) shown over the H&E image of the lymph node sample 
+(n = 1 donor). Scale bar, 1 mm. d, Identification of lymph node cell compartments using NMF. Shown is a dot plot of the estimated NMF weights of cell 
+types (rows) across NMF components (columns), which correspond to cellular compartments. Shown are relative weights, normalized across components 
+for every cell type. e, Estimated cell abundance of selected cell types that are associated with highlighted cellular compartments (Fig. 4d) is shown in 
+panels 1–4. Spatial plots (x and y axis) show cell abundance (color intensity) for each cell type (subpanels). Boxes highlight the tissue regions shown in 
+inset panels. Dashed circles indicate GCs. f, First panel: annotations of germinal center GC locations based on paired histology image (positive locations 
+in yellow; negative locations in black). Other panels: spatial plots (x and y axis) showing estimated cell proportion of the T_CD4
++_TfH_GC subpopulation 
+(color intensity) for alternative methods (subpanels). g, Quantitative assessment of the mapping accuracy for the T_CD4+_TfH_GC cell subpopulation 
+using the histology annotation of GC positive and negative locations as in f. Shown are precision recall curves for alternative methods. h, Assessment of 
+spatial mapping of six subtypes that are expected to be present in annotated GC (positive locations) and absent from other locations (as in g). Shown are 
+macro-average precision recall scores (bar height, y axis) for alternative methods (color, x axis), considering either transcriptionally fine (left, n = 4) or 
+transcriptionally distinct (right, n = 2) subtypes. Error bars denote standard errors. T ranscriptionally fine subtypes (B_GC_DZ, B_GC_LZ, B_GC_prePB and 
+T_CD4
++_TfH_GC); transcriptionally distinct subtypes (B_Cycling and FDC).
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology 667
+
+
+[PDF_PAGE 8]
+
+Articles NaTure BIoTeCHNology
+represent them at equal proportion with non-immune (CD45 −) 
+subtypes, spanning 76 cell types in total across 153,901 cells 
+(Fig. 5b)42. We mapped these reference cell types to a Visium dataset 
+of the adult colon consisting of two consecutive tissue sections 43, 
+where we annotated the locations of lymphoid follicles using his -
+tology and marker gene expression in Visium data (Fig. 5c and 
+Supplementary Fig. 25b). Correspondingly, after mapping with 
+cell2location, the expected major regions within the colon could be 
+readily identified, including lymphoid follicles with cycling B cells, 
+epithelial compartments with colonocytes and transit-amplifying 
+progenitor cells as well as the muscularis mucosa layer with myofi
+-
+broblasts (Fig. 5c and Supplementary Files 12 and 13)43.
+0
+0.2
+0.4
+0.6
+0.8
+AUC PRC
+Cell2location
+RCTD
+Stereoscope
+Seurat
+SPOTlight
+NNSL
+0 1.86 3.71
+FDC
+0 5.58 11.16
+T_CD4
++
+_naive
+0 3.85 7.70
+B_naive
+0
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+0.07
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+0
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0
+0.02
+0.04
+0.06
+0.08
+0.10
+0
+1
+2
+3
+4
+5
+6
+0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+1.6
+0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+4.0
+0
+1
+2
+3
+4
+5
+6
+7
+8
+0
+2
+4
+6
+8
+10
+0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+0
+1
+2
+3
+4
+5
+6
+7
+Histology
+T cell zone B follicle
+Germinal center
+a b c
+GC B cells
+B cellsT cells
+Endothelial, 
+FDC, myeloid
+Plasma 
+B cells
+d
+Fact_10
+Fact_11
+Fact_9
+Fact_1
+Fact_0
+Fact_5
+Fact_2
+Fact_8
+Fact_3
+Fact_7
+Fact_4
+Fact_6
+B_plasma
+B_naive
+B_activated
+B_GC_LZ
+T_CD4
++
+_TfH_GC
+B_GC_prePB
+FDC
+B_cycling
+B_GC_DZ
+B_preGC
+Endo
+VSMC
+Mast
+DC_pDC
+Macrophages_M2
+Monocytes
+DC_cDC2
+NKT
+Macrophages_M1
+DC_cDC1
+B_mem
+T_CD4
++
+T_CD4
++
+_naive
+T_CD8
++
+_naive
+DC_CCR7
++
+T_TfR
+T_treg
+T_CD4
++
+_TfH
+T_CD8
++
+_CD161
++
+T_CD8
++
+_cytotoxic
+T_TIM3
++
+NK
+ILC
+B_IFN
+3
+2
+5
+6
+4
+1
+Normalized cell abundance
+f
+3 germinal center light zone (fact_7)
+2 germinal center dark zone (fact_3) 4 pre GC (fact_8) 1 B follicle (fact_4)
+Naive B B preGCB GC DZCycling B
+B GC LZ T helper TfH GC B GC prePB FDC
+scRNA-seq
+Visium spatial 
+(10x)
+Cell2location
+Human
+NMF
+e
+NK, NKT, 
+ILC
+h
+GC ground truth g
+Transcriptionally 
+fine subtypes
+(n = 4)
+Transcriptionally 
+distinct subtypes
+(n = 2)
+T helper TfH GC mapping
+1.0
+0.8
+0.6
+0.4
+0.2
+0
+Cell2location RCTD
+Stereoscope Seurat V3 SPOTlight
+0 0.5 1.0
+Recall
+0
+0.5
+1.0
+Precision
+T helper TfH GC mapping
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology668
+
+
+[PDF_PAGE 9]
+
+ArticlesNaTure BIoTeCHNology
+We identified 19 immune cell types in our gut scRNA-seq refer-
+ence that are known to be enriched in lymphoid follicles 44,45, which 
+we again classified into transcriptionally fine versus transcription -
+ally distinct cell types (Supplementary Fig. 25c) and assessed their 
+mapping to lymphoid follicles in the Visium data by cell2location 
+and other methods. Although all considered methods achieved high 
+accuracy for distinct cell types, such as cycling B cells, cell2location 
+again achieved markedly higher accuracy for mapping fine-grained 
+Txn fine-grained Txn distinct
+0
+0.2
+0.4
+0.6
+0.8
+AUC PRC
+Cell2location
+RCTD
+Stereoscope
+Seurat
+SPOTlight
+NNSL
+0 0.25 0.50 0.75 1.00
+Recall
+0
+0.25
+0.50
+0.75
+1.00Precision
+FCRL4
++
+ memory B
+0 0.25 0.50 0.75 1.00
+Recall
+Tfh
+0 0.25 0.50 0.75 1.00
+Recall
+CD8 tmem
+0 0.25 0.50 0.75 1.00
+Recall
+Cycling B cell
+0
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+0.07
+0
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+0.07
+0
+0.005
+0.010
+0.015
+0.020
+0
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0
+0.005
+0.010
+0.015
+0.020
+0.025
+0
+0.01
+0.02
+0.03
+0.04
+0.05
+0
+0.0025
+0.0050
+0.0075
+0.0100
+0.0125
+0.0150
+0.0175
+0
+0.1
+0.2
+0.3
+0.4
+−0.100
+−0.075
+−0.050
+−0.025
+0
+0.025
+0.050
+0.075
+0.100
+−0.100
+−0.075
+−0.050
+−0.025
+0
+0.025
+0.050
+0.075
+0.100
+−0.100
+−0.075
+−0.050
+−0.025
+0
+0.025
+0.050
+0.075
+0.100
+0
+0.05
+0.10
+0.15
+0.20
+a b
+Visium spatial 
+(10x)
+colon ×2
+Cell2location
+Human gut
+Histology
+Neuronal
+Epithelial
+B/plasma
+Endothelial
+T/NK
+Myeloid
+Mesencyhmal
+Major tissue 
+zones
+Transcriptionally distinct (n = 1/6) d Transcriptionally fine subtypes (n = 3/13)
+RCTD
+Seurat
+Cell2location
+Cycling B cellTfhFcrl4
++
+ memory B CD8 Tmem
+Lymphoid structure
+ground truth
+0 0.3 0.6
+Colonocyte
+0 0.2 0.4
+Cycling B cell
+0 0.39 0.78
+TA
+0 0.07 0.14
+Myofibroblast Lymph 
+Non-lymph
+c
+f Transcriptionally 
+fine subtypes
+(n = 13)
+Transcriptionally 
+distinct subtypes
+(n = 6)
+e
+scRNAseq
+Comprehensive across regions,
+CD45+ immune cell enrichment
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology 669
+
+
+[PDF_PAGE 10]
+
+Articles NaTure BIoTeCHNology
+cell types (Fig. 5d–f; n = 13 cell types). Alternative methods either 
+failed to locate several of the fine immune cell types, such as FCRL4+ 
+memory B cells and Tfh cells in Visium data, or mapped them with 
+low specificity (Fig. 5d–f and Supplementary Figs. 25d and 26).
+Finally, we sought to explore the specific modeling choices in 
+cell2location that are most relevant for the model performance 
+(Supplementary Figs. 24 and 25e), which in particular confirmed 
+the benefits of hierarchical modeling to borrow statistical strength 
+across locations for mapping fine cell types.
+Taken together, these results show that cell2location outperforms 
+other methods in mapping transcriptionally fine-grained cell types 
+in complex tissues.
+Discussion
+The integration of disassociated single-cell and spatial transcrip -
+tomics promises a high-throughput approach to map tissue cell 
+types and cell signaling in situ. To best use the potential of these 
+technologies and to create comprehensive cellular wiring diagrams 
+of tissues, computational models for high-resolution mapping of cell 
+types in spatial transcriptomic data are needed. Here we presented 
+cell2location, a Bayesian model that provides sufficient sensitivity 
+and resolution to spatially map a wide range of cell types, includ
+-
+ing transcriptionally fine subtypes, thereby allowing the creation of 
+comprehensive atlases of diverse tissues in a versatile manner.
+We performed extensive quantitative benchmarks across three 
+tissues, consistently showing that cell2location enables a substantial 
+advance for spatially mapping fine-grained cell types over existing 
+tools. In the human lymph node and gut, cell2location provided 
+higher accuracy to resolve fine immune cell populations. In the 
+mouse brain, cell2location enabled accurate mapping of fine astro
+-
+cyte subtypes.
+Despite showing a small number of transcriptional differences, 
+fine cell types often exhibit specialized and critical functions across 
+tissues. In the immune system, we showed that cell2location can 
+accurately resolve fine subtypes such as Tfh cells guiding B cell dif
+-
+ferentiation and FCRL4+ B cells modulating immune responses at 
+mucosal sites44. In the mouse brain, we resolved four regional astro-
+cyte populations. In addition to their molecular and spatial identi -
+ties, we can only speculate about the regionalized functions of these 
+astrocytes. Astrocyte–neuron signaling in the lateral habenula regu
+-
+lates neuronal circuits implicated in depression46. Similarly, dience-
+phalic astrocytes could shape the activity of local neuronal circuits, 
+such as the lateral thalamic circuitry for sensory relay or medial tha
+-
+lamic circuits involved in attention control47.
+Although cell2locaiton is conceptually related to existing meth -
+ods, specific design choices enable the benefits highlighted by 
+our benchmarking results. Among the most important features, 
+cell2location allows the borrowing of statistical strength across 
+ 
+locations with similar cell composition, thereby improving sensitiv-
+ity for mapping fine cell types. Additionally, the model can jointly 
+process data across batches while accounting for technical differ
+-
+ences as well as variation in mRNA detection sensitivity. Finally, we 
+note that cell2location is implemented as robust, fast and versatile 
+software, integrated with scvi-tools framework
+19, enabling a wide 
+range of different applications.
+Although we showed that cell2location can deal with data from 
+a range of existing technologies, upcoming technologies will moti -
+vate further refinements of the model. This includes support for 
+higher-resolution spatial transcriptomics assays, for example by 
+adapting the model to account for differences in the noise charac
+-
+teristics such as background probe binding or variable capture areas 
+(for example, Nanostring
+48,49 and LCM-RNA-seq 50). The modular 
+implementation of cell2location in pyro and pymc3 (refs. 51,52) will 
+facilitate such efforts.
+A major future frontier for cell atlas projects is the 
+three-dimensional (3D) mapping of tissues at cellular resolution. 
+The spatial mapping approach described here can lay the foun
+-
+dations for 3D tissue atlases. Single-cell and spatial RNA-seq and 
+imaging can be applied to consecutive tissue sections across an 
+organ, integrating data from all technologies to build a multi-scale 
+atlas. Regional cell type maps generated with cell2location can also 
+guide gene selection for intact tissue volume imaging
+53, leading to 
+3D models of cells in their native tissue context with whole tran -
+scriptome information.
+In summary, we introduced here a versatile and flexible approach 
+for spatial mapping of tissues. We expect that cell2location will have 
+diverse applications in mapping tissue architecture across develop-
+ment, health and disease. In separate applications to the human 
+endometrium54, developing human gut 42 and human gonads 55, we 
+further showed the versatility of cell2location to map fine-grained 
+cell type differences across diverse tissues. Going forward, spatial 
+cell type maps coupled with cell interaction analysis can help deci
+-
+pher developmental processes such as cellular differentiation and 
+how it is regulated by extrinsic cues. These developmental cues can 
+be recapitulated in vitro to refine tissue engineering approaches. 
+Similarly, understanding how tissue architecture is perturbed in 
+response to disease can enrich understanding of pathological pro
+-
+cesses and aid the design of therapeutic interventions.
+Online content
+Any methods, additional references, Nature Research report -
+ing summaries, source data, extended data, supplementary infor -
+mation, acknowledgements, peer review information; details of 
+author contributions and competing interests; and statements of 
+data and code availability are available at https://doi.org/10.1038/
+s41587-021-01139-4.
+Fig. 5 | Cell2location outperforms alternative methods in mapping fine immune subtypes in the human gut. a, Analysis workflow. b, UMAP 
+representation (x and y axis) of 76 immune and non-immune reference cell subtypes (color), which were obtained by combining scRNA-seq data from 
+gut tissue and tertiary lymphoid follicles and used to define reference cell type signatures (Methods). c, Major tissue zones of the gut, including epithelial 
+compartments with mature colonocytes and transit amplifying cells, muscularis mucosa with myofibroblasts and tertiary lymphoid follicle with immune 
+cells (zoomed-in panel). Left, H&E image of the tissue section. Middle, estimated cell abundance (color intensity) of cell types (color) shown over the H&E 
+image of the same gut sample. Right, ground truth histology-based annotation of lymphoid follicle (color) shown for the corresponding H&E image. n = 1 
+donor and n = 2 tissue sections. Scale bar, 1 mm. d, Spatial plots (x and y axis), depicting estimated cell type proportions (color intensity) for three selected 
+transcriptionally fine subtypes (out of 13) and one transcriptionally distinct subtype (out of six). Cell types are shown in columns, and alternative methods 
+to estimate the corresponding cell type proportions are shown in rows. Boxes highlight the tissue regions shown in inset panels. e, Precision recall curves 
+for cell2location and alternative methods for mapping the indicated cell types for cell2location and alternative methods (methods in color; see legend 
+in f). These cell types are expected to be present in annotated lymphoid follicles (positive set of locations) and absent from other locations (negative 
+set). f, Summary of precision recall (AUC score, y axis) for cell2location and alternative methods (color, x axis). Cell types are stratified by the extent of 
+transcriptional distinctiveness (fine versus distinct). These cell types are expected to be present in annotated GC (positive set of locations) and absent 
+from other locations (negative set) for alternative methods. Shown are average AUC scores across cell types (bar height) with error bars corresponding to 
+standard errors. AUC, area under the curve.
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology670
+
+
+[PDF_PAGE 11]
+
+ArticlesNaTure BIoTeCHNology
+Received: 15 November 2020; Accepted: 28 October 2021; 
+Published online: 13 January 2022
+References
+ 1. Stuart, T. et al. Comprehensive integration of single-cell data. Cell 177, 
+1888–1902 (2019).
+ 2. Rodriques, S. G. et al. Slide-seq: a scalable technology for measuring 
+genome-wide expression at high spatial resolution. Science 363, 
+1463–1467 (2019).
+ 3. Andersson, A. et al. Single-cell and spatial transcriptomics enables 
+probabilistic inference of cell type topography. Commun. Biol. 3, 565 (2020).
+ 4. Moncada, R. et al. Integrating microarray-based spatial transcriptomics and 
+single-cell RNA-seq reveals tissue architecture in pancreatic ductal 
+adenocarcinomas. Nat. Biotechnol. 38, 333–342 (2020).
+ 5. Cable, D. M. et al. Robust decomposition of cell type mixtures in spatial 
+transcriptomics. Nat. Biotechnol. https://doi.org/10.1038/s41587-021-00830-w 
+(2021).
+ 6. Elosua-Bayes, M., Nieto, P ., Mereu, E., Gut, I. & Heyn, H. SPOTlight: seeded 
+NMF regression to deconvolute spatial transcriptomics spots with single-cell 
+transcriptomes. Nucleic Acids Res. 49, e50 (2021).
+ 7. Travaglini, K. J. et al. A molecular cell atlas of the human lung from 
+single-cell RNA sequencing. Nature 587, 619–625 (2020).
+ 8. Conde, C. D. et al. Cross-tissue immune cell analysis reveals tissue-specific 
+adaptations and clonal architecture in humans. Preprint at https://www.
+researchgate.net/publication/351185031_Cross-tissue_immune_cell_analysis_
+reveals_tissue-specific_adaptations_and_clonal_architecture_across_the_
+human_body (2021).
+ 9. Vento-Tormo, R. et al. Single-cell reconstruction of the early maternal–fetal 
+interface in humans. Nature 563, 347–353 (2018).
+ 10. Zeisel, A. et al. Molecular architecture of the mouse nervous system. Cell 174, 
+999–1014 (2018).
+ 11. Y ao, Z. et al. A taxonomy of transcriptomic cell types across the isocortex and 
+hippocampal formation. Cell 184, 3222–3241 (2021).
+ 12. Lein, E., Borm, L. E. & Linnarsson, S. The promise of spatial transcriptomics 
+for neuroscience in the era of molecular cell typing. Science 358, 
+64–69 (2017).
+ 13. Ståhl, P . L. et al. Visualization and analysis of gene expression in tissue 
+sections by spatial transcriptomics. Science 353, 78–82 (2016).
+ 14. Vickovic, S. et al. High-definition spatial transcriptomics for in situ tissue 
+profiling. Nat. Methods 16, 987–990 (2019).
+ 15. Junker, J. P . et al. Genome-wide RNA tomography in the zebrafish embryo. 
+Cell 159, 662–675 (2014).
+ 16. Zeisel, A. et al. Brain structure. Cell types in the mouse cortex and 
+hippocampus revealed by single-cell RNA-seq. Science 347, 
+1138–1142 (2015).
+ 17. Halpern, K. B. et al. Single-cell spatial reconstruction reveals global division 
+of labour in the mammalian liver. Nature 542, 352–356 (2017).
+ 18. Aliee, H. & Theis, F . AutoGeneS: automatic gene selection using 
+multi-objective optimization for RNA-seq deconvolution. Cell Syst. 12, 
+706–715 (2021).
+ 19. Gayoso, A. et al. scvi-tools: a library for deep probabilistic analysis of 
+single-cell omics data. Preprint at https://www.researchgate.net/
+publication/351290216_scvi-tools_a_library_for_deep_probabilistic_analysis_
+of_single-cell_omics_data (2021).
+ 20. Lawson, C. L. & Hanson, R. J. Solving Least Squares Problems (SIAM, 1995).
+ 21. Tasic, B. et al. Adult mouse cortical cell taxonomy revealed by single cell 
+transcriptomics. Nat. Neurosci. 19, 335–346 (2016).
+ 22. Phillips, J. W . et al. A repeated molecular architecture across thalamic 
+pathways. Nat. Neurosci. 22, 1925–1935 (2019).
+ 23. Lim, L., Mi, D., Llorca, A. & Marín, O. Development and functional 
+diversification of cortical interneurons. Neuron 100, 294–313 (2018).
+ 24. Tasic, B. et al. Shared and distinct transcriptomic cell types across neocortical 
+areas. Nature 563, 72–78 (2018).
+ 25. Stickels, R. R. et al. Highly sensitive spatial transcriptomics at near-cellular 
+resolution with Slide-seqV2. Nat. Biotechnol. 39, 313–319 (2021).
+ 26. Ben Haim, L. & Rowitch, D. H. Functional diversity of astrocytes in neural 
+circuit regulation. Nat. Rev. Neurosci. 18, 31–41 (2017).
+ 27. Bayraktar, O. A. et al. Astrocyte layers in the mammalian cerebral cortex 
+revealed by a single-cell in situ transcriptomic map. Nat. Neurosci. 23, 
+500–509 (2020).
+ 28. Batiuk, M. Y . et al. Identification of region-specific astrocyte subtypes at 
+single cell resolution. Nat. Commun. 11, 1220 (2020).
+ 29. Lanjakornsiripan, D. et al. Layer-specific morphological and molecular 
+differences in neocortical astrocytes and their dependence on neuronal layers. 
+Nat. Commun. 9, 1623 (2018).
+ 30. Chai, H. et al. Neural circuit-specialized astrocytes: transcriptomic, 
+proteomic, morphological, and functional evidence. Neuron 95, 
+531–549 (2017).
+ 31. Huang, A. Y .-S. et al. Region-specific transcriptional control of astrocyte 
+function oversees local circuit activities. Neuron 106, 992–1008 (2020).
+ 32. John Lin, C.-C. et al. Identification of diverse astrocyte populations and their 
+malignant analogs. Nat. Neurosci. 20, 396–405 (2017).
+ 33. Polański, K. et al. BBKNN: fast batch alignment of single cell transcriptomes. 
+Bioinformatics 36, 964–965 (2020).
+ 34. V1_Human_Lymph_Node - Datasets - Spatial Gene Expression - Official 10x 
+Genomics Support. https://support.10xgenomics.com/spatial-gene-expression/
+datasets/1.1.0/V1_Human_Lymph_Node
+ 35. James, K. R. et al. Distinct microbial and immune niches of the human colon. 
+Nat. Immunol. 21, 343–353 (2020).
+ 36. Park, J.-E. et al. A cell atlas of human thymic development defines T cell 
+repertoire formation. Science 367, eaay3224 (2020).
+ 37. King, H. W . et al. Single-cell analysis of human B cell maturation predicts 
+how antibody class switching shapes selection dynamics. Sci. Immunol. 6, 
+eabe6291 (2021).
+ 38. Levitin, H. M. et al. De novo gene signature identification from single-cell 
+RNA-seq with hierarchical Poisson factorization. Mol. Syst. Biol. 15, 
+e8557 (2018).
+ 39. Kotliar, D. et al. Identifying gene expression programs of cell-type identity 
+and cellular activity with single-cell RNA-seq. eLife 8, e43803 (2019).
+ 40. Roco, J. A. et al. Class-switch recombination occurs infrequently in germinal 
+centers. Immunity 51, 337–350 (2019).
+ 41. Sun, B. T. Helper Cell Differentiation and Their Function (Springer, 2014).
+ 42. Elmentaite, R. et al. Cells of the human intestinal tract mapped across space 
+and time. Nature 597, 250–255 (2021).
+ 43. Fawkner-Corbett, D. et al. Spatiotemporal analysis of human intestinal 
+development at single-cell resolution. Cell 184, 810–826 (2021).
+ 44. Spencer, J. & Sollid, L. M. The human intestinal B-cell response. Mucosal 
+Immunol. 9, 1113–1124 (2016).
+ 45. Koboziev, I., Karlsson, F . & Grisham, M. B. Gut-associated lymphoid tissue, 
+T cell trafficking, and chronic intestinal inflammation. Ann. N. Y. Acad. Sci. 
+1207, E86–E93 (2010).
+ 46. Cui, Y . et al. Astroglial Kir4.1 in the lateral habenula drives neuronal bursts 
+in depression. Nature 554, 323–327 (2018).
+ 47. Ward, L. M. The thalamus: gateway to the mind. Wiley Interdiscip. Rev. Cogn. 
+Sci. 4, 609–622 (2013).
+ 48. Merritt, C. R. et al. Multiplex digital spatial profiling of proteins and RNA in 
+fixed tissue. Nat. Biotechnol. 38, 586–599 (2020).
+ 49. Roberts, K. et al. Transcriptome-wide spatial RNA profiling maps the cellular 
+architecture of the developing human neocortex. Preprint at https://www.
+researchgate.net/publication/350237379_Transcriptome-wide_spatial_RNA_
+profiling_maps_the_cellular_architecture_of_the_developing_human_
+neocortex (2021).
+ 50. Nichterwitz, S. et al. Laser capture microscopy coupled with Smart-seq2 for 
+precise spatial transcriptomic profiling. Nat. Commun. 7, 12139 (2016).
+ 51. Salvatier, J., Wiecki, T. V . & Fonnesbeck, C. Probabilistic programming in 
+Python using PyMC3. PeerJ Comput. Sci. 2, e55 (2016).
+ 52. Bingham, E. et al. Pyro: deep universal probabilistic programming. 
+J. Mach. Learn. Res. 20, 973–978 (2019).
+ 53. Zhao, S. et al. Cellular and molecular probing of intact human organs. Cell 
+180, 796–812 (2020).
+ 54. Garcia-Alonso, L., Handfield, L. F . & Roberts, K. et al. Mapping the temporal 
+and spatial dynamics of the human endometrium in vivo and in vitro. 
+Nat. Genet. 53, 1698–1711 (2021).
+ 55. Vento-Tormo, R. et al. Single-cell roadmap of human gonadal development. 
+Preprint at https://assets.researchsquare.com/files/rs-496470/v1_covered.
+pdf?c=1631867880 (2021).
+Publisher’s note Springer Nature remains neutral with regard to jurisdictional claims in 
+published maps and institutional affiliations.
+© The Author(s), under exclusive licence to Springer Nature America, Inc. 2022
+NATuRE BiOTECHNOLOGy | VOL 40 | MAy 2022 | 661–671 | www.nature.com/ naturebiotechnology 671
+
+
+[PDF_PAGE 12]
+
+Articles NaTure BIoTeCHNology
+Methods
+Cell2location model. For a complete derivation of the cell2location model, see 
+the Supplementary Methods. In brief, cell2location is a Bayesian model that 
+estimates the absolute abundance of cell types at each location by decomposing 
+the spatial expression count matrix into a predefined set of reference cell type 
+signatures. The model takes an untransformed spatial expression count matrix 
+d
+s,g of genes g = {1, .., G} at locations s = {1, .., S} as input, as, for example, 
+obtained from the 10x Space Ranger software (10x Visium data). Cell2location 
+allows the joint modeling of multiple spatial datasets 
+e = {1, .., E} (also known as 
+batch integration) where e denotes individual experiments obtained using one or 
+multiple technologies. The second input is a matrix of reference cell type signatures 
+g
+f,g, which correspond to the expected mRNA count of genes g for each cell type 
+f = {1, .., F}. By default, this matrix is estimated using a negative binomial 
+regression model, which allows for combining data across batches and technologies 
+(see below and Supplementary Methods).
+Cell2location model. Cell2location models the elements of the spatial expression 
+count matrix ds,g as negative binomial distributed, given an unobserved gene 
+expression level (rate) μs,g and gene- and batch-specific over-dispersion αe,g:
+ds,g ∼ NB
+(
+μs,g, αe,g
+)
+.
+The expression rate of genes g at location s, μs,g in the mRNA count space is 
+modeled as a linear function of reference cell types signatures gf,g:
+μs,g =
+
+
+
+
+mg
+����
+technology sensitivity
+·
+�
+f
+ws,f gf,g
+� �� �
+cell type contributions
++ se,g
+����
+additive shift
+
+
+
+
+
+· ys
+����
+per-location sensitivity
+.
+Here, ws,f denotes regression weight of each reference cell type f at location s, which 
+can be interpreted as the abundance of cells expressing reference cell type signature 
+f at location s; mg is a gene-specific scaling parameter that adjusts for differences in 
+sensitivity between technologies; se,g captures gene-specific additive shift that allows 
+the model to account for contaminating RNA; and ys is a location-specific scaling 
+parameter that models variation in RNA detection sensitivity across locations s across 
+one or multiple batches e (by use of hierarchical priors; Supplementary Methods).
+Because of the organization of tissues into zones, the cell type abundance 
+estimates ws,f are not independent across locations. To borrow statistical strength 
+and use information sharing across locations, ws,f is modeled using a hierarchical 
+decomposition prior (factorization), assuming r = {1, .., R} groups of cell types 
+that partially share a common cell abundance profile (for example, due to tissue 
+zones; Supplementary Methods). Unless stated otherwise, R is set to 50.
+Approximate variational inference is used to estimate all model parameters, 
+implemented in the scvi-tools framework
+19, building on pyro and pymc3 
+probabilistic programming frameworks as backend51,52, which supports GPU 
+acceleration. For full details, see the Supplementary Methods.
+Note on the construction of reference cell type signatures. It is important to aim for a 
+comprehensive and detailed cell-type reference, which includes as many of the cell 
+types and subpopulations that are present in situ as possible. This can be achieved 
+by generating a paired snRNA-seq reference from the same tissue sample. However, 
+imperfect matching of cell populations is often acceptable (Figs. 4 and 5 and 
+Supplementary Fig. 4c).
+Based on one or multiple snRNA-seq input datasets, reference cell type 
+signatures (gene expression) are estimated based on a defined set of cell 
+populations, which, in turn, can be identified using conventional clustering 
+workflows. By default, the cell2location employs a negative binomial regression to 
+estimate reference cell type signatures. This model-based approach allows robust 
+combinination of data across technologies and batches (Supplementary Fig. 19), 
+which results in improved spatial mapping accuracy (Supplementary Figs. 24a–c 
+and 25e). Alternatively, if batch effects are not a concern, a hard-coded method that 
+estimates per-cluster average mRNA counts without any model-based strategy can 
+be sufficient. This strategy is simple and fast and yields similar levels of accuracy if 
+batch effects are small (Supplementary Fig. 24a–c). The hard-coded method is also 
+recommended for non-unique molecular identifier (UMI) technologies for which 
+the negative binomial count model is often not appropriate, such as Smart-seq2.
+Note on determining model hyper-parameters. The cell2locaiton model has two 
+parameters that should be adjusted by the user, taking known experimental and 
+biological characteristics of a given dataset into consideration:
+ 1. Expected cell abundance per location 
+ˆN
+ 2. Regularization of within-experiment variation in RNA detection sensitivity αy
+Supplementary Fig. 27 provides a flowchart to guide the user to determine 
+appropriate settings for these hyper-priors, which were used to determine the 
+model parameters for all presented results.
+The expected cell abundance ˆN per location is provided as a single tissue-level 
+estimate, which can be derived from histology images (H&E or DAPI), ideally 
+paired to the spatial expression data or at least representing the same tissue type. 
+This parameter can be estimated by manually counting nuclei in 10–20 locations 
+in the histology image (for example, using the 10x Loupe browser; Supplementary 
+Fig. 8) and computing the average cell abundance. An appropriate setting of this 
+prior is essential to inform the estimation of absolute cell type abundance values; 
+however, the model is robust to a range of similar values (Supplementary Fig. 5). 
+In settings where suitable histology images are not available, the size of capture 
+regions relative to the expected size of cells can be used to estimate 
+ˆN (Slide-seq 
+V2; Supplementary Fig. 27). For all analyses in this manuscript, a single tissue-level 
+estimate was used; however, as an advanced feature, cell2location can use the 
+per-location number of cells.
+Hyper-parameter α
+y for regularizing within-experiment variation in RNA 
+detection sensitivity. αy is the shape parameter of the prior gamma distribution 
+over ys that represents the extent to which RNA detection sensitivity for individual 
+locations deviates from the mean sensitivity of each batch. Large values of αy 
+correspond to small within-experiment variability (Supplementary Methods). 
+By default, we assume small within-experiment variability in RNA detection 
+sensitivity across locations (αy = 200), which results in values of ys close to the 
+mean sensitivity for each experiment. However, when strong gradients in mRNA 
+detection sensitivity are observed, which is a common issue in adult human 10x 
+Visium data, we recommend less strict regularization (α
+y = 20).
+Although good choices of these hyper-parameters can have a positive effect 
+on accuracy and sensitivity, the estimates are robust to a range of suboptimal 
+choices (Supplementary Fig. 5). The estimation of absolute cell abundance requires 
+appropriate settings of 
+ˆN in particular.
+Validation of cell2location using synthetic data and comparison to alternative 
+methods. Constructing a synthetic spatial transcriptomics dataset. Simulated spatial 
+transcriptomics data were generated by combining expression profiles of cells 
+drawn from each of 49 cell types in the mouse brain snRNA-seq reference data (see 
+below), generating abundance profiles at 2,500 locations. snRNA data from the two 
+most mouse brain snRNA-seq samples that had minimal batch effect were split into 
+one dataset used to generate the synthetic data (50% of cells) and a second dataset 
+used to evaluate cell2location and alternative methods (50% of cells), similarly to 
+the strategy proposed by Andersson et al.
+3. Hyper-parameters for data simulation 
+were chosen to mimic (the typically low) cell counts observed for cell types in real 
+tissues, additionally matching empirically observed sparsity profiles. Cell type 
+abundances were simulated according to either a spatially ubiquitous pattern (eight 
+cell types) or a regional pattern (41 cell types). Regional patterns are represented 
+by 12 tissue zones defined by co-located cell types that mimic the organization 
+of real tissues. The assignment of 41 regional cell types to the 12 tissue zones is 
+shown in Supplementary Fig. 2, with each cell type belonging to 1–3 tissue zones 
+and each tissue zone containing 2–8 cell types. The number of cell types present at 
+each location, as well as the absolute abundance (the number of cells per location), 
+were simulated according to either low or high average cell type abundance 
+(Fig. 1b), stratified by ubiquitous and regional location patterns (see below). The 
+mathematical description and the step-by-step procedure for simulating abundance 
+of cell types across locations and generating multi-cell mRNA counts is described 
+in detail in the Supplementary Methods (section 5).
+Validation of cell2location using synthetic data. Synthetic gene expression data were 
+constructed as described above to assess the performance of cell2location and 
+alternative methods. The synthetic data provide ground truth values for the relative 
+cell abundance of each cell type (cell type proportions), absolute cell abundance 
+(including partial cells) and total mRNA count of each cell type for each location, 
+which were used to benchmark estimates obtained from cell2location and 
+alternative methods. All considered models were provided with the ground truth 
+snRNA-seq reference data (evaluation subset, see above; Table 1) as well as the 
+synthetic mRNA count matrices for all locations.
+Cell2location. Signatures of reference cell types were derived using a negative 
+binomial regression (Supplementary Methods) with default parameters, except 
+training mini-batch size of 2,500 and training duration of 600 epochs. The 
+hyper-parameter values used for the synthetic data analysis are shown in Table 1. 
+In addition, the sensitivity of cell abundance estimates to the choices of these 
+hyper-parameters was assessed (Supplementary Fig. 5, section on sensitivity and 
+robustness below). The prior cell abundance 
+ˆN = 9 was set to a value close to, but 
+not fully matching, the ground truth (ˆN = 12), with the aim to obtain as realistic 
+results as possible.
+Assessment of alternative methods. RCTD, SPOTlight, Seurat 3 and NNLS 
+(AutoGeneS implementation) were used with default or optimized parameter 
+settings as described below. Stereoscope training hyper-parameters were adapted 
+to each dataset as stated in the respective sections. All benchmark datasets were 
+provided with the identical cell type reference snRNA-seq data and spatial count 
+matrix as used for cell2location. The same ground truth relative cell abundance is 
+used for all cell types.
+NATuRE BiOTECHNOLOGy | www.nature.com/ naturebiotechnology
+
+
+[PDF_PAGE 13]
+
+ArticlesNaTure BIoTeCHNology
+Stereoscope3. This method uses a model-based approach to estimating both 
+the cell type signatures and the relative cell abundance across locations (see the 
+comparison in the Supplementary Methods). A negative binomial observation 
+model is parameterized using a gene- and cell-type-specific log-odds parameter and 
+a gene-specific total count parameter. This custom signature estimation method is 
+hard-coded into the workflow, and both estimated parameters are used as input to 
+the model for estimating relative cell abundance. Unless stated otherwise, default 
+values of hyper-parameters are used. The scvi-tools
+19 implementation of the 
+Stereoscope model was used with the following hyper-parameters (default scvi-tools 
+values were modified to achieve improved accuracy):
+• No highly variable gene (HVG) selection was used (12,054 genes shared 
+between single-cell and spatial data)
+• Estimation of expression signatures of cell types: 0.01 learning rate; 1,500 epochs 
+(increased compared to default to observe convergence); 1,024 mini-batch 
+training size (similar to original Stereoscope default values).
+• Estimation of relative cell abundance: 0.01 learning rate; 30,000 epochs (also 
+increased compared to default); 1,250 mini-batch training size (half of the total 
+number of locations, similar to original Stereoscope default values).
+RCTD
+5. This method uses a similar model-based approach to the estimation of 
+relative cell abundance across locations (see the comparison in the Supplementary 
+Methods). It estimates reference cell type signatures by computing average mRNA 
+count per cluster (hard-coded). RCTD was used in default mode (not ‘doublet’ 
+mode) with hyper-parameters selected as suggested in the GitHub tutorial, with a 
+reduced threshold of the number of cells per cell type to ensure that all 49 cell types 
+were considered and including gene filtering based on log fold change (default 
+settings of all other parameters; https://github.com/dmcable/RCTD/tree/7a895ed1
+666269784cc472fa0a6e4abbd3d2ccb2).
+Seurat V3 (principal component analysis, anchor method and mutual nearest 
+neighbor classifier)
+1. Seurat V3 workflow was used to project synthetic locations 
+into the principal component analysis (PCA) space constructed using snRNA-seq 
+reference data (Seurat V3 with anchor selection, Seurat::FindTransferAnchors), 
+with subsequent transfer of cell type labels onto synthetic locations using a mutual 
+nearest neighbr (MNN) classifier (Seurat::TransferData). For the purpose of 
+this comparison, the label transfer scores were interpreted as relative cell type 
+abundance estimates of each cell type for each location. Before integration, both 
+snRNA-seq reference and synthetic spatial datasets were subjected to SCTransform 
+normalization (Seurat::SCTransform)
+56. The PCA method (with default 30 
+components) was used for integration (Seurat::FindTransferAnchors) as advised 
+in Seurat package documentation and spatial mapping tutorial. All functions were 
+used with default parameters.
+SPOTlight
+6. SPOTlight uses a seeded topic model to find expression signatures of 
+reference cell types and a modified non-negative least squares (NNLS) method 
+(denoted NMFreg) to estimate relative cell abundance. The topic model is 
+initialized in a way that guides the topics to resemble expression signatures 
+of cell types. The default SPOTlight workflow was implemented with 
+recommended parameters
+(https://github.com/MarcElosua/SPOTlight/tree/
+fb5e7c7de3e6d0ac7618c4b1a55aea06e5f472ea).
+In brief, to improve computational efficiency, the snRNA-seq data size was 
+reduced by randomly selecting, at most, 100 cells per cell type (when a cell type 
+is represented by fewer than 100 cells, all cells are kept), and highly variable genes 
+(5,000 genes) were selected using Seurat::FindAllMarkers tool. Untransformed 
+and unnormalized expression counts for both snRNA-seq reference and synthetic 
+locations were provided as input to the ‘spotlight_deconvolution’ function in the 
+SPOTlight package with the following hyper-parameters: transf = ‘uv’ , method = 
+‘nsNMF’ , and, crucially, ‘minimum allowed proportions of cell types’ min_cont = 0.01.
+NNLS (AutoGeneS)
+18,20. NNLS was used to estimate the absolute cell abundance of 
+each cell type in each synthetic location given the reference signatures of cell types, 
+which were derived by computing average expression of each gene across cells of 
+each type. Untransformed and unnormalized expression counts of the synthetic 
+locations were used as input to NNLS implementation as part of the AutoGeneS 
+package. Similarly to cell2location, the output was normalized to produce relative 
+cell abundance.
+Comparison of cell2location and alternative methods. The estimates of relative 
+cell abundance from all methods were compared to the ground truth using 
+two-dimensional (2D) histogram plots, Pearson R (numpy.corrcoef) and Jensen–
+Shannon divergence (scipy.spatial.distance.jensenshannon) and reported in 
+Fig. 1b and Supplementary Fig. 3a. In addition, the accuracy was assessed using 
+precision recall quantified on all 49 cell types jointly (macro-average). Relative cell 
+abundance was used as a predictor, and cell abundance >0.1 was used as a gold 
+standard label. Precision recall results are reported in Supplementary Fig. 3b. To 
+simplify presentation, results across individual cell types were summarized as an 
+average Pearson R (Fig. 1c and Supplementary Fig. 4b) or precision recall score 
+(S3B and S4B) and shown as bar plots, with bar height denoting average values 
+across cell types and error bars denoting standard errors of the mean. To assess 
+absolute cell abundance estimation, estimated cell abundance was compared to 
+simulated cell abundance using 2D histogram plots, Pearson R (numpy.corrcoef) 
+and Jensen–Shannon divergence (scipy.spatial.distance.jensenshannon) and 
+reported in Supplementary Fig. 4a.
+Sensitivity of cell2location modeling choices and robustness. Assessment of 
+the effect of modeling choices. The effect of cell2location modeling choices on the 
+performance of the model was evaluated using both synthetic (Supplementary 
+Fig. 4b) human lymph node data (Supplementary Fig. 24) and human gut data 
+(Supplementary Fig. 25e). In brief, the relevance of the following modeling 
+choices (for details, see Supplementary Methods, section 3) was evaluated using 
+the benchmarking criteria as defined in the main analysis of the respective 
+datasets (Pearson R of cell type proportions and precision recall curves of cell type 
+presence/absence):
+ 1. Prior factorization of w
+sf
+ 2. Gene-specific technology sensitivity scaling mg
+ 3. Negative binomial regression for estimating reference signatures of cell types 
+versus a hard-coded method
+Assessment of the robustness of the cell abundance estimates when removing 
+increasing fractions of cell types from the reference data. Cell2location was assessed 
+using synthetic data combined from 49 cell types (Supplementary Fig. 4c, see 
+above). The accuracy was assessed using precision recall (macro-average) for 17 
+cell types that were retained in the reference when considering alternative removal 
+schemes to subsample the full set of cell type references. Relative cell abundance 
+was used as a predictor, and cell abundance >0.1 was used as a gold standard label.
+T able 1 | Datasets used in the paper and corresponding cell2location hyper-parameters
+Spatial data n samples n locations Reference data n cell 
+types
+n cells n genes Cell abundance 
+prior 
+(
+ˆN
+) Normalization (ys) 
+alpha prior
+n iterations
+1 Synthetic 1 2,500 Paired (our) mouse 
+brain snRNA-seq
+49 8,111 12,080 9 200 40,000
+2 Mouse brain Visium 5 14,968 Paired (our) mouse 
+brain snRNA-seq
+59 40,532 12,809 8 200 20,000
+3 Mouse brain 
+Visium (SSp cortex 
+locations)
+5 1,393 yao et al., SSp 
+cortex and 
+hippocampus
+121 6,948 13,565 8 200 40,000
+4 Slide-seq V2 
+(section 2, 
+hippocampus)
+1 33,108 Our mouse brain 
+snRNA-seq
+59 40,532 10,670 1 20 30,000
+6 Human lymph node 
+(10x)
+1 4,035 Combined lymph 
+tissue reference
+34 73,260 10,217 30 200 30,000
+7 Adult gut 
+(Fawkner-Corbett 
+et al.)
+2 3,842 Adult and pediatric 
+scRNA-seq 
+(Elmentaite et al.)
+76 153,901 14,388 12 20 20,000
+All other parameters were used at their default values (Supplementary Methods). n genes denote the number of genes shared between scRNA and spatial data.
+NATuRE BiOTECHNOLOGy | www.nature.com/ naturebiotechnology
+
+
+[PDF_PAGE 14]
+
+Articles NaTure BIoTeCHNology
+Assessment of the robustness to hyper-parameter settings. To assess the sensitivity 
+of cell2location with respect to selected parameters (Supplementary Fig. 5 and 
+Supplementary Methods), the benchmark analysis on both synthetic and gut data 
+was performed as described in the corresponding sections. Evaluated were the 
+model performance when varying the two user-defined tissue hyper-parameters 
+(expected cell abundance per location 
+ˆN and regularization of within-experiment 
+variation in RNA detection sensitivity αy) as well as hyper-parameters that govern 
+the hierarchical prior of the decomposition across locations (Supplementary 
+Methods). Hyper-parameters were varied one at a time while retaining the values 
+of the three remaining hyper-parameters constant. Additionally, we assessed the 
+effect of α
+y hyper-parameter on the consistency of estimated total cell abundance 
+by cell2location and the nuclei counts estimated by segmenting histology images 
+in the mouse brain (Supplementary Fig. 8f and Supplementary Methods), as 
+quantified by Pearson correlation and root mean squared error.
+Mouse brain experiments and analysis. Mouse brain tissue processing. Tissue 
+processing. Mouse work was carried out at the Wellcome Sanger Institute in 
+accordance with UK Home Office regulations and the UK Animals (Scientific 
+Procedures) Act of 1986 under a UK Home Office license, which were regularly 
+reviewed by the institutional Animal Welfare and Ethical Review Body.
+Brains of wild-type adult C57BL/6 mice (postnatal day 56, one female and 
+one male) were dissected, snap-frozen, embedded in optimal cutting temperature 
+(OCT) compound (Tissue-Tek) and stored at −80 °C. Brain hemispheres were 
+cryosectioned at −20 °C using a cryostat (Leica, CM3050S). To assess tissue quality, 
+RNA was extracted from test tissue sections using the RNeasy Pico Kit (Qiagen) 
+and yielded high RNA integrity number values (9.6 and 9.7) on an Agilent 
+Bioanalyzer, indicating high RNA quality.
+For matched single-nuclei and Visium RNA-seq experiments, brain 
+hemispheres were cryosectioned to adjacent thick (200-µm) and thin (10-µm) 
+coronal sections, respectively, and processed the same day. In total, four 
+consecutive sets of thick and thin tissue sections were collected from each brain. 
+Five sets of tissue sections yielded good-quality single-nuclei data as well as 
+good-quality Visium data (three adjacent sections from mouse 1 and two sections 
+from mouse 2), and one additional section from mouse 2 yielded good-quality 
+single-nuclei data; these were considered for analysis in this study.
+snRNA-seq. Thick (200-µm) mouse brain sections were cryosectioned, dissected 
+from OCT and kept in a tube on dry ice until subsequent processing. Nuclei 
+were extracted from each section as described previously
+57. In brief, nuclei were 
+released from sections via Dounce homogenization, Hoechst-stained and isolated 
+via fluorescence-activated cell sorting. Nuclei were then loaded into the 10x 
+Chromium Single Cell 3′ Kit (v3) to obtain 3,000–7,000 nuclei per well, and library 
+preparation was done per the manufacturer’s protocol. Libraries were sequenced on 
+an Illumina NovaSeq S4 system.
+Visium spatial transcriptomics. Thin (10-µm) mouse brain sections were 
+cryosectioned and mounted directly onto separate capture areas on 10x Visium 
+Spatial Gene Expression slides (beta product version). Processing was done per 
+the manufacturer’s protocols. In brief, sections were methanol-fixed, H&E-stained 
+and imaged on a NanoZoomer 2.0 slide scanner (Hamamatsu). Sections were then 
+permeabilized and further processed to obtain cDNA libraries that were quality 
+controlled using the Agilent Bioanalyzer. The cDNA libraries were sequenced on 
+the Illumina HiSeq 4000 system, aiming at 300 million raw reads per section with 
+read lengths 28cy R1, 8cy i7 index, 0cy i5 index and 91cy read 2.
+Single-nucleus data processing and cell type annotation. Sequencing data were 
+processed using 10x Cell Ranger version 3.0.2, aligned to mouse pre-mRNA 
+genome reference version mm10 (downloaded from the 10x website), and mRNA 
+count matrices were generated by adding intronic and exonic UMI counts for 
+each gene in each cell. Initially, snRNA-seq counts were processed using standard 
+Seurat V3 workflow without correcting batch effects among six individual samples. 
+Specifically, the expression matrices filtered to include droplets containing cells 
+(10x Cell Ranger output), were imported into the Seurat object. Cells were filtered 
+using the following quality control criteria: number of detected genes per cell 
+<5,000, fraction of nuclear-encoded mitochondrial genes <0.10 and doublet scores 
+(scrublet
+58) <0.2. The data were then subjected to normalization by a scale factor 
+of 10,000 and log1p-transformed (Seurat::NormalizeData), scaled gene-wise by 
+subtracting the mean and divided by the standard deviation (Seurat::ScaleData). 
+After that, 50 principal components were found (Seurat::RunPCA) and used as 
+input to the uniform manifold approximation and projection (UMAP) algorithm 
+(Seurat::RunUMAP), which was also used for k-nearest neighbor (KNN) graph 
+construction with k = 100 (Seurat::FindNeighbors). To generate a comprehensive 
+cell annotation, joint Louvain clustering with resolution 7 was performed 
+(Seurat::FindClusters) on all samples, which yielded 51 cell clusters. Clusters were 
+subsequently annotated using marker genes from the literature and existing mouse 
+brain single-cell reference datasets
+10,16,21. To annotate the regional identity of cell 
+types, we used (1) known regional marker genes10,16,21, (2) the spatial expression 
+patterns of these genes on in situ hybridization data from the Allen Brain Atlas 
+(https://mouse.brain-map.org/) and (3) the regional localization of cell types 
+estimated by cell2location (Fig. 2 and Supplementray Files 1–5). The marker genes 
+of regional cell types reported in Supplementary Fig. 7 were obtained from Zeisel 
+et al.
+10 (http://mousebrain.org/downloads.html, L5_All.agg.loom file). This step 
+yielded an annotation for 44 of 51 clusters, including known regional neuronal and 
+glial subtypes as described above. The remaining seven clusters were composed of 
+low-quality cells or unknown cell types and not analyzed further. Next, to resolve 
+fine-grained astrocyte subtypes, a second targeted analysis was performed using 
+cells from the two astrocyte clusters (2/44) as described below. Collectively, these 
+two steps resulted in reference gene expression signatures for 59 distinct cell 
+subtypes. This integrated reference was used throughout the manuscript 
+to avoid presenting spatial mapping results with varying granularity of astrocyte 
+subtypes. The resulting clusters and cell annotations are reported in Fig. 2b 
+and Supplementary Figs. 6 and 7 and were used as input to cell2location and 
+alternative methods.
+Identification of astrocyte subtypes using initial spatial mapping in the mouse 
+brain. To identify regionally enriched astrocytes, we annotated and spatially 
+mapped reference signatures of astrocyte subpopulations. Cell clusters (2/44) 
+annotated as astrocytes were selected from the initial analysis (Fig. 2b), as 
+identified based on the expression of canonical markers (for example, Aldoc and 
+Slc1a3). These cells were subjected to analysis workflow in scanpy
+59 as follows. 
+First, an untransformed and unnormalized count matrix was filtered to select 
+expressed genes at two cutoffs:
+ 1. Selecting genes detected at mRNA count >0 in >5% of cells
+ 2. Selecting genes detected at mRNA count >0 in a few cells (5% > cell count > 
+0.4%) but with a mean expression >1.122018 across cells with count >0
+The filtered data were then log1p-transformed and scaled. PCA was performed 
+(30 components), and the first component, which was strongly associated with 
+total mRNA count per cell, was removed. Next, BBKNN
+33 was used to refine the 
+integration across all six snRNA-seq datasets with the default parameters, except 
+neighbors_within_batch = 3. The corrected KNN graph was used to perform 
+UMAP dimensionality reduction and Leiden clustering with resolution 2.4, 
+identifying 17 astrocyte subclusters (Supplementary Fig. 13). Marker genes of these 
+subtypes were identified using differential expression tools in the scanpy package 
+and markers known from the literature.
+Next, an initial mapping with cell2location was performed using 
+hyper-parameters described below in the mouse brain Visium section. Reference 
+cell type signatures for initial mapping included 17 astrocyte subclusters as well 
+as all other non-astrocyte cell types shown in Fig. 2b. Clusters that were not 
+sufficiently distinct in their location (Supplementary Fig. 14) and marker genes 
+(Supplementary Fig. 13) were merged. This resulted in ten molecularly and 
+spatially distinct astrocyte subtypes (Fig. 3 and Supplementary Fig. 15b,c). These 
+subtypes were incorporated into cell annotation used throughout the paper.
+Visium data processing. 10x Visium spatial sequencing data were aligned to mouse 
+pre-mRNA genome reference version mm10 (downloaded from the 10x website) 
+using 10x Space Ranger 1.0, and mRNA count matrices were generated by adding 
+intronic and exonic reads for each gene in each location. The paired histology H&E 
+images were processed using 10x Space Ranger to select locations covered by tissue 
+by aligning pre-recorded spot locations with fiducial border spots in the histology 
+image. This allows evaluating the correspondence between cell maps produced 
+using our method and the known brain anatomy. This also allows identifying the 
+number of nuclei in each spot using nuclear segmentation, as described in the 
+Supplementary Methods and reported in Supplementary Fig. 8a–d. The histology 
+image was used to manually annotate cortical layers in the primary SSp cortex 
+region using the lasso tool in the 10x Loupe browser.
+Spatial mapping of mouse brain cell types to 10x Visium data. Spatial mapping using 
+cell2location. Expression signatures of 59 mouse brain reference cell types (Fig. 2b, 
+see above, and Table 1) were derived using a negative binomial regression model 
+(Supplementary Methods) with training mini-batch size of 2,500 and training 
+duration of 250 epochs. Mouse brain 10x Visium data were processed as described 
+above to untransformed and unnormalized mRNA counts and filtered to genes 
+shared with scRNA-seq (see Table 1 for gene and location count), which were used 
+as input to cell2location with hyper-parameters as stated in Table 1.
+Cell2location estimates described in this section are reported in Figs. 2d–g and 
+3b–e, Supplementary Figs. 8c–e, 9, 10,12b,c, 14, 15 and 18 and Supplementary 
+Files 1–6.
+Region identification. Estimated absolute cell abundance was used to calculate 
+a KNN graph (n neighbors = 38) followed by Leiden clustering of locations 
+(resolution = 1.3), yielding 31 clusters. The clusters were annotated by comparing 
+the paired histology images, and clusters marking anatomically similar regions 
+were merged, yielding 29 distinct clusters annotated as tissue regions and reported 
+in Fig. 3b and Supplementary Figs. 10 and 15c.
+Assessment of cell2location and alternative methods. RCTD, SPOTlight, Seurat 
+3 and NNLS (AutoGeneS) were used with default parameters as described in 
+NATuRE BiOTECHNOLOGy | www.nature.com/ naturebiotechnology
+
+
+[PDF_PAGE 15]
+
+ArticlesNaTure BIoTeCHNology
+the section on synthetic data (Methods). Stereoscope (implementation using 
+scvi-tools; see Methods, synthetic data section) was used with the following 
+hyper-parameters:
+ 1. No HVG selection was used (12,809 genes shared between single-cell and 
+spatial data)
+ 2. Estimating expression signatures of cell types: learning rate of 0.01 (default); 
+1,000 epochs (increased compared to default to achieve convergence); batch 
+size of 256 (default)
+ 3. Estimating relative cell abundance in spatial data: learning rate of 0.01 (de-
+fault); 20,000 epochs (increased compared to default to achieve convergence); 
+batch size of 256 (default)
+Assessment of cell2location and alternative methods on the mouse brain was 
+qualitative and is presented in Supplementary Fig. 18.
+Analysis of Slide-seq V2 data. Expression signatures of 59 mouse brain reference 
+cell types (Fig. 2b) were derived using the negative binomial regression model as 
+described above. Slide-seq V2 data of the mouse brain originating from the region 
+containing the hippocampus, partial cortex and thalamus were downloaded from 
+the data portal for Stickels et al.
+25. Genes with mRNA count >0 in at least 500 
+locations and locations with at least 200 UMI counts were retained to reduce data 
+size. One Slide-seq V2 section with the largest number of spatial locations was used 
+as input to cell2location using hyper-parameters stated in Table 1. Cell2location 
+estimates described in this section are reported in Fig. 2h, Supplementary Fig. 12 
+and Supplementary Files 8 and 9.
+smFISH. A wild-type adult C57BL/6 mouse (postnatal day 63, male) was 
+transcardially perfused with ice-cold PBS and 4% paraformaldehyde (PFA) in 
+1× PBS. The brain was dissected and post-fixed in 4% PFA at 4 °C overnight and 
+cryoprotected in 30% sucrose for 48 h at 4 °C. The brain was then embedded 
+in OCT and frozen on isopentane dry ice slurry and stored at −80 °C. Coronal 
+cryosections (12-μm) were collected on a cryostat (Leica), mounted onto 
+superfrost glass slides (VWR) and stored at −80 °C.
+RNAScope smFISH was performed as previously described
+60. Tissue slides were 
+thawed at room temperature for 15 min and baked at 60 °C for 30 min. Afterwards, 
+slides were post-fixed for 15 min in chilled 4% PFA and serially dehydrated 
+through 50%, 70%, 100% and 100% ethanol for 5 min each. Four-plex RNAScope 
+smFISH was automated using a Leica BOND RX (LS Multiplex Assay, Advanced 
+Cell Diagnostics, Bio-Techne). Tissue sections were permeabilized using heat 
+(5 min in Leica BOND ER2 buffer at 95 °C) and protease digestion (Advanced Cell 
+Diagnostics Protease III for 20 min). The probes in C1, C2 and C3 channels were 
+labeled using Opal 520, 570 and 650 fluorophores (PerkinElmer, diluted 1:1,500), 
+respectively. The C4 probe was developed using TSA biotin (TSA Plus Biotin Kit, 
+PerkinElmer, 1:500) and streptavidin-conjugated Atto 425 (Sigma-Aldrich, 1:400). 
+Nuclei staining was performed with DAPI (Life Technologies, 1:50,000).
+Imaging was performed on an Opera Phenix High-Content Screening System 
+(PerkinElmer) in spinning disk confocal mode using a ×20 water immersion 
+objective (NA 0.16, 298.99 nm per pixel) with a 1-μm z-step size. The excitation 
+(Ex) laser and emission (Em) filter wavelengths were as follows: DAPI (375 nm; 
+435–480 nm), Atto 425 (425 nm; 463–501 nm), Opal 520 (488 nm; 500–550 nm), 
+Opal 570 (561 nm; 570–630 nm) and Opal 650 (640 nm; 650–760 nm). Illumination 
+correction and stitching were performed on maximum z-projection images using 
+Acapella scripts provided by PerkinElmer.
+Astrocyte segmentation and smFISH quantification. The segmentation of astrocytes 
+was performed on the Agt image channel with pixel classification of ilastik
+61. 
+The Agt channel was Gaussian blurred with a sigma of 2 pixels, and the astrocyte 
+mask was subsequently generated by the trained pixel classifier. The performance 
+of this classifier was evaluated by using visual inspection and a metric called 
+out-of-bag (oob) error, which measures prediction error by using bootstrap 
+aggregating. The oob error of the classifier was 2.857%, measured on a training 
+image of dimension 402 × 2,010 pixels. As Agt is expressed at low levels in 
+astrocytes outside the diencephalon
+27, we manually traced the diencephalon to 
+filter all astrocyte signals outside.
+Two rounds of ‘closing’ operations were then executed to connect as many 
+major astrocyte cellular processes to the cell bodies as possible. As a consequence, 
+some cells were erroneously fused together. To split these fused cells, we performed 
+six rounds of opening on large cells (>10,000 pixel
+2). Finally, all small partially 
+segmented cells (<250 pixel2) were filtered out, and the mean pixel intensities (sum 
+intensity/area) of target gene channels were quantified per cell.
+Assessment of alternative methods at mouse brain cell type mapping with 
+region-specific scRNA-seq reference. Construction of single-cell reference data. 
+For quantitatively validating the cell type maps produced by cell2location, 
+we considered a publicly available
+11 gold standard reference of cortical and 
+hippocampal cell locations. In that data, individual layers of the cortex and the 
+hippocampus are dissected and subjected to scRNA-seq using the SMART-Seq 
+4 protocol (Fig. 2i). Data from this study were obtained from https://
+brain-map-portal-stage.us.aldryn.io/atlases-and-data/rnaseq. Cells originating 
+from the primary SSp cortex (number of positive cell types, n = 98) as well as 
+exclusive to the hippocampus (the subiculum areas indicated as par-post-pre, 
+number of negative cell types, n = 23) were selected, discarding cell types that 
+contribute fewer than three cells. The count of cells in this scRNA-seq data was 
+used to compute the proportion of each reference cell type in each cortical layer 
+(Supplementary Fig. 11b), which can serve as a complementary approach to 
+estimate relative cell type abundance (see below). The corresponding reference 
+signatures of 121 cell types were derived as per-cluster average expression 
+(hard-coded method), as the negative binomial regression model is not suitable for 
+SMART-Seq data (Supplementary Methods).
+Spatial mapping using cell2location. We mapped cell types from this reference to 
+a subset of the mouse brain 10x Visium data, restricted to the primary SSp cortex 
+(which was annotated based on histology; Supplementary Fig. 11). Data were 
+processed as described in the section on the mouse brain, and mRNA counts were 
+used as input to cell2location using the hyper-parameters stated in Table 1.
+Assessment of cell2location and alternative methods. RCTD, SPOTlight, Seurat 3 and 
+NNLS (AutoGeneS) were used with default parameters as described in the section 
+on synthetic data (Methods). Stereoscope (implementation using scvi-tools; see 
+Methods, synthetic data section) was used with the following hyper-parameters:
+ 4. No HVG selection was used (13,565 genes shared between single-cell and 
+spatial data).
+ 5. Estimating expression signatures of cell types: learning rate of 0.01 (default), 
+2,000 epochs and batch size of 1,024 were used to achieve convergence and 
+acceptable accuracy of relative cell abundance estimation.
+ 6. Estimating relative cell abundance in spatial data: learning rate of 0.01 (de-
+fault), 20,000 epochs and batch size of 1,393 (full data) were used to achieve 
+acceptable accuracy of relative cell abundance estimation.
+Quantitative assessment of the specificity and sensitivity of cell2location at excluding cell 
+types that should be absent in the spatial data. For all methods, precision recall was 
+quantified for all 121 cell types and five Visium tissue sections jointly. All analyses 
+and visualizations are based on the 99.8% quantile of relative cell abundance of each 
+cell type in each Visium sample from the primary SSp cortex region as a predictor 
+(Supplementary Fig. 11e), representing the presence of a given cell type at least at 
+some locations within the sample. The cell count >3 in reference data from the SSp 
+cortex region was used as a gold standard label, yielding n = 98 positive cell types and 
+n = 23 negative cell types (Supplementary Fig. 11e). Identical criteria were used for 
+alternative methods (Fig. 2i,j and Supplementary Fig. 11f), after the estimation of 
+relative cell abundances for individual locations using those methods (see above).
+Quantitative assessment of the consistency of the estimated relative cell abundance 
+to reference data from manually dissected cortical layers. Cell2location cell type 
+abundance estimates were averaged and normalized per cortical layer to obtain the 
+proportion of cells per cell type within each cortical layer. These estimates were 
+then compared to the cell proportions in the reference scRNA data (Supplementary 
+Fig. 11a–d), considering 23 most prevalent cell types exclusive to the SSp cortex 
+(cell count in SSp cortex >15 and cell count = 0 in the hippocampal region in 
+the scRNA data). The same criteria were used to assess alternative methods 
+(Supplementary Fig. 11d; RCTD, Stereoscope, SPOTlight, Seurat V3 and NNLS) 
+after the estimation of relative cell abundance as described above.
+Analysis of human lymph node Visium data. Construction of single-cell reference 
+data. Published scRNA-seq datasets of lymph nodes have typically lacked an 
+adequate representation of GC-associated immune cell populations due to the age 
+of patient donors
+62,63. We, therefore, included scRNA-seq datasets spanning lymph 
+nodes, spleen and tonsils in our single-cell reference to ensure that we captured 
+the full diversity of immune cell states likely to exist in the spatial transcriptomic 
+dataset (Fig. 4a,b). The scRNA-seq reference was constructed by combining 
+data from three studies
+35–37. Integration was performed using scanpy59, including 
+removal of doublets with scrublet58, regressing out batch from principal component 
+space and performing BBKNN integration. The integrated reference was used to 
+harmonize cell type and subtype labels among datasets, yielding 34 annotated cell 
+populations represented across 73,260 cells.
+Spatial data. 10x Visium spatial transcriptomics data of human lymph nodes were 
+downloaded from the 10x Genomics website. A paired histology image was used to 
+annotate GC locations.
+Spatial mapping using cell2location. Expression signatures of 34 cell populations 
+(Fig. 4b) were estimated using the negative binomial regression model 
+(Supplementary Methods), accounting for the effect of different batches as well 
+as technologies (Supplementary Fig. 24). Before model-based estimation, an 
+untransformed and unnormalized count matrix was filtered to select expressed 
+genes at two cutoffs:
+ 1. Selecting genes detected at mRNA count >0 in >3% of cells
+ 2. Selecting genes detected at mRNA count >0 in a few cells (3% > cell count > 
+0.1%) but with a mean expression across non-zero cells >1.122018
+NATuRE BiOTECHNOLOGy | www.nature.com/ naturebiotechnology
+
+
+[PDF_PAGE 16]
+
+Articles NaTure BIoTeCHNology
+The untransformed and unnormalized mRNA counts from a single Visium 
+experiment were used as input to cell2location using the hyper-parameters stated 
+in Table 1. The prior cell abundance ˆN = 30 was derived by examining histology 
+images of lymph node tissue (paired images had insufficient image quality).
+NMF. Absolute cell type abundance estimates obtained from cell2location were 
+used as input for NMF to identify spatially interlaced tissue zones/compartments 
+of lymph nodes (Fig. 4d). In brief, NMF decomposes cell abundance estimates ws,f 
+into additive components:
+ws,f =
+∑
+r
+zs,rxr,f,
+where xr,f represents NMF weight describing the contribution of each cell type 
+group r to the abundance of cell types f, and zs,r represents NMF weight describing 
+the abundances of each cell type group r across locations s.
+NMF was trained for a range of R = {8, .., 28}, and the decomposition into 14 
+factors was chosen as a balance between capturing fine tissue zones and splitting 
+known compartments such as light zone of the GC into several distinct factors 
+(Fig. 4e, panel 3) into separate zones. NMF weight x
+r,f is shown in Fig. 4d and 
+Supplementary Fig. 20c.
+Cell2location estimates from this section are reported in Fig. 4, Supplementary 
+Figs. 12b and 20–24 and Supplementary Files 10 and 11.
+Assessment of cell2location and alternative methods. RCTD, SPOTlight, 
+Seurat 3 and NNLS (AutoGeneS) were used with default parameters as described 
+in the section on synthetic data (Methods). Stereoscope (implementation using 
+scvi-tools; see Methods, synthetic data section) was used with the following 
+hyper-parameters:
+ 7. No HVG selection was used (10,230 genes shared between single-cell and 
+spatial data).
+ 8. Estimating expression signatures of cell types: learning rate of 0.01 (default); 
+1,000 epochs (increased compared to default to achieve convergence); batch 
+size of 256 (default)
+ 9. Estimating relative cell abundance in spatial data: learning rate of 0.01 (de-
+fault); 20,000 epochs (increased compared to default to achieve convergence); 
+batch size of 256 (default)
+Assessment criteria of cell2location and alternative methods. The accuracy of 
+cell2location and alternative methods was assessed by mapping six GC cell 
+populations (B_Cycling, B_GC_DZ, B_GC_LZ, B_GC_prePB, FDC and T_CD4
++_
+TfH_GC)37 to the GC locations, which were anatomically annotated using histology 
+images paired to the Visium data (Fig. 4f). Precision recall, false-positive rate and 
+true-positive rate were evaluated as a macro-average and separately for each cell 
+type (scikit-learn) across six GC cell types expected to be present in annotated GC 
+locations (positive set of locations) and absent from other locations (negative set) 
+(Fig. 4f–h and Supplementary Fig. 23). Precision recall curves are shown for every 
+cell type (Fig. 4g and Supplementary Fig. 23). To simplify the presentation, we 
+additionally used bar plots (Fig. 4h and Supplementary Fig. 22), where bar height 
+represents average precision recall score across cell types, and error bars show 
+standard error of the mean.
+Six known GC cell types were classified as either transcriptionally fine or 
+transcriptionally distinct, based on the Euclidean distance of their expression 
+signatures (linear mRNA count space rather than log-transformed) to the closest 
+cell type from the full set of 34 cell types. Euclidean distance represents both the 
+number of genes marking each cell type and the absolute expression levels of 
+those genes, both of which are important for mapping. Cell types were classified 
+as transcriptionally distinct if the Euclidean distance was greater than 100 and as 
+transcriptionally fine if it was less than 100 (Supplementary Fig. 22a).
+Additionally, we performed the comparison of model-based and hard-coded 
+methods (Supplementary Methods, sections 2 and 3) for estimating the 
+reference signatures of cell types and other cell2location modeling choices (see 
+Supplementary Fig. 24 and the modeling choices section above), keeping all other 
+parameters constant.
+Analysis of human gut Visium data. Construction of single-cell reference data. 
+We used a published gut scRNA dataset that covers a range of time points and 
+gut regions from Elmentaite et al.
+42. Crucially, the dataset contains the cells from 
+lymphoid structures within the gut (pediatric subset in particular) and covers the 
+age range of the considered spatial data (adult gut). Literature evidence was used to 
+annotate 19 of 76 cell types as expected in the lymphoid follicle.
+Spatial data. 10x Visium spatial data consisting of two replicates of the biopsy of 
+colon tissue were obtained from Fawkner-Corbett et al.
+43. Crucially, the dataset 
+contains mature lymphoid follicles. Both the paired histology image and expression 
+of marker genes (Supplementary Fig. 25b) were considered to annotate lymphoid 
+follicles, prioritizing histology when marker genes were detected outside expected 
+histology areas; the annotation was performed using the 10x Loupe browser. 
+Replicates also contain distinct sequencing depth/RNA detection sensitivity, 
+requiring normalization across batches.
+Spatial mapping using cell2location. Reference signatures for 76 cell types were 
+estimated using the negative binomial regression model, accounting for the effect 
+of different batches and technologies (3′ versus 5′) with training mini-batch size 
+of 2,500 and training duration of 200 epochs. Before model-based estimation, an 
+untransformed and unnormalized count matrix was filtered to select expressed 
+genes at two cutoffs:
+ 1. Selecting genes detected at mRNA count >0 in >3% of cells
+ 2. Selecting genes detected at mRNA count >0 in a few cells (3% > cell count > 
+0.02%) but with a mean expression across non-zero cells >1.12.
+The untransformed and unnormalized mRNA counts from a single Visium 
+experiment were used as input to cell2location using the hyper-parameters stated 
+in Table 1. The prior cell abundance 
+ˆN = 25 was derived by computing average cell 
+count in the paired histology images for 20 random locations.
+Cell2location estimates from this section are reported in Fig. 5, Supplementary 
+Figs. 25 and 26 and Supplementary Files 12 and 13.
+Assessment of cell2location and alternative methods. RCTD, SPOTlight, Seurat 3 and 
+NNLS (AutoGeneS) were used with default parameters as described in the section 
+on synthetic data (Methods). Stereoscope (implementation using scvi-tools; see 
+Methods, synthetic data section) was used with the following hyper-parameters:
+ 10. No HVG selection was used (14,388 genes shared between single-cell and 
+spatial data).
+ 11. Estimating expression signatures of cell types: learning rate of 0.01 (default); 
+8,000 epochs (increased compared to default to achieve convergence); batch 
+size of 1,024 (increased compared to default in an attempt to achieve suf-
+ficient accuracy)
+ 12. Estimating relative cell abundance in spatial data: learning rate of 0.01 (de-
+fault); 50,000 epochs (increased compared to default to achieve convergence); 
+batch size of 1,024 (increased compared to default in an attempt to achieve 
+sufficient accuracy)
+Similarly to lymph node analysis described above, precision recall curves and 
+scores were used to compare alternative methods. Cell proportions across locations 
+for each of the 19 cell types expected in the lymphoid follicles were used as a 
+predictor; histology-based annotation of the lymphoid follicles was used as a positive 
+set; and all other locations were used as a negative set (Supplementary Figs. 25d 
+and 26). Again, these 19 cell types were classified into transcriptionally fine and 
+transcriptionally distinct using Euclidean distance to the closest other cell type as 
+described in the lymph node section above (Fig. 5f and Supplementary Fig. 25d).
+Importance of model features (Supplementary Fig. 25e) and sensitivity to 
+hyper-parameters (Supplementary Fig. 5b) were assessed using precision recall 
+procedures as described above and in the section about sensitivity of model 
+features and hyper-parameters.
+Reporting Summary. Further information on research design is available in the 
+Nature Research Reporting Summary linked to this article.
+Data availability
+Data generated for this manuscript (snRNA-seq and Visium from adjacent 
+sections in the mouse brain (Fig. 2a), sequencing reads as well as Cell Ranger 
+and Space Ranger output) were submitted to ArrayExpress under accession 
+numbers E-MTAB-11114 (Visium) and E-MTAB-11115 (snRNA-seq). Annotated 
+snRNA-seq data are publicly available via cellxgene portals
+64: full dataset 
+(annotation_1_print column denotes cell types) and astrocyte subclusters. The 
+integrated secondary lymphoid organ scRNA-seq data are publicly available for 
+download through S3 bucket. Image data generated in this manuscript were 
+deposited to the BioImage Archive (accession no. S-BIAD207).
+Ground truth annotations of germinal center zones in lymph node Visium data can 
+be found on GitHub. Ground truth annotations of the gut lymphoid follicles can be 
+found on GitHub.
+Published datasets. snRNA-seq data from Y ao et al. were downloaded from 
+the Allen Brain Institute data portal. Slide-seq V2 data from Stickels et al. were 
+downloaded from the Broad Institute data portal (subject to use agreement). 
+Visium data of human lymph nodes can be downloaded from the 10x website (via a 
+function in the scanpy package).
+Code availability
+The cell2location package is available at https://github.com/BayraktarLab/
+cell2location/. Documentation and tutorials are available at https://cell2location.
+readthedocs.io/.
+Code used to generate synthetic data is available at https://github.com/vitkl/
+cell2location_paper/blob/master/notebooks/benchmarking/synthetic_data_
+construction_improved_real_mg.ipynb. Code used to segment nuclei in histology 
+images is available at https://github.com/yozhikoff/segmentation. Jupyter 
+notebooks covering the analysis in this paper are available at https://github.com/
+vitkl/cell2location_paper/ and upon reasonable request.
+NATuRE BiOTECHNOLOGy | www.nature.com/ naturebiotechnology
+
+
+[PDF_PAGE 17]
+
+ArticlesNaTure BIoTeCHNology
+References
+ 56. Hafemeister, C. & Satija, R. Normalization and variance stabilization of 
+single-cell RNA-seq data using regularized negative binomial regression. 
+Genome Biol. 20, 296 (2019).
+ 57. Krishnaswami, S. R. et al. Using single nuclei for RNA-seq to capture the 
+transcriptome of postmortem neurons. Nat. Protoc. 11, 499–524 (2016).
+ 58. Wolock, S. L., Lopez, R. & Klein, A. M. Scrublet: computational identification 
+of cell doublets in single-cell transcriptomic data. Cell Syst. 8, 281–291 (2019).
+ 59. Wolf, F . A., Angerer, P . & Theis, F . J. SCANPY: large-scale single-cell gene 
+expression data analysis. Genome Biol . 19, 15 (2018).
+ 60. Roberts, K. & Bayraktar, O. A. Automation of multiplexed RNAscope 
+single-molecule fluorescent in situ hybridization and immunohistochemistry 
+for spatial tissue mapping. Methods Mol. Biol. 2148, 229–244 (2020).
+ 61. Berg, S. et al. ilastik: interactive machine learning for (bio)image analysis. 
+Nat. Methods 16, 1226–1232 (2019).
+ 62. Turner, J. S. et al. Human germinal centres engage memory and naive B cells 
+after influenza vaccination. Nature 586, 127–132 (2020).
+ 63. Madissoon, E. et al. scRNA-seq assessment of the human lung, spleen, and 
+esophagus tissue stability after cold preservation. Genome Biol. 21, 1 (2019).
+ 64. Megill, C. et al. chanzuckerberg/cellxgene: release 0.15.0. https://doi.
+org/10.5281/zenodo.3710410 (2020).
+Acknowledgements
+We thank B. Velten, Y . Huang and L. Marconato for feedback on the cell2location model; 
+M. Prete and V . Kiselev for dockerizing the cell2location tool and creating the web 
+portals for sharing our data; N. Kumasaka for helpful comments on single-cell analysis; 
+S. Leonard and K. Polanski for help with spatial and single-nucleus data processing; K. 
+James for advice on gut immune cell types; K. Roberts for advice on smFISH; J. E. Kwa 
+for advice on snRNA-seq; J. Eliasova for illustrations and logo design; K. James advice on 
+human gut immune cells; A. Antanaviciute, H. Koohy and A. Simmons for sharing gut 
+Visium data; F . Obermeyer and M. Jankowiak for help with advanced use of pyro code 
+base; and D. Rowitch and S. Teichmann for comments on the manuscript. H.W .K. was 
+funded by a Sir Henry Wellcome Postdoctoral Fellowship (213555/Z/18/Z). This study 
+was supported by Wellcome Trust Core Funding to O.A.B.
+Author contributions
+V .K., O.S. and O.A.B. conceived the study. V .K. developed and implemented the 
+cell2location model with feedback from O.S. and worked on validation, mouse brain, 
+human lymph node, gut and benchmarking analyses. A.S. performed Slide-seq and 
+hyperparameter sensitivity analysis, performed histology image segmentation, wrote 
+data visualization modules and contributed to implementation of cell2location in 
+pyro and benchmarking analyses. E.D. worked on generating synthetic data, mouse 
+brain cell annotation and validation of cell type mapping and contributed to lymph 
+node analysis. V .KE. and A.S. contributed to the development and interpretation of 
+the model for estimating cell type signatures. A.L., M.G., A.A.I. and M.S.J. contributed 
+to the developing of model architecture, writing the model and downstream analysis 
+code, interpretation of the cell2location results as well as downstream clustering and 
+NMF . A.A.R. performed benchmarking of stereoscope, supervised by R.V .-T. and O.S. 
+A.G. contributed to implementation of cell2location using scvi-tools and pyro. H.W .K. 
+contributed to lymph node data analysis and interpretation, supervised by L.J. R.E. 
+contributed to gut data analysis. L.R. performed snRNA-seq experiments. L.T. performed 
+Visium experiments. J.S.P . performed smFISH experiments and imaging. T.L. performed 
+smFISH image processing and astrocyte segmentation analysis. V .K., O.S. and O.A.B. 
+wrote the manuscript, with feedback from all authors.
+Competing interests
+The authors declare no competing interests.
+Additional information
+Supplementary information The online version contains supplementary material 
+available at https://doi.org/10.1038/s41587-021-01139-4.
+Correspondence and requests for materials should be addressed to 
+Oliver Stegle or Omer Ali Bayraktar.
+Peer review information Nature Biotechnology thanks Steven Sloan, 
+Xiaoqun Wang and the other, anonymous, reviewer(s) for their contribution to the peer 
+review of this work.
+Reprints and permissions information is available at www.nature.com/reprints.
+NATuRE BiOTECHNOLOGy | www.nature.com/ naturebiotechnology
+
+
+[PDF_PAGE 18]
+
+1 nature research | reporting summaryApril 2020
+Corresponding author(s): Oliver Stegle, Omer Bayraktar
+Last updated by author(s): Oct 26, 2021
+Reporting Summary
+Nature Research wishes to improve the reproducibility of the work that we publish. This form provides structure for consistency and transparency 
+in reporting. For further information on Nature Research policies, see our Editorial Policies and the Editorial Policy Checklist.
+Statistics
+For all statistical analyses, confirm that the following items are present in the figure legend, table legend, main text, or Methods section.
+n/a Confirmed
+The exact sample size (n) for each experimental group/condition, given as a discrete number and unit of measurement
+A statement on whether measurements were taken from distinct samples or whether the same sample was measured repeatedly
+The statistical test(s) used AND whether they are one- or two-sided 
+Only common tests should be described solely by name; describe more complex techniques in the Methods section.
+A description of all covariates tested
+A description of any assumptions or corrections, such as tests of normality and adjustment for multiple comparisons
+A full description of the statistical parameters including central tendency (e.g. means) or other basic estimates (e.g. regression coefficient) 
+AND variation (e.g. standard deviation) or associated estimates of uncertainty (e.g. confidence intervals)
+For null hypothesis testing, the test statistic (e.g. F, t, r) with confidence intervals, effect sizes, degrees of freedom and P value noted 
+Give P values as exact values whenever suitable.
+For Bayesian analysis, information on the choice of priors and Markov chain Monte Carlo settings
+For hierarchical and complex designs, identification of the appropriate level for tests and full reporting of outcomes
+Estimates of effect sizes (e.g. Cohen's d, Pearson's r), indicating how they were calculated
+Our web collection on statistics for biologists contains articles on many of the points above.
+Software and code
+Policy information about availability of computer code
+Data collection 10X CellRanger version 3.0.2, 10X SpaceRanger version 1.0
+Data analysis The cell2location package is available at https://github.com/BayraktarLab/cell2location/. Documentation and tutorials are available at https://
+cell2location.readthedocs.io/. 
+Code used to generate synthetic data is available in https://github.com/vitkl/cell2location_paper/blob/master/notebooks/benchmarking/
+synthetic_data_construction_improved_real_mg.ipynb. Code used to segment nuclei in histology images is available in https://github.com/
+yozhikoff/segmentation. Jupyter notebooks covering the analysis in this paper are available at https://github.com/vitkl/cell2location_paper/ 
+and upon request. 
+ 
+Specific package version used for analysis are as follows (python): 
+python 3.7.10 
+scvi 0.13.0 
+pyro 1.6.0+823dce2b 
+scanpy 1.7.2 
+numpy 1.20.2 
+scipy 1.6.2 
+sklearn 0.24.1 
+Other python dependencies: 
+torch 1.8.1+cu102 
+anndata 0.7.5 
+pandas 1.2.3 
+leidenalg 0.8.3 
+louvain 0.7.0 
+
+
+[PDF_PAGE 19]
+
+2 nature research | reporting summaryApril 2020
+ 
+Specific package version used for analysis are as follows (R): 
+R 4.0.3 
+Seurat 4.0 
+SeuratDisk 0.0.0.9019 
+RCTD (version from github commit 037a5da2c282fab94b1aee5cf489de73c494dc39) 
+ 
+R SPOTlight was used via the docker image provided by the developers (marcelosua/spotlight_env_r:latest): 
+SPOTlight 0.1.7 
+R 3.6.3
+For manuscripts utilizing custom algorithms or software that are central to the research but not yet described in published literature, software must be made available to editors and 
+reviewers. We strongly encourage code deposition in a community repository (e.g. GitHub). See the Nature Research guidelines for submitting code & software for further information.
+Data
+Policy information about availability of data
+All manuscripts must include a data availability statement. This statement should provide the following information, where applicable: 
+- Accession codes, unique identifiers, or web links for publicly available datasets 
+- A list of figures that have associated raw data 
+- A description of any restrictions on data availability
+Data generated for this manuscript (snRNA-seq and Visium from adjacent sections in the mouse brain, Fig 2A, sequencing reads as well as CellRanger and 
+SpaceRanger output) is submitted to ArrayExpress under accession numbers E-MTAB-11114 (Visium) and E-MTAB-11115 (snRNA-seq). Image data generated in this 
+manuscript was deposited to BioImage Archive (accession number: S-BIAD207). 
+ 
+The integrated secondary lymphoid organ scRNA-seq data are publicly available for download through S3 buckets at https://cell2location.cog.sanger.ac.uk/
+browser.html (lymph nodes - /paper/integrated_lymphoid_organ_scrna/). snRNAseq data can be publicly viewed without download via cellxgene portals at 
+https://cell2location.cellgeni.sanger.ac.uk/mouse-brain (full dataset, annotation_1_print column denotes cell types) and 
+https://cell2location.cellgeni.sanger.ac.uk/mouse-brain-astrocytes (astrocyte subclusters). 
+Ground truth annotations of Germinal Center zones in lymph node Visium data can be found at https://github.com/vitkl/cell2location_paper/blob/master/
+notebooks/selected_results/lymph_nodes_analysis/manual_GC_annot.csv . Ground truth annotations of the gut lymphoid follicles can be found at https://
+github.com/vitkl/cell2location_paper/tree/master/notebooks/selected_results/tissue_annotation/oxford . 
+ 
+Published datasets. snRNA-seq data from Yao et al were downloaded from Allen Brain Institute data portal (https://portal.brain-map.org/atlases-and-data/rnaseq/
+mouse-whole-cortex-and-hippocampus-smart-seq). Slide-Seq V2 data from Stickels, Murray et al were downloaded from the Broad Institute data portal (https://
+singlecell.broadinstitute.org/single_cell/study/SCP815/sensitive-spatial-genome-wide-expression-profiling-at-cellular-resolution#study-download, subject to use 
+agreement). Visium data of human lymph nodes can be downloaded from 10X website (via a function in Scanpy package). 
+ 
+Genome references used for mapping mouse brain data were downloaded from 10X website.
+Field-specific reporting
+Please select the one below that is the best fit for your research. If you are not sure, read the appropriate sections before making your selection.
+Life sciences Behavioural & social sciences Ecological, evolutionary & environmental sciences
+For a reference copy of the document with all sections, see nature.com/documents/nr-reporting-summary-flat.pdf
+Life sciences study design
+All studies must disclose on these points even when the disclosure is negative.
+Sample size We aimed to profile 2 mice at 4 adjacent tissue positions (i.e. sections spaced by 200 microns). In total, four consecutive sets of thick and thin 
+tissue sections were collected from each brain. Five sets of tissue sections yielded both good quality single nuclei and Visium data (three 
+adjacent sections from mouse 1 and two sections from mouse 2) while one additional section from mouse 2 yielded good single nuclei; these 
+were sequenced and considered for analysis in this study (Fig 2-3). 
+ 
+For analysis of other tissues and Slide-Seq V2 published spatial transcriptomics datasets were used (human lymph node, n=1; human gut, n=2; 
+Slide-Seq V2, n=1) with the total number of samples limited by availability. 
+ 
+No statistical methods were used to pre-determine sample sizes but our sample sizes are similar to those reported previously (references 3, 
+25, 42-43). 
+Data exclusions Visium spots located outside tissue areas were excluded from all analyses in the paper based on the histological examination. Specifically this 
+was done in 2 steps: 
+1. Automatic tissue detection using SpaceRanger workflow with subsequence location filtering. No further data exclusion for mouse brain and 
+human lymph node data were performed. 
+2. When the automatic tissue detection failed (adult human gut samples) - manual annotation was performed, with subsequent filtering of 
+location that do not overlap tissue. 
+The rationale behind this filtering is as follows: 10X Visium locations are manufactured in a hexagonal grid within square capture areas - as a 
+
+
+[PDF_PAGE 20]
+
+3 nature research | reporting summaryApril 2020
+result not all locations are covered by tissue and the locations that are not covered contain background RNA rather than RNA from cells in the 
+tissue.
+Replication For mouse experiments, multiple animals were processed independently on the same day. Fig 2G and Fig S10 report on consistency of 
+cell2location cell abundance estimates between adjacent sections and replicate animals. Differences cell type abundances between sections 
+can be attributed to change in the regional composition (by histology examination). Cell type locations of novel astrocyte subtypes were 
+validated using single molecule FISH of mRNA for gene marking the novel subtypes at corresponding anatomical location in different mice (Fig 
+3D) - thus replicating the detection of novel subtypes using alternative technology and an independently processed animal.
+Randomization Randomization is not relevant to our study because only wild-type mice were used for mouse brain mapping experiments. For lymph node 
+and gut mapping experiments, the data were derived from published observational studies. 
+Blinding Blinding is not relevant to our study because the objective was not to compare the effect of 2 conditions. Real world data were generated 
+from the mouse brain or derived from published observational studies that included wild-type / healthy tissues only and the simualtions were 
+generated by the research team. 
+Reporting for specific materials, systems and methods
+We require information from authors about some types of materials, experimental systems and methods used in many studies. Here, indicate whether each material, 
+system or method listed is relevant to your study. If you are not sure if a list item applies to your research, read the appropriate section before selecting a response. 
+Materials & experimental systems
+n/a Involved in the study
+Antibodies
+Eukaryotic cell lines
+Palaeontology and archaeology
+Animals and other organisms
+Human research participants
+Clinical data
+Dual use research of concern
+Methods
+n/a Involved in the study
+ChIP-seq
+Flow cytometry
+MRI-based neuroimaging
+Animals and other organisms
+Policy information about studies involving animals; ARRIVE guidelines recommended for reporting animal research
+Laboratory animals Two wild-type adult C57BL/6 mice (postnatal day 56, 1 female and 1 male) were used for 10X Visium experiments. One additional 
+wild-type adult C57BL/6 mouse (postnatal day 63, male) was used for single-molecule fluorescent in situ hybridization.
+Wild animals Study did not involve wild animals.
+Field-collected samples Study did not involve field-collected samples.
+Ethics oversight Mouse work was carried out at the Wellcome Sanger Institute in accordance with UK Home Office regulations and UK Animals 
+(Scientific Procedures) Act of 1986 under a UK Home Office license, which were regularly reviewed by the institutional Animal 
+Welfare and Ethical Review Body.
+Note that full information on the approval of the study protocol must also be provided in the manuscript.

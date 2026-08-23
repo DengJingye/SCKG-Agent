@@ -1,0 +1,192 @@
+{
+  "status": "passed",
+  "cases": 9,
+  "passed": 9,
+  "failed": 0,
+  "catalog_tool_count": 1847,
+  "connected_tool_count": 1847,
+  "execution_verified_tool_count": 2,
+  "verified_doublet_candidate_precision": 1.0,
+  "verified_doublet_candidate_recall": 1.0,
+  "frozen_recommendation_leakage_count": 0,
+  "hypothesis_recommendation_leakage_count": 0,
+  "connected_component_count": 1,
+  "largest_component_ratio": 1.0,
+  "tool_semantic_coverage_rate": 1.0,
+  "graph_retrieval": {
+    "status": "passed",
+    "case_count": 5,
+    "case_pass_rate": 1.0,
+    "macro_recall_at_k": 1.0,
+    "mean_reciprocal_rank": 0.7666666666666667,
+    "path_completeness": 1.0,
+    "path_provenance_coverage": 1.0,
+    "execution_admission_violation_count": 0,
+    "gold_scope": "Positive-only retrieval regression for independently fixed core single-cell tool roles.",
+    "evidence_boundary": "This file is an evaluation fixture, not formal scientific evidence and not a promotion source."
+  },
+  "graph_retrieval_cases": [
+    {
+      "case_id": "GR001",
+      "task": "doublet detection",
+      "modality": "scRNA-seq",
+      "k": 10,
+      "expected_tools": [
+        "Scrublet",
+        "scDblFinder",
+        "DoubletFinder"
+      ],
+      "retrieved_tools": [
+        "Scrublet",
+        "scDblFinder",
+        "DoubletFinder",
+        "cellXY",
+        "Chord",
+        "Demuxafy",
+        "DoubletCollection",
+        "DoubletDecon",
+        "DoubletDetection",
+        "fba"
+      ],
+      "hits": [
+        "DoubletFinder",
+        "Scrublet",
+        "scDblFinder"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "execution_admission_violations": [],
+      "passed": true
+    },
+    {
+      "case_id": "GR002",
+      "task": "cell type annotation",
+      "modality": "scRNA-seq",
+      "k": 10,
+      "expected_tools": [
+        "CellTypist",
+        "SingleR"
+      ],
+      "retrieved_tools": [
+        "cell2location",
+        "CellTypist",
+        "scvi-tools",
+        "SingleR",
+        "MIMOSCA",
+        "CellPLM",
+        "MAESTRO",
+        "ACTINN",
+        "ACTIONet",
+        "adobo"
+      ],
+      "hits": [
+        "CellTypist",
+        "SingleR"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.5,
+      "execution_admission_violations": [],
+      "passed": true
+    },
+    {
+      "case_id": "GR003",
+      "task": "data integration",
+      "modality": "scRNA-seq",
+      "k": 10,
+      "expected_tools": [
+        "Harmony",
+        "Scanpy",
+        "Seurat",
+        "scvi-tools"
+      ],
+      "retrieved_tools": [
+        "cell2location",
+        "CellTypist",
+        "Harmony",
+        "scvi-tools",
+        "Seurat",
+        "MIMOSCA",
+        "moscot",
+        "MOFA2",
+        "Scanpy",
+        "MAESTRO"
+      ],
+      "hits": [
+        "Harmony",
+        "Scanpy",
+        "Seurat",
+        "scvi-tools"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 0.3333333333333333,
+      "execution_admission_violations": [],
+      "passed": true
+    },
+    {
+      "case_id": "GR004",
+      "task": "RNA velocity",
+      "modality": "scRNA-seq",
+      "k": 10,
+      "expected_tools": [
+        "CellRank",
+        "scVelo"
+      ],
+      "retrieved_tools": [
+        "CellRank",
+        "scVelo",
+        "cell2fate",
+        "cellDancer",
+        "Cytopath",
+        "DeepCycle",
+        "DeepVelo",
+        "Dynamo",
+        "LatentVelo",
+        "PhyloVelo"
+      ],
+      "hits": [
+        "CellRank",
+        "scVelo"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "execution_admission_violations": [],
+      "passed": true
+    },
+    {
+      "case_id": "GR005",
+      "task": "spatial mapping",
+      "modality": "spatial transcriptomics",
+      "k": 10,
+      "expected_tools": [
+        "cell2location",
+        "Tangram"
+      ],
+      "retrieved_tools": [
+        "cell2location",
+        "CellTrek",
+        "CytoSPACE",
+        "iSORT",
+        "SpaOTsc",
+        "SpatialScope",
+        "Tangram",
+        "VoxHunt",
+        "nicheformer"
+      ],
+      "hits": [
+        "Tangram",
+        "cell2location"
+      ],
+      "recall_at_k": 1.0,
+      "reciprocal_rank": 1.0,
+      "execution_admission_violations": [],
+      "passed": true
+    }
+  ],
+  "dangling_edge_count": 0,
+  "limitations": [
+    "The retrieval gold is positive-only and cannot estimate full-catalog precision.",
+    "Catalog task/scope paths are source-bound metadata, while mechanism, hardware, and resolution paths still include legacy-derived hypotheses.",
+    "Scientific pilot relations are scoped to GSE108313.",
+    "Legacy LLM-derived profiles remain candidate-recall signals only."
+  ]
+}

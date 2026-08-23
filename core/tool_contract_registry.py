@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterable, Optional, TYPE_CHECKING
 
 from core.execution_models import (
+    AnnotationDataProfile,
     DataProfile,
     ExecutionGateResult,
     PlanningGateResult,
@@ -54,7 +55,7 @@ class ToolContractRegistry:
         self,
         contract: ToolContract,
         *,
-        data_profile: Optional[DataProfile] = None,
+        data_profile: Optional[DataProfile | AnnotationDataProfile] = None,
     ) -> PlanningGateResult:
         reasons: list[str] = []
         if contract.schema_status != "valid":
@@ -75,7 +76,7 @@ class ToolContractRegistry:
             else:
                 environment = self.environment_registry.get(contract.environment_id)
                 runtime_version = environment.package_versions.get(contract.tool_name.casefold())
-                if runtime_version != contract.tool_version:
+                if contract.enabled_for_execution and runtime_version != contract.tool_version:
                     reasons.append(
                         "tool_runtime_version_mismatch:"
                         f"contract={contract.tool_version},environment={runtime_version or 'missing'}"
@@ -103,15 +104,24 @@ class ToolContractRegistry:
         if not contract.enabled_for_execution:
             reasons.append("contract_execution_disabled")
         if self.environment_registry is not None:
-            environment = self.environment_registry.get(contract.environment_id)
-            if environment.qualification_status != "integration_passed":
-                reasons.append(
-                    f"environment_not_integration_passed:{environment.qualification_status}"
-                )
-            if not environment.integration_test_passed:
-                reasons.append("environment_integration_test_not_passed")
-            if not environment.enabled_for_execution:
-                reasons.append("environment_execution_disabled")
+            if not self.environment_registry.contains(contract.environment_id):
+                reasons.append(f"environment_not_registered:{contract.environment_id}")
+            else:
+                environment = self.environment_registry.get(contract.environment_id)
+                runtime_version = environment.package_versions.get(contract.tool_name.casefold())
+                if runtime_version != contract.tool_version:
+                    reasons.append(
+                        "tool_runtime_version_mismatch:"
+                        f"contract={contract.tool_version},environment={runtime_version or 'missing'}"
+                    )
+                if environment.qualification_status != "integration_passed":
+                    reasons.append(
+                        f"environment_not_integration_passed:{environment.qualification_status}"
+                    )
+                if not environment.integration_test_passed:
+                    reasons.append("environment_integration_test_not_passed")
+                if not environment.enabled_for_execution:
+                    reasons.append("environment_execution_disabled")
         return ExecutionGateResult(
             allowed=not reasons,
             contract_id=contract.contract_id,
@@ -189,13 +199,31 @@ def _parameter_schema_issues(contract: ToolContract) -> list[str]:
     return issues
 
 
-def _data_profile_issues(contract: ToolContract, profile: DataProfile) -> list[str]:
+def _data_profile_issues(
+    contract: ToolContract,
+    profile: DataProfile | AnnotationDataProfile,
+) -> list[str]:
+    if isinstance(profile, AnnotationDataProfile):
+        return _annotation_profile_issues(contract, profile)
     issues: list[str] = []
     if profile.object_type != contract.input_object:
         issues.append(
             f"input_object_mismatch:contract={contract.input_object},profile={profile.object_type}"
         )
-    if profile.blocking_errors:
+    if contract.task == "batch_integration":
+        structural = (
+            "invalid_file_extension",
+            "input_file_missing",
+            "input_path_not_file",
+            "anndata_read_failed",
+            "empty_anndata",
+        )
+        issues.extend(
+            f"data_profile_blocked:{reason}"
+            for reason in profile.blocking_errors
+            if reason.startswith(structural)
+        )
+    elif profile.blocking_errors:
         issues.extend(f"data_profile_blocked:{reason}" for reason in profile.blocking_errors)
     profiles = {item.matrix_id: item for item in profile.matrix_profiles}
     for rule in contract.preconditions:
@@ -204,11 +232,51 @@ def _data_profile_issues(contract: ToolContract, profile: DataProfile) -> list[s
             if selected is None or selected.inferred_state != rule.expected:
                 issues.append(f"precondition_failed:{rule.rule_id}")
         elif rule.field == "matrix_shape" and rule.operator == "gte":
-            selected = profiles.get(profile.selected_count_source or "")
+            selected = (
+                profiles.get("X")
+                if contract.task == "batch_integration"
+                else profiles.get(profile.selected_count_source or "")
+            )
             expected = int(rule.expected)
             if selected is None or min(selected.shape) < expected:
                 issues.append(f"precondition_failed:{rule.rule_id}")
+        elif rule.field == "batch_key" and rule.operator == "exists":
+            if not profile.batch_key:
+                issues.append(f"precondition_failed:{rule.rule_id}")
+        elif rule.field == "batch_count" and rule.operator == "gte":
+            if profile.batch_count is None or profile.batch_count < int(rule.expected):
+                issues.append(f"precondition_failed:{rule.rule_id}")
+        elif rule.field == "has_pca" and rule.operator == "equals":
+            if profile.has_pca is not bool(rule.expected):
+                issues.append(f"precondition_failed:{rule.rule_id}")
     return issues
+
+
+def _annotation_profile_issues(
+    contract: ToolContract,
+    profile: AnnotationDataProfile,
+) -> list[str]:
+    issues = [
+        f"annotation_profile_blocked:{reason}" for reason in profile.blocking_errors
+    ]
+    for rule in contract.preconditions:
+        value = {
+            "normalization_target": profile.normalization_target,
+            "gene_identifier_type": profile.gene_identifier_type,
+            "annotation_reference": profile.reference_id,
+            "reference_gene_overlap": profile.overlapping_gene_count,
+            "species": profile.species if profile.species != "unknown" else "",
+        }.get(rule.field)
+        if rule.operator == "exists" and not value:
+            issues.append(f"precondition_failed:{rule.rule_id}")
+        elif rule.operator == "equals" and value != rule.expected:
+            issues.append(f"precondition_failed:{rule.rule_id}")
+        elif rule.operator == "in" and value not in set(rule.expected or []):
+            issues.append(f"precondition_failed:{rule.rule_id}")
+        elif rule.operator == "gte":
+            if not isinstance(value, (int, float)) or value < rule.expected:
+                issues.append(f"precondition_failed:{rule.rule_id}")
+    return sorted(set(issues))
 
 
 def _value_issues(name: str, value: object, schema: dict[str, object]) -> list[str]:

@@ -33,6 +33,13 @@ from engine.execution_planner import ExecutionPlanCompiler
 from engine.pareto_decision import ParetoDecisionEngine
 from execution.candidate_aggregator import CandidateAggregator
 from execution.environment_registry import EnvironmentRegistry
+from execution.approval_service import (
+    ApprovalScope,
+    ApprovalService,
+    AuthorizationValidation,
+    parameter_hash,
+)
+from execution.data_registry import DataRegistry, RegisteredDataArtifact
 from execution.experiment_runner import (
     ExperimentRunner,
     build_configuration,
@@ -158,6 +165,20 @@ class OrchestrationResult(StrictModel):
     blockers: list[str] = Field(default_factory=list)
 
 
+class UserExecutionPreparation(StrictModel):
+    user_id: str
+    artifact: RegisteredDataArtifact
+    route: RouterRoute
+    reasons: list[str] = Field(default_factory=list)
+    data_access: AuthorizationValidation
+    execution_approval: Optional[AuthorizationValidation] = None
+    profile: Optional[DataProfile] = None
+    plan: Optional[WorkflowPlan] = None
+    approval_scope: Optional[ApprovalScope] = None
+    request_fingerprint: Optional[str] = None
+    execution_request_created: bool = False
+
+
 class ExecutionOrchestrator:
     """Central state machine for bounded maintainer qualification execution."""
 
@@ -180,6 +201,8 @@ class ExecutionOrchestrator:
         pareto: Optional[ParetoDecisionEngine] = None,
         packager: Optional[ReproducibilityPackager] = None,
         repair_policy: Optional[RepairPolicy] = None,
+        data_registry: Optional[DataRegistry] = None,
+        approval_service: Optional[ApprovalService] = None,
     ) -> None:
         self.run_root = Path(run_root).resolve()
         self.approved_input_root = Path(approved_input_root).resolve()
@@ -209,6 +232,140 @@ class ExecutionOrchestrator:
         self.pareto = pareto or ParetoDecisionEngine()
         self.packager = packager or ReproducibilityPackager(package_root=package_root)
         self.repair_policy = repair_policy or RepairPolicy()
+        self.data_registry = data_registry
+        self.approval_service = approval_service
+
+    def prepare_user_execution(
+        self,
+        *,
+        user_id: str,
+        artifact_id: str,
+        data_grant_id: Optional[str],
+        execution_approval_id: Optional[str],
+        request_id: str,
+        query: str,
+        parameters: dict[str, Any],
+        tool_name: str = "Scrublet",
+        tool_version: str = "0.2.3",
+        parent_route_override: Optional[RouterRoute] = None,
+    ) -> UserExecutionPreparation:
+        """Profile and plan user data, but never create an ExecutionRequest in Phase 6A."""
+
+        if self.data_registry is None or self.approval_service is None:
+            raise RuntimeError("Phase 6A data registry and approval service are required")
+        artifact = self.data_registry.get(artifact_id, user_id=user_id)
+        data_access = self.approval_service.validate_data_access(
+            data_grant_id,
+            user_id=user_id,
+            artifact_id=artifact_id,
+        )
+        if not data_access.allowed:
+            decision = self.router.route_user_authorization(
+                data_access=data_access,
+                execution_approval=None,
+                execution_backend_enabled=False,
+                parent_route_override=parent_route_override,
+            )
+            return UserExecutionPreparation(
+                user_id=user_id,
+                artifact=artifact,
+                route=decision.route,
+                reasons=decision.reasons,
+                data_access=data_access,
+            )
+
+        contract = self.contract_registry.load(tool_name, tool_version)
+        environment = self.environment_registry.get(contract.environment_id)
+        validated_parameters = self.contract_registry.validate_parameters(
+            contract, parameters
+        )
+        input_path = self.data_registry.resolve_path(artifact_id, user_id=user_id)
+        is_batch_integration = str(contract.task) == "batch_integration"
+        profile = self.profiler.profile(
+            input_path,
+            batch_key="batch" if is_batch_integration else None,
+            label_key="cell_type" if is_batch_integration else None,
+        )
+        if profile.is_blocked and not is_batch_integration:
+            return UserExecutionPreparation(
+                user_id=user_id,
+                artifact=artifact,
+                route=RouterRoute.BLOCKED,
+                reasons=list(profile.blocking_errors),
+                data_access=data_access,
+                profile=profile,
+            )
+        requirement = RequirementSpec(
+            request_id=request_id,
+            query=query,
+            task=contract.task,
+            input_path=artifact.redacted_path,
+            input_object_type=artifact.artifact_type,
+            batch_key="batch" if is_batch_integration else None,
+            label_key="cell_type" if is_batch_integration else None,
+            output_goal=(
+                "batch-corrected embedding with biology-conservation diagnostics"
+                if is_batch_integration
+                else "doublet scores and calls"
+            ),
+            data_access_authorized=True,
+            execution_authorized=False,
+        )
+        planning_gate = self.contract_registry.planning_gate(
+            contract, data_profile=profile
+        )
+        plan = ExecutionPlanCompiler(self.contract_registry).compile(
+            requirement=requirement,
+            data_profile=profile,
+            tool_contract=contract,
+            environment=environment,
+            execution_budget=ExecutionBudget(),
+        )
+        if not planning_gate.allowed or plan.plan_status == "blocked":
+            return UserExecutionPreparation(
+                user_id=user_id,
+                artifact=artifact,
+                route=RouterRoute.BLOCKED,
+                reasons=sorted(set(planning_gate.reasons + plan.blocking_conditions)),
+                data_access=data_access,
+                profile=profile,
+                plan=plan,
+            )
+        scope = ApprovalScope(
+            user_id=user_id,
+            artifact_id=artifact_id,
+            plan_id=plan.plan_id,
+            tool_name=contract.tool_name,
+            tool_version=contract.tool_version,
+            contract_version=contract.contract_version,
+            environment_id=environment.environment_id,
+            parameter_hash=parameter_hash(validated_parameters),
+        )
+        execution_approval = self.approval_service.validate_execution_approval(
+            execution_approval_id,
+            expected_scope=scope,
+        )
+        # Phase 6A is authorization-only even after Phase 6B enables selected pairs.
+        execution_backend_enabled = False
+        decision = self.router.route_user_authorization(
+            data_access=data_access,
+            execution_approval=execution_approval,
+            execution_backend_enabled=execution_backend_enabled,
+            parent_route_override=parent_route_override,
+        )
+        return UserExecutionPreparation(
+            user_id=user_id,
+            artifact=artifact,
+            route=decision.route,
+            reasons=decision.reasons,
+            data_access=data_access,
+            execution_approval=execution_approval,
+            profile=profile,
+            plan=plan,
+            approval_scope=scope,
+            request_fingerprint=scope.fingerprint,
+            execution_request_created=False,
+        )
 
     def run(
         self,

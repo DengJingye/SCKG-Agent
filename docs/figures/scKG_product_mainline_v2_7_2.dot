@@ -1,0 +1,110 @@
+digraph SCKGProductMainline {
+  graph [
+    rankdir=TB,
+    bgcolor="white",
+    pad="0.30",
+    nodesep="0.32",
+    ranksep="0.60",
+    splines=polyline,
+    newrank=true,
+    fontname="Helvetica",
+    labelloc="t",
+    label="scKG-Agent 2.7.2 | Governed Local Research Loop",
+    fontsize=20,
+    fontcolor="#172033"
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=10,
+    color="#CBD5E1",
+    penwidth=1.2,
+    margin="0.13,0.09",
+    fillcolor="#FFFFFF",
+    fontcolor="#172033"
+  ];
+  edge [
+    color="#64748B",
+    penwidth=1.25,
+    arrowsize=0.72,
+    fontname="Helvetica",
+    fontsize=9,
+    fontcolor="#475569"
+  ];
+
+  user [label="Research goal\n+ registered AnnData", fillcolor="#F8FAFC", color="#64748B"];
+  response [label="Research response\nor Runs & Results", fillcolor="#F8FAFC", color="#64748B"];
+
+  subgraph cluster_agent {
+    label="Agent plane";
+    color="#99D5CE";
+    fillcolor="#F1FBF9";
+    style="rounded,filled";
+    gateway [label="Research Workspace\nASK | PLAN | RUN", fillcolor="#D9F4EF", color="#2A8C82"];
+    parent [label="Bounded Parent Agent\nroute + observe", fillcolor="#FFFFFF", color="#2A8C82"];
+    { rank=same; gateway; parent; }
+  }
+
+  subgraph cluster_knowledge {
+    label="Knowledge and data plane";
+    color="#F6C887";
+    fillcolor="#FFF9EF";
+    style="rounded,filled";
+    profile [label="Deterministic\nDataProfile", fillcolor="#FFF2D8", color="#C88222"];
+    retrieve [label="Governed Action Space\nKG + BM25/Hybrid", fillcolor="#FFFFFF", color="#C88222"];
+    contract [label="ToolContract + I/O\nsource-bound constraints", fillcolor="#FFFFFF", color="#C88222"];
+    plan [label="WorkflowPlan\n+ code bundle", fillcolor="#FFFFFF", color="#C88222"];
+    { rank=same; profile; retrieve; contract; plan; }
+  }
+
+  subgraph cluster_safety {
+    label="Deterministic safety plane";
+    color="#F2A7A0";
+    fillcolor="#FFF5F4";
+    style="rounded,filled";
+    router [label="Router + policy +\nexact approval", shape=diamond, fillcolor="#FFE1DE", color="#C84B42"];
+    blocked [label="BLOCKED / WAITING\nreason + recovery action", fillcolor="#FFFFFF", color="#C84B42"];
+    { rank=same; router; blocked; }
+  }
+
+  subgraph cluster_execution {
+    label="Controlled execution plane";
+    color="#A8C7F0";
+    fillcolor="#F3F7FD";
+    style="rounded,filled";
+    executor [label="LocalControlledExecutor\nfixed Python/R wrapper", fillcolor="#E2EEFC", color="#3977B9"];
+    validate [label="Task Validator\nartifacts + hashes", fillcolor="#FFFFFF", color="#3977B9"];
+    repair [label="Bounded Repair\nallowlist + lineage", fillcolor="#FFFFFF", color="#3977B9"];
+    { rank=same; executor; validate; repair; }
+  }
+
+  subgraph cluster_delivery {
+    label="Decision and delivery";
+    color="#B6D7A8";
+    fillcolor="#F5FAF2";
+    style="rounded,filled";
+    pareto [label="Candidate aggregation\n+ Pareto decision", fillcolor="#E7F4E1", color="#5D8F48"];
+    package [label="Results + diagnostic plots\n+ Level 2 package", fillcolor="#FFFFFF", color="#5D8F48"];
+    { rank=same; pareto; package; response; }
+  }
+
+  llm [label="Optional LLM\nprose / candidate only", style="rounded,dashed", fillcolor="#FFFFFF", color="#8B5FBF", fontcolor="#6D3E91"];
+
+  user -> gateway -> parent;
+  parent -> profile [label="RUN / data-aware PLAN"];
+  parent -> retrieve [label="ASK / generic PLAN"];
+  profile -> retrieve;
+  retrieve -> contract -> plan;
+  plan -> router;
+  llm -> parent [style=dashed, color="#8B5FBF", label="cannot override gates", constraint=false];
+  router -> blocked [label="missing / mismatch"];
+  router -> executor [label="approved"];
+  executor -> validate;
+  validate -> repair [label="repairable", constraint=false];
+  repair -> executor [label="bounded retry", constraint=false];
+  validate -> pareto [label="valid or terminal"];
+  pareto -> package;
+  package -> response;
+  blocked -> response [label="explain and recover", constraint=false];
+}

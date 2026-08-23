@@ -1,0 +1,1683 @@
+[PDF_PAGE 1]
+
+Fast, sensitive, and accurate integration of single cell data with Harmony
+Ilya Korsunsky1234, Jean Fan5, Kamil Slowikowski123, Fan Zhang1234, Kevin Wei2, Yuriy Baglaenko1234, Michael Brenner2,
+Po-Ru Loh134, Soumya Raychaudhuri12346
+1Center for Data Sciences, Brigham and Women’s Hospital, Massachusetts, USA.2Divisions of Genetics and Rheumatology,
+Department of Medicine, Brigham and Women’s Hospital and Harvard Medical School, Boston,3Department of Biomedical
+Informatics, Harvard Medical School, Massachusetts, USA. 4Program in Medical and Population Genetics, Broad Insti-
+tute of MIT and Harvard, Cambridge, MA, USA. 5Department of Chemistry and Chemical Biology, Harvard University,
+Cambridge, Massachusetts, USA. 6Arthritis Research UK Centre for Genetics and Genomics, Centre for Musculoskeletal
+Research, Manchester Academic Health Science Centre, The University of Manchester, Manchester, UK.
+* Correspondence to:
+Soumya Raychaudhuri
+77 Avenue Louis Pasteur, Harvard New Research Building, Suite 250D
+Boston, MA 02446, USA.
+soumya@broadinstitute.org; 617-525-4484 (tel); 617-525-4488 (fax)
+1
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 2]
+
+Abstract. The rapidly emerging diversity of single cell RNAseq datasets allows us to characterize the transcriptional behav-1
+ior of cell types across a wide variety of biological and clinical conditions. With this comprehensive breadth comes a major2
+analytical challenge. The same cell type across tissues, from different donors, or in different disease states, may appear3
+to express different genes. A joint analysis of multiple datasets requires the integration of cells across diverse conditions.4
+This is particularly challenging when datasets are assayed with different technologies in which real biological differences5
+are interspersed with technical differences. We present Harmony, an algorithm that projects cells into a shared embedding6
+in which cells group by cell type rather than dataset-speciﬁc conditions. Unlike available single-cell integration methods,7
+Harmony can simultaneously account for multiple experimental and biological factors. We develop objective metrics to8
+evaluate the quality of data integration. In four separate analyses, we demonstrate the superior performance of Harmony to9
+four single-cell-speciﬁc integration algorithms. Moreover, we show that Harmony requires dramatically fewer computational10
+resources. It is the only available algorithm that makes the integration of ∼ 106 cells feasible on a personal computer. We11
+demonstrate that Harmony identiﬁes both broad populations and ﬁne-grained subpopulations of PBMCs from datasets with12
+large experimental differences. In a meta-analysis of 14,746 cells from 5 studies of human pancreatic islet cells, Harmony13
+accounts for variation among technologies and donors to successfully align several rare subpopulations. In the resulting in-14
+tegrated embedding, we identify a previously unidentiﬁed population of potentially dysfunctional alpha islet cells, enriched15
+for genes active in the Endoplasmic Reticulum (ER) stress response. The abundance of these alpha cells correlates across16
+donors with the proportion of dysfunctional beta cells also enriched in ER stress response genes. Harmony is a fast and17
+ﬂexible general purpose integration algorithm that enables the identiﬁcation of shared ﬁne-grained subpopulations across a18
+variety of experimental and biological conditions.19
+2
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 3]
+
+Recent technological advances 1 have enabled unbiased single cell transcriptional proﬁling of thousands of cells in a20
+single experiment. Projects such as the Human Cell Atlas 2 (HCA) and Accelerating Medicines Partnership 3, 4 exemplify21
+the growing body of reference datasets of primary human tissues. While individual experiments contribute incrementally22
+to our understanding of cell types, a comprehensive catalogue of healthy and diseased cells will require the integration of23
+multiple datasets across donors, studies, and technological platforms. Moreover, in translational research, joint analyses24
+across tissues and clinical conditions will be essential to identify disease expanded populations. However, meaningful25
+biological variation in single cell RNA-seq datasets from different studies is often hopelessly confounded by data source. 526
+Recognizing this key issue, investigators have developed unsupervised multi-dataset integration algorithms, such as Seurat27
+MultiCCA,6 MNN Correct,7 Scanorama,8 and BBKNN9 to enable joint analysis. These methods embed cells from diverse28
+experimental conditions and biological contexts into a common reduced dimensional embedding to enable shared cell type29
+identiﬁcation across datasets.30
+Here we introduce Harmony, an algorithm for robust, scalable, and ﬂexible multi-dataset integration that addresses, to31
+meet three key challenges of unsupervised scRNAseq joint embedding. First, cell types with regulatory or pathogenic roles32
+are often rare, with subtle transcriptomic signatures. Integration must be able to identify both common and rare cell types,33
+particularly those whose subtle signatures are initially obscured by technical or biological confounders. To be sensitive to34
+subpopulations with subtle signatures, Harmony uses a two-step iterative strategy that removes the effect of such confounding35
+factors at each round. This makes it easier to identify shared cell types whose expression signatures were obscured in the36
+original data. Second, the number of cells in experiments is quickly expanding, exceeding 100,000 cells in atlas-like datasets.37
+Integration algorithms must scale computationally, both in terms of runtime and required memory resources. To scale to big38
+data, Harmony uses linear methods and avoids the costly cell-to-cell comparisons that scale quadratically with the number39
+of cells. Third, more complex experimental design of single cell analysis compares cells from different donors, tissues, and40
+technological platforms. In order for the joint embedding to be free of the inﬂuence of each, integration must simultaneously41
+account for multiple sources of variation. The Harmony simultaneously accounts for multiple sources of variation, because42
+the clustering objective function is formulated to account for any number of categorical covariates. Harmony is available as43
+an R package on github (https://github.com/immunogenomics/harmony), with functions for standalone and Seurat6 pipeline44
+analyses.45
+Here, we demonstrate how Harmony address the three unmet needs outlined above. First, we give an overview of the46
+Harmony algorithm. Then, we integrate carefully designed cell line datasets to introduce metrics for quantifying cell-type47
+accuracy and degree of dataset-mixing before and after integration. All measures of cell-type accuracy are based on anno-48
+tation within datasets separately. As Harmony does not use cell-type information to integrate cells, these labels provide an49
+unbiased quantiﬁcation of accuracy. We then demonstrate that Harmony generates embeddings with higher quality and fewer50
+computational resources than all currently available algorithms by testing each of them across a wide range of dataset sizes,51
+from 25,000 to 500,000 total cells. Next, we show that Harmony to identify both broad populations and ﬁne-grained sub-52
+3
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 4]
+
+populations of cells in three datasets of peripheral blood mononuclear cell (PBMC) datasets with large technical differences.53
+Finally, in a pancreatic islet cell meta-analysis, we demonstrate the power of Harmony to simultaneously integrate donor-54
+and technology-speciﬁc effects to identify several rare subpopulations, including one putative novel islet cell subtype.55
+Results56
+Harmony Iteratively Learns a Cell-Speciﬁc Linear Correction Function57
+Starting with a PCA embedding, Harmony ﬁrst groups cells into multi-dataset clusters (Figure 1A). We use soft clustering,58
+assigning cells to potentially multiple clusters, to account for smooth transitions between cell states. In our thinking, these59
+clusters serve as surrogate variables, rather than actually deﬁning discrete cell-types. We developed a novel variant of soft60
+k-means clustering to favor clusters with representation across multiple datasets (Online Methods). Clusters containing61
+cells that are disproportionately represented by a small subset of datasets are penalized by an information theoretic metric.62
+Harmony allows the user to apply multiple different penalties to accommodate multiple technical or biological factors, such63
+as different batches and different technology platforms. The uncertainty encoded in the soft clustering preserves discrete64
+and continuous topologies while avoiding local minima that might result from too quickly maximizing representation across65
+multiple datasets, and preserves uncertainty. After clustering, each dataset has a cluster-speciﬁc centroid (Figure 1B) that is66
+used to compute cluster-speciﬁc linear correction factors (Figure 1C). Under favorable conditions, the surrogate variables,67
+deﬁned by cluster membership, correspond to cell types and cell states. Thus, the cluster-speciﬁc correction factors that68
+Harmony computes correspond to individual cell-type and cell-state speciﬁc correction factors. In this way, Harmony learns69
+a simple linear adjustment function that is sensitive to intrinsic cellular phenotypes. Finally, each cell is assigned a cluster-70
+weighted average of these terms and corrected by its cell-speciﬁc linear factor (Figure 1D). As a result, each cell has a71
+potentially unique correction factor, depending on its soft clustering distribution. Harmony iterates these four steps until72
+convergence. At convergence, additional iterations would assign cells to the same clusters and compute the same linear73
+correction factors.74
+4
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 5]
+
+Cluster 2
+Cluster 1
+Cluster 4
+Cluster 3
+Cluster 2
+Cluster 1
+Cluster 4
+Cluster 3
+Cluster 2
+Cluster 1
+Cluster 4
+Cluster 3
+Cluster 2
+Cluster 1
+Cluster 4
+Cluster 3
+A Soft assign cells to
+clusters, favoring mixed 
+dataset representation
+B Get cluster centroids
+for each dataset
+D Move cells based on 
+soft cluster membership
+C Get dataset correction 
+factors for each cluster
+Iterate until convergence
+Cell typeDataset
+Figure 1: Overview of Harmony algorithm. We represent datasets with colors, and different cell types with shapes. Before we apply Harmony,
+principal components analysis embeds cells into a space with reduced dimensionality. Harmony accepts the cell coordinates in this reduced space and
+runs an iterative algorithm to adjust for data set speciﬁc effects. (A) Harmony uses fuzzy clustering to assign each cell to multiple clusters, while a
+penalty term ensures that the diversity of datasets within each cluster is maximized. (B) Harmony calculates a global centroid for each cluster, as well as
+dataset-speciﬁc centroids for each cluster. (C) Within each cluster, Harmony calculates a correction factor for each dataset based on the centroids. (D)
+Finally, Harmony corrects each cell with a cell-speciﬁc factor: a linear combination of dataset correction factors weighted by its soft cluster assignments
+made in step A. Harmony repeats steps A through D until convergence. The dependence between cluster assignment and dataset diminishes with each
+round.
+Quantiﬁcation of Error and Accuracy in Cell Line Integration75
+We ﬁrst assessed Harmony using three carefully controlled datasets, in order to evaluate performance on both integration76
+(mixing of datasets) and accuracy (no mixing of cell types). Both metrics are important. Perfect integration can be achieved77
+by simply mixing all cells, regardless of cellular identity. Similarly, high accuracy can be achieved by partitioning cell types78
+into broad clusters without mixing datasets in small neighborhoods. In this situation, broad cellular states are deﬁned, but79
+ﬁne-grained cellular substates and subtypes are confounded by the originating dataset. In order to quantify integration and80
+accuracy of this embedding we felt that it was important that we have an objective metric. To this end, we compute the Local81
+Inverse Simpson’s Index (LISI, Online Methods) in the local neighborhood of each cell. To assess integration, we employ82
+integration LISI (iLISI, Figure 2A), denotes the effective number of datasets in a neighborhood. Neighborhoods represented83
+by only a single dataset get an iLISI of 1, while neighborhoods with an equal number of cells from 2 datasets get an iLISI84
+of 2. Note that even under ideal mixing, if the datasets have different numbers of cells, iLISI would be less than 2. To85
+assess accuracy, we use cell-type LISI (cLISI, Figure 2B), the same mathematical measure, but applied to cell-type instead86
+of dataset labels. Accurate integration should maintain a cLISI of 1, reﬂecting a separation of unique cell types throughout87
+the embedding. An erroneous embedding would include neighborhoods with a cLISI of 2, indicating that neighbors have 288
+different types of cells.89
+5
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 6]
+
+We begin with three datasets from two cells lines: (1) pure Jurkat, (2) pure 293T and (3) a 50:50 mix. 10 These datasets90
+are particularly ideal for illustration and for assessment, as each cell can be unambiguously labeled Jurkat or 293T (Figure91
+S1). A thorough integration would mix the 1799 Jurkat cells from the mixture dataset with 3255 cells from the pure Jurkat92
+dataset and the 1565 293T cells from the mixture dataset with the 2859 from the pure 293T dataset. Thus, we expect the93
+average iLISI to range from 1, reﬂecting no integration, to 1.8 for Jurkat cells and 1.5 for 293T cells 1, reﬂecting maximal94
+accurate integration. Application of a standard PCA pipeline followed by UMAP embedding demonstrates that the cells95
+group broadly by dataset and cell type. This is both visually apparent (Figure 2C,D) and quantiﬁed (Figure 2E,F) with96
+high accuracy reﬂected by a low cLISI (median iLISI 1.00, 95% [1.00, 1.00]). However the iLISI (median iLISI 1.01, 95%97
+[1.00, 1.61]) is also low, reﬂecting imperfect integration, and ample structure within each cell-type reﬂecting the data set98
+of origin. After Harmony, cells from the 50:50 dataset are mixed into the pure datasets (Figure 2E), which is appropriate99
+in this case since these cell-lines have no additional biological structure. The increased iLISI ( Figure 2D, median iLISI100
+1.59, 95% [1.27, 1.97]) reﬂects the mixing of datasets, while the low cLISI (median iLISI 1.00, 95% [1.00, 1.02]) reﬂects101
+the accurate separation of Jurkat from 293T cells. iLISI and cLISI provide a quantitative way to assess the integration and102
+accuracy of multiple algorithms. We repeated the integration and LISI analyses with MNN Correct, BBKNN, MultiCCA,103
+and Scanorama (Figure 2G). While Harmony had the highest iLISI, Scanorama MNN Correct, and BBKNN provided lower104
+levels of integration, evidence by lower iLISI. MultiCCA actually separated previously mixed datasets, yielding a lower iLISI105
+(median 1.00, 95% [1.00, 1.28]) than before integration. Except for MultiCCA (median cLISI 1.00, 95% [1.00, 1.23]), the106
+other algorithms maintained high accuracy (Table S1, median cLISI 1.00, 95% [1.00, 1.00]). This benchmark demonstrates107
+the two key metrics for assessing mixing and accuracy and shows that Harmony performs well on both metrics in a well-108
+controlled analysis of cell-line datasets.109
+11.5 = 1 / [(1565 / (1565 + 2859))2 + (2859/ (1565 + 2859))2], 1.8 = 1 / [(1799 / (1799 + 2859))2 + (3255 / (1799 + 3255))2]
+6
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 7]
+
+Cell TypeDataset
+iLISI measures integration cLISI measures error
+iLISI=1
+iLISI=1.4
+iLISI=1
+Local Inverse Simpson’s Index (LISI)
+quantifies number of labels in local neighborhood
+iLISI=2
+iLISI=1.8
+Well integrated
+datasets
+Poorly integrated
+datasets
+Different cell types
+group together
+Different cell types
+group separately
+cLISI=1
+cLISI=1
+cLISI=2
+cLISI=2
+−10 −5 0 5 10 15
+−5.0
+−2.5
+0.0
+2.5
+5.0
+7.5
+−10 −5 0 5 10 15
+UMAP 2
+UMAP 1
+UMAP 1
+After Harmony integration
+−5 0 5 10 −5 0 5 10
+PCA (no integration)
+Jurkat cells
+−5.0
+−2.5
+2.5
+UMAP 2
+5.0
+0.0
+50:50 mixture
+dataset
+Pure Jurkat
+dataset
+Pure 
+HEK293T
+dataset
+HEK293T cells
+1.00 1.25 1.50 1.75 2.00
+iLISI
+1.00 1.25 1.50 1.75 2.00
+cLISI
+1.00 1.25 1.50 1.75 2.00
+iLISI
+1.00 1.25 1.50 1.75 2.00
+cLISI
+Harmony
+Scanorama
+MNN Correct
+BBKNN
+MultiCCA
+Before Correction
+1.00 1.25 1.50 1.75 2.00 1.00 1.05 1.10 1.15 1.20
+iLISI
+Dataset mixing Cell-type mixing
+cLISI
+A
+E
+F
+H
+I
+C D
+G
+B
+Figure 2: Quantitative assessment of dataset mixing and cell-type accuracy with cell line datasets. (A) iLISI measures the degree of mixing among
+datasets in an embedding, ranging from 1 in an unmixed space to B in a well mixed space. B is the number of datasets in the analysis. (B) cLISI
+measures integration accuracy using the same formulation but computed on cell-type labels instead. An accurate embedding has a cLISI close to 1 for
+every neighborhood, reﬂecting separation of different cell types. Jurkat and HEK293T cells from pure (purple and yellow) and mixed (green) cell-line
+datasets were analyzed together. Before Harmony integration, cells grouped by dataset (C) and known cell-type (D). iLISI and cLISI (E) were computed
+for every cell’s neighborhood and summarized with quantiles (5, 25, 50, 75, 95). After Harmony integration, cells from the mixture dataset are mixed
+into the other datasets (F), achieved by mixing Jurkat with Jurkat cells and HEK293T with HEK293T cells (G). iLISI and cLISI (H) were re-computed
+in the Harmony embedding. (I) This analysis was repeated for other algorithms and compared against no integration and Harmony integration using
+iLISI and cLISI quantiles.
+7
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 8]
+
+Harmony Scales to Enable Analysis of Large Data110
+As an integral part of the scRNAseq analysis pipeline, the integration algorithm must run in a reasonable amount of time111
+and within the memory constraints of standard computers. To this end, we evaluated the computational performance of112
+Harmony, measuring both the total runtime and maximum memory usage. To demonstrate the scalability of Harmony versus113
+other methods, we downsampled from HCA data 11 (528,688 cells from 16 donors and 2 tissues) to create 5 benchmark114
+datasets with 500,000, 250,000, 125,000, 60,000, and 30,000 cells. We reported the runtime (Table S2) and memory (Table115
+S3) for all benchmarks. Harmony runtime scaled well for all datasets (Figure 3A), ranging from 4 minutes on 30,000 cells to116
+68 minutes on 500,000 cells, 30 to 200 times faster than MultiCCA and MNN Correct. The runtimes for Harmony, BBKNN,117
+and Scanorama were comparable for datasets with up to 125,000 cells. Harmony required very little memory (Figure 3B)118
+compared to other algorithms, only 0.9GB on 30,000 cells and 7.2GB on 500,000 cells. At 125,000 cells, Harmony required119
+30 to 50 times less memory than Scanorama, MNN Correct and Seurat MultiCCA; these other methods could not scale120
+beyond 125,000 cells. Notably, BBKNN was the only other algorithm able to ﬁnish on the 500,000 cell dataset, taking 44121
+minutes and 45GB of RAM. However, the BBKNN embedding did not achieve better integrated of tissues (Figure 3C, S2A,122
+median iLISI 1.00, 95% [1.00, 1.10]) or donors (Figure 3D, S2B, median iLISI 1.60, 95% [1.00, 4.11]) above PCA alone123
+(Figure S2C tissue median iLISI 1.00, 95% [1.00, 1.03], Figure S2D donor median iLISI 1.38, 95% [1.00, 3.14]).124
+Importantly, in addition to better computational performance of other algorithms Harmony returned a substantially more125
+integrated space that other competing algorithms, allowing for the identiﬁcation of shared cell types across tissues (Figure126
+3E, Table S4, median iLISI 1.40, 95% [1.04, 1.97] compared to medians of 1.00 to 1.12) and donors (Figure S3, median127
+iLISI 3.93, 95% [2.46, 4.95] compared to medians of 1.07 to 2.82). In the Harmony embedding, we clustered cells and128
+were able to identify shared populations (Figure 3F) using canonical markers (Figure S4). These results demonstrate that129
+Harmony is computationally efﬁcient and capable of analyzing even large datasets (10 5 - 106 cells) on personal computers.130
+Alternative methods may require extensive parallelization to run modestly sized datasets.131
+8
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 9]
+
+HarmonyBBKNN
+Scanorama
+Cord Blood
+Bone Marrow
+MNN Correct
+MultiCCA
+Harmony
+BBKNN
+Scanorama
+MNN Correct
+MultiCCA
+0
+10
+20
+30
+40
+50
+8
+16
+32
+64
+120
+Harmony
+BBKNN
+PCA
+Harmony
+BBKNN
+PCA
+ 30,000 60,000 125,000 250,000 500,000 30,000 60,000 125,000 250,000 500,000
+1.00 1.25 1.50 1.75 2.00 1 2 3 4 5
+Number of Cells Number of Cells
+iLISI iLISI
+Hours
+Gigabytes (GB)
+Total runtime Maximum memory usage
+Tissue mixing (500,000 cells)
+Tissue mixing after Harmony (500,000 cells) Cell types after Harmony (500,000 cells)
+Donor mixing (500,000 cells)
+A B
+C
+E F
+D
+10
+CD14 Mono
+CD4 Naive
+HSC/MPP
+GMP
+CD8 Effector
+Naive B
+CD4 Mem
+CD16 Mono
+NK
+DC
+CD8 Naive
+Eryth
+mem Bpre−B
+Plasma
+Mk
+pDC
+Treg
+PPBP Mono
+pre−T
+−10 −5 0 5
+UMAP 1
+−10
+−5
+0
+5
+10
+−10 −5 0 5 10
+UMAP 1
+UMAP 2
+Figure 3: Computational efﬁciency benchmarks. We ran Harmony, BBKNN, Scanorama, MNN Correct, and MultiCCA on 5 downsampled HCA
+datasets of increasing sizes, from 25,000 to 500,000 cells. We recorded the (A) total runtime and (B) maximum memory required to analyze each
+dataset. Scanorama, MultiCCA, and MNN Correct were terminated for excessive memory requests on the 250,000 and 500,000 cell datasets. For
+Scanorama and Harmony, we quantiﬁed the extent of integration in the 500,000 cell benchmark for (C) the two tissues (cord blood and bone marrow)
+and (D) the 16 donors. For reference, (C) and (D) report the iLISI scores prior to integration. The mixing between tissues in the Harmony embedding is
+visualized in (E). In the Harmony embedding, (F) we clustered cells and labeled populations by canonical markers: pre-T cells, CD4 Naive T cells, CD4
+Memory T cells, T-regs, CD8 Naive T cells, CD8 Effector T cells, natural killer cells (NK), pre-B cells, Naive B cells, Memory B cells, plasma cells,
+plasmacytoid dendritic cells (pDC), conventional dendritic cells (DC), granulocyte macrophage progenitor (GMP), CD16- monocytes (CD14 Mono),
+CD16+ monocytes (CD16 Mono), a population of monocytes also positive for Megakaryocyte markers (PPBP Mono), Megakaryocytes (Mk), Erythroid
+progenitors (Eryth), and a cluster of hematopoietic stem cells and multipotent progenitor cells (HSC/MPP).
+9
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 10]
+
+Deep Integration Enables Identiﬁcation of Broad and Fine-Grained PBMCs Subpopulations132
+To assess how effective Harmony might be under more challenging scenarios, we gathered three datasets of human PBMCs,133
+each assayed on the Chromium 10X platform but prepared with different protocols: 3-prime end v1 (3pV1), 3-prime end134
+v2 (3pV2), and 5-prime (5p) end chemistries. After pooling all the cells together, we performed a joint analysis. Before135
+integration, cells group primarily by dataset (Figure 4A, median iLISI 1.00, 95% [1.00, 1.00]). Harmony integrates the136
+three datasets (Figure 4B, median iLISI 1.96, 95% [1.36, 2.56]), more than other methods (Figure 4C). To assess accu-137
+racy, within each dataset, we separately annotated (online methods) broad cell clusters with canonical markers of major138
+expected populations (Figure S5): monocytes (CD14+ or CD16+), dendritic cells (FCER1A+), B cells (CD20+), T cells139
+(CD3+), Megakaryocytes (PPBP+), and NK cells (CD3-/GNLY +) before clustering. We observed that Harmony retained140
+differences among cell types (Figure 4D median cLISI 1.00, 95% [1.00, 1.02]). The greater dataset integration, compared141
+to other algorithms, affords a unique opportunity to identify ﬁne-grained cell subtypes. Using canonical markers (Figure142
+4E), we identiﬁed shared subpopulations of cells (Figure 4F) including naive CD4 T (CD4+/CCR7 +), effector memory143
+CD4 T (CD4+/CCR7 -), Treg (CD4+/FOXP3+), memory CD8 (CD8+/GZMK -), effector CD8 T (CD8+/GZMK +), naive B144
+(CD20+/CD27-), and memory B cells (CD20+/CD27+). In the embeddings produced by other algorithms, the median iLISI145
+did not exceed 1.1 (Table S5). Accordingly, the subtypes identiﬁed with Harmony reside in dataset-speciﬁc, rather than146
+dataset-mixed clusters (Figure S6). These results show that Harmony successfully accounts for technical variation among147
+different protocols and integrates many different cell types while preserving large-scale and ﬁne-grained structures in the148
+data.149
+10
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 11]
+
+5−prime
+3−prime V2
+3−prime V1
+−10
+0
+10
+−15 −10 −5 0 5 10
+UMAP 2
+Before integration
+−10
+−5
+0
+5
+10
+−10 −5 0 5
+UMAP 1UMAP 1
+UMAP 2
+After Harmony integration
+Harmony
+MNN Correct
+Scanorama
+BBKNN
+MultiCCA
+Before correction
+Harmony
+MNN Correct
+Scanorama
+BBKNN
+MultiCCA
+Before correction
+1.0 1.5 2.0 2.5
+iLISI
+1.00 1.05 1.10 1.15 1.20
+cLISI
+%Cell 
+expressing
+0
+25
+50
+75
+A
+E
+−10
+−5
+0
+5
+10UMAP 2
+CD16+ Mono
+NKBmem
+CD8eff
+CD8 T
+Mono
+Bnaive
+Treg
+CD4mem
+CD4naive
+aDC
+HSC
+Megakaryocyte
+pDC
+−10 −5 0 5
+UMAP 1
+F
+B C
+D
+CD27
+MS4A1
+CD8A
+FOXP3
+GZMA
+CCR7
+CD4
+cd4naive
+cd4naive
+cd4naive
+cd4mem
+cd4mem
+cd4mem
+treg
+treg
+treg
+cd8eff
+cd8eff
+cd8eff
+bnaive
+bnaive
+bnaive
+bmem
+bmem
+bmem
+Figure 4: Fine-grained subpopulation identiﬁcation in PBMCs across technologies. Three PBMC datasets were assayed with 10X, using different
+library construction protocols: 5-prime (orange), 3-prime V1 (purple), and 3-prime V2 (green). Before integration (A), cells group by dataset. After
+Harmony integration (B), datasets are mixed together. (C) Harmony achieves the most thorough integration among datasets, while preserving (D) cell
+type differences. Using canonical markers (E), we identiﬁed (F) 5 shared subtypes of T cells and 2 shared subtypes of B cells. (G) Other integration
+algorithms fail to group these cells by subtype.
+Simultaneous Integration Across Donors and Technologies Identiﬁes Rare Pancreas Islet Subtypes150
+We considered a more complex experimental design, in which integration must be performed simultaneously over more than151
+one variable. We gathered human pancreatic islet cells from independent ﬁve studies 12–16 , each of which were generated152
+with a different technological platform. Integration across platforms is already challenging. However, within two12, 13 of the153
+datasets, the authors also reported signiﬁcant donor-speciﬁc effects. In this scenario, a successful integration of these studies154
+must account for the effects of both technologies and donors, which may both affect different cell types in different ways.155
+Harmony is the only single cell integration algorithm that is able to explicitly integrate over more than one variable, hence156
+we omit a comparison against other methods.157
+As before, we assess cell type accuracy cLISI with canonical cell types identiﬁed independently within each dataset158
+(Figure S7): alpha (GCG+), beta (MAF A+), gamma (PPY+), delta (SST +), acinar (PRSS1+), ductal (KRT19+), endothelial159
+(CDH5+), stellate (COL1A2+), and immune (PTPRC+). Since there are two integration variables, we asses both donor iLISI160
+and technology iLISI. Prior to integration, PCA separates cells by technology (Figure 5A,E, median iLISI 1.00 95% [1.00,161
+1.06]), donor (Figure 5B,E, median iLISI 1.42 95% [1.00, 5.50]), and cell type (Figure 5E, median cLISI 1.00 95% [1.00,162
+1.48]). The wide range of donor-iLISI reﬂects that in the CEL-seq, CEL-seq2, and Fluidigm C1 datasets, many donors were163
+well mixed prior to integration. Harmony integrates cells by both technology (Figure 5C,E, median iLISI 2.27 95% [1.31,164
+11
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 12]
+
+3.27]) and donor (Figure 5D,E, median iLISI 4.71 95% [1.81, 6.36]).165
+Harmony was able to discern rare cell subtypes (Figure 5F) across the 5 datasets (Figure 5G). We labeled previously166
+described subtypes using canonical markers: activated stellate cells (PDGFRA+), quiescent stellate cells (RGS5+), mast cells167
+(BTK+), macrophages (C1QC+), and beta cells under endoplasmic reticulum (ER) stress (Figure 5H). Beta ER stress cells168
+may represent a dysfunctional population. This cluster has signiﬁcantly lower expression of genes key to beta cell identify17169
+and function: 18 PDX1, MAF A,INSM1, NEUROD1 (Figure 5I). Further, Sachdeva et al 19 suggest that PDX1 deﬁciency170
+makes beta cells less functional and exposes them to ER stress induced apoptosis.171
+Intriguingly, we also observed an alpha cell subset that to our knowledge, has not been previously described. This cluster172
+was also enriched with genes involved in ER stress (Figure 5J, DDIT3, ATF3, ATF4, and HSPA5). Similar to the beta173
+ER stress population, these alpha cells also expressed signiﬁcantly lower levels of genes necessary for proper function: 20, 21174
+GCG, ISL1, ARX, and MAFB (Figure 5K). A recent study22 reported ER stress in alpha cells in mice and linked the stress to175
+dysfunctional glucagon secretion. Moreover, we found that the proportions of alpha and beta ER stress cells are signiﬁcantly176
+correlated (spearman r=0.46, p=0.004, Figure 5L) across donors in all datasets. These results suggest a basis for alpha cell177
+injury that might parallel beta cell dysfunction in humans during diabetes.23178
+12
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 13]
+
+inDrop
+Smart−seq2
+CEL−seq
+Fluidigm C1
+CEL−seq2
+−10
+0
+10
+−10
+−5
+0
+5
+10
+−10
+−5
+0
+5
+10
+−10
+0
+10
+−10
+−5
+0
+5
+10
+−10 0 10
+−10 0 10 −10 0 10
+UMAP 1 UMAP 1
+UMAP 2
+UMAP 2
+UMAP 2
+Colored by donor Colored by donor
+Before integration After Harmony
+Colored by technology Colored by technology
+Beta ER stress genes
+Key beta function genes
+Log2(CPM + 1)
+A
+B
+C
+D
+0
+5
+10
+15
+20
+25
+0 5 10 15 20
+Percent alpha 
+ER stress cells 
+Percent beta
+cells ER stress
+r=0.46
+p=0.004
+H
+Harmony
+PCA
+cLISI iLISI
+Cell type error
+1.0 1.1 1.2 1.3 1.4 1.5 1 2 3 4 51.0 1.5 2.0 2.5 3.0
+iLISI
+Technology mixing Donor mixingE
+I
+Alpha ER stress genes
+Key alpha function genes
+J
+K
+L
+Alpha
+Ductal
+Delta
+Endothelial
+Beta
+Gamma
+Acinar
+Quiescent Stellate
+Beta ER Stress
+Alpha ER Stress
+Activated Stellate
+Mast
+Macrophage
+UMAP 1
+Cell type composition by technologyG
+Activated Stellate
+Alpha ER Stress
+Beta ER Stress
+Macrophage
+Mast Cell
+Quiescent Stellate
+0% 20% 40% 60% 80% 100%
+F
+ATF3
+fdr=5.5e−55
+ATF4
+fdr=2.4e−74
+DDIT3
+fdr=2.6e−29
+PPP1R15A
+fdr=6.7e−113
+0 1 2 3 4 5 0 1 2 3 4 0 1 2 3 0 1 2 3 4
+ATF3
+fdr=3.2e−79
+ATF4
+fdr=1.9e−76
+DDIT3
+fdr=2.1e−187
+PPP1R15A
+fdr=1.8e−145
+0 1 2 3 0 1 2 3 4 0 1 2 3 4 5 0 1 2 3 4 5
+Density
+INSM1
+fdr=3.2e-4
+MAFA
+fdr=4.0e-30
+NEUROD1
+fdr=9.6e-42
+PDX1
+fdr=1.1e−24
+0 1 2 3 0 1 2 3 4 5 0 1 2 3 4 0 1 2 3
+Density
+ARX
+fdr=3.8e−26
+GCG
+fdr=4.2e−13
+ISL1
+fdr=1.0e−22
+MAFB
+fdr=1.0e−71
+0 1 2 3 0.0 2.5 5.0 7.5 0 1 2 3 0 1 2 3 4
+Figure 5: Integration of pancreatic islet cells by both donor and technology. Human pancreatic islet cells from 36 donors were assayed on 5 different
+technologies. Cells initially group by (A) technology, denoted by different colors, and (B) donor, denoted by shades of colors. Harmony integrates
+cells simultaneously across (C) technology and (D) donor. Integration across both variables was quantiﬁed with iLISI (E) and error was computed with
+cLISI (E). Clustering in the Harmony embedding identiﬁed common and rare cell types, including a previously undescribed alpha population. Except
+for activated stellate cells, all rare cell types were found across the 5 technology datasets (G). The new alpha cluster was enriched for ER stress genes
+(I), just like the previously identiﬁed beta ER stress cluster (J). The abundances of the two ER stress populations were correlated across donors (H).
+Key genes necessary for endocrine function were downregulated in the alpha (K) and beta (L) ES stress clusters.
+13
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 14]
+
+Discussion179
+We showed that Harmony address the three key challenges we laid out for single cell integration analyses: scaling to large180
+datasets, identiﬁcation of both broad populations and ﬁne-grained subpopulations, and ﬂexibility to accommodate complex181
+experimental design. We evaluated the degree of mixing among datasets using a quantitative metric, the iLISI. Apart from182
+its use benchmarking, iLISI was particularly important in analyses with more than 3 datasets. Here, we observed that the183
+commonly utilized approach of assessing integration visually was subjective and insensitive, particularly when the number184
+of samples, batches or cell types was large. iLISI provides a quantitative and interpretable metric to help guide analysis.185
+In the computational efﬁciency benchmarks, we found that 3 of the 5 algorithms were not able to scale beyond 125,000186
+cells because they exceeded the memory resources of our 128GB servers. We were struck by the fact many researchers187
+routinely analyze data on personal computers, which often do not exceed 8 or 16GB. Harmony, which only required 7.2GB188
+to integrate 500,000 cells, is the only algorithm that would enable the integration of large datasets on personal computers.189
+With the pancreatic islet meta-analysis, we demonstrated that Harmony is able to account simultaneously for donor and190
+technology speciﬁc effects. One solution to this multi-level problem stepwise is to ﬁrst globally regress out one variable191
+from the gene expression values and then performing single cell integration on the resulting expression matrix. Harmony192
+allows for cell-type aware integration of both variables, simultaneously avoiding global correction terms that treat all cells193
+uniformly. However, the global regression strategy is ﬂexible enough to account for continuous variables, such as read depth194
+or cell quality. In the future, Harmony should also be able to account for such non-discrete sources of variation.195
+We noticed that it is not an uncommon practice to apply a batch-sensitive gene scaling step step before using a single-196
+cell integration algorithm. Speciﬁcally, many investigators scale gene expression values within datasets separately, before197
+pooling cells into a single matrix. We show (Supplementary Results) that this strategy may make it easier to integrate datasets198
+(Figure S8A,B) in the rare situation in which all cell populations and subpopulations are present across all analyzed datasets.199
+However, when the datasets consist of overlapping but not identical populations, this scaling strategy is less effective (Figure200
+S8C) and may indeed even increase error (Figure S8D). For this reason, we do not use this scaling strategy in this manuscript.201
+As part of a universal pipeline, Harmony ﬁnds highly integrated embeddings without the need for within-dataset scaling.202
+Harmony allows the user to set a hyperparameter for each covariate that guides how deeply to integrate over each source203
+of variation. When the penalty is 0, Harmony performs minimal integration. Curiously, we noticed that for small inter-204
+datasets differences, cells from multiple datasets cluster together without the penalty. In this case, Harmony still integrates205
+the cells during the linear correction phase. On the other hand, one could imagine that with an inﬁnitely large penalty206
+hyperparameter, Harmony would overmix datasets during clustering and hence overcorrect the data. We evaluated the effect207
+of the diversity penalty in the PBMCs example (see Supplementary Results) and observed that the Harmony embedding208
+is robust to a wide range of penalties (Figure S9). Nonetheless, as with any integration algorithm, we urge the user to209
+understand the effects of hyperparameters and experiment with several values.210
+14
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 15]
+
+Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211
+of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212
+step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213
+the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214
+does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215
+batch-aware approach, such as a linear model with covariates, for differential expression analysis.216
+In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217
+stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218
+Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219
+association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220
+lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221
+to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222
+alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223
+Harmony’s multilevel integration to mix diverse datasets and uncover potentially novel rare cell types.224
+Online Methods225
+Harmony226
+The Harmony algorithm inputs some embedding (Z ) of cells, along with their batch assignments (φ), and returns a batch227
+corrected embedding ( ˆZ). This algorithm, summarized as Algorithm 1 below, iterates between two complementary stages:228
+maximum diversity clustering (Algorithm 2) and a mixture model based linear batch correction (Algorithm 3). The clus-229
+tering step uses the a batch corrected embedding ˆZ to compute a soft assignment of cells to clusters, encoded in the matrix230
+R. The correction step uses these soft clusters to compute a new corrected embedding from the original one. Efﬁcient231
+implementations of Harmony, including the clustering and correction subroutines, are available as part of an R package at232
+https://github.com/immunogenomics/harmony.233
+Algorithm 1 Harmony
+function HARMONIZE (Z,φ (1)...φ (F ))
+ˆZ←Z
+repeat
+R← CLUSTER ( ˆZ,φ (1)...φ (F ))
+ˆZ← CORRECT (Z,R,φ (1))
+until convergence
+return ˆZ
+Note that the correction procedure usesZ, not ˆZ to regress out confounder effects. In this way, we restrict correction to234
+a linear model of the original embedding. An alternative approach would use the output ˆZ of the last iteration as input to235
+15
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 16]
+
+the correction procedure. Thus, the ﬁnal ˆZ would be the result of a series of linear corrections of the original embedding.236
+While this allows for more expressive transformations, we found that in practice, this can over correct the data. Our choice to237
+limit the transformation reﬂects the notion in the introduction. Namely, if we had perfect knowledge of the cell types before238
+correction, we would linearly regress out batch within each cell type.239
+Lastly, we note that Z can be any arbitrary embedding of the cells. In this paper, we use principal components for240
+scRNAseq datasets. However, Harmony can be efﬁciently run on any low dimensional embedding of the data, including241
+diffusion maps, autoencoders, or independent components.242
+Glossary243
+For reference, we deﬁne all data structures used in all Harmony functions. For each one, we deﬁne its dimensions and244
+possible values, as well as an intuitive description of what it means in context. The dimensions are stated in terms of d:245
+the dimensionality of the embedding (e.g. number of PCs), B: the number of batches, N: the number of samples, Nb: the246
+number of samples in batchb, and K: the number of clusters.247
+Z ∈ Rd×N. The input embedding, to be corrected in Harmony. This is often PCA embeddings of cells.248
+ˆZ ∈ Rd×N. The integrated embedding, output by Harmony.249
+R ∈ [0, 1]K×N,∀i
+∑K
+k=1Rki = 1. The soft cluster assignment matrix of cells (columns) to clusters (rows). Each column250
+is a probability distribution and thus sums to 1.251
+φ ∈{ 0, 1}B×N One-hot assignment matrix of cells (columns) to batches (rows).252
+Prb ∈ [0, 1]B. Frequency of batches.253
+O ∈ [0, 1]K×B The observed co-occurence matrix of cells in clusters (rows) and batches (columns).254
+E ∈ [0, 1]K×B The expected co-occurence matrix of cells in clusters and batches, under the assumption of independence255
+between cluster and batch assignment.256
+Y ∈ [0, 1]d×K Cluster centroid locations in the kmeans clustering algorithm.257
+µ ∈ Rd×K Centroid locations. Conceptually the same asY but not normalized to unit length. Used in GMM Correct.258
+β ∈ Rd×K×B Batch-speciﬁc centroid locations. Used in GMM Correct.259
+Note that in the case of multiple (F ) batch variables, φ, θ, O, and E are independently deﬁned for each batch f. We260
+denote these byφ(f ),θf ,O(f ), andE(f ) for each batch from 1 toF .261
+16
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 17]
+
+Maximum Diversity Clustering262
+We developed a clustering algorithm to maximize the diversity among batches within clusters. We present this method as263
+follows. First, review a previously published objective function for soft k-means clustering.264
+We then add a diversity maximizing regularization term to this objective function, and derive this regularization term as265
+the penalty on statistical dependence between two random variables: batch membership and cluster assignment. We then266
+derive and present pseudocode for an algorithm to optimize the objective function. Finally, we explain key details of the267
+implementation.268
+Background: Entropy regularization for Soft K-means269
+The basic objective function for classical K means clustering, in which each cell belongs to exactly one cluster, is deﬁned by270
+the distance from cells to their assigned centroids.271
+min
+R,Y
+∑
+i,k
+Ri,k||Zi−Yk||2 (1)
+s.t.∀i∀kRki∈{ 0, 1}
+Above,Z is some feature space of the data, shared by centroidsY .Ri,k can takes values 0 or 1, denoting membership of272
+celli in clusterk. In order to transform this into a soft clustering objective, we follow the direction of24 and add a an entropy273
+regularization term over R, weighted by a hyperparameter σ. Now, Rki can take values between 0 and 1, so long as for a274
+given celli, the sum over cluster memberships∑
+kRki equals 1. That is, Ri· must be a proper probability distribution with275
+support [1,K ].276
+min
+R,Y
+∑
+i,k
+Rki||Zi−Yk||2 +σRki log(Rki) (2)
+s.t.∀i∀kRki > 0,
+K∑
+k=1
+Rki = 1
+As σ approaches 0, this penalty approach hard clustering. As σ approaches inﬁnity, the entropy of R outweighs the277
+data-centroid distances. In this case, each data point is assigned equally to all clusters.278
+Objective Function for Maximum Diversity Clustering279
+The full objective function for Harmony’s clustering builds on the previous section. In addition to soft assignment regular-280
+ization, the function below penalizes clusters with low batch-diversity, for all deﬁned batch variables. This penalty, derived281
+17
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 18]
+
+in the following section, depends on the cluster and batch identities Ω(R,φ (1)
+i ...φ (F )
+i ) =∑
+i,kRki
+∑
+f log(O
+(f )
+ki/E
+(f )
+ki )φ(f )
+i .282
+min
+R,Y
+∑
+i,k
+Rki||Zi−Yk||2 +σRki log(Rki)
++σ
+∑
+f
+θfRki log
+(O(f )
+ki
+E(f )
+ki
+)
+(3)
+s.t.∀i∀kRki > 0,
+K∑
+k=1
+Rki = 1
+For each batch variable, we add a new parameter θf . θf decides the degree of penalty for dependence between batch283
+membership and cluster assignment. When ∀fθf = 0, the problem reverts back to (2), with no penalty on dependence. As284
+θf increases, the objective function favors more independence between batch f and cluster assignment. As θf approaches285
+inﬁnity, it will yield a degenerate solution. In this case, each cluster has an equivalent distribution across batch f. However,286
+the distances between cells and centroids may be large. Finally, σ is added to this term for notational convenience in the287
+gradient calculations.288
+We found that this clustering works best when we compute the cosine, rather than Euclidean distance, between Z and289
+Y . Haghverdi et al 25 showed that the squared Euclidean distance is equivalent to cosine distance when the vectors are L2290
+normalized. Therefore, assuming that all Zi and Yk have a unity L2 norm, the squared Euclidean distance above can be291
+re-written as a dot product.292
+min
+R,Y
+∑
+i,k
+Rki2(1−YT
+k Zi) +σRki log(Rki)
++σ
+∑
+f
+θfRki log
+(O(f )
+ki
+E(f )
+ki
+)
+(4)
+s.t.∀i∀kRki > 0,
+K∑
+k=1
+Rki = 1
+Cluster Diversity Score293
+Here, we discuss and derive the diversity penalty term Ω(·), deﬁned in the previous section. For simplicity, we discuss294
+diversity with respect to a single batch variable, as the multiple batch penalty terms are additive in the objective function.295
+The goal ofΩ(·) is to penalize statistical dependence between batch identity and cluster assignment. In statistics, dependence296
+between two discrete random variables is typically measured with the χ2 statistic. This test considers the frequencies with297
+which different values of the two random variables are observed together. The observed co-occurrence counts (O ) are298
+compared to the counts expected under independence ( E). For practical reasons, we do not use the χ2 statistic directly.299
+18
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 19]
+
+Instead, we use the Kullback Leibler Divergence (DKL), an information theoretic distance between two distributions. In this300
+section, we deﬁne the O andE distributions, as well theDKL penalty, in the context of the probabilistic cluster assignment301
+matrixR.302
+Obk =NPr (b,k )
+Obk =NPr (k|b)Pr (b)
+Obk =N
+(∑
+i
+1 i∈b
+Rki
+Nb
+)Nb
+N
+Obk =
+∑
+i
+1 i∈bRki (5)
+Ebk =NPr (b,k )
+Ebk =NPr (k)Pr (b)
+Ebk =N
+(∑
+i
+Rki
+N
+)Nb
+N
+Ebk = Nb
+N
+∑
+i
+Rki (6)
+Next, we deﬁne the KL divergence in terms ofR. Note that bothO andE depend onR. However, in the derivation below,303
+we expand one of the O terms. This serves a functional purpose in the optimization procedure, described later. Intuitively,304
+in the update step ofR for a single cell, we computeO andE on all the other cells. In this way, we decide how to assign the305
+single cell to clusters given the current distribution of batches amongst clusters.306
+DKL(E||O) =
+B∑
+b=1
+K∑
+k=k
+Ob,k log
+(Obk
+Ebk
+)
+DKL(E||O) =
+B∑
+b=1
+K∑
+k=k
+[ N∑
+i=1
+1 i∈bRki
+]
+log
+(Obk
+Ebk
+)
+DKL(E||O) =
+N∑
+i=1
+K∑
+k=k
+B∑
+b=1
+1 i∈bRki log
+(Obk
+Ebk
+)
+DKL(E||O) =
+N∑
+i=1
+K∑
+k=k
+Rki log
+(Obk
+Ebk
+)
+φi (7)
+For multiple batch variables, we sum over these convergence terms to get the penalty in equation 3.307
+Ω(R,φ (1)...φ (F )) =
+∑
+f
+DKL(E(f )||O(f ))
+19
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 20]
+
+Optimization308
+Optimization of 4 admits an Expectation-Maximization framework, iterating between cluster assignment (R ) and centroid309
+(Y ) estimation .310
+Cluster assignment R. Using the same strategy as,24 we solve for the optimal assignmentRi for each celli. First we set up311
+the Lagrangian with dual parameterλ and solve for the partial derivative wrt each clusterk.312
+L(Ri,λ) =
+K∑
+k=1
+Rki2(1−YT
+k Zi) +σRki logRki
++σRki
+∑
+f
+θf log(O(f )
+ki
+E(f )
+ki
+) +λ
+[
+(
+K∑
+k=1
+Rki)− 1
+]
+δL(Ri,λ)
+δRki
+= 0 = 2(1−YT
+k Zi) +σ +σ logRki
++σ
+∑
+f
+θf log(O(f )
+ki
+E(f )
+ki
+) +λ
+logRki =−2(1−YT
+k Zi)
+σ − 1−θf
+∑
+f
+log(O(f )
+ki
+E(f )
+ki
+)− λ
+σ
+Rki =
+∏
+f
+(O(f )
+ki
+E(f )
+ki
+)θf
+exp
+(
+− 2(1−YT
+k Zi)
+σ
+)
+· exp(−λ
+σ− 1)
+Next, we use the probability constraint∑K
+k=1Rki = 1 to solve for exp(−λ
+σ− 1).313
+1 =
+K∑
+k=1
+Rki
+1 =
+K∑
+k=1
+∏
+f
+(O(f )
+ki
+E(f )
+ki
+)θf
+exp
+(
+− 2(1−YT
+k Zi)
+σ
+)
+· exp(−λ
+σ− 1)
+exp(−λ
+σ− 1) = 1
+∑K
+k=1
+∏
+f
+(
+O(f )
+ki
+E(f )
+ki
+)θf
+exp
+(
+− 2(1−Y T
+k Zi)
+σ
+)
+Finally, we substitute exp(−λ
+σ− 1) to remove the dependency ofRki on the dual parameterλ.314
+20
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 21]
+
+Rki =
+∏
+f
+(
+O(f )
+ki
+E(f )
+ki
+)θf
+exp
+(
+− 2(1−Y T
+k Zi)
+σ
+)
+∑K
+ˆk=1
+∏
+f
+(
+O(f )
+ki
+E(f )
+ki
+)θf
+exp
+(
+−
+2(1−Y T
+ˆk Zi)
+σ
+) (8)
+The denominator term above makes sure thatRi sums to one. In practice (alg 2), we compute the numerator and divide315
+by the sum.316
+Centroid Estimation Y. Our clustering algorithm uses cosine distance instead of Euclidean distance. In the context of317
+kmeans clustering, this approach was pioneered by Dhillon et al. 26 We adopt their centroid estimation procedure for our318
+algorithm. Instead of just computing the mean position of all cells that belong in clusterk, this approach thenL2 normalizes319
+each centroid vector to make it unit length. Note that normalizing the sum over cells is equivalent to normalizing the mean320
+of the cells. In the soft clustering case, this summation is an expected value of the cell positions, under the distribution321
+deﬁned by R. That is, re-normalizing R·k for clusterk gives the probability of each cell belonging to cluster k. Again, this322
+re-normalization is a scalar factor that is irrelevant once weL2 normalize the centroids. Thus, the unnormalized expectation323
+of centroid position for cluster k would beYk = ER·kZ =∑
+iRkiZi. In vector form, for all centroids, this is Y = ZRT .324
+The ﬁnal position of the cluster centroids is given by this summation followed by L2 normalization of each centroid. This325
+procedure is implemented in algorithm 2 in the section{Compute Cluster Centroids}.326
+21
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 22]
+
+Algorithm 2 Maximum Diversity Clustering
+function CLUSTER ( ˆZ,φ (1)...φ (F ))
+{Initialize Cluster Centroids}
+Y ← 0[d×K]
+forb← 1...B do
+sample← K random points from batch b
+Y ←Y +Zsample
+fori← 1...N do ⊿L 2 Normalization
+Y·,i← Y·,i/∥Y·,i∥2
+ˆZ·,i← ˆZ·,i/∥ ˆZ·,i∥2
+forf← 1...F do
+E(f )←R1PrT
+b
+O(f )←R[φ(f )]T
+repeat
+for all Update Blocks do
+in← cells to update in block
+{Compute O and E on left out data}
+forf← 1...F do
+E(f )←E(f )−Rin1PrT
+b
+O(f )←O(f )−Rin[φ(f )
+in ]T
+{Update and Normalize R}
+Rin← exp
+(
+− 2(1−Y T ˆZin)
+σ
+)
+Ω←∏
+f(E(f ) +αE(f )
+/O(f ) +αE(f ))θfφ(f )
+in
+Rin←Rin◦ Ω
+Rin← Rin/1TRin ⊿Ri sum to one
+{Compute O and E with full data}
+forf← 1...F do
+E(f )←E(f ) +Rin1PrT
+b
+O(f )←O(f ) +Rin[φ(f )
+in ]T
+{Compute Cluster Centroids}
+Y ←ZRT
+fori← 1...N do ⊿L 2 Normalization
+Y·,i← Y·,i/∥Y·,i∥2
+until convergence
+returnR
+Implementation Details327
+The update steps of R andY derived above form the core of Maximum Diversity Clustering, outlined as algorithm 2. This328
+section explains the other implementation details of this pseudocode. Again, for simplicity, we discuss details related to329
+diversity penalty termsθ,φ,O, andE for each single batch variable independently.330
+Block Updates ofR. Unlike in regular kmeans, the optimization procedure above forR cannot be faithfully parallelized, as331
+the values ofO andE change withR. The exact solution therefore depends an online procedure. For speed, we can coarse332
+22
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 23]
+
+grain this procedure and updateR in small blocks (e.g. 5% of the data). Meanwhile, O andE are computed on the held out333
+data. In practice, this approach succeeds in minimizing the objective for sufﬁciently small block size. In the algorithm, these334
+blocks are included as the Update Blocks in the for loop.335
+Centroid Initialization. We initialize cluster centroids using a batch balanced random medeoid approach. We randomly336
+selectK cells within each batch for a total of B×K centroids. We then randomly select one centroid from each batch,337
+average it, and L2 normalize it to create a total of K centroids. With this strategy, any single centroid is unlikely to be338
+centered within one batch.339
+Regularization for Smoother Penalty.340
+The diversity penalty term (Ebk/Obk)θ can tend towards inﬁnity if there are no cells from batch b assigned to cluster k.341
+This extreme penalty can erroneously force cells into an inappropriate cluster. To protect against this, we smooth this term342
+to ensure that the denominator will not be zero. The strategy is to use E as a prior and add some portion α∈ [0, 1] of it to343
+the empirically estimated values ofE andO. As a result, the smoothed fraction becomes (Ebk+αEbk
+Obk+αEbk
+)θ.344
+θ Discounting. The diversity penalty, weighted byθ enforces an even mixing of cells from a batch among all clusters. This345
+assumption is more likely to break for a batch with few cells. The smaller the batch, the more likely it is, through a sampling346
+argument, that some cell types are not represented in the batch. Spreading such a batch across all clusters would result in347
+erroneous clustering. To prevent such a situation, we allot each batch its own θb term, scaled to the number of cells in the348
+batch.349
+θb =θmax
+[
+1− exp(−Nb
+Kτ )2]
+Above,θmax is the non-discountedθ value, for a large enough batch. The multiplicative factor
+[
+1− exp(− N
+Kτ )2]
+ranges350
+from 0 to 1. This factor scales exponentially for small values of batch size Nb and plateaus for sufﬁciently large Nb. The351
+hyperparameterτ can be interpreted as the minimum number of cells that should be assigned to each cluster from a single352
+batch. By default, we use values betweenτ = 5 andτ = 20.353
+Linear Mixture Model Correction354
+In this section, we refer to all effects to be integrated out of the original embedding as batch effects. This does not imply355
+that these effects are purely technical. This terminology is only meant for convenience. After clustering, we estimate and356
+correct for additive batch effect in low dimensional space. The intuition behind our approach is to give each cell within a357
+batch a different batch effect term, depending on its cell type/state. As we do not know the latter a priori, we use cluster358
+membership as a surrogate variable. For simplicity, we choose to limit our treatment of batch effect to the additive mode and359
+avoid estimating scaling effects. Note that although there are potentially multiple batch assignments handled in the clustering360
+above, the regression step currently deals with only one variable. Here, we assume thatφ isφ(1).361
+23
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 24]
+
+362
+Simple Additive Batch Model. Before we jump in to the full mixture model, we review a simpler model of additive batch.363
+Here, batch effect is global and is not sensitive to any surrogate variables, such as cluster membership. We assume the data364
+is normally distributed and model each sample (i) with a multivariate Gaussian.365
+Zi∼N (µ +βφi,σ 2I) (9)
+The covariance matrix Σ is a diagonal matrix with the same variance σ2 for each dimension. The mean is a sum of a366
+global intercept vectorµ and a batch effect vector βφi. In this example, β∈ Rd×B deﬁnes an offset vector for each batch.367
+We useφi to index into the appropriate batch ofβ (i.e.βφi∈ Rd×1). In order to regress out the batch effect, we estimate the368
+parametersµ andβ and subtract the batch offsets (βφi) from the raw data. Since batch effect here is purely additive, we do369
+not estimate variance. µ is the global mean of the dataset (µ =∑N
+i=1Zi/N). β terms are estimated by maximizing the log370
+likelihood of (9) wrt eachβb term independently.371
+LL(Z)∝
+N∑
+i=1
+[Zi− (µ +βφi)]T Σ[Zi− (µ +βφi)]+
+log|Σ|
+δ
+δβb
+LL(Z)∝
+∑
+i∈b
+Zi− (µ +βb) = 0
+βb =
+∑
+i∈bZi
+Nb
+−µ (10)
+Thus, the batch offset of batchb is the mean of cells inside the batch minus the global mean. We subtract this offset from372
+the raw data (Z) to get the corrected data ( ˆZ).373
+ˆZi =Zi−βφi (11)
+In the following section, we follow the same approach laid out here to incorporate soft cluster membership into the model.374
+375
+Additive Batch Mixture ModelIn order to model the effect of batch, we take advantage of the parameterization of K-means376
+as a special case of a Gaussian mixture model (GMM). That is, the cluster assignment probabilities (R) computed before now377
+become the component mixture weights in the GMM. Like above, this GMM has a homoschedastic, spherical covariance378
+matrix (Σ =σ2I). Unlike the simpler model, each cluster has its own interceptµk and set of batch termsβbk.379
+24
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 25]
+
+Zi∼
+∑
+k
+RkiN (µk +βkφi,σ 2I) (12)
+In this new generative model, each sample is explained as a mixture of Gaussians, with weightsRki. The cluster speciﬁc380
+intercepts (µk) are the (non-spherical) cluster centroids. We compute the MLE β terms using standard methods for GMMs.381
+It is known that the GMM does not have a convex log likelihood, so we use the the expected log likelihood instead. Fixing382
+µk andRki, we solve for the MLEβbk terms.383
+LL(Z)∝
+N∑
+i=1
+Rki
+[
+log|Σ|+
+(Zi− (µk +βkφi))T Σ(Zi− (µk +βkφi))
+]
+δ
+δβbk
+LL(Z)∝
+∑
+i∈b
+Rki(Zi−µk +βbk) = 0
+βbk =
+∑
+i∈bRkiZi
+Obk
+−µk (13)
+Note that (10) and (13) have similar forms. Both compute the expected difference between the batch cells and some µ.384
+In the simple model,µ is a global term, while in the mixture model,µk is speciﬁc to a local clusterk. In order to correct the385
+data in this model, we need a batch offset term for each cell. (12) shows us that this is done by taking expectations overβkφi386
+terms:387
+ˆZi =Zi−
+K∑
+k=1
+Rkiβkφi (14)
+Implementation. Algorithm 3 lays down the pseudocode for GMM Correct, the mixture model correction procedure derived388
+above. For a more vectorized implementation, we rewrite the (13) in terms of each βb∈ Rd×K matrix and (14) in terms of389
+the wholeZ matrix.390
+βb =ZRTdiag(1Ob)−1−µ (15)
+ˆZ =Z−
+K∑
+k=1
+(1RT
+k◦βkφ) (16)
+25
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 26]
+
+Algorithm 3 GMM Correct
+function CORRECT (Z,R,φ )
+{Compute Cluster Means}
+Γ←diag(1TR)
+µ←ZRT Γ−1R
+{Compute Batch Offsets}
+Obk←RφT
+β← 0[d×K×B]
+forb← 1...B do
+Γb←diag(1Ob)
+βb←ZRT Γ−1
+b −µ
+{Compute Batch Corrected Output}
+ˆZ←Z−∑K
+k=1(1RT
+k◦βkφ)
+return ˆZ
+Caveat. This section assumes the modeled data are orthogonal and each normally distributed. This is not true for the L2391
+normalized data used in spherical clustering. Regression in this space requires the estimation and interpolation of rotation392
+matrices, a difﬁcult problem. We instead perform batch correction in the unnormalized space. The corrected data ˆZ are then393
+L2-normalized for the next iteration of clustering.394
+Performance and Benchmarking395
+LISI Metric396
+Assessing the degree of mixing during batch correction and dataset integration is an open problem. Several groups have397
+proposed methods to quantify the diversity of batches within local neighborhoods, deﬁned by k nearest neighbor (KNN)398
+graphs, of the embedded space. Buttner et al 27 provide a statistical test to evaluate the degree of mixing, while Azizi et al 28399
+report the entropy of these distributions. Our metric for local diversity is related to these approaches, in that we start with a400
+KNN graph. However, our approach considers two problems that these do not.401
+First, the metric should be more sensitive to local distances. For example, a neighborhood of 100 cells can be equally402
+mixed among 4 batches. However, within the neighborhood, the cells may be clustered by batch. The second problem is403
+one of interpretation. kBET provides a statistical test to assess the signiﬁcance of mixing, but it is not clear whether all404
+neighborhood should be signiﬁcantly mixed when the datasets have vastly different cell type proportions. Azizi et al 28 et al405
+use entropy as a measure of diversity, but it is not clear how to interpret the number of bits required to encode a neighborhood406
+distribution.407
+Our diversity score, the Local Inverse Simpson’s Index (LISI) addresses both points. To be sensitive to local diversity, we408
+build Gaussian kernel based distributions of neighborhoods. This gives distance-based weights to cells in the neighborhood409
+and gives less diversity to . The current implementation computes these local distributions using a ﬁxed perplexity (default410
+26
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 27]
+
+30), which has been shown to be a smoother function than ﬁxing the number of neighbors. We address the second issue of411
+interpretation using the Inverse Simpson’s Index (1/∑B
+b=1p(b)). The probabilities here refer to the batch probabilities in412
+the local neighborhood distributions described above. This index is the expected number of cells needed to sampled before413
+two are drawn from the same batch. If the neighborhood consists of only one batch, then only one draw is needed. If it is414
+an equal mix of two batches, two draws are required on average. Thus, this index gives the effective number of batches in415
+a local neighborhood. Our diversity score, LISI, combines these two features: perplexity based neighborhood construction416
+and the Inverse Simpson’s Index. LISI assigns a diversity score to each cell. This score is the effective number of batches in417
+that cell’s neighborhood. Code to compute LISI is available as at https://github.com/immunogenomics/LISI.418
+Time and Memory419
+We performed execution time and maximum memory usage benchmarks on all analyses. All jobs were run on Linux servers420
+and allotted 6 cores and 120GB of memory. The machines were equipped with Intel Xeon E5-2690 v3 processors. To421
+evaluate execution time and maximal memory usage, we used the Linux time utility (/usr/bin/time on our systems) with the422
+-v ﬂag to record memory usage. Execution time was recorded from the Elapsed time ﬁeld. Maximum memory usage was423
+recorded from the Maximum resident set size ﬁeld.424
+Analysis Details425
+Data Availability426
+All data analyzed in this manuscript is publicly available through online sources. We included links to all data sources in427
+Table S6.428
+Preprocessing scRNAseq data.429
+We downloaded raw read or UMI matrices for all datasets, from their respective sources. The one exception was the 3pV1430
+dataset from the PBMC analysis. These data were originally quantiﬁed with the hg19 reference, while the other two PBMC431
+datasets were quantiﬁed with GRCh38. Thus, we downloaded the fastq ﬁles from the 10X website (Table S6). We quantiﬁed432
+gene expression counts using Cell Ranger 10, 29 v2.1.0 with GRCh38. From the raw count matrices, we used a standard433
+data normalization procedure, laid out below, for all analyses, unless otherwise speciﬁed. Except for the L2 normalization434
+and within-batch variable gene detection, this procedure follows the standard guidelines of the Seurat single cell analysis435
+platform.436
+We ﬁltered cells with fewer than 500 genes or more than 20% mitochondrial reads. In the pancreas datasets, we ﬁltered437
+cells with the same thresholds used in Butler et al:6 1750 genes for CelSeq, 2500 genes for CelSeq2, no ﬁlter for Fluidigm C1,438
+2500 genes for SmartSeq2, and 500 genes for inDrop. We then library normalizes each cell to 10,000 reads, by multiplicative439
+27
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 28]
+
+scaling, then log scaled the normalized data. We then identiﬁed the top 1000 variable genes, ranked by coefﬁcient of440
+variation, within in each dataset. We pooled these genes to form the variable gene set of the analysis. Using only the variable441
+genes, we mean centered and variance 1 scaled the genes across the cells. Note that this was done in the aggregate matrix,442
+with all cells, rather than within each dataset separately. We thenL2 normalized the cell expression vectors, so that squared443
+cosine distance can be computed as the squared Euclidean distance. With these values, performed truncated SVD keeping444
+the top 30 eigenvectors. Finally, we multiplied the cell embeddings by the eigenvalues to avoid giving eigenvectors equal445
+variance.446
+Visualization447
+We used the UMAP algorithm 30 to visualize cells in a two dimensional space. For all analyses, UMAP was run with the448
+following parameters:k = 30 nearest neighbors, correlation based distance, andmin dist = 0.1.449
+Comparison to other algorithms.450
+We used the provided packages or source code provided by the four comparison algorithm publications. For MNN Correct,451
+we used the mnncorrect function, with default parameters, in the scran R package, 31 version 1.9.4. For Seurat MultiCCA,452
+we followed the suggested integration pipeline in the Seurat R package, 32 version 2.3.4. Speciﬁcally, this included the453
+RunMultiCCA, MetageneBicorPlot, CalcVarExpRatio, SubsetData (based on the var.ratio.pca statistic), and AlignSubspace454
+functions. We used all default parameters. We chose the number of canonical components to match the number of principal455
+components used in the preprocessing. Unlike the integration examples, we did not scale data within datasets separately,456
+unless otherwise speciﬁed. We scaled data on the pooled count matrix instead. For Scanorama, we used the assemble457
+function, with precomputed PCs, from the primary github repository (brianhie/scanorama). We set knn=30 and sigma=1, to458
+match the default comparable MNN Correct parameters. All other parameters were kept at default values. We did not use459
+the correct function, as this included both pre-processing and integration of the data. For more equitable comparisons, we460
+tried to use the same pre-processing pipelines for all methods and only compare only the integration steps. For BBKNN, we461
+downloaded software from the primary github repository (Teichlab/bbknn) and followed the suggested integration pipelines,462
+using the bbknn and scanpy umap functions. For the bbknn function, we used k=5 and trim=20 for all analyses except for463
+the HCA datasets, in which we used k=10 and trim=30, to accommodate the larger number of cells. All other parameters464
+were kept at default values.465
+Harmony Parameters466
+By default, we set the following parameters for Harmony: θ = 2,K = 100, τ = 0,α = 0.1,σ = 0.1, block size= 0.05,467
+ϵcluster = 10−5,ϵharmony = 10−4, max itercluster = 200, max iterHarmony = 10. For the pancreas analysis, we set τ = 5.468
+We set donors to be the primary covariate (θ = 2) and technology secondary (θ = 4).469
+28
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 29]
+
+Identiﬁcation of alpha and beta ER stress subpopulations.470
+We identiﬁed the alpha and beta ER stress clusters in Figure 5 by performing downstream analysis, speciﬁed in this section,471
+on the integrated joint embedding produced by Harmony. After Harmony integration, we performed clustering analysis to472
+ﬁnd novel subtypes. Clustering was done on the trimmed shared nearest neighbor graph with the Louvain algorithm, 33 as473
+implemented in the Seurat package BuildSNN and RunModularityClustering functions. We used parameters resolution=0.8,474
+k=30, and nn.eps=0. We identiﬁed several clusters within the alpha, beta, and ductal cell populations. For each cluster, we475
+performed differential expression analysis within the deﬁned cell type. That is, we compared alpha clusters to all other alpha476
+cells. For differential expression, we used the R Limma package 34 on the normalized data. We included technology and477
+library complexity (log number of unique genes) as covariates in the linear models. We used the top 100 over-expressed478
+genes for each cluster, weighted by the t-statistic, to perform pathway enrichment with the enrichR 35, 36 R package, using479
+the three Gene Ontology genesets. 37, 38 The ductal subpopulation was enriched for ribosomal genes; we did not follow up480
+on this cluster. The results for the differential expression and enrichment analyses for the two ER stress subpopulations is481
+available in Tables S7 through S10.482
+Labeling cells with canonical markers.483
+In the cell-line, PBMC, and Pancreas analyses, we labeled cells within individual datasets using canonical markers. We did484
+this by using the standard pre-processing pipeline for each dataset, clustering (Louvain, as above), and identifying clusters485
+speciﬁc for the canonical markers for that analysis. We used a similar strategy to identify ﬁne-grained subpopulations of486
+PBMCs and in the HCA 500,000 cell dataset. In these case, we clustered in the joint embedding produced by Harmony, then487
+looked for clusters that speciﬁcally expressed expected canonical markers.488
+Acknowledgements489
+This work was supported in part by funding from the National Institutes of Health (UH2AR067677, U19AI111224, and490
+1R01AR063759 (to S.R.)) and T32 AR007530-31. We thank members of the Raychaudhuri and Brenner labs for comments491
+and discussion.492
+Author Contributions493
+SR and IK conceived the research. IK led computational work under the guidance of SR, assisted by PL, JF, and KS. All494
+authors participated in interpretation and writing the manuscript.495
+29
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 30]
+
+Competing Interests Statement496
+IK does paid bioinformatics consulting through Brilyant LLC.497
+References498
+1 Svensson, V ., Vento-Tormo, R. & Teichmann, S. A. Exponential scaling of single-cell RNA-seq in the past decade. Nat.499
+Protoc. 13, 599–604 (2018).500
+2 Regev, A. et al. The human cell atlas. Elife 6 (2017).501
+3 Zhang, F. et al. Deﬁning inﬂammatory cell states in rheumatoid arthritis joint synovial tissues by integrating single-cell502
+transcriptomics and mass cytometry. bioRxiv (2018).503
+4 Arazi, A. et al. The immune cell landscape in kidneys of lupus nephritis patients (2018).504
+5 Hicks, S. C., Townes, F. W., Teng, M. & Irizarry, R. A. Missing data and technical variability in single-cell RNA-505
+sequencing experiments. Biostatistics (2017).506
+6 Butler, A., Hoffman, P., Smibert, P., Papalexi, E. & Satija, R. Integrating single-cell transcriptomic data across different507
+conditions, technologies, and species. Nat. Biotechnol. 36, 411–420 (2018).508
+7 Haghverdi, L., Lun, A. T. L., Morgan, M. D. & Marioni, J. C. Batch effects in single-cell RNA-sequencing data are509
+corrected by matching mutual nearest neighbors. Nat. Biotechnol. 36, 421–427 (2018).510
+8 Hie, B. L., Bryson, B. & Berger, B. Panoramic stitching of heterogeneous single-cell transcriptomic data (2018).511
+9 Park, J.-E., Polanski, K., Meyer, K. & Teichmann, S. A. Fast batch alignment of single cell transcriptomes uniﬁes multiple512
+mouse cell atlases into an integrated landscape (2018).513
+10 Zheng, G. X. Y .et al. Massively parallel digital transcriptional proﬁling of single cells. Nat. Commun. 8, 14049 (2017).514
+11 Li, B. et al. HCA data portal - census of immune cells.515
+12 Segerstolpe, ˚A. et al. Single-Cell transcriptome proﬁling of human pancreatic islets in health and type 2 diabetes. Cell516
+Metab. 24, 593–607 (2016).517
+13 Baron, M. et al. A Single-Cell transcriptomic map of the human and mouse pancreas reveals inter- and intra-cell population518
+structure. Cell Syst 3, 346–360.e4 (2016).519
+14 Lawlor, N. et al. Single-cell transcriptomes identify human islet cell signatures and reveal cell-type-speciﬁc expression520
+changes in type 2 diabetes. Genome Res. 27, 208–222 (2017).521
+30
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 31]
+
+15 Gr¨un, D. et al. De novo prediction of stem cell identity using Single-Cell transcriptome data. Cell Stem Cell 19, 266–277522
+(2016).523
+16 Muraro, M. J. et al. A Single-Cell transcriptome atlas of the human pancreas. Cell Syst 3, 385–394.e3 (2016).524
+17 Gao, T. et al. Pdx1 maintains β cell identity and function by repressing an α cell program. Cell Metab. 19, 259–271525
+(2014).526
+18 Jia, S. et al. Insm1 cooperates with neurod1 and foxa2 to maintain mature pancreatic β-cell function. EMBO J. 34,527
+1417–1433 (2015).528
+19 Sachdeva, M. M. et al. Pdx1 (MODY4) regulates pancreatic beta cell susceptibility to ER stress. Proc. Natl. Acad. Sci. U.529
+S. A. 106, 19090–19095 (2009).530
+20 Katoh, M. C. et al. MafB is critical for glucagon production and secretion in mouse pancreaticα cells in vivo. Mol. Cell.531
+Biol. 38 (2018).532
+21 Liu, J. et al. Islet-1 regulates arx transcription during pancreatic islet α-Cell development. J. Biol. Chem. 286, 15352–533
+15360 (2011).534
+22 Akiyama, M. et al. X-box binding protein 1 is essential for insulin regulation of pancreatic α-cell function. Diabetes 62,535
+2439–2449 (2013).536
+23 Burcelin, R., Knauf, C. & Cani, P. D. Pancreatic alpha-cell dysfunction in diabetes. Diabetes Metab. 34 Suppl 2, S49–55537
+(2008).538
+24 Mao, Q., Wang, L., Goodison, S. & Sun, Y . Dimensionality reduction via graph structure learning. In Proceedings of539
+the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, KDD ’15, 765–774 (ACM,540
+New York, NY , USA, 2015).541
+25 Haghverdi, L., Lun, A. T. L., Morgan, M. D. & Marioni, J. C. Batch effects in single-cell RNA-sequencing data are542
+corrected by matching mutual nearest neighbors. Nat. Biotechnol. 36, 421–427 (2018).543
+26 Dhillon, I. S. & Modha, D. S. Concept decompositions for large sparse text data using clustering. Mach. Learn. 42,544
+143–175 (2001).545
+27 Buttner, M., Miao, Z., Wolf, A., Teichmann, S. A. & Theis, F. J. Assessment of batch-correction methods for scRNA-seq546
+data with a new test metric (2017).547
+28 Azizi, E. et al. Single-Cell map of diverse immune phenotypes in the breast tumor microenvironment. Cell 174, 1293–548
+1308.e36 (2018).549
+31
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint 
+
+
+[PDF_PAGE 32]
+
+29 Dobin, A. et al. STAR: ultrafast universal RNA-seq aligner. Bioinformatics 29, 15–21 (2013).550
+30 McInnes, L. & Healy, J. UMAP: Uniform manifold approximation and projection for dimension reduction. arXiv (2018).551
+1802.03426.552
+31 Lun, A. T. L., McCarthy, D. J. & Marioni, J. C. A step-by-step workﬂow for low-level analysis of single-cell rna-seq data553
+with bioconductor. F1000Res. 5, 2122 (2016).554
+32 Butler, A., Hoffman, P., Smibert, P., Papalexi, E. & Satija, R. Integrating single-cell transcriptomic data across different555
+conditions, technologies, and species. Nat. Biotechnol. (2018). URL https://www.nature.com/articles/556
+nbt.4096.557
+33 Blondel, V . D., Guillaume, J.-L., Lambiotte, R. & Lefebvre, E. Fast unfolding of communities in large networks. J. Stat.558
+Mech: Theory Exp. 2008 (2008).559
+34 Ritchie, M. E. et al. limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic560
+Acids Research 43, e47 (2015).561
+35 Chen, E. Y .et al. Enrichr: interactive and collaborative HTML5 gene list enrichment analysis tool. BMC Bioinformatics562
+14, 128 (2013).563
+36 Kuleshov, M. V .et al. Enrichr: a comprehensive gene set enrichment analysis web server 2016 update. Nucleic Acids Res.564
+44, W90–7 (2016).565
+37 The Gene Ontology Consortium. Expansion of the gene ontology knowledgebase and resources. Nucleic Acids Res. 45,566
+D331–D338 (2017).567
+38 Ashburner, M. et al. Gene ontology: tool for the uniﬁcation of biology. the gene ontology consortium. Nat. Genet. 25,568
+25–29 (2000).569
+32
+.CC-BY 4.0 International licenseunder a 
+not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available 
+The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint

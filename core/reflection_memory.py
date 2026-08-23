@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import re
-import sqlite3
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -11,12 +11,13 @@ from typing import Any, Dict, List, Optional
 from core.models import MemoryEvent, ReflectionEvent, SkillCandidate
 from core.settings import PROJECT_ROOT
 from core.trace_context import TraceContext
+from core.unified_memory import DEFAULT_SCKG_HOME, DEFAULT_WORKBENCH_DB, UnifiedMemoryStore
 
 
-DEFAULT_MEMORY_DIR = PROJECT_ROOT / "data" / "memory"
+DEFAULT_MEMORY_DIR = DEFAULT_SCKG_HOME / "state"
 DEFAULT_REFLECTION_LOG = DEFAULT_MEMORY_DIR / "reflection_events.jsonl"
-DEFAULT_MEMORY_DB = DEFAULT_MEMORY_DIR / "project_memory.sqlite"
-DEFAULT_SKILL_CANDIDATES_DIR = PROJECT_ROOT / "data" / "skill_candidates"
+DEFAULT_MEMORY_DB = DEFAULT_WORKBENCH_DB
+DEFAULT_SKILL_CANDIDATES_DIR = DEFAULT_MEMORY_DIR / "skill_candidates"
 
 
 def reflect_agent_run(
@@ -69,75 +70,21 @@ def persist_reflection(
     reflection_log.parent.mkdir(parents=True, exist_ok=True)
     with reflection_log.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(event.model_dump(mode="json"), ensure_ascii=False, sort_keys=True) + "\n")
-    init_memory_db(memory_db)
-    with sqlite3.connect(memory_db) as conn:
-        for memory_event in event.memory_events:
-            conn.execute(
-                """
-                INSERT INTO memory_events(
-                    event_id, event_type, key, value_json, source, trace_id,
-                    confidence, can_affect_scientific_authority, created_at
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    memory_event.event_id,
-                    memory_event.event_type,
-                    memory_event.key,
-                    json.dumps(memory_event.value, ensure_ascii=False, sort_keys=True),
-                    memory_event.source,
-                    memory_event.trace_id,
-                    memory_event.confidence,
-                    1 if memory_event.can_affect_scientific_authority else 0,
-                    memory_event.created_at.isoformat(),
-                ),
-            )
-            conn.execute(
-                """
-                INSERT INTO project_memory(key, value_json, source, trace_id, updated_at)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(key) DO UPDATE SET
-                    value_json = excluded.value_json,
-                    source = excluded.source,
-                    trace_id = excluded.trace_id,
-                    updated_at = excluded.updated_at
-                """,
-                (
-                    memory_event.key,
-                    json.dumps(memory_event.value, ensure_ascii=False, sort_keys=True),
-                    memory_event.source,
-                    memory_event.trace_id,
-                    memory_event.created_at.isoformat(),
-                ),
+    store = UnifiedMemoryStore(memory_db)
+    store.record_reflection("local", event.model_dump(mode="json"))
+    for memory_event in event.memory_events:
+        if memory_event.event_type == "user_preference":
+            store.propose_inferred_preference(
+                "local",
+                memory_event.key,
+                memory_event.value,
+                confidence=memory_event.confidence,
+                source=memory_event.source,
             )
 
 
 def init_memory_db(path: Path = DEFAULT_MEMORY_DB) -> Path:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with sqlite3.connect(path) as conn:
-        conn.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS memory_events (
-                event_id TEXT PRIMARY KEY,
-                event_type TEXT NOT NULL,
-                key TEXT NOT NULL,
-                value_json TEXT NOT NULL,
-                source TEXT NOT NULL,
-                trace_id TEXT NOT NULL,
-                confidence REAL NOT NULL,
-                can_affect_scientific_authority INTEGER NOT NULL DEFAULT 0,
-                created_at TEXT NOT NULL
-            );
-
-            CREATE TABLE IF NOT EXISTS project_memory (
-                key TEXT PRIMARY KEY,
-                value_json TEXT NOT NULL,
-                source TEXT NOT NULL,
-                trace_id TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            );
-            """
-        )
+    UnifiedMemoryStore(path)
     return path
 
 
@@ -237,9 +184,16 @@ def _skill_candidates_from_run(
 ) -> List[SkillCandidate]:
     if not missing and not warnings:
         return []
+    fingerprint = hashlib.sha256(
+        json.dumps(
+            {"missing": sorted(missing), "warnings": sorted(warnings)},
+            ensure_ascii=False,
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()[:16]
     return [
         SkillCandidate(
-            candidate_id=f"skill_candidate_{uuid.uuid4().hex[:12]}",
+            candidate_id=f"skill_candidate_{fingerprint}",
             title="Review evidence-limited scKG recommendation run",
             trigger="A run has missing evidence, audit warnings, or frozen evidence boundaries.",
             proposed_steps=[

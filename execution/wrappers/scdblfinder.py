@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -12,19 +13,21 @@ ALLOWED_REQUEST_FIELDS = {
     "accession",
     "expected_cells",
     "expected_input_hash",
+    "execution_seed",
     "fixture_id",
     "input_path",
     "parameters",
     "public_dataset",
     "purpose",
 }
+REQUIRED_REQUEST_FIELDS = ALLOWED_REQUEST_FIELDS - {"execution_seed"}
 DEFAULT_PARAMETERS: dict[str, Any] = {
     "dbr": 0.1,
     "clusters": False,
     "n_cores": 1,
     "random_state": 0,
 }
-DEFAULT_RSCRIPT = Path("/opt/anaconda3/envs/scDblFinder-R/bin/Rscript")
+DEFAULT_RSCRIPT = Path("Rscript")
 R_WRAPPER = Path(__file__).with_suffix(".R").resolve()
 
 
@@ -39,11 +42,14 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("adapter request must be ./worker_request.json")
     request = json.loads(request_path.read_text(encoding="utf-8"))
     unknown = sorted(set(request) - ALLOWED_REQUEST_FIELDS)
-    missing = sorted(ALLOWED_REQUEST_FIELDS - set(request))
+    missing = sorted(REQUIRED_REQUEST_FIELDS - set(request))
     if unknown or missing:
         raise ValueError(
             f"invalid worker request fields; unknown={unknown}, missing={missing}"
         )
+    execution_seed = request.get("execution_seed", 0)
+    if isinstance(execution_seed, bool) or not isinstance(execution_seed, int) or execution_seed < 0:
+        raise ValueError("execution_seed must be a non-negative integer")
     purpose = request["purpose"]
     if purpose == "synthetic_qualification":
         if bool(request["public_dataset"]):
@@ -61,7 +67,10 @@ def main(argv: list[str] | None = None) -> int:
     if _sha256(input_path) != request["expected_input_hash"]:
         raise ValueError("input hash mismatch")
     parameters = validate_parameters(dict(request["parameters"]))
-    rscript = DEFAULT_RSCRIPT.resolve()
+    rscript_value = os.environ.get("SCKG_SCDBLFINDER_RSCRIPT")
+    if not rscript_value:
+        raise RuntimeError("registered scDblFinder Rscript was not provided by Runtime Pack resolver")
+    rscript = Path(rscript_value).resolve()
     if not rscript.is_file():
         raise RuntimeError(f"Rscript unavailable at registered path: {rscript}")
     if not R_WRAPPER.is_file():

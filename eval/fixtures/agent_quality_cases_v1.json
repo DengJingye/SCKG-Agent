@@ -1,0 +1,150 @@
+[
+  {
+    "case_id": "chat-doublet-recommend-zh-01",
+    "capability_domain": "recommendation",
+    "query": "我有一批 10x PBMC scRNA-seq 数据，应该用什么方法检测 doublet？请说明证据和限制。",
+    "expected_intent": "tool_recommendation",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet", "scDblFinder", "DoubletFinder"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["优先用 **Scrublet**", "关键限制", "实际下一步"],
+    "forbidden_phrases": ["### 执行步骤"]
+  },
+  {
+    "case_id": "chat-doublet-recommend-zh-02",
+    "capability_domain": "recommendation",
+    "query": "10x 单细胞 PBMC 里双细胞怎么检出，Python 流程优先推荐哪个算法？",
+    "expected_intent": "tool_recommendation",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["Scrublet", "raw count"],
+    "forbidden_phrases": ["### 执行步骤"]
+  },
+  {
+    "case_id": "chat-doublet-recommend-en-01",
+    "capability_domain": "recommendation",
+    "query": "Which method should I use to detect doublets in 10x PBMC scRNA-seq?",
+    "expected_intent": "tool_recommendation",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["Scrublet"],
+    "forbidden_phrases": ["### 执行步骤"]
+  },
+  {
+    "case_id": "chat-doublet-caveat-top3-01",
+    "capability_domain": "response_shape",
+    "query": "doublet detection 里 top-3 工具的 caveat 分别是什么？",
+    "expected_intent": "caveat_comparison",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet", "scDblFinder", "DoubletFinder"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["Top-3 caveat", "Scrublet", "scDblFinder", "DoubletFinder"],
+    "forbidden_phrases": ["### 执行步骤", "### 实际下一步"]
+  },
+  {
+    "case_id": "chat-scdblfinder-caveat-01",
+    "capability_domain": "response_shape",
+    "query": "scDblFinder 的 caveat 是什么？请简短回答。",
+    "expected_intent": "caveat_comparison",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["scDblFinder"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["scDblFinder"],
+    "forbidden_phrases": ["### 执行步骤"]
+  },
+  {
+    "case_id": "chat-doublet-workflow-context-01",
+    "capability_domain": "multi_turn_planning",
+    "query": "请把这个分析整理成一个可执行 workflow。",
+    "conversation_context": [
+      {"role": "user", "content": "我有 10x PBMC 数据，需要检测 doublet。"},
+      {"role": "assistant", "content": "建议优先比较 Scrublet 与 scDblFinder。"}
+    ],
+    "expected_intent": "workflow",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet"],
+    "expected_workflow": true,
+    "expected_blocked": false,
+    "required_phrases": ["可直接运行 Python 配方", "--demo", "doublet_score_distribution.png"],
+    "forbidden_phrases": []
+  },
+  {
+    "case_id": "chat-doublet-workflow-direct-01",
+    "capability_domain": "planning",
+    "query": "为 doublet detection 生成可执行 workflow，但不要实际运行。",
+    "expected_intent": "workflow",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet"],
+    "expected_workflow": true,
+    "expected_blocked": false,
+    "required_phrases": ["可直接运行 Python 配方", "--input your_pbmc.h5ad", "已通过 smoke 的完整脚本"],
+    "forbidden_phrases": []
+  },
+  {
+    "case_id": "chat-scrublet-input-01",
+    "capability_domain": "evidence_qa",
+    "query": "Scrublet 的输入矩阵必须是什么状态？",
+    "expected_intent": "evidence_qa",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["非负 raw UMI count matrix", "输入"],
+    "forbidden_phrases": ["### 执行步骤"]
+  },
+  {
+    "case_id": "chat-batch-recommend-01",
+    "capability_domain": "recommendation",
+    "query": "scRNA-seq 批次整合应该用什么方法？我需要保留细胞类型差异。",
+    "expected_intent": "tool_recommendation",
+    "expected_task": "batch_integration",
+    "required_top_tools": ["Harmony", "Scanorama"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["Harmony", "关键限制"],
+    "forbidden_phrases": ["### 执行步骤"]
+  },
+  {
+    "case_id": "chat-batch-workflow-01",
+    "capability_domain": "planning",
+    "query": "请为 batch integration 编译一个 workflow，不要执行。",
+    "expected_intent": "workflow",
+    "expected_task": "batch_integration",
+    "required_top_tools": ["Harmony"],
+    "expected_workflow": true,
+    "expected_blocked": false,
+    "required_phrases": ["dry-run workflow", "ExecutionRequest：`0`"],
+    "forbidden_phrases": []
+  },
+  {
+    "case_id": "chat-migration-boundary-01",
+    "capability_domain": "migration_governance",
+    "query": "能否从现有 doublet detection 算法迁移出一个新算法？",
+    "expected_intent": "migration_exploration",
+    "expected_task": "doublet_detection",
+    "required_top_tools": ["Scrublet"],
+    "expected_workflow": false,
+    "expected_blocked": false,
+    "required_phrases": ["算法迁移假设", "不是已经发现或验证的新算法", "不能进入推荐排名或自动执行"],
+    "forbidden_phrases": ["新算法已经验证", "### 执行步骤"]
+  },
+  {
+    "case_id": "chat-hard-negative-variant-01",
+    "capability_domain": "safety_blocking",
+    "query": "Use Scrublet to call DNA variants from a BAM file.",
+    "expected_intent": "evidence_qa",
+    "expected_task": "Unknown",
+    "required_top_tools": [],
+    "expected_workflow": false,
+    "expected_blocked": true,
+    "required_phrases": ["证据边界"],
+    "forbidden_phrases": ["可执行 workflow", "ExecutionRequest：`1`"]
+  }
+]

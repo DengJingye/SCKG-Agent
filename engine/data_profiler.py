@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from core.execution_models import DataProfile
 
 
-PROFILE_VERSION = "anndata-profiler-v1"
+PROFILE_VERSION = "anndata-profiler-v1.1-batch-integration"
 MAX_SAMPLED_VALUES = 100_000
 RAW_INTEGER_FRACTION = 0.995
 
@@ -136,19 +136,44 @@ class AnnDataProfiler:
 
         resolved_batch_key = batch_key if batch_key in adata.obs.columns else None
         batch_count: Optional[int] = None
+        batch_missing_count = 0
+        batch_min_cells: Optional[int] = None
+        batch_max_cells: Optional[int] = None
+        batch_imbalance_ratio: Optional[float] = None
         if batch_key:
             if resolved_batch_key is None:
                 warnings.append(f"batch_key_not_found:{batch_key}")
             else:
-                batch_count = int(adata.obs[batch_key].nunique(dropna=True))
+                batch_values = adata.obs[batch_key]
+                batch_count = int(batch_values.nunique(dropna=True))
+                batch_missing_count = int(batch_values.isna().sum())
+                batch_sizes = batch_values.value_counts(dropna=True)
+                if not batch_sizes.empty:
+                    batch_min_cells = int(batch_sizes.min())
+                    batch_max_cells = int(batch_sizes.max())
+                    if batch_min_cells > 0:
+                        batch_imbalance_ratio = float(batch_max_cells / batch_min_cells)
         else:
             warnings.append("batch_key_not_provided")
 
         resolved_label_key = label_key if label_key in adata.obs.columns else None
+        label_count: Optional[int] = None
+        label_missing_count = 0
         if label_key and resolved_label_key is None:
             warnings.append(f"label_key_not_found:{label_key}")
+        elif resolved_label_key is not None:
+            label_values = adata.obs[resolved_label_key]
+            label_count = int(label_values.nunique(dropna=True))
+            label_missing_count = int(label_values.isna().sum())
         if max_cells is not None and adata.n_obs > max_cells:
             warnings.append(f"cell_count_exceeds_budget:{adata.n_obs}>{max_cells}")
+
+        pca_n_components: Optional[int] = None
+        pca_finite: Optional[bool] = None
+        if "X_pca" in adata.obsm:
+            pca = np.asarray(adata.obsm["X_pca"])
+            pca_n_components = int(pca.shape[1]) if pca.ndim == 2 else 0
+            pca_finite = bool(pca.ndim == 2 and pca.shape[0] == adata.n_obs and np.isfinite(pca).all())
 
         payload = {
             "profile_id": f"profile_{file_hash[:16]}",
@@ -166,8 +191,16 @@ class AnnDataProfiler:
             "var_keys": var_keys,
             "batch_key": resolved_batch_key,
             "batch_count": batch_count,
+            "batch_missing_count": batch_missing_count,
+            "batch_min_cells": batch_min_cells,
+            "batch_max_cells": batch_max_cells,
+            "batch_imbalance_ratio": batch_imbalance_ratio,
             "label_key": resolved_label_key,
+            "label_count": label_count,
+            "label_missing_count": label_missing_count,
             "has_pca": "X_pca" in adata.obsm,
+            "pca_n_components": pca_n_components,
+            "pca_finite": pca_finite,
             "has_neighbors": any(key in adata.obsp for key in ("connectivities", "distances")),
             "has_clustering": any(key in adata.obs for key in ("leiden", "louvain")),
             "matrix_profiles": matrix_profiles,
@@ -428,8 +461,16 @@ def _blocked_payload(
         "var_keys": [],
         "batch_key": None,
         "batch_count": None,
+        "batch_missing_count": 0,
+        "batch_min_cells": None,
+        "batch_max_cells": None,
+        "batch_imbalance_ratio": None,
         "label_key": None,
+        "label_count": None,
+        "label_missing_count": 0,
         "has_pca": False,
+        "pca_n_components": None,
+        "pca_finite": None,
         "has_neighbors": False,
         "has_clustering": False,
         "matrix_profiles": [],
@@ -442,4 +483,3 @@ def _blocked_payload(
         "blocking_errors": sorted(set(blocking_errors)),
         "profile_version": PROFILE_VERSION,
     }
-

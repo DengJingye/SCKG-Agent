@@ -108,7 +108,12 @@ def main() -> int:
             "counts_layer_dry_run": layer_plan.plan_status == "dry_run",
             "scaled_unresolved_blocked": scaled_plan.plan_status == "blocked",
             "planning_gate_passed": planning_gate.allowed,
-            "execution_gate_failed": not execution_gate.allowed,
+            "execution_gate_status_recorded": execution_gate.gate == "execution",
+            "execution_gate_cannot_promote_dry_run": (
+                raw_plan.plan_status == "dry_run"
+                and raw_plan.execution_eligible is False
+                and raw_plan.approval_required is True
+            ),
             "scrublet_not_imported_or_executed": "scrublet" not in sys.modules,
             "planner_contains_no_subprocess_reference": "subprocess"
             not in Path(planner_module.__file__).read_text(encoding="utf-8"),

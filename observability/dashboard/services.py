@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sqlite3
 from collections import defaultdict
 from pathlib import Path
@@ -14,6 +15,7 @@ from core.reflection_memory import (
     load_reflection_events,
 )
 from core.trace_context import DEFAULT_TRACE_PATH, load_traces
+from core.trial_telemetry import DEFAULT_TRIAL_TELEMETRY, TrialTelemetryStore
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DOUBLET_RECOVERY_DEMO = (
@@ -57,6 +59,364 @@ DEFAULT_SOURCE_ACQUISITION_SUMMARY = (
 DEFAULT_SOURCE_EXTRACTION_SUMMARY = (
     PROJECT_ROOT / "data" / "evidence_candidates" / "source_extraction_summary.json"
 )
+DEFAULT_PHASE6_BASELINE_SUMMARY = PROJECT_ROOT / "eval" / "phase6" / "baseline_summary.json"
+DEFAULT_PHASE6_BASELINE_CASES = PROJECT_ROOT / "eval" / "phase6" / "baseline_per_case.tsv"
+DEFAULT_PHASE6_FAILURE_QUEUE = PROJECT_ROOT / "eval" / "phase6" / "failure_queue.tsv"
+DEFAULT_PHASE6_TRACE_AUDIT = PROJECT_ROOT / "eval" / "phase6" / "trace_audit.json"
+DEFAULT_PHASE6_DEMO_ROOT = PROJECT_ROOT / ".sckg_exec" / "demos"
+DEFAULT_PORTFOLIO_ROOT = PROJECT_ROOT / ".sckg_exec" / "portfolio"
+
+
+class AgentLoopDemoService:
+    """Read the newest bounded Parent Agent demo without running the Agent."""
+
+    CASE_FILES = {
+        "generic_plan": "Generic governed plan",
+        "authorization_blocked": "Authorization gate",
+        "data_aware_waiting_approval": "Data-aware plan",
+        "evidence_limited": "Evidence-limited task",
+    }
+
+    def __init__(self, root: Path | None = None) -> None:
+        configured = os.environ.get("SCKG_AGENT_LOOP_DEMO_ROOT")
+        self.root = Path(root or configured or DEFAULT_PHASE6_DEMO_ROOT)
+
+    def latest_bundle(self) -> Dict[str, Any]:
+        if not self.root.is_dir():
+            return {}
+        candidates = sorted(
+            (path for path in self.root.glob("agent-loop-*") if path.is_dir()),
+            key=lambda path: path.name,
+            reverse=True,
+        )
+        for bundle in candidates:
+            required = [bundle / "agent_loop_summary.json"] + [
+                bundle / f"{name}.json" for name in self.CASE_FILES
+            ]
+            if all(path.is_file() for path in required):
+                summary = _read_json_file(bundle / "agent_loop_summary.json")
+                cases = []
+                for name, title in self.CASE_FILES.items():
+                    row = _read_json_file(bundle / f"{name}.json")
+                    candidates_preview = [
+                        {
+                            "tool": item.get("tool_name"),
+                            "basis": item.get("candidate_basis"),
+                            "score": item.get("graph_score"),
+                        }
+                        for item in (row.get("candidate_context") or [])[:5]
+                    ]
+                    plan = row.get("workflow_plan") or {}
+                    profile = row.get("data_profile") or {}
+                    cases.append(
+                        {
+                            "case_id": name,
+                            "title": title,
+                            "status": row.get("status", "FAILED"),
+                            "route": row.get("route", "BLOCKED"),
+                            "summary": row.get("final_summary", ""),
+                            "selected_tool": row.get("selected_tool"),
+                            "tool_call_count": len(row.get("tool_calls") or []),
+                            "execution_request_count": row.get("execution_request_count", 0),
+                            "plan_status": plan.get("plan_status"),
+                            "plan_steps": len(plan.get("steps") or []),
+                            "profile_created": bool(profile),
+                            "count_source": profile.get("selected_count_source"),
+                            "blockers": row.get("blockers") or [],
+                            "next_actions": row.get("next_actions") or [],
+                            "candidates": candidates_preview,
+                            "tool_calls": row.get("tool_calls") or [],
+                        }
+                    )
+                return {
+                    "bundle_id": bundle.name,
+                    "status": summary.get("status", "unknown"),
+                    "architecture": summary.get("architecture", ""),
+                    "llm_mode": summary.get("llm_mode", ""),
+                    "tool_call_count": summary.get("tool_call_count", 0),
+                    "execution_request_count": summary.get("execution_request_count", 0),
+                    "evidence_boundary_violations": summary.get(
+                        "evidence_boundary_violations", 0
+                    ),
+                    "limitations": summary.get("limitations") or [],
+                    "cases": cases,
+                }
+        return {}
+
+
+class DefenseDemoService:
+    """Read the newest fixed Phase 6 defense bundle without executing anything."""
+
+    REQUIRED_FILES = (
+        "demo_summary.json",
+        "success_case.json",
+        "repair_case.json",
+        "blocked_case.json",
+        "trace_audit.json",
+    )
+
+    def __init__(self, root: Path | None = None) -> None:
+        configured = os.environ.get("SCKG_DEFENSE_DEMO_ROOT")
+        self.root = Path(root or configured or DEFAULT_PHASE6_DEMO_ROOT)
+
+    def latest_bundle(self) -> Dict[str, Any]:
+        if not self.root.is_dir():
+            return {}
+        candidates = sorted(
+            (path for path in self.root.glob("phase6-defense-*") if path.is_dir()),
+            key=lambda path: path.name,
+            reverse=True,
+        )
+        for bundle in candidates:
+            if all((bundle / name).is_file() for name in self.REQUIRED_FILES):
+                return self._load_bundle(bundle)
+        return {}
+
+    def _load_bundle(self, bundle: Path) -> Dict[str, Any]:
+        summary = _read_json_file(bundle / "demo_summary.json")
+        success = _read_json_file(bundle / "success_case.json")
+        repair = _read_json_file(bundle / "repair_case.json")
+        blocked = _read_json_file(bundle / "blocked_case.json")
+        trace = _read_json_file(bundle / "trace_audit.json")
+        trace_by_case = {
+            row.get("case_id"): row for row in trace.get("cases") or []
+        }
+        return {
+            "bundle_id": bundle.name,
+            "status": summary.get("status", "unknown"),
+            "synthetic_fixture": bool(summary.get("synthetic_fixture")),
+            "user_data_used": bool(summary.get("user_data_used")),
+            "trace_completeness": trace.get("applicable_stage_completeness"),
+            "cases": [
+                {
+                    "case_id": "success_case",
+                    "title": "Successful execution",
+                    "status": "COMPLETED" if success.get("passed") else "FAILED",
+                    "what_happened": (
+                        "A synthetic AnnData fixture was profiled, planned, explicitly approved, "
+                        "executed twice through the controlled wrapper, validated and packaged."
+                    ),
+                    "conclusion": "A correctly approved fixed tool path can complete with auditable artifacts.",
+                    "key_state": {
+                        "execution_requests": success.get("execution_request_count", 0),
+                        "validation_passed": success.get("validation_passed", False),
+                        "recommended_candidate": success.get("recommended_candidate_id"),
+                    },
+                    "trace": _trace_summary(trace_by_case.get("success_case", {})),
+                    "lineage": "No repair lineage; both approved runs are direct children of the plan.",
+                    "package_integrity": bool(success.get("package_complete")),
+                    "limitations": [
+                        "Synthetic fixture only; this is not a biological accuracy result.",
+                        "Controlled local execution is application-level, not OS sandboxing.",
+                    ],
+                    "advanced": success,
+                },
+                {
+                    "case_id": "repair_case",
+                    "title": "Bounded repair",
+                    "status": "COMPLETED" if repair.get("passed") else "FAILED",
+                    "what_happened": (
+                        "An intentionally excessive principal-component setting failed validation; "
+                        "the deterministic RepairPolicy reduced only the approved parameter and reran it."
+                    ),
+                    "conclusion": "Repair is explicit, budgeted and linked to the failed parent run.",
+                    "key_state": {
+                        "reason": repair.get("repair_reason"),
+                        "changed_fields": repair.get("changed_fields") or [],
+                        "validation_after_repair": repair.get("validation_passed_after_repair", False),
+                    },
+                    "trace": _trace_summary(trace_by_case.get("repair_case", {})),
+                    "lineage": (
+                        f"{_short_id(repair.get('parent_run_id'))} -> "
+                        f"{_short_id(repair.get('new_run_id'))}"
+                    ),
+                    "package_integrity": bool(repair.get("package_complete")),
+                    "limitations": [
+                        "Only allowlisted deterministic repairs are demonstrated.",
+                        "The demo does not permit tool, data source, wrapper or environment changes.",
+                    ],
+                    "advanced": repair,
+                },
+                {
+                    "case_id": "blocked_case",
+                    "title": "Correctly blocked",
+                    "status": "BLOCKED" if blocked.get("passed") else "FAILED",
+                    "what_happened": (
+                        "The approved parameter fingerprint no longer matched the request, so the "
+                        "authorization gate stopped the flow before creating an ExecutionRequest."
+                    ),
+                    "conclusion": "A changed request cannot reuse an old plan-specific approval.",
+                    "key_state": {
+                        "reason": (blocked.get("blocking_reasons") or ["unknown"])[0],
+                        "execution_requests": blocked.get("execution_request_count", 0),
+                        "unsafe_executions": blocked.get("unsafe_execution_count", 0),
+                    },
+                    "trace": _trace_summary(trace_by_case.get("blocked_case", {})),
+                    "lineage": "No run lineage was created because execution never started.",
+                    "package_integrity": None,
+                    "limitations": [
+                        "This proves the tested mismatch is blocked, not that every possible attack is covered.",
+                        "No package is expected for a pre-execution block.",
+                    ],
+                    "advanced": blocked,
+                },
+            ],
+        }
+
+
+class InterviewDemoService:
+    """Read the newest interview bundle without invoking an Agent or executor."""
+
+    REQUIRED_FILES = (
+        "interview_summary.json",
+        "doublet_detection_success.json",
+        "batch_integration_success.json",
+        "bounded_repair.json",
+        "correctly_blocked.json",
+        "benchmark_summary.json",
+        "trace_audit.json",
+        "package_integrity.json",
+        "limitations.json",
+    )
+
+    def __init__(
+        self,
+        root: Path | None = None,
+        portfolio_root: Path | None = None,
+    ) -> None:
+        configured = os.environ.get("SCKG_INTERVIEW_DEMO_ROOT")
+        self.root = Path(root or configured or DEFAULT_PHASE6_DEMO_ROOT)
+        if portfolio_root is not None:
+            self.portfolio_root: Path | None = Path(portfolio_root)
+        elif root is None and not configured:
+            self.portfolio_root = DEFAULT_PORTFOLIO_ROOT
+        else:
+            self.portfolio_root = None
+
+    def latest_bundle(self) -> Dict[str, Any]:
+        candidates = []
+        if self.root.is_dir():
+            candidates.extend(path for path in self.root.glob("interview-*") if path.is_dir())
+        if self.portfolio_root is not None and self.portfolio_root.is_dir():
+            candidates.extend(
+                path
+                for path in self.portfolio_root.glob("rc-*/interview")
+                if path.is_dir()
+            )
+        candidates.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+        for bundle in candidates:
+            if all((bundle / name).is_file() for name in self.REQUIRED_FILES):
+                return self._load_bundle(bundle)
+        return {}
+
+    def _load_bundle(self, bundle: Path) -> Dict[str, Any]:
+        summary = _read_json_file(bundle / "interview_summary.json")
+        benchmark = _read_json_file(bundle / "benchmark_summary.json")
+        trace = _read_json_file(bundle / "trace_audit.json")
+        integrity = _read_json_file(bundle / "package_integrity.json")
+        limitations = _read_json_file(bundle / "limitations.json").get("limitations") or []
+        governance_examples = []
+        examples_path = bundle / "portfolio_governance_examples.json"
+        if examples_path.is_file():
+            governance_examples = _redact_local_paths(
+                json.loads(examples_path.read_text(encoding="utf-8"))
+            )
+        case_files = (
+            "doublet_detection_success",
+            "batch_integration_success",
+            "bounded_repair",
+            "correctly_blocked",
+        )
+        cases = []
+        for case_id in case_files:
+            row = _read_json_file(bundle / f"{case_id}.json")
+            detail = row.get("execution") or row.get("repair") or row
+            cases.append(
+                {
+                    "case_id": case_id,
+                    "title": row.get("title", case_id.replace("_", " ").title()),
+                    "status": row.get("status", "FAILED"),
+                    "task": row.get("natural_language_task", ""),
+                    "selected_tool": row.get("selected_tool"),
+                    "parent_route": row.get("parent_route"),
+                    "trace_id": row.get("trace_id"),
+                    "conclusion": row.get("conclusion", ""),
+                    "execution_request_count": detail.get("execution_request_count", 0),
+                    "package_complete": detail.get("package_complete"),
+                    "advanced": _redact_local_paths(row),
+                }
+            )
+        return {
+            "bundle_id": bundle.name if bundle.name.startswith("interview-") else bundle.parent.name,
+            "status": summary.get("status", "unknown"),
+            "architecture": summary.get("architecture", ""),
+            "phase6_status": summary.get("phase6_status", "PHASE6_TRIAL_READY"),
+            "execution_policy_default": summary.get("execution_policy_default", "disabled"),
+            "trace_completeness": trace.get("minimum_applicable_stage_completeness", 0.0),
+            "blocked_execution_request_count": summary.get("blocked_execution_request_count", 0),
+            "package_integrity": integrity,
+            "benchmark_baselines": benchmark.get("baselines") or [],
+            "benchmark_completed_calls": benchmark.get("completed_model_calls", 0),
+            "benchmark_requested_calls": benchmark.get("requested_model_calls", 0),
+            "benchmark_new_calls": benchmark.get("new_model_calls", 0),
+            "benchmark_recovered_calls": benchmark.get("recovered_model_calls", 0),
+            "benchmark_replayed_calls": benchmark.get("replayed_model_calls", 0),
+            "benchmark_safety": benchmark.get("safety") or {},
+            "benchmark_a4_not_worse": benchmark.get("a4_not_worse_than_a3"),
+            "benchmark_failure_analysis": benchmark.get("failure_analysis") or [],
+            "benchmark_governance_examples": governance_examples,
+            "limitations": limitations,
+            "cases": cases,
+        }
+
+
+class Phase6EvaluationService:
+    """Read-only projection of Phase 6 evaluation and trial artifacts."""
+
+    def __init__(
+        self,
+        *,
+        summary_path: Path = DEFAULT_PHASE6_BASELINE_SUMMARY,
+        cases_path: Path = DEFAULT_PHASE6_BASELINE_CASES,
+        failure_queue_path: Path = DEFAULT_PHASE6_FAILURE_QUEUE,
+        trace_audit_path: Path = DEFAULT_PHASE6_TRACE_AUDIT,
+        telemetry_path: Path = DEFAULT_TRIAL_TELEMETRY,
+    ) -> None:
+        self.summary_path = Path(summary_path)
+        self.cases_path = Path(cases_path)
+        self.failure_queue_path = Path(failure_queue_path)
+        self.trace_audit_path = Path(trace_audit_path)
+        self.telemetry = TrialTelemetryStore(Path(telemetry_path))
+
+    def load_summary(self) -> Dict[str, Any]:
+        return _read_json_file(self.summary_path)
+
+    def list_cases(self, *, track: str | None = None, status: str | None = None) -> List[Dict[str, Any]]:
+        rows = _read_tsv(self.cases_path)
+        if track:
+            rows = [row for row in rows if row.get("track") == track]
+        if status:
+            rows = [row for row in rows if row.get("status") == status]
+        return rows
+
+    def list_failures(self, *, tool: str | None = None, repairable: str | None = None) -> List[Dict[str, Any]]:
+        rows = _read_tsv(self.failure_queue_path)
+        if tool:
+            rows = [row for row in rows if tool.casefold() in row.get("tool", "").casefold()]
+        if repairable:
+            rows = [row for row in rows if row.get("repairable", "").casefold() == repairable.casefold()]
+        return rows
+
+    def load_trace_audit(self) -> Dict[str, Any]:
+        return _read_json_file(self.trace_audit_path)
+
+    def list_trial_events(self, *, limit: int = 500) -> List[Dict[str, Any]]:
+        return self.telemetry.list_events(limit=limit)
+
+    def load_unified_evaluation(self, *, suite: str = "pr") -> Dict[str, Any]:
+        from eval.evaluation_registry import EvaluationExperimentRegistry
+
+        return EvaluationExperimentRegistry().latest(suite)
 
 
 class TraceService:
@@ -393,6 +753,39 @@ def _read_tsv(path: Path) -> List[Dict[str, str]]:
         return []
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _trace_summary(value: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "applicable_stage_completeness": value.get("applicable_stage_completeness"),
+        "stages": [
+            {
+                "stage": row.get("stage", ""),
+                "status": str(row.get("status", "")).upper(),
+            }
+            for row in value.get("observed_stages") or []
+        ],
+        "missing_stages": value.get("missing_stages") or [],
+        "violations": value.get("violations") or {},
+    }
+
+
+def _short_id(value: Any, limit: int = 30) -> str:
+    text = str(value or "not-created")
+    if len(text) <= limit:
+        return text
+    return f"{text[:14]}...{text[-10:]}"
+
+
+def _redact_local_paths(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _redact_local_paths(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_redact_local_paths(item) for item in value]
+    if isinstance(value, str):
+        root = str(PROJECT_ROOT)
+        return value.replace(root, "<PROJECT_ROOT>")
+    return value
 
 
 def _source_chunk_counts_by_tool(path: Path) -> Dict[str, int]:

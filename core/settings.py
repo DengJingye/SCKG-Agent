@@ -4,15 +4,35 @@ from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
+
+from core.privacy_policy import PrivacyMode
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-load_dotenv(PROJECT_ROOT / ".env")
+
+
+def _load_materialized_dotenv(path: Path) -> bool:
+    """Avoid blocking on macOS dataless/iCloud placeholder configuration files."""
+
+    try:
+        metadata = path.stat()
+    except OSError:
+        return False
+    if metadata.st_size > 0 and getattr(metadata, "st_blocks", 1) == 0:
+        return False
+    return bool(load_dotenv(path))
+
+
+_load_materialized_dotenv(
+    Path(os.environ.get("SCKG_ENV_FILE", PROJECT_ROOT / ".env")).expanduser()
+)
 
 
 class Settings(BaseModel):
     """Single configuration entry point for scKG-Atlas."""
+
+    model_config = ConfigDict(protected_namespaces=())
 
     project_root: Path = PROJECT_ROOT
     data_dir: Path = PROJECT_ROOT / "data"
@@ -39,6 +59,8 @@ class Settings(BaseModel):
     embedding_version: str = "bge-m3-v0.1"
     offline_graph_fallback: bool = True
     offline_llm: bool = False
+    privacy_mode: PrivacyMode = PrivacyMode.LOCAL_HYBRID
+    external_network_allowed: bool = False
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -69,6 +91,12 @@ class Settings(BaseModel):
                 _bool_from_env("SCKG_OFFLINE_LLM", False)
                 or _bool_from_env("DISABLE_LLM_CALLS", False)
             ),
+            privacy_mode=PrivacyMode(
+                os.getenv("SCKG_PRIVACY_MODE", PrivacyMode.LOCAL_HYBRID.value)
+            ),
+            external_network_allowed=_bool_from_env(
+                "SCKG_EXTERNAL_NETWORK_ALLOWED", False
+            ),
         )
 
     def require_neo4j(self) -> tuple[str, str, str]:
@@ -90,10 +118,12 @@ class Settings(BaseModel):
         )
 
     def require_llm(self) -> tuple[str, str, str]:
+        self.require_external_network("LLM")
+        api_base = self.openai_api_base or self.chat_api_base
         missing = [
             name
             for name, value in {
-                "OPENAI_API_BASE": self.openai_api_base,
+                "OPENAI_API_BASE or CHAT_API_BASE": api_base,
                 "OPENAI_API_KEY or DEEPSEEK_API_KEY": self.openai_api_key,
                 "MODEL_NAME": self.model_name,
             }.items()
@@ -102,26 +132,37 @@ class Settings(BaseModel):
         if missing:
             raise RuntimeError(f"Missing required LLM settings: {', '.join(missing)}")
         return (
-            str(self.openai_api_base),
+            str(api_base),
             self.openai_api_key.get_secret_value(),
             str(self.model_name),
         )
 
     def require_siliconflow_api_key(self) -> str:
+        self.require_external_network("SiliconFlow embedding")
         if not self.siliconflow_api_key:
             raise RuntimeError("Missing required SILICONFLOW_API_KEY")
         return self.siliconflow_api_key.get_secret_value()
 
     def require_embedding_api_key(self) -> str:
+        self.require_external_network("embedding API")
         if not self.embedding_api_key:
             raise RuntimeError("Missing required EMBEDDING_API_KEY")
         return self.embedding_api_key.get_secret_value()
 
     def require_chat_api_key(self) -> str:
+        self.require_external_network("chat API")
         api_key = self.deepseek_api_key or self.openai_api_key
         if not api_key:
             raise RuntimeError("Missing required DEEPSEEK_API_KEY or OPENAI_API_KEY")
         return api_key.get_secret_value()
+
+    def require_external_network(self, purpose: str) -> None:
+        if self.privacy_mode == PrivacyMode.STRICT_OFFLINE:
+            raise RuntimeError(f"{purpose} is blocked by STRICT_OFFLINE privacy mode")
+        if not self.external_network_allowed:
+            raise RuntimeError(
+                f"{purpose} requires explicit outbound disclosure approval"
+            )
 
 
 def _secret_from_env(name: str) -> Optional[SecretStr]:

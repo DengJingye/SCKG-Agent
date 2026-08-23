@@ -6,6 +6,9 @@ from typing import Any, Iterable
 
 from core.deterministic_router import DeterministicRouter
 from core.execution_models import (
+    AnnotationProbeSpec,
+    AnnotationReferenceManifest,
+    AnnotationSplitArtifact,
     ConfigurationSpec,
     EnvironmentRecord,
     ExecutionRequest,
@@ -13,6 +16,8 @@ from core.execution_models import (
     ExperimentRunRecord,
     PlanningGateResult,
     ProbeSpec,
+    IntegrationProbeSpec,
+    IntegrationSplitArtifact,
     ScientificSplitArtifact,
     QualificationArtifact,
     ToolContract,
@@ -49,12 +54,20 @@ class ExperimentRunner:
         experiment_id: str,
         configurations: Iterable[ConfigurationSpec],
         seeds: Iterable[int],
-        probe: ProbeSpec | ScientificSplitArtifact,
+        probe: (
+            ProbeSpec
+            | ScientificSplitArtifact
+            | IntegrationProbeSpec
+            | IntegrationSplitArtifact
+            | AnnotationProbeSpec
+            | AnnotationSplitArtifact
+        ),
         artifact: QualificationArtifact,
         contract: ToolContract,
         environment: EnvironmentRecord,
         planning_gate: PlanningGateResult,
         plan_id: str,
+        annotation_reference: AnnotationReferenceManifest | None = None,
     ) -> ExperimentBatchResult:
         configurations = list(configurations)
         seeds = list(seeds)
@@ -72,15 +85,18 @@ class ExperimentRunner:
                     f"{experiment_id}-{configuration.configuration_id}-seed-{seed}"
                 )
                 parameters = dict(configuration.parameters)
-                parameters["random_state"] = seed
                 provenance = dict(configuration.parameter_provenance)
-                provenance["random_state"] = {
-                    "origin": "development_probe_search"
-                    if probe.split_role == "development"
-                    else "frozen_evaluation_seed",
+                seed_provenance = {
+                    "origin": "execution_seed",
+                    "split_role": probe.split_role,
                     "seed": seed,
                     "probe_hash": probe.probe_hash,
                 }
+                if contract.task == "doublet_detection" and "random_state" in (
+                    contract.parameter_schema.get("properties") or {}
+                ):
+                    parameters["random_state"] = seed
+                    provenance["random_state"] = seed_provenance
                 request = ExecutionRequest(
                     request_id=f"request-{run_id}",
                     run_id=run_id,
@@ -90,6 +106,7 @@ class ExperimentRunner:
                     wrapper_id=contract.wrapper_id,
                     environment_id=contract.environment_id,
                     input_artifact_id=artifact.artifact_id,
+                    execution_seed=seed,
                     parameters=parameters,
                     parameter_provenance=provenance,
                     timeout_seconds=int(
@@ -100,7 +117,14 @@ class ExperimentRunner:
                         "mode": True,
                         "purpose": (
                             "scientific_pilot"
-                            if isinstance(probe, ScientificSplitArtifact)
+                            if isinstance(
+                                probe,
+                                (
+                                    ScientificSplitArtifact,
+                                    IntegrationSplitArtifact,
+                                    AnnotationSplitArtifact,
+                                ),
+                            )
                             else "synthetic_qualification"
                         ),
                         "authorized": True,
@@ -125,9 +149,29 @@ class ExperimentRunner:
                         contract=contract,
                         router_decision=decision,
                     )
-                    validation = self.validator.validate(
-                        run, expected_cells=artifact.expected_cells
-                    )
+                    if contract.task == "batch_integration":
+                        validation = self.validator.validate(
+                            run,
+                            expected_cells=artifact.expected_cells,
+                            expected_input_path=artifact.path,
+                            contract=contract,
+                        )
+                    elif contract.task == "cell_type_annotation":
+                        if annotation_reference is None:
+                            raise ValueError(
+                                "annotation experiment requires a bound reference manifest"
+                            )
+                        validation = self.validator.validate(
+                            run,
+                            expected_cells=artifact.expected_cells,
+                            expected_input_path=artifact.path,
+                            contract=contract,
+                            reference=annotation_reference,
+                        )
+                    else:
+                        validation = self.validator.validate(
+                            run, expected_cells=artifact.expected_cells
+                        )
                 except Exception as exc:
                     batch_failures.append(f"{run_id}:{type(exc).__name__}:{exc}")
                     continue
@@ -232,7 +276,14 @@ def configuration_hash(tool_name: str, tool_version: str, parameters: dict) -> s
 def _validate_experiment_shape(
     configurations: list[ConfigurationSpec],
     seeds: list[int],
-    probe: ProbeSpec | ScientificSplitArtifact,
+    probe: (
+        ProbeSpec
+        | ScientificSplitArtifact
+        | IntegrationProbeSpec
+        | IntegrationSplitArtifact
+        | AnnotationProbeSpec
+        | AnnotationSplitArtifact
+    ),
 ) -> None:
     if not configurations or len(configurations) > MAX_CONFIGURATIONS:
         raise ValueError("experiment requires 1-4 configurations")
@@ -245,7 +296,7 @@ def _validate_experiment_shape(
     if probe.split_role not in {"development", "evaluation"}:
         raise ValueError("experiment runner requires development or evaluation probe")
     if probe.split_role == "evaluation":
-        if isinstance(probe, ScientificSplitArtifact):
+        if isinstance(probe, (ScientificSplitArtifact, AnnotationSplitArtifact)):
             if len(seeds) != 1 or not all(item.frozen for item in configurations):
                 raise ValueError(
                     "scientific evaluation requires frozen configurations and one seed"

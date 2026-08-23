@@ -17,12 +17,14 @@ ALLOWED_REQUEST_FIELDS = {
     "accession",
     "expected_cells",
     "expected_input_hash",
+    "execution_seed",
     "fixture_id",
     "input_path",
     "parameters",
     "public_dataset",
     "purpose",
 }
+REQUIRED_REQUEST_FIELDS = ALLOWED_REQUEST_FIELDS - {"execution_seed"}
 
 DEFAULT_PARAMETERS: dict[str, Any] = {
     "distance_metric": "euclidean",
@@ -52,9 +54,12 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("wrapper request must be ./worker_request.json")
     request = json.loads(request_path.read_text(encoding="utf-8"))
     unknown = sorted(set(request) - ALLOWED_REQUEST_FIELDS)
-    missing = sorted(ALLOWED_REQUEST_FIELDS - set(request))
+    missing = sorted(REQUIRED_REQUEST_FIELDS - set(request))
     if unknown or missing:
         raise ValueError(f"invalid worker request fields; unknown={unknown}, missing={missing}")
+    execution_seed = request.get("execution_seed", 0)
+    if isinstance(execution_seed, bool) or not isinstance(execution_seed, int) or execution_seed < 0:
+        raise ValueError("execution_seed must be a non-negative integer")
 
     run_dir = Path.cwd().resolve()
     artifacts_dir = (run_dir / "artifacts").resolve()
@@ -69,22 +74,41 @@ def main(argv: list[str] | None = None) -> int:
     if fixture.get("fixture_id") != request["fixture_id"]:
         raise ValueError("fixture id mismatch")
     if not bool(fixture.get("maintainer_approved", False)):
-        raise ValueError("wrapper requires maintainer-approved input")
-    if not bool(fixture.get("qualification_mode", False)):
-        raise ValueError("wrapper requires qualification mode")
-    if bool(fixture.get("user_data", True)):
-        raise ValueError("wrapper forbids user data")
+        if request["purpose"] != "representative_preview":
+            raise ValueError("wrapper requires maintainer-approved input")
     purpose = request["purpose"]
     if purpose == "synthetic_qualification":
+        if not bool(fixture.get("qualification_mode", False)):
+            raise ValueError("wrapper requires qualification mode")
+        if bool(fixture.get("user_data", True)):
+            raise ValueError("wrapper forbids user data")
         if not bool(fixture.get("synthetic", False)):
             raise ValueError("synthetic qualification requires synthetic fixture")
     elif purpose == "scientific_pilot":
+        if not bool(fixture.get("qualification_mode", False)):
+            raise ValueError("wrapper requires qualification mode")
+        if bool(fixture.get("user_data", True)):
+            raise ValueError("wrapper forbids user data")
         if bool(fixture.get("synthetic", True)):
             raise ValueError("scientific pilot requires real public dataset")
         if not bool(fixture.get("public_dataset", False)):
             raise ValueError("scientific pilot requires public dataset")
         if request["accession"] != "GSE108313" or fixture.get("accession") != "GSE108313":
             raise ValueError("scientific dataset is not allowlisted")
+    elif purpose == "representative_preview":
+        preview_metadata = dict(adata.uns.get("sckg_preview") or {})
+        if not bool(fixture.get("representative_preview", False)):
+            raise ValueError("representative preview marker is missing")
+        if bool(fixture.get("qualification_mode", True)):
+            raise ValueError("representative preview cannot claim qualification mode")
+        if not bool(fixture.get("user_data", False)):
+            raise ValueError("representative preview must retain user-data provenance")
+        if bool(fixture.get("synthetic", True)) or bool(fixture.get("public_dataset", True)):
+            raise ValueError("representative preview cannot claim qualification data status")
+        if not bool(preview_metadata.get("preview_only", False)):
+            raise ValueError("preview-only metadata is missing")
+        if bool(preview_metadata.get("scientific_claim_allowed", True)):
+            raise ValueError("representative preview cannot allow scientific claims")
     else:
         raise ValueError("unsupported execution purpose")
     if adata.n_obs != int(request["expected_cells"]):
@@ -135,7 +159,11 @@ def main(argv: list[str] | None = None) -> int:
             ],
         )
         writer.writeheader()
-        ground_truth = adata.obs["ground_truth_doublet"].astype(bool).to_numpy()
+        ground_truth = (
+            adata.obs["ground_truth_doublet"].astype(bool).to_numpy()
+            if purpose != "representative_preview"
+            else [None] * adata.n_obs
+        )
         for obs_id, score, label, truth in zip(
             adata.obs_names,
             scores,
@@ -147,9 +175,28 @@ def main(argv: list[str] | None = None) -> int:
                     "obs_id": str(obs_id),
                     "doublet_score": repr(float(score)),
                     "predicted_doublet": "true" if bool(label) else "false",
-                    "ground_truth_doublet": "true" if bool(truth) else "false",
+                    "ground_truth_doublet": (
+                        "" if truth is None else ("true" if bool(truth) else "false")
+                    ),
                 }
             )
+
+    if purpose == "representative_preview":
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        figure, axis = plt.subplots(figsize=(7.2, 4.2))
+        axis.hist(scores, bins=30, color="#287271", edgecolor="white")
+        axis.set_title("Scrublet score distribution (representative preview)")
+        axis.set_xlabel("doublet score")
+        axis.set_ylabel("cells")
+        figure.tight_layout()
+        figure.savefig(
+            artifacts_dir / "doublet_score_histogram.png", dpi=160
+        )
+        plt.close(figure)
 
     parameter_path = artifacts_dir / "parameters.json"
     parameter_path.write_text(
@@ -167,14 +214,22 @@ def main(argv: list[str] | None = None) -> int:
             "predicted_doublet",
             "ground_truth_doublet",
         ],
-        "qualification_mode": True,
+        "preview_artifacts": (
+            ["doublet_score_histogram.png"]
+            if purpose == "representative_preview"
+            else []
+        ),
+        "qualification_mode": purpose != "representative_preview",
         "scrublet_actually_executed": True,
         "scrublet_version": importlib.metadata.version("scrublet"),
         "execution_purpose": purpose,
+        "execution_seed": execution_seed,
         "public_dataset": bool(request["public_dataset"]),
         "accession": request["accession"],
         "synthetic_fixture": bool(fixture.get("synthetic", False)),
-        "user_data_used": False,
+        "user_data_used": purpose == "representative_preview",
+        "preview_only": purpose == "representative_preview",
+        "scientific_claim_allowed": False,
     }
     metadata_path = artifacts_dir / "result_metadata.json"
     metadata_path.write_text(

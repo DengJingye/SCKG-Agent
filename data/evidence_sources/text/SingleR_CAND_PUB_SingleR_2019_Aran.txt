@@ -1,0 +1,1790 @@
+[PDF_PAGE 1]
+
+Articles
+https:/ / doi.org/10.1038/s41590-018-0276-y
+1Bakar Computational Health Sciences Institute, University of California, San Francisco, San Francisco, CA, USA. 2Division of Pulmonary, Critical Care, 
+Allergy, and Sleep Medicine, Department of Medicine, University of California, San Francisco, San Francisco, CA, USA. 3Department of Bioengineering 
+and Therapeutic Sciences, University of California, San Francisco, San Francisco, CA, USA. 4Gladstone Institute of Cardiovascular Disease, San Francisco, 
+CA, USA. 5California Institute for Quantitative Biosciences, University of California, San Francisco, San Francisco, CA, USA. 6Chan Zuckerberg Biohub, 
+San Francisco, CA, USA. 7These authors contributed equally: D. Aran, A.P. Looney, L. Liu. *e-mail: mallar.bhattacharya@ucsf.edu
+F
+ibrosing diseases are a major cause of mortality. Whether toxin-
+related, genetic, malignant, infectious, autoimmune, or idio -
+pathic, they can affect any organ1. Lung fibrosis is a particularly 
+vexing clinical problem because of the lack of effective therapies and 
+a poor understanding of its etiology. The most prevalent form, idio
+-
+pathic pulmonary fibrosis, has a median survival of only 3 years, and 
+approved treatments are limited2. With respect to the pathogenesis 
+of fibrosis in multiple organs, attention has focused on fibroblast 
+activation, given the central role of fibroblasts in the deposition of 
+matrix proteins such as collagen
+3–6. However, the mechanisms of 
+fibroblast activation and proliferation are not fully understood.
+The healthy adult lung contains two types of resident macro -
+phages: a self-renewing population of embryonically derived mac -
+rophages known as alveolar macrophages and a separate population 
+of interstitial macrophages present near the larger airways and in the 
+lung interstitium
+7,8. In injury models of fibrosis, monocyte-derived 
+cells are recruited to tissue sites and have a profibrotic effect 9–11. 
+However, the diversity of these cells and the mechanisms by which 
+they mediate the profibrotic effect are incompletely understood, in 
+part because the study of specific transcriptomic subsets has been 
+limited by bulk sequencing approaches. In particular, the kinetically 
+evolving heterogeneity inherent to disease cannot be parsed with 
+the limited range of flow cytometric markers used to study popula
+-
+tions in bulk. Because scRNA-seq can resolve diversity within cellu-
+lar populations, we reasoned that it should enhance understanding 
+of macrophage heterogeneity and specify subsets for functional 
+analysis in fibrosis.
+A current limitation in single-cell analysis is that there are no 
+prevalent methods for identification of cell types other than manual 
+annotation, which suffers from subjectivity. Moreover, referencing 
+conventional markers is challenged by incomplete messenger RNA 
+detection. We developed a computational tool for unbiased annota
+-
+tion as well as clustering of scRNA-seq, called SingleR (single-cell 
+recognition). SingleR assigns cellular identity for single cell tran
+-
+scriptomes by comparison to reference data sets of pure cell types 
+sequenced by microarray or RNA-sequencing (RNA-seq). Here, we 
+used SingleR to identify macrophages from a mixed sample of lung 
+cells at baseline and after bleomycin-induced lung injury in mice. 
+In addition, we applied a novel hierarchical clustering approach 
+based on SingleR correlations to subcluster macrophages in fibro
+-
+sis, which enabled the identification of cells with transitional gene 
+expression between monocyte-derived and alveolar macrophages. 
+We used markers identified by the subclustering analysis to inves
+-
+tigate the functional properties of these transitional macrophages.
+Our studies revealed that monocyte-derived, disease-associated 
+macrophages transitioning to alveolar identity localized to the 
+fibrotic niche and exerted a profibrotic effect. Specific ablation 
+of these macrophages prevented lung fibrosis. Mechanistically, 
+the scar-associated macrophages were the predominant source 
+of the mitogen Pdgf-aa, which was necessary for proliferation of 
+fibroblasts. These studies uncover a role for macrophages in the 
+paracrine regulation of fibroblasts and provide a perspective on 
+myeloid-mesenchymal crosstalk in response to injury.
+Results
+Reference data sets enhance annotation of scRNA-seq. To improve 
+annotation of cell types in scRNA-seq, we developed a computational 
+method called SingleR, which correlated single-cell transcriptomes 
+Reference-based analysis of lung single-cell 
+sequencing reveals a transitional profibrotic 
+macrophage
+Dvir Aran   1,7, Agnieszka P. Looney2,7, Leqian Liu3,7, Esther Wu2, Valerie Fong2, Austin Hsu4, 
+Suzanna Chak2, Ram P. Naikawadi2, Paul J. Wolters2, Adam R. Abate3,5,6, Atul J. Butte   1 and 
+Mallar Bhattacharya   2*
+Tissue fibrosis is a major cause of mortality that results from the deposition of matrix proteins by an activated mesenchyme. 
+Macrophages accumulate in fibrosis, but the role of specific subgroups in supporting fibrogenesis has not been investigated in 
+vivo. Here, we used single-cell RNA sequencing (scRNA-seq) to characterize the heterogeneity of macrophages in bleomycin-
+induced lung fibrosis in mice. A novel computational framework for the annotation of scRNA-seq by reference to bulk transcrip-
+tomes (SingleR) enabled the subclustering of macrophages and revealed a disease-associated subgroup with a transitional 
+gene expression profile intermediate between monocyte-derived and alveolar macrophages. These CX3CR1
++SiglecF+ transi-
+tional macrophages localized to the fibrotic niche and had a profibrotic effect in vivo. Human orthologs of genes expressed by 
+the transitional macrophages were upregulated in samples from patients with idiopathic pulmonary fibrosis. Thus, we have 
+identified a pathological subgroup of transitional macrophages that are required for the fibrotic response to injury.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology 163
+
+
+[PDF_PAGE 2]
+
+Articles NATuRe IMMuNology
+with reference transcriptomic data sets and improved its inferences 
+iteratively (Fig. 1a and Supplementary Note 1). The SingleR pipeline 
+is based on correlating reference bulk transcriptomic data sets of 
+pure cell types with single-cell gene expression. First, we validated 
+SingleR using the Immunological Genome Project (ImmGen) data
+-
+base12 to annotate mouse scRNA-seq and Encode 13 and Blueprint 
+Epigenomics14 transcriptomes to annotate human data. In the first 
+step of the SingleR pipeline, a Spearman coefficient was calculated 
+for single-cell gene expression with each of the samples in the refer
+-
+ence data set, using only the variable genes in the reference data set. 
+Using only variable genes among the cell types increased the ability 
+to distinguish closely related cell types. This process was performed 
+iteratively using only the top cell types from the previous step and 
+the variable genes among them until only one cell type remained 
+(for details see Methods, Supplementary Note 1, and the SingleR 
+Github repository
+15).
+To validate SingleR in mouse, we analyzed a published study of 
+scRNA-seq of mouse bone marrow-derived dendritic cells (BMDC) 
+and fibroblasts16. When applied to the ImmGen database12 as a ref-
+erence library, SingleR identified 33 of the 48 cells thought in the 
+study to be BMDCs as macrophages (Fig. 1b and Supplementary 
+Note 2). Of note, cells in the study
+16 were grown in culture in the 
+presence of the growth factor GM-CSF and then suspended for flow 
+cytometric sorting based on CD11c expression, a protocol
+17,18 that 
+has been shown not to result in a pure population of DCs but also 
+results in a proportion of cells bearing macrophage markers
+19,20. 
+–25
+0
+25
+50
+–25 02 55 0
+Reference-based annotations
+Original identities b SingleR scores
+SingleR annotations
+GM-DC genesGM-Mac genes
+DC (SingleR) Macrophage (SingleR)
+–10
+0
+10
+–5 05 10
+–10
+0
+10
+–5 05 10
+c
+Single cells
+Scaled expression:
+Normalized scores:
+Fibroblasts
+Stromal cells
+DC
+Macrophages
+Monocytes
+Stem cells
+Endothelial cells
+Epithelial cells
+–25
+0
+25
+50
+–25 02 55 0
+Memory B cell
+Naïve B cell
+CD8+ T cell
+CD8+ TCM cell
+CD8+ TEM cell
+NK cell
+CD4+ T cell
+CD4+ TCM cell
+CD4+ TEM cell
+Treg cell
+CD16– Monocyte
+CD16+ Monocyte
+CD4+ T cell
+CD4+ TCM cell
+CD4+ TEM cell
+CD8+ T cell
+CD8+ TCM cell
+CD8+ TEM cell
+Treg cell
+CD4
+CD8A
+CCR7
+SELL
+CXCR5
+IL7R
+GNLY
+NKG7
+FOXP3
+CTLA4
+Average expression (scaled)
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+Memory
+B cell
+Naïve
+B cell
+CD27 expression
+BMDCs
+Fibroblasts
+DC
+Endothelial cells
+Fibroblasts
+Macrophages
+Stromal cells
+Seurat (10X)
+SingleR annotations
+–1 012
+0 0.2 0.4 0.6 0.8 1
+t-SNE 2
+t-SNE 1
+t-SNE 2
+t-SNE 1
+t-SNE 2
+t-SNE 1
+t-SNE 2
+t-SNE 1
+0.1
+0.2
+0.3
+Fibroblasts
+Endothelial cells
+NK cellsMast cellsNeutrophils
+DC
+Monocytes
+Macrophages
+Spearman
+4
+8
+12
+16
+0123 4
+Single cell
+Reference sample
+a
+Step3: Iterative fine-tuning—reducing the
+reference set to only top cell types
+Step 2:
+Correlating each
+single-cell transcriptome 
+with each sample in the 
+reference set
+Step 1:
+Identifying variable 
+genes among cell types 
+in the reference set
+Input: Output:
+Unannotated 
+scRNA-seq data
+Reference 
+transcriptomes of 
+pure cell types
+Annotated 
+single cells
+Fig. 1 | Reference-based annotation of scRNA-seq. a, Schematic of SingleR, a protocol for cell type annotation by reference to transcriptomes of pure cell 
+types. b, t-SNE plot of a published scRNA-seq data set of fibroblasts and BMDCs16 (top left). Heatmap of SingleR scores for top correlated cell types (top right). 
+SingleR annotation of cell identity indicated on t-SNE plot (bottom left). Expression in single cells of genes derived by differential expression analysis of 
+published microarray data from bone marrow-derived, GM-CSF-cultured macrophages (GM-Macs) and DCs (GM-DCs)19 (bottom right). c, t-SNE plots 
+of a published scRNA-seq data set of PBMCs21 analyzed by Seurat without (top) and with (middle) SingleR annotations indicated for individual cells. 
+Cell type markers expressed by SingleR annotation (bottom). DC, dendritic cell; TCM, central memory T cell; TEM, effector memory T cell; Treg, regulatory T cell.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology164
+
+
+[PDF_PAGE 3]
+
+ArticlesNATuRe IMMuNology
+As such, SingleR could make the distinction between macrophages 
+and dendritic cells in an unbiased fashion based on the granularity 
+and breadth of the transcriptomic comparison. In a separate valida
+-
+tion, we applied SingleR using the Blueprint and Encode databases 
+as reference comparators for a data set generated by scRNA-seq 
+analysis of human peripheral blood mononuclear cells
+21. In com -
+parison to marker-based and reference-based approaches 21–23, 
+which are limited in their ability to distinguish cell states, SingleR 
+differentiated cellular subtypes such as memory and naïve B and 
+ 
+T cells (Fig. 1c and Supplementary Fig. 1). SingleR performed simi-
+larly when applied to > 50 publicly available scRNA-seq data sets 
+(Supplementary Note 2 and the SingleR web tool24). These analyses 
+show that reference-based comparison enhances cell type annota -
+tion of scRNA-seq.
+SingleR identifies a transitional macrophage in fibrosis. We next 
+applied SingleR to enhance annotation of a lung scRNA-seq data set 
+obtained from whole lungs of adult, male mice (10–12 weeks age) dis-
+sociated into single-cell suspension and flow sorted on live cells, using 
+6 steady-state mice and 3 mice 14 days after a single tracheal instil
+-
+lation of bleomycin, the fibrotic phase of the injury model (Fig. 2a, 
+Supplementary Table 1, and Supplementary Fig. 2). Using the 
+ImmGen database as the reference compendium of data sets for 
+SingleR, we annotated the lung cells and superimposed these cel
+-
+lular identities on the clustering analysis of bleomycin and steady-
+state cells, pooled together (Fig. 2b and Supplementary Fig. 3). The 
+number of lung macrophages was higher in the bleomycin-treated 
+condition than at steady state (Fig. 2a,b). Because macrophages and 
+dendritic cells have similar transcriptomic profiles
+25–27, we repeated 
+SingleR analysis using published RNA-seq data sets of mouse lung 
+macrophages and dendritic cells
+28,29 to isolate the macrophages in 
+the pooled bleomycin-injured and steady-state samples (Fig. 2c and 
+Supplementary Fig. 4). SingleR identified two subtypes of macro -
+phages: alveolar and interstitial macrophages (Fig. 2c). The annota-
+tion scores for alveolar and interstitial macrophages were strongest 
+at the poles of the macrophage cluster, suggesting a continuum 
+of gene expression between alveolar and interstitial macrophage 
+(Fig. 2d). To quantify this continuum, we performed a similarity 
+analysis
+30 by comparison of each cell to mouse RNA-seq data sets 
+of alveolar and interstitial macrophages 29. This analysis indicated 
+a gradient of cellular identity in the macrophage cluster between 
+alveolar and interstitial macrophages (Fig. 2d).
+We next used SingleR annotation scores for each single cell 
+compared with each sample in the reference data set to hierarchi -
+cally cluster the macrophages. That is, the full range of SingleR 
+correlation scores for each cell with reference to ImmGen was 
+used for unsupervised hierarchical clustering of the macrophages 
+from the lung scRNA-seq data set. This analysis identified three 
+distinct subclusters (C1, C2, and C3), all three detected at varying 
+levels in both steady-state and bleomycin-treated mice (Fig. 3a): 
+cluster C1 was equally present in steady-state lung and bleomy
+-
+cin injury and corresponded to the cells that were annotated as 
+alveolar macrophages by the lung-specific data sets (Fig. 2c); on 
+the other hand, clusters C2 and C3 were enriched in cells isolated 
+from mice with bleomycin-induced fibrosis and expressed Cx3cr1, 
+Ccr2, Mafb, and MHCII genes, consistent with monocytic ori
+-
+gin (Fig. 3b and Supplementary Table 2). Notably, 45% of cluster 
+C2 cells (but only 7.3% of cluster C1 cells and 4.7% of cluster C3 
+cells) expressed at least 33% of cluster C1 genes and at least 33% 
+of cluster C3 genes (Fig. 3c), suggesting that cluster C2 was inter
+-
+mediate in gene expression between C1 and C3. Consistent with 
+this finding, comparison to 2 separate published data sets of lung 
+macrophages
+29,31, enabling differential expression analysis between 
+alveolar and interstitial macrophage genes, indicated that C1 had 
+Bleomycin-injured lungs
+Healthy lungs
+40
+a
+cd
+b
+40
+20
+–20
+–20 –10 10 200
+0
+0
+–40
+40
+0
+–40
+–50 50–25 250
+t-SNE 1
+t-SNE 1
+–20 –25 25 500
+0.8
+0.6
+0.4
+0.2
+–10 10 200
+t-SNE 1 t-SNE ordering
+t-SNE 2t-SNE 2
+40AM
+CD11b– cDC
+CD11b+ cDC
+CD11c– IM
+CD11c+ IM
+CD8– pDC
+CD8+ pDC
+20
+–20 0.25
+0.50
+0.75
+AM
+Similarity
+IM
+0
+t-SNE 2
+IM–AM similarity
+t-SNE 2
+–50 50
+B cell
+DC
+Endothelial cell
+Epithelial cell
+Fibroblast
+ILC
+Macrophage
+Monocyte
+Neutrophil
+NK cell
+NKT
+T cell
+Tgd
+–25 250
+t-SNE 1
+Fig. 2 | Reference data sets reveal heterogeneity of macrophage subtypes in lung fibrosis. a–c, t-SNE plots of single-cell suspensions from mouse 
+whole lung sequenced by Drop-seq color-coded by condition (a); annotated by SingleR using the ImmGen database as reference (b); and annotated by 
+SingleR with lung-specific myeloid data sets
+28,29 (c). Data shown pool replicates (n =  3 biologically independent mice for bleomycin-injured and n =  6 
+biologically independent mice for healthy control). d, Quantification of similarity in gene expression of individual cells to bulk RNA-seq profiles of alveolar 
+macrophages (AM) and CD11c
++ interstitial macrophages (IM)29. ILC, innate lymphoid cell; NKT, natural killer T cell.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology 165
+
+
+[PDF_PAGE 4]
+
+Articles NATuRe IMMuNology
+higher expression of alveolar macrophage genes than cluster C2, 
+which in turn had higher expression of alveolar macrophage genes 
+than cluster C3 (Supplementary Fig. 5).
+To determine the directionality of the transitional state of C2 
+cells across time in the model, we performed bulk RNA-seq of 
+SiglecF
++CD11c+MHCIIlo and SiglecF +CD11c+MHCIIhi cells, par -
+alleling clusters C1 and C2, respectively. These cells were sorted 
+from lungs of bleomycin-injured, 10–12-week-old, wild-type male 
+mice. SiglecF
++CD11c+MHCIIhi macrophages had higher expres -
+sion of genes identified by scRNA-seq in cells from clusters C2 and 
+C3 compared with SiglecF
++CD11c+MHCIIlo cells at 2 weeks after 
+injury (Fig. 3d and Supplementary Fig. 6a). However, the expres -
+sion of these genes in SiglecF +CD11c+MHCIIhi cells at 4 weeks 
+after injury was reduced to levels more similar to those detected 
+in SiglecF
++CD11c+ alveolar macrophages at steady state (Fig. 3d). 
+These data suggest that between the 2- and 4-week time points, 
+SiglecF
++CD11c+MHCIIhi cells, which correspond to cluster C2 
+identified by SingleR, transition toward a steady-state alveolar mac-
+rophage profile (corresponding to cluster C1).
+Cluster C2 and C3 markers are found in alternate lung fibrosis 
+models. To test the relevance of the identified gene expression pat
+-
+tern to other models of fibrosis, we used a mouse model of lung 
+fibrosis induced by epithelial telomere dysfunction. In this model, 
+SPC-CreERT2 mice are crossed with a floxed Trf1 allele for tamoxifen-
+inducible deletion of Trf1, a shelterin complex protein that protects 
+telomeres. Trf1 deletion after tamoxifen induction leads to age-
+dependent telomere shortening and is associated with cellular senes
+-
+cence and progressive fibrosis through the lifespan 32. Whole-lung 
+lysates from SPC-CreERT2/Trf1fl/fl mice harvested at 3 and 9 months 
+after initiation of tamoxifen treatment and Trf1fl/fl control mice har-
+vested at 9 months after tamoxifen were submitted for gene expres-
+sion profiling by microarray. We detected a progressive increase 
+in the expression of genes characteristic of clusters C2 and C3 in 
+the lung lysates from tamoxifen-treated SPC-CreERT2/Trf1
+fl/fl mice 
+compared with control, with peak expression at 9 months (Fig. 4a), 
+coincident with peak fibrosis in this model. Although these data 
+represent whole-lung rather than isolated macrophages, together 
+with the known increase in macrophages during the fibrotic period 
+Clusters
+a
+b
+cd
+Clusters
+Condition
+Fabp 1
+Krt79
+Marco
+Fabp4
+Plet1
+Car4
+Chil4
+Ear10
+Ctsk
+Ear1
+1100001G20Rik
+Cdc42ep3
+ll18
+Mcemp1
+Atp6v0d2
+Slpi
+Chil3
+H2-Ab1
+Srgn
+H2-Aa
+S100a6
+H2-Eb1
+S100a4
+ll1b
+C1qb
+Ccr2
+Mir5107
+C1qa
+Ccl9
+C1qc
+Cxcl16
+Socs3
+Mafb
+Mmp 12
+Cx3cr1
+Aif1
+Plbd1
+Mgl2
+C1
+C1 C2 C3
+Normalized score:
+Scaled expression: –2 –1 012
+100
+C1
+Scaled
+expression
+C2
+C3
+*
+75
+50
+Cells (%)
+25
+0
+0
+BaselineExpressed genes
+from C1 & C3 (%)
+5025 75
+0 0.20.40.60.8 1
+C2 C3 40
+30
+Bleomycin
+Control
+20
+10
+0
+C1 C2
+Clusters
+C3
+C1
+C2
+C3
+20
+0
+–20
+–20
+H2-Ab1 Mafb Cx3cr1 Ccr2 Chil3 ll18 Marco
+–10 0
+t-SNE 1
+t-SNE 2
+Cells (%)
+10 20
+Alveolar MF
+Lung MF
+Lung MF Ppargfl/fl
+F4/80int MHCII
++
+ peritoneal MF (thio)
+F4/80lo MHCII
++
+ peritoneal MF
+F4/80lo MHCII
++
+ peritoneal MF (thio)
+F4/80hi MHCII
+–
+ peritoneal MF
+F4/80hi MHCII
++
+ peritoneal MF (thio)
+F4/80int MHCII
+–
+ peritoneal MF (thio)
+MHCIIint nonclassical monocytes
+MHCII+ classical monocytes
+CD11b+ DC
+CD11b+ 24+ DC
+CD11b+ 24– MF
+Serosal MF
+CD11b– DC
+F4/80hi MHCll+ CD11c+ CD15+ MF
+CD11chi CD103– CD11b+ MF (salmonella)
+CD11chi CD103– CD11b+ MF
+Interstitial MF
+2 weeks
+MHClllo MHCllhi MHCllhiMHClllo
+Scaled expression:
+4 weeks
+–2 –1 0 1 2
+Plbd1
+Mgl2
+ll1b
+Socs3
+Srgn
+Mir5107
+C1qa
+C1qb
+Cx3cr1
+C1qc
+Ccr2
+Ccl9
+Cxcl16
+Mmp12
+Mafb
+S100a4
+S100a6
+Aif1
+H2-Eb1
+H2-Aa
+H2-Ab1
+Fig. 3 | Hierarchical clustering by reference annotation reveals a transitional macrophage in fibrosis. a, Heatmap of SingleR annotation scores derived by 
+reference to the ImmGen database with clusters superimposed on the t-SNE plot. MF, macrophages. b, Heatmap of genes differentially expressed between 
+C1 and C3 with examples superimposed on the t-SNE plot. Cells are ordered by the number of non-zero C3 genes. c, Percentage of cells in each cluster that 
+express genes in b (differentially expressed between C1 and C3). Asterisk indicates that 45% of C2 cells express at least 33% of C1 genes and at least 33% 
+of C3 genes. d, Heatmap of the expression of C3 genes in bulk RNA-seq of alveolar macrophages (SiglecF
++CD11c+) sorted on MHCIIlo at baseline and both 
+MHCIIlo and MHCIIhi at two time points after bleomycin lung injury (n =  2 biologically independent mice for baseline, n =  3 biologically independent mice at 
+2 weeks, and n =  3 biologically independent mice at 4 weeks).
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology166
+
+
+[PDF_PAGE 5]
+
+ArticlesNATuRe IMMuNology
+in this model 32, the results are consistent with a common genetic 
+signature and a generalizable pattern of macrophage response dur-
+ing fibrogenesis.
+We then asked whether the gene expression profiles identi -
+fied in mouse were relevant to human lung fibrosis. To address 
+this question, we performed single-sample gene set enrichment 
+analysis
+33 to quantify the expression of human orthologs of genes 
+of interest in a published microarray data set of 167 lung samples 
+from patients with lung fibrosis and 50 healthy controls
+34. This 
+analysis showed a significant decrease in the expression of genes 
+associated with alveolar macrophages (cluster C1) and a sig
+-
+nificant increase in the expression of MHC II genes (cluster C2 
+and C3) in the human fibrosis samples compared with the healthy 
+controls (Fig. 4b). Moreover, immunofluorescence of lung tissue 
+indicated the expression of MAFB, a marker detected specifically 
+in clusters C2 and C3, in CD68
++ macrophages from patients with 
+idiopathic lung fibrosis compared with healthy controls (Fig. 4c). 
+Taken together, these studies support the relevance of the C2 and 
+C3 markers identified in the bleomycin model to multiple contexts 
+of fibrosis, mouse and human.
+Cluster C2 macrophages localize to the fibrotic niche. Next, we 
+tried to identify the anatomic niche of macrophage clusters C1, C2, 
+and C3. Because Cx3cr1 was expressed in clusters C2 and C3 in 
+the bleomycin-treated mice, we used mice expressing the tamox
+-
+ifen-inducible allele Cx3cr1-CreERT2 35, which were crossed with 
+Rosa26-loxp-STOP-loxp-TdTomato reporter mice to mark Cx3cr1-
+expressing cells with the fluorophore TdTomato. Tamoxifen was 
+given every other day starting 1 day before bleomycin treatment 
+until lung analysis on days 7 or 14, while control mice received 
+the same tamoxifen schedule through day 14 without bleomycin 
+to determine the baseline levels of TdTomato
++ cells. At baseline, 
+TdTomato+ cells represented 6% of the live lung cells by flow cytom-
+etry, probably representing the interstitial macrophages present 
+in steady-state lung (Fig. 5a and Supplementary Fig. 6b). In bleo -
+mycin-treated mice we observed an increase in the percentage of 
+TdTomato
++ cells among total lung live cells by flow cytometry at 
+both day 7 (23%) and day 14 (38%) compared with baseline (Fig. 5a). 
+Of note, the expression of the alveolar macrophage marker SiglecF 
+on TdTomato
++ cells increased (as assessed by mean fluorescence 
+intensity) across the time series (Fig. 5a), indicating the acquisition 
+of an alveolar macrophage marker by monocyte-derived macro
+-
+phages across time.
+We next performed lung immunofluorescence analysis of Cx3cr1-
+CreERT2/Rosa26-loxp-STOP-loxp-TdTomato mice at day 14 after 
+bleomycin injury to determine the spatial organization of the mac -
+rophages in the fibrotic lung. TdTomato+SiglecF+ macrophages were 
+detected in direct contact with clusters of fibroblasts as defined by 
+areas delimited by multiple adjacent Pdgfrb+ cells (Fig. 5b). On the 
+other hand, TdTomato–SiglecF+ alveolar macrophages (cluster C1) 
+were detectable throughout the lung except in regions where 
+Pdgfrb
++ fibroblasts accumulated at sites of injury (Fig. 5b). The fact 
+S100a6
+2
+a
+c
+b
+2
+0
+–2
+C1 genes
+75
+Mafb+ cells per field
+(percentage of cd68+ cells)
+**
+50
+25
+0
+MHCII genes
+Healthy
+Fibrosis
+Healthy Fibrosis
+Healthy
+Mafb CD68 SH
+Fibrosis
+***
+1
+0
+–1
+Apoe
+Ccr2
+Srgn
+Cx3cr1
+Plbd1
+S100a4
+Il1b
+Socs3
+C1qc
+Aif1
+Hexb
+Ccl9
+Mafb
+Cxcl16
+Mgl2
+Mmp12
+C1qa
+C1qb
+Control 3 months 9 months
+Control3 months9 months
+Fibrosis
+C3 score
+Scaled scores
+Scaled expression
+–2 –1 012
+Fig. 4 | Markers of macrophages identified by scRNA-seq are found in multiple fibrosis models. a, Heatmap of C3 genes from bleomycin-induced 
+fibrosis measured by microarray in an epithelial telomere dysfunction model of progressive lung fibrosis (n =  3 biologically independent mice in each 
+condition, center value is mean). b, Gene set enrichment analysis scores of human orthologs of cluster C1 genes and of MHCII genes in bulk RNA-seq 
+samples from patient lung biopsy specimens
+34. Points indicate individual microarray samples from n =  167 and n =  50 patients and controls, respectively. 
+c, Immunofluorescence of human fibrotic and healthy control lung (representative images are shown; quantitation is for n =  3 independent fibrotic patient 
+lung and n =  3 independent healthy lung samples, 10 images per sample). Scale bar, 50 μ m. SH, second harmonic imaging of collagen. Box plot center line 
+is median, box limits are upper and lower quartiles, and whiskers denote the largest and smallest values no more than 1.5 times the interquartile range 
+from the limits. Wilcoxon test two-tailed P values are presented. *P < 0.01; **P < 0.0001.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology 167
+
+
+[PDF_PAGE 6]
+
+Articles NATuRe IMMuNology
+that TdTomato+ cells within the scar were also SiglecF+ suggests that 
+the macrophages localizing to fibrotic zones were in a transitional 
+state representative of cluster C2. Human CX3CR1 mRNA was 
+also more highly expressed in lung microarray samples from 167 
+patients with lung fibrosis than in samples from 50 healthy controls 
+(Fig. 5c)
+34, underscoring the relevance of the C2 cluster for human 
+disease. Taken together, these results show that macrophage cluster 
+C2 localizes to the fibrotic niche.
+CX3CR1-expressing macrophages drive lung fibrosis. Because 
+of the proximity of transitional macrophages to fibroblasts at 
+fibrotic sites, we investigated whether the CX3CR1
++ macro -
+phages provided trophic or mitogenic support to fibroblasts. 
+Macrophage-derived Pdgf has been shown to support fibroblast 
+growth in co-culture
+36. In the lung scRNA-seq data set, Pdgfa was 
+uniquely expressed in the fibrosis-associated clusters C2 and C3 
+(Fig. 6a). Furthermore, Pdgfa mRNA was more highly expressed 
+by bulk RNA-seq in SiglecF
++CD11c+MHCIIhi (cluster C2) macro -
+phages than SiglecF +CD11c+MHCIIlo macrophages (cluster C1) at 
+2 weeks (Fig. 6a). Lung immunofluorescence analysis of Cx3cr1-
+CreERT2/Rosa26-loxp-STOP-loxp-TdTomato mice at day 14 after 
+bleomycin injury indicated that the homodimeric form of Pdgfa, 
+Pdgf-aa, was highly and uniquely expressed in TdTomato + cells 
+adjacent to fibroblasts that were positive for expression of Pdgfra, 
+the receptor for Pdgf-aa (Fig. 6b).
+To test whether cluster C2 cells supported fibroblast migration 
+or proliferation through production of Pdgf-aa, we performed in 
+vitro assays with 3T3 fibroblasts, an embryonic mouse fibroblast 
+cell line. Conditioned media from SiglecF
++CD11c+MHCIIhi macro-
+phages (corresponding to cluster C2) sorted from wild-type mice 
+14 days after bleomycin injury and cultured for 2 days enhanced 
+gap closure by 3T3 fibroblasts compared with conditioned media 
+from SiglecF
++CD11c+MHCIIlo macrophages (corresponding 
+to cluster C1) isolated from the same mice (Fig. 6c). Antibody 
+blockade of Pdgf-aa inhibited the enhanced gap closure seen in 
+SiglecF
++CD11c+MHCIIhi compared with SiglecF +CD11c+MHCIIlo 
+conditioned media (Fig. 6c), suggesting that the fibroblast response 
+was dependent on Pdgf-aa secreted by SiglecF +CD11c+MHChi 
+macrophages. In a second assay, when TdTomato + cells sorted 
+14 days after bleomycin injury from tamoxifen-induced Cx3cr1-
+CreERT2/Rosa26-loxp-STOP-loxp-TdTomato mice were co-cultured 
+with 3T3 fibroblasts, Pdgf-aa blocking antibody decreased the pro-
+liferation of fibroblasts as measured by 5-ethynyl-2′ -deoxyuridine 
+(EdU) uptake (Fig. 6d).
+Analysis of the lung scRNA-seq data set including cells from both 
+bleomycin-treated and steady-state lung pooled together and anno-
+tated by SingleR showed three clusters of fibroblasts, cluster A, B, 
+and C (Fig. 6e). Pdgfra was not detected in the lung scRNA-seq data 
+set, which may reflect the limitation of the depth of sequencing with 
+the single-cell method; however, expansion of Pdgfra
++ fibroblasts 
+after bleomycin treatment has been reported in a study analyzing 
+the fibroblast compartment in this model of fibrosis
+37. Next, we 
+used gene set analysis 38 to quantify cell cycle genes in the lungs of 
+bleomycin-treated mice compared with steady state 14 days after 
+bleomycin treatment. Cluster A showed the highest expression of 
+cell cycle genes and was predominantly composed of cells from 
+bleomycin-treated mice (Fig. 6e).
+To investigate the role of CX3CR1 + cells in the proliferation 
+of fibroblasts in vivo, Cx3cr1-CreERT2/Rosa26-loxp-STOP-loxp-
+Diphteria Toxin A mice were treated with tamoxifen between 
+day 8 and day 21 after bleomycin injury to induce diphtheria 
+toxin A-dependent deletion of CX3CR1
++ cells during the fibrotic 
+phase of bleomycin lung injury. At 21 days after bleomycin injury, 
+bleomycin-injured, tamoxifen-induced Cx3cr1-CreERT2/Rosa26-
+b
+TdTomato Pdgfrb SiglecF
+a
+c
+SiglecF+
+TdTomato–
+cells
+SiglecF-APC
+MHCII-APC-Cy7
+104
+103
+102
+101
+8.12 2.8
+41.3 27.9
+21.1 33.1
+18.4 27.3
+39.1 26.9
+18.4 15.6
+BaselineD ay 7D ay 14
+102 103 104 105 102 103 104 105 102 103 104 105
+MHCII (MFI ×103)
+Live cells (%)
+SiglecF (MFI ×10)
+SiglecF+
+TdTomato+
+cells
+Cells within fibroblast clusters (%)
+CX3CR1 expression (scaled)
+Baseline
+Day 7
+Day 14
+Cont
+rol
+Fibrosis
+40
+30
+20
+10
+0
+80
+** *
+2
+1
+0
+–1
+–2
+60
+40
+20
+0
+20 60
+40
+20
+0
+15
+10
+5
+0
+Fig. 5 | transitional macrophages expressing CX3CR1, MHCII, and SiglecF localize to sites of fibroblast accumulation after lung injury. a, Flow cytometry 
+of T dT omato+ lung cells in Cx3cr1-CreERT2/Rosa26-loxp-STOP-loxp-T dT omato mice with tamoxifen administration before and after injury followed by 
+flow cytometry, with representative pseudocolor plots and values plotted for T dT omato+ cells at three different time points (n =  3 biologically independent 
+mice per group; mean is marked). b, Lung immunofluorescence at 14 d after injury in Cx3cr1-CreERT2/Rosa26-loxp-STOP-loxp-T dT omato mice treated as 
+in a (a representative field of view with and without siglecF immunofluorescence is shown; quantitation is for n =  3 biologically independent mice, 5 images 
+per mouse). Scale bar, 50 μ m. c, Expression of CX3CR1 in bulk RNA-seq samples from patient lung biopsy specimens34. Box plot center lines are median, 
+box limits are upper and lower quartiles, and whiskers denote the largest and smallest values no more than 1.5 times the interquartile range from the limits. 
+Wilcoxon test two-sided P values are presented. *P < 0.001; **P < 0.0001.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology168
+
+
+[PDF_PAGE 7]
+
+ArticlesNATuRe IMMuNology
+loxp-STOP-loxp-Diphteria Toxin A mice had significantly fewer 
+macrophages quantified by immunofluorescent labeling of either 
+Mertk
++ or SiglecF + cells in the lung (Supplementary Fig. 7), sig -
+nificantly decreased numbers of cells expressing the fibroblast 
+markers Pdgfra
++ and Pdgfrb+ (Fig. 7a), and significantly decreased 
+lung collagen as measured by hydroxyproline assay compared with 
+bleomycin-injured wild-type mice (Fig. 7b). This result indicates 
+that CX3CR1
++ macrophages were required for the expansion of the 
+fibroblast compartment and the deposition of fibrotic scar.
+In human patients, one pathologic feature of idiopathic pulmo -
+nary fibrosis is the presence of normal tissue adjacent to regions of 
+fibrotic foci, which are commonly found in the subpleural region 
+of the lung
+39. In three lung explants displaying such regional het -
+erogeneity, we found that PDGF-AA + macrophages were associ -
+ated with the fibrotic rather than non-fibrotic regions (Fig. 7c). 
+Together, these results suggest the dependence of fibroblast prolif
+-
+eration, which is a key step in fibrogenesis40, on trophism exerted by 
+PDGF-AA+ macrophages recruited to sites of injury.
+Discussion
+We show here that during fibrogenesis CX3CR1 +SiglecF+ mac -
+rophages localize to sites of Pdgfra + and Pdgfrb + fibroblast accu -
+mulation after bleomycin-induced injury in the lung. Deletion of 
+these macrophages during the fibrotic period (days 8–21) elimi
+-
+nated Pdgfra + or Pdgfrb + fibroblasts and decreased total lung 
+collagen. Mechanistic studies indicated that fibroblast migra -
+tion and proliferation were dependent on secretion of Pdgf-aa by 
+SiglecF
++CD11c+MHCIIhi and CX3CR1+ cells, respectively, suggest-
+ing that paracrine interactions between these macrophages and 
+fibroblasts sustain the fibroblast compartment and tissue fibrosis.
+Hierarchical clustering of correlation scores for macrophages 
+with bulk data sets from ImmGen enabled the deconvolution of 
+macrophage heterogeneity and identified three clusters of lung 
+macrophages: alveolar macrophages (cluster C1), interstitial macro
+-
+phages (cluster C3), and an intermediate cluster C2 bearing likeness 
+to both alveolar and interstitial macrophages by gene expression. 
+This analysis motivated the hypothesis that C2 is a transitional state 
+0.0
+2.5
+5.0
+7.5
+10.0
+C1 C2 C3
+Pdgfa expression in
+single cells (%)
+0
+100
+200
+300
+400
+500
+Baseline
+MHCIIlo MHCIIhi
+MHCIIlo MHCIIhi
+MHCIIlo MHCIIhi
+2 weeks 4 weeks
+Pdgfa normalized
+counts in bulk Day
+0
+Day
+14
+Pdgf-aa TdTomato Pdgfra DAPI TdTomato
+–
+TdTomato
++
+Cells in field of view
+(percentage among Pdgf-aa+ cells)
+25
+50
+75
+0.75
+1.00
+1.25
+1.50
+0
+4
+8
+12
+IgG
+PDGF-AA Ab
+CM CM+Ab
+Migration area
+(normalized to baseline)
+*
+*
+*
+**
+CM CM+Ab
+EdU-positive fibroblasts (%)
+**
+–60
+–55
+–50
+–45
+–40
+t-SNE 2
+–15 –10– 50
+Cell-cycle score:
+00 .5 1
+t-SNE 1
+A
+C
+B Bleomycin
+Control
+–0.3
+Cluster ACluster BCluster C
+0.0
+0.3
+0.6
+0.9
+Cell-cycle score
+a b
+cd e
+Fig. 6 | Pdgf-aa is a macrophage-derived trophic factor for fibroblasts. a, Pdgfa expression in lung scRNA-seq macrophage clusters and by bulk RNA-
+seq of SiglecF+CD11c+ lung macrophages after bleomycin injury. Mean is marked. Wald test 2-sided P value is presented (for the lung scRNA-seq 
+data, n =  3 biologically independent mice for bleomycin-injured and n =  6 biologically independent mice for healthy control; for the bulk RNA-seq data, 
+n =  2 biologically independent mice for baseline, n =  3 biologically independent mice for all other conditions). b, Lung immunofluorescence at baseline 
+(bottom) and 14 d after injury (top) in tamoxifen-induced Cx3cr1-CreERT2/Rosa26loxpSTOPloxp-T dT omato mice (each panel of three micrographs shows 
+a representative field of view, the leftmost image a merge, the center Pdgf-aa alone, and the rightmost T dT omato alone; quantitation is for the 14-d time 
+point in n =  3 biologically independent mice, 5 images per mouse). Scale bar, 50 μ m. c, 3T3 fibroblast gap closure in response to conditioned media (CM) 
+from lung macrophages sorted by MHCII expression, with and without Pdgf-aa blocking antibody (Ab; n =  8 biologically independent mice total, each point 
+a separate assay). d, EdU quantitation in 3T3 fibroblasts co-cultured with T dT omato
++ cells sorted from tamoxifen-induced Cx3cr1-CreERT2/Rosa26-loxp-
+STOP-loxp-T dT omato mice 14 d after injury. Mean is marked (n =  3 biologically independent co-cultures). e, t-SNE of SingleR-annotated fibroblasts from 
+the lung scRNA-seq data set showing intensity of cell cycle signature (n =  3 biologically independent mice for bleomycin, n =  6 biologically independent 
+mice for control). Box plot center lines are median, box limits are upper and lower quartiles, and whiskers denote the largest and smallest values no more 
+than 1.5 times the interquartile range from the limits. Wilcoxon test two-sided P values are presented. *P < 0.01; **P < 0.0001.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology 169
+
+
+[PDF_PAGE 8]
+
+Articles NATuRe IMMuNology
+arising after injury, which was supported by labeling and expression 
+studies revealing kinetic transition toward increasing expression of 
+the alveolar macrophage (C1) marker SiglecF by cells expressing the 
+C2 and C3 marker Cx3cr1.
+In cell culture systems, we found that antibody blockade of 
+Pdgf-aa decreased the enhanced 3T3 fibroblast gap closure induced 
+by conditioned media from MHCII
+hi alveolar macrophages (corre-
+sponding to cluster C2) as well as the proliferation of 3T3 fibroblasts 
+in co-culture with CX3CR1
++ macrophages from bleomycin-injured 
+mice. Of note, one of the few Food and Drug Administration-
+approved therapies for lung fibrosis, the small molecule recep
+-
+tor tyrosine kinase inhibitor nintedanib, blocks PDGF receptor 
+signaling
+41, and Pdgfra expressed by fibroblasts drives fibrosis in 
+multiple organs in mice 42–47, including lung fibrosis induced by 
+bleomycin treatment48. These observations indicate that the Pdgf 
+pathway is crucial to disease pathogenesis. Our results implicate 
+the CX3CR1
++SiglecF+ macrophage as the source of Pdgf-aa in the 
+fibrotic niche.
+A recent study reported an increase in the number of 
+Ceacam1+Msr1+Ly6C−F4/80−Mac1+ monocytes, named segre -
+gated-nucleus-containing atypical monocytes or SatM, in the bron-
+choalveolar lavage at day 13 after bleomycin treatment in mice 11. 
+SatM cells were found to be pro-fibrotic when transferred to the 
+lung intravenously. However, macrophages were not tested, whereas 
+our study characterizes these macrophage populations specifically. 
+Furthermore, cells in that study were isolated by bronchoalveolar 
+lavage, which does not efficiently recover cells from fibrotic regions. 
+In the current study, we used dissociated whole lung for single-cell 
+Pdgfra Pdgfrb SH
+Mertk Pdgfrb SH
+WTa
+c
+b
+WT
+Cre+DTA+
+Mouse 1
+Mouse 2
+Mouse 3
+20
+5
+10
+15
+20
+10
+0.0
+0
+25
+50
+75
+100
+–+ +
+–– +
+Bleomycin:
+Patient 1 Patient 2 Patient 3
+Tamoxifen:
+0.5
+1.0
+1.5
+2.0
+30
+40
+60
+80
+****
+****
+****
+***
+**
+Cre+DTA+
+WT Cre+DTA+
+Pdgfra (MFI)SH area per image (%)
+Pdgfrb (MFI)
+Hydroxyproline (mg) per tissue (mg)
+PDGF-AA expression in CD68+ cells (MFI)
+PDGF-AA CD68 SH
+Fibrotic
+High SH signal Low SH signal
+**
+****
+Non-
+fibrotic
+Fig. 7 | Cx3cr1-derived macrophages drive fibroblast accumulation and fibrosis after lung injury. a, Lung immunofluorescence of fibroblast and 
+macrophage markers 21 d after bleomycin injury in Cx3cr1-CreERT2/Rosa26-loxp-STOP-loxp-Diphtheria Toxin A mice treated with tamoxifen between day 
+8 and day 21 and in wild-type mice (representative images are shown; quantitation is for n =  3 biologically independent mice per group, 5 images per 
+mouse). WT, wild type; MFI, mean fluorescence intensity. SH, second harmonic imaging of collagen. b, Fibrosis measured by hydroxyproline assay for 
+lung collagen content in mice treated as in a (blue points are Cx3cr1-CreERT2/Rosa26
+loxpSTOPloxp-Diptheria Toxin A mice and red points are wild type; n =  10, 
+n =  7, and n =  7 biologically independent mice per group from left to right). Scale bar, 50 μ m. c, Immunofluorescence of fibrotic (high SH) and non-fibrotic 
+(low SH) regions from explanted human fibrotic lung (each panel of three micrographs shows a representative field of view, the leftmost image a merge, 
+the center PDGF-AA alone, and the rightmost CD68 alone), with quantification of individual images from 3 separate patients (8 high and 9 low regions in 
+patient 1, 16 high and 16 low in patient 2, and 3 high and 6 low in patient 3). Scale bar, 50 μ m. Box plot center lines are median, box limits are upper 
+and lower quartiles, and whiskers denote the largest and smallest values no more than 1.5 times the interquartile range from the limits. Wilcoxon test 
+two-sided P values are presented. *P < 0.05; **P < 0.01; ***P < 0.001; ****P < 0.0001.
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology170
+
+
+[PDF_PAGE 9]
+
+ArticlesNATuRe IMMuNology
+analysis, which enabled an unbiased view of all cellular subtypes 
+in the lung.
+Our observation that ablation of macrophages expressing Cx3cr1 
+decreased fibroblasts and lung collagen content after bleomycin 
+treatment has relevance for human disease. A similar macrophage 
+gene expression profile was identified in an alternative mouse model 
+of lung fibrosis mediated by telomere dysfunction, and analysis of 
+human lung samples indicated increased expression of CX3CR1 and 
+MHCII genes in patients with fibrosis as well as the expression of 
+the C2 and C3 markers MAFB and PDGF-AA in regions of active 
+fibrosis. These findings underscore the potential therapeutic signifi
+-
+cance of our functional studies in mice.
+A limitation of using Cx3cr1-CreERT2 is that Cx3cr1 is expressed 
+in both clusters C2 and C3, limiting the specificity of our studies. Our 
+analysis suggests an evolution of cluster C3 towards cluster C1, with 
+C2 representing a transitional state. Future studies should charac -
+terize the kinetics of this transition in greater depth and determine 
+whether specific ablation of either cluster across time may be pos
+-
+sible. Second, our annotation of cell states using SingleR relies on 
+the particularities of the reference data sets. The ImmGen database 
+is a large compendium of cell types from multiple organs, which 
+greatly facilitated our clustering analysis by differential annotation. 
+Nonetheless, we anticipate that the power of SingleR to identify new 
+cell types or cell states will continue to increase as single-cell and 
+bulk RNA-seq data sets are amassed from a range of contexts.
+In summary, this study identified a profibrotic macrophage 
+subpopulation that localizes to sites of fibrotic scar with activat
+-
+ing effects on the mesenchyme. Furthermore, the identification 
+of markers specific for the profibrotic macrophages, including 
+CX3CR1 and PDGF-AA, could be useful for therapeutic target
+-
+ing in clinical fibrosis. Our results also demonstrate the value of 
+using reference-based annotation of single-cell data sets to map the 
+heterogeneity of canonical cell types, such as macrophages, and to 
+enhance the differentiation of transcriptomically unique subclusters 
+within the data. Coupled with lineage tracing and functional stud
+-
+ies, this approach should serve as a broadly applicable platform for 
+study of specific cellular compartments in health and disease.
+online content
+Any methods, additional references, Nature Research reporting 
+summaries, source data, statements of data availability and asso
+-
+ciated accession codes are available at https://doi.org/10.1038/
+s41590-018-0276-y
+Received: 30 March 2018; Accepted: 9 November 2018; 
+Published online: 14 January 2019
+References
+ 1. Rockey, D. C., Bell, P . D. & Hill, J. A. Fibrosis—a common pathway 
+to organ injury and failure. N. Engl. J. Med. 373, 
+96 (2015).
+ 2. Blackwell, T. S. et al. Future directions in idiopathic pulmonary fibrosis 
+research. An NHLBI workshop report. Am. J. Respir. Crit. Care Med. 189, 
+214–222 (2014).
+ 3. Rock, J. R. et al. Multiple stromal populations contribute to pulmonary 
+fibrosis without evidence for epithelial to mesenchymal transition. 
+Proc. Natl Acad. Sci. USA 108, E1475–E1483 (2011).
+ 4. El Agha, E. et al. Two-way conversion between lipogenic and myogenic 
+fibroblastic phenotypes marks the progression and resolution of lung fibrosis. 
+Cell Stem Cell 20, 261–273.e263 (2017).
+ 5. Hung, C. et al. Role of lung pericytes and resident fibroblasts in the 
+pathogenesis of pulmonary fibrosis. Am. J. Respir. Crit. Care Med. 188, 
+820–830 (2013).
+ 6. Henderson, N. C. et al. Targeting of α v integrin identifies a core molecular 
+pathway that regulates fibrosis in several organs. Nat. Med. 19, 
+1617–1624 (2013).
+ 7. Schneider, C. et al. Induction of the nuclear receptor PPAR-γ by the 
+cytokine GM-CSF is critical for the differentiation of fetal monocytes 
+into alveolar macrophages. Nat. Immunol. 15, 1026–1037 (2014).
+ 8. Tan, S. Y . & Krasnow, M. A. Developmental origin of lung 
+macrophage diversity. Development 143, 1318–1327 (2016).
+ 9. Gibbons, M. A. et al. Ly6Chi monocytes direct alternatively 
+activated profibrotic macrophage regulation of lung fibrosis. 
+Am. J. Respir. Crit. Care Med. 184, 569–581 (2011).
+ 10. Misharin, A. V . et al. Monocyte-derived alveolar macrophages drive 
+lung fibrosis and persist in the lung over the life span. J. Exp. Med. 214, 
+2387–2404 (2017).
+ 11. Satoh, T. et al. Identification of an atypical monocyte and committed 
+progenitor involved in fibrosis. Nature 541, 96–101 (2017).
+ 12. Heng, T. S. & Painter, M. W . The Immunological Genome Project 
+Consortium. The Immunological Genome Project: networks of gene 
+expression in immune cells. Nat. Immunol. 9, 1091–1094 (2008).
+ 13. The ENCODE Project Consortium. An integrated encyclopedia of DNA 
+elements in the human genome. Nature 489, 57–74 (2012).
+ 14. Stunnenberg, H. G. International Human Epigenome Consortium & Hirst, M. 
+The International Human Epigenome Consortium: a blueprint for scientific 
+collaboration and discovery. Cell 167, 1145–1149 (2016).
+ 15. SingleR GitHub repository, https://github.com/dviraran/SingleR.
+ 16. Hashimshony, T. et al. CEL-Seq2: sensitive highly-multiplexed 
+single-cell RNA-Seq. Genome Biol. 17, 77 (2016).
+ 17. Amit, I. et al. Unbiased reconstruction of a mammalian transcriptional 
+network mediating pathogen responses. Science 326, 257–263 (2009).
+ 18. Shalek, A. K. et al. Single-cell RNA-seq reveals dynamic paracrine control of 
+cellular variation. Nature 510, 363–369 (2014).
+ 19. Helft, J. et al. GM-CSF mouse bone marrow cultures comprise 
+a heterogeneous population of CD11c(+ )MHCII(+ ) macrophages 
+and dendritic cells. Immunity 42, 1197–1211 (2015).
+ 20. Guilliams, M. & Malissen, B. A death notice for in-vitro-generated GM-CSF 
+dendritic cells? Immunity 42, 988–990 (2015).
+ 21. Zheng, G. X. et al. Massively parallel digital transcriptional profiling 
+of single cells. Nat. Commun. 8, 14049 (2017).
+ 22. Kang, H. M. et al. Multiplexed droplet single-cell RNA-sequencing using 
+natural genetic variation. Nat. Biotechnol. 36, 89–94 (2018).
+ 23. Li, H. et al. Reference component analysis of single-cell transcriptomes 
+elucidates cellular heterogeneity in human colorectal tumors. Nat. Genet. 49, 
+708–718 (2017).
+ 24. SingleR web tool, http://comphealth.ucsf.edu/SingleR/.
+ 25. Gautier, E. L. et al. Gene-expression profiles and transcriptional 
+regulatory pathways that underlie the identity and diversity of 
+mouse tissue macrophages. Nat. Immunol. 13, 1118–1128 (2012).
+ 26. Hume, D. A., Mabbott, N., Raza, S. & Freeman, T. C. Can DCs be 
+distinguished from macrophages by molecular signatures? Nat. Immunol. 14, 
+187–189 (2013).
+ 27. Randolph, G. & Merad, M. Reply to: “Can DCs be distinguished from 
+macrophages by molecular signatures?” . Nat. Immunol. 14, 189–190 (2013).
+ 28. Altboum, Z. et al. Digital cell quantification identifies global immune cell 
+dynamics during influenza infection. Mol. Syst. Biol. 10, 720 (2014).
+ 29. Gibbings, S. L. et al. Three unique interstitial macrophages in the murine 
+lung at steady state. Am. J. Respir. Cell Mol. Biol. 57, 66–76 (2017).
+ 30. Gong, T. & Szustakowski, J. D. DeconRNASeq: a statistical framework for 
+deconvolution of heterogeneous tissue samples based on mRNA-Seq data. 
+Bioinformatics 29, 1083–1085 (2013).
+ 31. Huang, L., Nazarova, E. V ., Tan, S., Liu, Y . & Russell, D. G. Growth of 
+Mycobacterium tuberculosis in vivo segregates with host macrophage 
+metabolism and ontogeny. J. Exp. Med. 215, 1135–1152 (2018).
+ 32. Naikawadi, R. P . et al. Telomere dysfunction in alveolar epithelial cells causes 
+lung remodeling and fibrosis. JCI Insight 1, e86704 (2016).
+ 33. Verhaak, R. G. et al. Prognostically relevant gene signatures of high-grade 
+serous ovarian carcinoma. J. Clin. Invest. 123, 517–525 (2013).
+ 34. Y ang, I. V . et al. Expression of cilium-associated genes defines novel 
+molecular subtypes of idiopathic pulmonary fibrosis. Thorax 68, 
+1114–1121 (2013).
+ 35. Y ona, S. et al. Fate mapping reveals origins and dynamics of monocytes and 
+tissue macrophages under homeostasis. Immunity 38, 79–91 (2013).
+ 36. Zhou, X. et al. Circuit design features of a stable two-cell system. Cell 172, 
+744–757 e717 (2018).
+ 37. Xie, T. et al. Single-cell deconvolution of fibroblast heterogeneity in mouse 
+pulmonary fibrosis. Cell Rep. 22, 3625–3640 (2018).
+ 38. Macosko, E. Z. et al. Highly parallel genome-wide expression profiling of 
+individual cells using nanoliter droplets. Cell 161, 1202–1214 (2015).
+ 39. Richeldi, L., Collard, H. R. & Jones, M. G. Idiopathic pulmonary fibrosis. 
+Lancet 389, 1941–1952 (2017).
+ 40. Noble, P . W ., Barkauskas, C. E. & Jiang, D. Pulmonary fibrosis: 
+patterns and perpetrators. J. Clin. Invest. 122, 2756–2762 (2012).
+ 41. Wollin, L. et al. Mode of action of nintedanib in the treatment of idiopathic 
+pulmonary fibrosis. Eur. Respir. J. 45, 1434–1445 (2015).
+ 42. Olson, L. E. & Soriano, P . Increased PDGFRα activation disrupts connective 
+tissue development and drives systemic fibrosis. Dev. Cell 16, 303–313 (2009).
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology 171
+
+
+[PDF_PAGE 10]
+
+Articles NATuRe IMMuNology
+ 43. Iwayama, T. et al. PDGFRα signaling drives adipose tissue fibrosis by 
+targeting progenitor cell plasticity. Genes Dev. 29, 1106–1119 (2015).
+ 44. Horikawa, S. et al. PDGFRα plays a crucial role in connective 
+tissue remodeling. Sci. Rep. 5, 17948 (2015).
+ 45. Hayes, B. J. et al. Activation of platelet-derived growth factor receptor alpha 
+contributes to liver fibrosis. PLoS ONE 9, e92925 (2014).
+ 46. Demaria, M. et al. An essential role for senescent cells in optimal wound 
+healing through secretion of PDGF-AA. Dev. Cell 31, 722–733 (2014).
+ 47. Chen, Y . T. et al. Platelet-derived growth factor receptor signaling 
+activates pericyte–myofibroblast transition in obstructive and 
+post-ischemic kidney fibrosis. Kidney Int. 80, 1170–1181 (2011).
+ 48. Kitagawa, M. et al. Phf14, a novel regulator of mesenchyme growth via 
+platelet-derived growth factor (PDGF) receptor-alpha. J. Biol. Chem. 287, 
+27983–27996 (2012).
+Acknowledgements
+This work was supported by a UCSF Marcus Award to M.B. and A.R.A., a National Institutes 
+of Health grant (HL131560) to M.B., a Gruss Lipper Postdoctoral Fellowship to D.A., 
+a UCSF Nina Ireland Program award to R.P .N. and P .J.W ., a National Institutes of Health 
+grant (HL139897) to P .J.W ., and a National Institutes of Health award (National Institute of 
+Allergy and Infectious Diseases Bioinformatics Support Contract HHSN272201200028C) 
+to A.J.B. The content is solely the responsibility of the authors and does not necessarily 
+represent the official views of the National Institutes of Health. We thank D. Erle, A. Barczak, 
+W . Eckalbar, and M. Adkisson of the UCSF Functional Genomics Core Facility, the UCSF 
+Center for Advanced Technology, the Gladstone Institutes’ Histology & Light Microscopy 
+Core, and D. Sheppard for his insightful comments on the manuscript.
+Author contributions
+D.A. developed SingleR and performed computational analysis of single-cell data under 
+the guidance of A.J.B. A.P .L. performed in vivo and in vitro experiments under the 
+guidance of M.B. and with the assistance of E.W . and S.C. L.L. performed microfluidic 
+capture of single-cell transcriptomes, library preparation, and sequencing under the 
+guidance of A.R.A. V .F ., A.H., and E.W . prepared breeding and experimental stocks 
+of genetically modified mice and performed lung injury models under the guidance 
+of M.B. P .J.W . contributed acquisition, storage, and processing of human samples and, 
+with R.P .N., acquired lung microarray data from mice with telomere dysfunction. D.A. 
+prepared the figures. M.B. conceived of the work, supervised experimental planning and 
+execution, and wrote the manuscript with input from D.A., A.P .L., and L.L.
+Competing interests
+The authors declare no competing interests.
+Additional information
+Supplementary information is available for this paper at https://doi.org/10.1038/
+s41590-018-0276-y.
+Reprints and permissions information is available at www.nature.com/reprints.
+Correspondence and requests for materials should be addressed to M.B.
+Publisher’s note: Springer Nature remains neutral with regard to jurisdictional claims in 
+published maps and institutional affiliations.
+© The Author(s), under exclusive licence to Springer Nature America, Inc. 2019
+NAtuRE IMMuNoLogy | VOL 20 | FEBRUARY 2019 | 163–172 | www.nature.com/ natureimmunology172
+
+
+[PDF_PAGE 11]
+
+ArticlesNATuRe IMMuNology
+Methods
+Mice. Ai14 (Rosa26-LSL-tdTomato), DTA (Gt(ROSA)26Sortm1(DTA)Lky), CX3CR1-
+CreERT2 (Cx3cr1tm2.1(cre/ERT2)Jung), and TRF1fl/fl, all on C57BL/6 background, 
+wild-type C57BL/6, and wild-type 129S1 mice were obtained from the Jackson 
+Laboratory. SPC-CreERT2rtTA mice, on C57BL/6 background, were obtained 
+from Hal Chapman. Strain-appropriate controls were used in all experiments, 
+and genotyping of the mice was performed by PCR. Cx3cr1-CreERT2 mice were 
+administered 2 mg tamoxifen (Sigma) via intraperitoneal injection every other 
+day for Cre induction. Mice were maintained in specific-pathogen-free conditions 
+in the Animal Barrier Facility of the University of California, San Francisco. All 
+animal experiments were in accordance with protocols approved by the University 
+of California, San Francisco Institutional Animal Care and Use Committee.
+Microfabrication of devices. The poly(dimethylsiloxane) (PDMS) Drop-
+seq droplet microfluidic device is fabricated with standard soft lithography 
+techniques. Photoresist masters are created by spinning a layer of photoresist 
+SU-8 (Microchem) onto a 7.5-cm silicon wafer (University Wafer), then baking 
+at 95 °C for 20 min. Then, the photoresist is subjected to a 3-min ultraviolet light 
+exposure over Drop-seq
+38 photolithography masks (CAD/Art Services). After 
+ultraviolet exposure, the wafers are baked at 95 °C for 10 min, developed in fresh 
+propylene glycol monomethyl ether acetate (Sigma Aldrich), rinsed with fresh 
+propylene glycol monomethyl ether acetate, and baked at 95 °C for 1 min to remove 
+solvent. The microfluidic devices are fabricated by curing PDMS (10:1 polymer-
+to-crosslinker ratio) over the photoresist master
+49. The devices are cured in a 
+65-°C oven for 2 h and extracted with a scalpel, and inlet ports are added using a 
+0.75-mm biopsy core (World Precision Instruments). The device is bonded to a 
+glass slide using O2 plasma treatment, and channels are treated with Aquapel (PPG 
+Industries) to render them hydrophobic. Finally, the devices are baked at 65 °C for 
+20 min to dry the Aquapel before they are ready for use.
+Drop-seq and data analysis. For scRNA-seq analysis of lung fibrosis, bleomycin 
+(3 U kg
+−1; Hospira) or water was instilled intratracheally to anesthetized male 
+129S1 mice, age 10–12 weeks. After 14 d, mice were killed, and lungs were perfused 
+with PBS and dissociated to a single-cell suspension in Roswell Park Memorial 
+Institute RPMI medium containing 0.13 U Liberase TM (Roche) and dissociated 
+using gentleMACS (Miltenyi Biotec). Cells were passed through 70-µ m and 40-µ m 
+strainers followed by FACS sorting of 4,6-diamidino-2-phenylindole (live) cells. The 
+single-cell RNA-seq experiment is performed based on the Drop-seq protocol
+38. 
+Briefly, the barcoded Drop-seq beads (MACOSKO-2011-10, ChemGenes) 
+and single-cell suspensions from dissociated mouse lung are re-suspended to 
+100 beads µ l
+−1 in PBS-BSA buffer and 120 cells µ l−1 in Drop-seq lysis buffer (with 
+additional 1 M NaCl added), respectively. Monodisperse droplets ~1 nl in size were 
+generated using the fabricated Drop-seq device. We used HFE7500 with 2% w/v 
+ionic krytox as oil phase. The collected droplets were broken with perfluorooctanol 
+(Sigma) in 30 ml 6× SSC buffer. The beads were then washed and re-suspended 
+in a reverse transcriptase mix for reverse transcription and the template switch 
+reaction. Exonuclease I is used to remove unextended primers following the reverse 
+transcription reaction. The beads were then washed, counted, aliquoted into PCR 
+tubes at 6,000 beads per PCR reaction, and PCR amplified for 17 cycles: 95 °C for 
+3 min; then 4 cycles of: 98 °C for 20 sec, 65 °C for 45 sec, 72 °C for 3 min; 13 cycles of: 
+98 °C for 20 sec, 67 °C for 20 sec, 72 °C for 3 min; and, finally, 72 °C for 5 min. The 
+PCR reactions from one Drop-seq run were pooled and purified with AMPure XP 
+beads; the amplified complementary DNA was quantified with Qubit dsDNA High-
+Sensitivity Assay and checked on a BioAnalyzer High Sensitivity Chip (Agilent). 
+The cDNA was fragmented and amplified for sequencing with the Nextera 
+XT DNA Sample Prep Kit (Illumina) using a primer that enabled the specific 
+amplification of only the 3′ ends and Illumina index primers N70X. The libraries 
+were purified with Ampure beads, quantified with Quabit dsDNA High-Sensitivity 
+Assay, checked on a BioAnalyzer High Sensitivity Chip, and then sequenced on 
+Illumina Miseq or Hiseq2500. Paired-end sequence reads were processed mostly 
+as previously described
+38. Briefly, cell barcode and unique molecular identifier are 
+extracted from Read 1. Read 2 was aligned to the mouse mm10 genome (UCSC) 
+using Bowtie
+50. Reads mapping to exonic regions of genes of mouse mm10 genome 
+were recorded. The number of transcripts for a given gene within a cell barcode was 
+determined by counting unique molecular identifiers and they were compiled into a 
+digital gene expression matrix.
+For initial clustering, we used Seurat v2.238 to cluster pooled data counts from 9 
+batches (42,000 cells, estimated based on the number of Drop-seq beads recovered, 
+the concentration of cells, and droplet size). Cells with less than 500 non-zero 
+genes were filtered out; genes expressed in only 1 cell were omitted. Altogether, 
+the filtered data contained 8,366 cells and 13,861 genes (Supplementary Table 1). 
+Expression data were log-normalized, and data were scaled to regress out 
+differences in number of detected molecules. Variable genes were identified using 
+the FindVariableGenes function with x.low.cutoff = 0.0125, x.high.cutoff = 3, 
+and y.cutoff = 0.5. The t-distributed stochastic neighbor embedding (t-SNE) plot 
+was computed using the top 10 principal components.
+Cell type annotation of single cells (SingleR). The SingleR pipeline is based on 
+correlating gene expression of pure cell types with single-cell gene expression. 
+SingleR can be used with any reference data set. For mouse samples, we used the 
+ImmGen database, a collection of 830 microarray samples, which we classified to 
+20 main cell types and further annotated to 253 subtypes
+12; a data set of 358 mouse 
+RNA-seq samples annotated to 28 cell types collected, processed, and shared, 
+courtesy of Bérénice Benayoun, can also be used. For human samples we used 
+the data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples 
+annotated to 28 cell types
+14, and Encode, 115 RNA-seq pure stroma and immune 
+samples annotated to 17 cell types13. More reference data sets for mouse and 
+human are available with the SingleR R package. For specific applications, smaller 
+data sets can be applicable (as demonstrated in Fig. 2c).
+The annotation in SingleR is performed for each single cell independently. 
+First, a Spearman coefficient is calculated for single-cell expression with each of 
+the samples in the reference data set. The correlation analysis is performed only 
+on variable genes in the reference data set. Next, multiple correlation coefficients 
+per cell type according to the named annotations of the reference data set are 
+aggregated to provide a single value per cell type per single cell. SingleR uses 
+the 80th percentile of correlation values, to prevent misclassification due to 
+heterogeneity in the reference samples. Finally, in the fine-tuning step, SingleR 
+reruns the correlation analysis, but only for the top cell types from the previous 
+step. The analysis is performed only on variable genes between these cell types (see 
+below). The lowest-value cell type is removed (or values more than 0.05 below the 
+top value), and then this step is repeated until only two cell types remain. The cell 
+type corresponding to the top value after the last run is assigned to the single cell. 
+Using only variable genes increases the ability to distinguish closely related cell 
+types. Variable genes are defined as the top N genes that have a higher median 
+expression in a cell type compared with each other cell type; we use a varying N, 
+depending on the number of cell types used in the analysis. In the first round, N 
+is 20 genes per cell type if there are 253 cell types (as in our ImmGen reference) 
+or 71 genes per cell type if there are 28 cell types (as in our Blueprint + Encode 
+reference). In the last fine-tuning step, N = 333. More details can be found in 
+Supplementary Note 1 and at the SingleR Github repository
+15.
+Clustering in Fig. 3a was performed using Ward’s hierarchical agglomerative 
+clustering method based on the SingleR scores across all cell types. Deconvolution 
+analysis in Fig. 2d was performed using the DeconRNA-seq package
+30 using the 
+average expression of AM samples and average expression of IM3 samples from 
+GSE94135
+29. Differential expression analysis (Fig. 3b) was performed using the 
+Seurat package v2.2 with default parameters.
+Bulk RNA-seq. For bulk RNA-seq analysis of lung fibrosis, bleomycin (3 U kg−1; 
+Hospira) or water was instilled intratracheally to anesthetized male 129S1 
+mice, age 10–12 weeks. Cells gated on SiglecF +CD11c+ and sorted on MHCII hi 
+or MHCIIlo (Supplementary Fig. 6a) were collected at 2 weeks and 4 weeks 
+after injury, or at baseline for the MHCII lo compartment. RNA was collected 
+(RNeasy Micro, Qiagen) from these samples, and total RNA quality was assessed 
+by spectrophotometer (NanoDrop, Thermo Fisher) and the Agilent 2100 
+Bioanalyzer. Intact mRNA was isolated using the Dynabead mRNA Purification 
+Kit for total RNA, according to the manufacturer’s protocol (Thermo Fisher). 
+Amplified cDNA was prepared using the NuGen Ovation RNA-Seq System 
+V2 kit, according to the manufacturer’s protocol (NuGen Technologies), and 
+sequencing libraries were generated using the Nextera XT library preparation kit 
+with multiplexing primers according to the manufacturer’s protocol (Illumina). 
+Library fragment size distributions were assessed using the Bioanalyzer 2100 
+and the DNA High-Sensitivity Chip (Agilent). Library sequence quality was 
+assessed by sequencing single-end 50-base pair reads using the Illumina MiSeq 
+platform, and libraries were pooled for high-throughput sequencing on the 
+Illumina HiSeq 4000 by using equal numbers of uniquely mapped protein-
+coding reads. RNA sequencing was performed on HiSeq 4000 machines 
+(Illumina), followed by de-multiplexing of raw sequencing results, trimming 
+of adapter sequences, and alignment to the reference genome using STAR 
+software
+51. DESeq2 was used to normalize by size factor (reads per sample) 
+as well as by library complexity, and we then applied Wald test to determine 
+significance of differential expression.
+Public gene expression data. ImmGen raw expression data of phases 1 and 
+2 were downloaded as CEL files from the Gene Expression Omnibus (GEO; 
+GSE15907 and GSE37448), processed, and normalized using the robust multi-
+array average procedure on probe-level data using Matlab functions. The analysis 
+was performed using a custom CDF file obtained from Brainarray
+52. Blueprint 
+and Encode data were processed as we described previously53. Raw counts from 
+the lung reference data set were obtained from Gibbings et al.29 (GSE94135) and 
+Altboum et al.28 (GSE49932). Counts were normalized and converted to TPM 
+using R functions. The gene expression profile of GM-CSF-derived bone marrow 
+dendritic cell subsets (available at GSE6236119) was analyzed using the GEO2R 
+tool for differentially expressed genes. Top 50 upregulated by fold-change GM-
+CSF-cultured dendritic cell genes and top 50 GM-CSF-cultured macrophage genes 
+were used in Fig. 1b. Single-cell RNA-seq counts from Hashimshony et al.
+16 used 
+in Fig. 1b were downloaded from the ARCHS project54. 10X peripheral blood 
+mononuclear (PBMC) single-cell counts were downloaded directly from the 
+10X website
+55.
+NAtuRE IMMuNoLogy | www.nature.com/ natureimmunology
+
+
+[PDF_PAGE 12]
+
+Articles NATuRe IMMuNology
+Analysis of published human lung microarray data sets. Y ang et al.34 performed 
+gene expression profiling for 167 lung tissues from idiopathic interstitial 
+pneumonia subjects and 50 healthy controls. We downloaded raw CEL files 
+from GEO (accession GSE32537) and processed them using custom CDFs from 
+BrainArray. Normalization was performed using the robust multi-array average 
+procedure on Affymetrix microarray data. Single-sample gene set enrichment 
+analysis
+33 was performed using human orthologs of C1 genes (Supplementary Table 3) 
+and 15 human MHCII genes (HLA-DMA, HLA-DMB, HLA-DOA, HLA-DOB, 
+HLA-DPA1, HLA-DPB1, HLA-DPB2, HLA-DQA1, HLA-DQA2, HLA-DQB1, 
+HLA-DQB2, HLA-DRA, HLA-DRB1, HLA-DRB5, HLA-DRB6).
+Microarray profiling in telomere dysfunction model of lung fibrosis. SPC-
+creERT2/TRF1flox/flox mice and TRF1flox/flox litter-mate controls were subjected to 
+tamoxifen administration beginning at 8 weeks of age, as previously described32. 
+Lungs perfused free of blood were harvested at 3 months and 9 months. Total RNA 
+including small RNAs was extracted using miRNeasy Mini Kit (Qiagen). Total 
+RNA was measured using the NanoDrop photospectrometer (NanoDrop). Agilent 
+mouse microarray kit 8 × 60 K v2 (G4852B) was used. Gene expression profiling 
+was performed by Onearray (Phalanx Bio). All of the samples passed the quality 
+control parameters established by Agilent. Cy3-labeled antisense RNA was used 
+for hybridization.
+Single-cell dissociation for FACS. Lungs were perfused with PBS and dissociated 
+to a single-cell solution in 10 mM HEPES RPMI containing 0.2% collagenase (Wako 
+Pure Chemical Industries), 0.1 mg ml
+−1 Dispase II (Roche), and 2,000 U ml−1 DNase 
+I (Merck). Cells were passed through a 70-µ m strainer and stained at 4 °C for 30 min 
+with the following antibodies (1:100): SiglecF-APC (catalog number 50-1702-82, 
+clone 1RNM44N, eBioscience), MHCII-APC-Cy7 (catalog number 47-5321-82, 
+clone M5/114.15.2, eBioscience), and CD11c-PE (catalog number 557401, clone 
+HL3, BD Biosciences). Cells were sorted either with BD FACSAria2 or SONY 
+SH800 FACS. Data for analytical flow were analyzed using FlowJo software.
+Immunostaining and microscopy. Mouse lungs in the bleomycin model 
+were perfused with PBS, inflated with 50% optimal cutting temperature 
+(OCT) compound, 10% sucrose in PBS, and fixed overnight at 4 °C in 4% 
+paraformaldehyde (PFA) before freezing in OCT. Lungs from the telomere 
+dysfunction model were perfused with PBS and frozen in OCT. For human 
+samples, OCT-embedded tissues were cut to 15-µ m sections, and sections were 
+fixed with 4% PFA for 15 min at room temperature. OCT-embedded tissues were 
+cut to 15-µ m sections, blocked with 3% donkey serum, 1% BSA, 0.3% TritonX, 
+and then stained with the following antibodies (1:100 dilution): SiglecF (catalog 
+number AF1706, R&D Systems), Mertk (catalog number AF591, R&D Systems), 
+Pdgfrb (catalog number 14-1402-82, clone APB5, eBioscience), CD68 (catalog 
+number ab955, clone KP1, Abcam), MafB (catalog number HPA005653, Sigma), 
+PDGF-AA antibody (catalog number 07-1436, Millipore), and Pdgfra antibody 
+(catalog number AF1062, R&D Systems). Secondary antibodies conjugated to 
+Alexa fluorophores (Invitrogen and Abcam) were used at 1:200 dilution. Stained 
+sections and two-photon images of second harmonic signal were visualized on 
+a Zeiss LSM 780 NLO microscope. Image processing was done using ImageJ. 
+For quantitation of Fig. 5b, regions of fibroblast accumulation were delimited by 
+Pdgf receptor staining. For quantitation of Fig. 7a, mean fluorescent intensity of 
+Pdgfra and Pdgfrb immunostaining was measured from cellular areas as defined 
+by morphological tissue features. For quantitation of Fig. 7c, percentage of second 
+harmonic signal was determined for each image, and the median across images 
+(within patient) was defined as the threshold for categorization as fibrotic versus 
+non-fibrotic. For hematoxylin and eosin images, staining of frozen sections was 
+performed using standard protocols, and images of whole sections were acquired 
+on a VERSA automated slide scanner (Leica Biosystems) equipped with an Andor 
+Zyla 5.5 sCMOS camera (Andor Technologies) acquired under National Institutes 
+of Health S10 grant OD021717; individual images were generated with the 
+ImageScope software (Aperio Technologies).
+Fibroblast migration assay. 3T3 mouse fibroblasts were seeded at 100% 
+confluency into a 96-well plate with a central cell-free detection zone in the 
+center of each well (Platypus Technologies). Then, 100 µ l of conditioned media of 
+macrophage cultures (48 h culture in RPMI containing 10% fetal bovine serum) 
+was added per well. Pdgf-aa antibody (catalog number 07-1436, Millipore) was 
+added at concentration 0.05 µ g ml
+−1. Cells were imaged via bright field microscopy 
+at time points 0 h and 24 h. Image processing and migration quantification were 
+done using ImageJ.
+Fibroblast proliferation assay. Fibroblast proliferation by flow cytometric EDU 
+assay was performed according to the manufacturer’s protocol (Click-iT Flow 
+Cytometry, Invitrogen). 3T3 mouse fibroblasts, and TdTomato+ macrophages 
+sorted from Cx3cr1-CreERT2/Rosa26-loxp-STOP-loxp-Tdtomato mice 2 weeks 
+after bleomycin injury, were seeded at a ratio of 1:3 in serum-free conditions in 
+the presence of Pdgf-aa blocking antibody (catalog number 07-1436, Millipore) or 
+IgG control (catalog number ab199376, lot GR3195151-2, Abcam). EdU was added 
+at 48 h, and cells were suspended 2 h later for EdU detection in the TdTomato– 
+(fibroblast) fraction on a SONY SH800 flow cytometer.
+Measurement of hydroxyproline. Lung hydroxyproline content was measured 
+as previously described6 3 weeks after intratracheal instillation of bleomycin to 
+sex-matched, male and female, 8–12-week-old C57BL/6J mice. Briefly, mouse 
+lungs were incubated in 12 M HCl at 110 °C for 18 h. Aliquots of the samples 
+reconstituted in distilled water were added to 1.4% chloramine-T in 10% 
+isopropanol and 0.5 M sodium acetate. Erlich’s solution was added, and the samples 
+were incubated at 60 °C for 10 min. Absorbance at 562 nm was measured and 
+adjusted according to standard curves.
+Human lung tissues. Written informed consent was obtained from all subjects, 
+and the study was approved by the University of California, San Francisco 
+Institutional Review Board. Pulmonary fibrosis lung tissues were obtained at the 
+time of lung transplantation from patients with a pathologic diagnosis of usual 
+interstitial pneumonia and a consensus clinical diagnosis of idiopathic pulmonary 
+fibrosis according to available guidelines
+56. Age-similar, non-diseased, normal lung 
+tissues were procured from lungs not used by the Northern California Transplant 
+Donor Network
+57. Our studies indicate that these lungs are physiologically and 
+pathologically normal. Lung fragments were inflated with 30% OCT suspended in 
+PBS, embedded in OCT compound, and frozen immediately after isolation in dry 
+ice before storing at − 80 °C until use.
+Statistical analysis. All significance tests in this paper, unless otherwise stated, 
+were assessed using the two-sided Wilcoxon rank-sum test.
+Reporting Summary. Further information on research design is available in the 
+Nature Research Reporting Summary linked to this article.
+Code availability. The SingleR open-source R package is maintained on GitHub 
+R package and available from https://github.com/dviraran/SingleR. Code to 
+reproduce the figures is also available in the GitHub repository.
+Data availability
+The data that support the findings of this study are available from the 
+corresponding author upon reasonable request. RNA-seq data have been deposited 
+in the GEO repository under accession numbers GSE111664, GSE111690, and 
+GSE114005 and at ArrayExpress under accession number E-MTAB-7142.
+References
+ 49. Qin, D., Xia, Y . & Whitesides, G. M. Soft lithography for micro- and 
+nanoscale patterning. Nat. Protoc. 5, 491–502 (2010).
+ 50. Langmead, B., Trapnell, C., Pop, M. & Salzberg, S. L. Ultrafast and 
+memory-efficient alignment of short DNA sequences to the human genome. 
+Genome Biol. 10, R25 (2009).
+ 51. Dobin, A. et al. STAR: ultrafast universal RNA-seq aligner. Bioinformatics 29, 
+15–21 (2013).
+ 52. Dai, M. et al. Evolving gene/transcript definitions significantly alter the 
+interpretation of GeneChip data. Nucleic Acids Res. 33, e175 (2005).
+ 53. Aran, D., Hu, Z. & Butte, A. J. xCell: digitally portraying the tissue cellular 
+heterogeneity landscape. Genome Biol. 18, 220 (2017).
+ 54. Lachmann, A. et al. Massive mining of publicly available RNA-seq data from 
+human and mouse. Nat. Commun. 9, 1366 (2018).
+ 55. 10X single-cell datasets, https://support.10xgenomics.com/single-cell-gene-
+expression/datasets.
+ 56. Raghu, G. et al. An official ATS/ERS/JRS/ALAT statement: 
+idiopathic pulmonary fibrosis: evidence-based guidelines for 
+diagnosis and management. Am. J. Respir. Crit. Care Med. 183, 
+788–824 (2011).
+ 57. Ware, L. B. et al. Assessment of lungs rejected for transplantation and 
+implications for donor selection. Lancet 360, 619–620 (2002).
+NAtuRE IMMuNoLogy | www.nature.com/ natureimmunology
+
+
+[PDF_PAGE 13]
+
+1 nature research | reporting summaryMarch 2018
+Corresponding author(s): Mallar Bhattacharya
+Reporting Summary
+Nature Research wishes to improve the reproducibility of the work that we publish. This form provides structure for consistency and transparency 
+in reporting. For further information on Nature Research policies, see Authors & Referees and the Editorial Policy Checklist.
+Statistical parameters
+When statistical analyses are reported, confirm that the following items are present in the relevant location (e.g. figure legend, table legend, main 
+text, or Methods section).
+n/a Confirmed
+The exact sample size (n) for each experimental group/condition, given as a discrete number and unit of measurement
+An indication of whether measurements were taken from distinct samples or whether the same sample was measured repeatedly
+The statistical test(s) used AND whether they are one- or two-sided 
+Only common tests should be described solely by name; describe more complex techniques in the Methods section.
+A description of all covariates tested
+A description of any assumptions or corrections, such as tests of normality and adjustment for multiple comparisons
+A full description of the statistics including central tendency (e.g. means) or other basic estimates (e.g. regression coefficient) AND 
+variation (e.g. standard deviation) or associated estimates of uncertainty (e.g. confidence intervals)
+For null hypothesis testing, the test statistic (e.g. F, t, r) with confidence intervals, effect sizes, degrees of freedom and P value noted 
+Give P values as exact values whenever suitable.
+For Bayesian analysis, information on the choice of priors and Markov chain Monte Carlo settings
+For hierarchical and complex designs, identification of the appropriate level for tests and full reporting of outcomes
+Estimates of effect sizes (e.g. Cohen's d, Pearson's r), indicating how they were calculated
+Clearly defined error bars 
+State explicitly what error bars represent (e.g. SD, SE, CI)
+Our web collection on statistics for biologists may be useful.
+Software and code
+Policy information about availability of computer code
+Data collection No software was used to collect data.
+Data analysis Seurat v2.2 was used to process single cell data. STAR software v2.4.2a and DESeq2 v1.14.0 were used for bulk RNAseq. SingleR v1.0 was 
+used to annotate the samples and is available at https://github.com/dviraran/SingleR. All figures and tables were generated using R, and 
+the code for generating the figures is available at: https://github.com/dviraran/SingleR/tree/master/manuscript_figures. FlowJo v10.5.3 
+was used to analyze flow cytometry data. ImageJ 1.51 and ImageScope v12.3.3 were used for image analysis.
+For manuscripts utilizing custom algorithms or software that are central to the research but not yet described in published literature, software must be made available to editors/reviewers 
+upon request. We strongly encourage code deposition in a community repository (e.g. GitHub). See the Nature Research guidelines for submitting code & software for further information.
+Data
+
+
+[PDF_PAGE 14]
+
+2 nature research | reporting summaryMarch 2018
+Policy information about availability of data
+All manuscripts must include a data availability statement. This statement should provide the following information, where applicable: 
+- Accession codes, unique identifiers, or web links for publicly available datasets 
+- A list of figures that have associated raw data 
+- A description of any restrictions on data availability
+The data that support the findings of this study are available from the corresponding author upon request. RNAseq data have been deposited in the GEO depository 
+under accession numbers GSE111664, GSE111690, and GSE114005 and at ArrayExpress under accession number E-MTAB-7142. 
+Field-specific reporting
+Please select the best fit for your research. If you are not sure, read the appropriate sections before making your selection.
+Life sciences Behavioural & social sciences
+For a reference copy of the document with all sections, see nature.com/authors/policies/ReportingSummary-flat.pdf
+Life sciences
+Study design
+All studies must disclose on these points even when the disclosure is negative.
+Sample size Sample sizes were based on statistical analyses that established significant differences between groups in previous studies.
+Data exclusions Data were not excluded from the analysis.
+Replication All findings were mutiply replicated to confirm reproducibility as indicated in the text. All attempts at replication were successful.
+Randomization Groups were allocated randomly for in vitro assays and for mouse models of fibrosis. Human samples for analysis were selected randomly.
+Blinding Investigators were blinded with respect to group allocation for all assays including measurement of lung collagen and image analysis for 
+quantitation of gap closure and cell number in photomicrographs.
+Materials & experimental systems
+Policy information about availability of materials
+n/a Involved in the study
+Unique materials
+Antibodies
+Eukaryotic cell lines
+Research animals
+Human research participants
+Antibodies
+Antibodies used SiglecF- APC (eBioscience, cat#50-1702-82, clone 1RNM44N, lot 4285690, dilution 1:100), MHCII-APC-Cy7 (eBioscience, 
+cat#47-5321-82, clone M5/114.15.2, lot 4310394, dilution 1:100), CD11c-PE (BD Biosciences, cat#557401, clone HL3, lot 
+7012770, dilution 1:100), SiglecF (R&D Systems, cat#AF1706, lot KPA011707A, dilution 1:100), Mertk (R&D Systems, cat#AF591, 
+lot DGS05, dilution 1:100), PDGFRbeta (eBioscience, cat#14-1402-82, clone APB5, lot 4322162, dilution 1:100), CD68 (Abcam, 
+clone KP1, cat#ab955, lot GR3192728, dilution 1:100), MafB (Sigma, cat#HPA005653, lot 6117647, dilution 1:100), Alexa 
+fluorophore secondary antibodies (Invitrogen and Abcam), PDGF-AA (Millipore, 07-1436, lot 3100458, dilution 1:100 or 0.05 
+microgram/mL), Rabbit IgG isotype control (Abcam, cat#ab199376, lot GR3195151-2, 0.05microgram/mL), PDGFRalpha (R&D 
+Systems, cat#AF1062, lot HMQ0217091, dilution 1:100). Secondary antibodies, all Donkey used at dilution 1:200: anti-goat 555 
+(Invitrogen, cat#A21432, lot 1249013), anti-goat 647 (Invitrogen, cat#A21447, lot 1977345), anti-rabbit 555 (Abcam, 
+cat#ab150062, lot GR297073-1), anti-rabbit 647 (Abcam, cat#ab150063, lot GR-289647-4), anti-rat 555 (Abcam, cat#ab150154, 
+lot GR2901144-1), anti-rat 647 (Abcam, cat#ab150155, lot GR303632-3).
+Validation All antibodies used were commercially available with accompanying validation information available at vendor websites.
+
+
+[PDF_PAGE 15]
+
+3 nature research | reporting summaryMarch 2018
+Eukaryotic cell lines
+Policy information about cell lines
+Cell line source(s) FIbroblasts 3T3 cells from ATCC.
+Authentication The cell line was used directly from the vendor. No further authentication was performed.
+Mycoplasma contamination Mycoplasma testing was not performed after purchase.
+Commonly misidentified lines
+(See ICLAC register)
+We did not use any commonly misidentified cell lines per the current ICLAC register.
+Research animals
+Policy information about studies involving animals; ARRIVE guidelines recommended for reporting animal research
+Animals/animal-derived materials Mouse, 129S1 and C57BL/6 ages 8-12 weeks of both sexes were used.
+Human research participants
+Policy information about studies involving human research participants
+Population characteristics Lung samples were acquired from patients with idiopathic pulmonary fibrosis (IPF) at the time of lung transplant or from control 
+lungs when not used by the Northern California Donor Transplant network. There was a total of 6 samples from patients with IPF 
+ranging in age from 49 to 67, 5 females and 1 male. At the time of transplant, one patient was on treatment with pirfenidone 
+and 1 with nintedanib. For unused donor controls, demographic data were not collected.
+Method-specific reporting
+n/a Involved in the study
+ChIP-seq
+Flow cytometry
+Magnetic resonance imaging
+Flow Cytometry
+Plots
+Confirm that:
+The axis labels state the marker and fluorochrome used (e.g. CD4-FITC).
+The axis scales are clearly visible. Include numbers along axes only for bottom left plot of group (a 'group' is an analysis of identical markers).
+All plots are contour plots with outliers or pseudocolor plots.
+A numerical value for number of cells or percentage (with statistics) is provided.
+Methodology
+Sample preparation Mouse lungs were collagenase digested into single cell suspensions as described in Methods.
+Instrument BD FACSAria2 or SONY SH800 FACS
+Software FlowJo
+Cell population abundance Cell populations depicted in Supplementary Figure 6.
+Gating strategy Gating strategy depicted in Supplementary Figure 6.
+Tick this box to confirm that a figure exemplifying the gating strategy is provided in the Supplementary Information.

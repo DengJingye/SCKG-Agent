@@ -84,6 +84,60 @@ def write_phase1_fixtures(directory: Path) -> Dict[str, Path]:
     return paths
 
 
+def write_phase5_batch_fixtures(directory: Path) -> Dict[str, Path]:
+    directory.mkdir(parents=True, exist_ok=True)
+    paths = {
+        "valid_pca": directory / "batch_valid_pca.h5ad",
+        "valid_needs_pca": directory / "batch_valid_needs_pca.h5ad",
+        "missing_batch_key": directory / "batch_missing_key.h5ad",
+        "single_batch": directory / "batch_single.h5ad",
+        "missing_batch_labels": directory / "batch_missing_labels.h5ad",
+        "invalid_pca": directory / "batch_invalid_pca.h5ad",
+    }
+    counts = _counts(n_cells=60, n_genes=30)
+    obs = _batch_obs(counts.shape[0])
+    var = _var(counts.shape[1])
+    normalized = np.log1p(counts / np.maximum(counts.sum(axis=1, keepdims=True), 1) * 1e4)
+    centered = normalized - normalized.mean(axis=0, keepdims=True)
+    u, singular_values, _ = np.linalg.svd(centered, full_matrices=False)
+    pca = (u[:, :10] * singular_values[:10]).astype(np.float32)
+
+    valid = ad.AnnData(X=normalized.astype(np.float32), obs=obs.copy(), var=var.copy())
+    valid.layers["counts"] = sparse.csr_matrix(counts)
+    valid.obsm["X_pca"] = pca
+    _mark_fixture(valid, "phase5_batch_valid_pca")
+    valid.write_h5ad(paths["valid_pca"])
+
+    needs_pca = ad.AnnData(
+        X=normalized.astype(np.float32),
+        obs=obs.copy(),
+        var=var.copy(),
+    )
+    _mark_fixture(needs_pca, "phase5_batch_valid_needs_pca")
+    needs_pca.write_h5ad(paths["valid_needs_pca"])
+
+    missing_key = valid.copy()
+    del missing_key.obs["batch"]
+    missing_key.write_h5ad(paths["missing_batch_key"])
+
+    single = valid.copy()
+    single.obs["batch"] = pd.Categorical(["batch_a"] * single.n_obs)
+    single.write_h5ad(paths["single_batch"])
+
+    missing_labels = valid.copy()
+    batch_values = missing_labels.obs["batch"].astype(object)
+    batch_values.iloc[0] = None
+    missing_labels.obs["batch"] = pd.Categorical(batch_values)
+    missing_labels.write_h5ad(paths["missing_batch_labels"])
+
+    invalid_pca = valid.copy()
+    invalid_values = np.asarray(invalid_pca.obsm["X_pca"]).copy()
+    invalid_values[0, 0] = np.nan
+    invalid_pca.obsm["X_pca"] = invalid_values
+    invalid_pca.write_h5ad(paths["invalid_pca"])
+    return paths
+
+
 def _counts(n_cells: int = 48, n_genes: int = 24) -> np.ndarray:
     rng = np.random.default_rng(FIXTURE_SEED)
     counts = rng.poisson(lam=1.4, size=(n_cells, n_genes)).astype(np.int32)
@@ -97,6 +151,18 @@ def _obs(n_cells: int) -> pd.DataFrame:
     return pd.DataFrame(
         {"batch": pd.Categorical(batches)},
         index=[f"cell_{index:03d}" for index in range(n_cells)],
+    )
+
+
+def _batch_obs(n_cells: int) -> pd.DataFrame:
+    batches = [f"batch_{index % 3}" for index in range(n_cells)]
+    cell_types = ["T" if index % 2 == 0 else "B" for index in range(n_cells)]
+    return pd.DataFrame(
+        {
+            "batch": pd.Categorical(batches),
+            "cell_type": pd.Categorical(cell_types),
+        },
+        index=[f"batch_cell_{index:03d}" for index in range(n_cells)],
     )
 
 

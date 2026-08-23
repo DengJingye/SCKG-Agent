@@ -18,8 +18,10 @@ from core.execution_models import (
     WorkflowPlan,
     ValidationResult,
 )
+from core.runtime_pack_models import RuntimeCapabilityProbe, RuntimePackState
 
 if TYPE_CHECKING:
+    from execution.approval_service import AuthorizationValidation
     from execution.repair_policy import RepairProposal
 
 
@@ -37,11 +39,15 @@ class RouterRoute(str, Enum):
     CONTRACT_REVIEW = "CONTRACT_REVIEW"
     WAITING_USER_INPUT = "WAITING_USER_INPUT"
     WAITING_DATA_AUTHORIZATION = "WAITING_DATA_AUTHORIZATION"
+    WAITING_ENVIRONMENT_APPROVAL = "WAITING_ENVIRONMENT_APPROVAL"
     WAITING_EXECUTION_APPROVAL = "WAITING_EXECUTION_APPROVAL"
+    ENVIRONMENT_INSTALLING = "ENVIRONMENT_INSTALLING"
+    ENVIRONMENT_UNAVAILABLE = "ENVIRONMENT_UNAVAILABLE"
     BLOCKED = "BLOCKED"
     QUALIFICATION_EXECUTION = "QUALIFICATION_EXECUTION"
     REPAIR_PENDING = "REPAIR_PENDING"
     AGGREGATE_FAILED = "AGGREGATE_FAILED"
+    RESTRICTED_USER_EXECUTION = "RESTRICTED_USER_EXECUTION"
 
 
 class RouterDecision(StrictModel):
@@ -118,8 +124,10 @@ class DeterministicRouter:
                 reasons.append("scientific_pilot_requires_public_real_dataset")
             if not artifact.public_dataset:
                 reasons.append("scientific_pilot_requires_public_dataset")
-            if artifact.accession != "GSE108313":
+            if artifact.accession not in {"GSE108313", "scIB-pancreas", "Zheng68K"}:
                 reasons.append("scientific_pilot_dataset_not_allowlisted")
+        elif request.qualification.purpose == "representative_preview":
+            reasons.append("representative_preview_requires_restricted_user_route")
         if not artifact.allowlisted:
             reasons.append("artifact_not_allowlisted")
         if artifact.fixture_id != request.qualification.fixture_id:
@@ -151,6 +159,83 @@ class DeterministicRouter:
             execution_allowed=not reasons,
             parent_override_ignored=ignored,
             qualification_only=not reasons,
+        )
+
+    def route_user_authorization(
+        self,
+        *,
+        data_access: "AuthorizationValidation",
+        execution_approval: "AuthorizationValidation | None",
+        execution_backend_enabled: bool,
+        parent_route_override: Optional[RouterRoute] = None,
+    ) -> RouterDecision:
+        """Route Phase 6A user authorization without enabling execution."""
+
+        if data_access.code == "missing":
+            route = RouterRoute.WAITING_DATA_AUTHORIZATION
+            reasons = list(data_access.reasons)
+        elif not data_access.allowed:
+            route = RouterRoute.BLOCKED
+            reasons = list(data_access.reasons)
+        elif execution_approval is None or execution_approval.code == "missing":
+            route = RouterRoute.WAITING_EXECUTION_APPROVAL
+            reasons = (
+                list(execution_approval.reasons)
+                if execution_approval is not None
+                else ["execution_approval_missing"]
+            )
+        elif not execution_approval.allowed:
+            route = RouterRoute.BLOCKED
+            reasons = list(execution_approval.reasons)
+        elif not execution_backend_enabled:
+            route = RouterRoute.BLOCKED
+            reasons = ["ordinary_user_execution_disabled_by_policy"]
+        else:
+            route = RouterRoute.RESTRICTED_USER_EXECUTION
+            reasons = ["restricted_local_user_execution_authorized"]
+
+        ignored = parent_route_override is not None and parent_route_override != route
+        if ignored:
+            reasons.append(f"parent_route_override_ignored:{parent_route_override}")
+        return RouterDecision(
+            route=route,
+            reasons=sorted(set(reasons)),
+            execution_allowed=route == RouterRoute.RESTRICTED_USER_EXECUTION,
+            parent_override_ignored=ignored,
+        )
+
+    def route_runtime_pack(
+        self,
+        *,
+        probe: RuntimeCapabilityProbe,
+        parent_route_override: Optional[RouterRoute] = None,
+    ) -> RouterDecision:
+        """A missing runtime can request consent, but Parent Agent cannot install it."""
+
+        state = RuntimePackState(probe.state)
+        if state == RuntimePackState.READY:
+            route = RouterRoute.PLAN_ONLY
+            reasons = ["runtime_pack_ready"]
+        elif state == RuntimePackState.WAITING_APPROVAL:
+            route = RouterRoute.WAITING_ENVIRONMENT_APPROVAL
+            reasons = ["runtime_pack_install_requires_explicit_approval"]
+        elif state in {RuntimePackState.INSTALLING, RuntimePackState.VERIFYING}:
+            route = RouterRoute.ENVIRONMENT_INSTALLING
+            reasons = [f"runtime_pack_{state.value}"]
+        elif state == RuntimePackState.MISSING:
+            route = RouterRoute.WAITING_ENVIRONMENT_APPROVAL
+            reasons = ["runtime_pack_missing"]
+        else:
+            route = RouterRoute.ENVIRONMENT_UNAVAILABLE
+            reasons = list(probe.warnings) or [f"runtime_pack_{state.value}"]
+        ignored = parent_route_override is not None and parent_route_override != route
+        if ignored:
+            reasons.append(f"parent_route_override_ignored:{parent_route_override}")
+        return RouterDecision(
+            route=route,
+            reasons=sorted(set(reasons)),
+            execution_allowed=False,
+            parent_override_ignored=ignored,
         )
 
     def route_repair(

@@ -68,7 +68,7 @@ def test_raw_x_builds_data_aware_dry_run_plan(planning_context):
     assert plan.plan_status == "dry_run"
     assert plan.data_awareness == "data_aware"
     assert plan.blocking_conditions == []
-    assert plan.execution_blockers
+    assert plan.execution_blockers == []
     assert plan.execution_eligible is False
     assert plan.approval_required is True
     count_node = next(node for node in plan.steps if node.node_id == "select_count_source")
@@ -108,11 +108,13 @@ def test_planning_gate_failure_blocks_plan(planning_context):
 
 
 def test_execution_gate_failure_does_not_block_valid_dry_run(planning_context):
-    paths, _, contract, environment, compiler, profiler = planning_context
+    paths, contracts, contract, environment, _, profiler = planning_context
+    disabled_contract = contract.model_copy(update={"enabled_for_execution": False})
+    compiler = ExecutionPlanCompiler(contracts)
     requirement = _requirement(paths["raw_x"])
     plan = _compile(
         compiler,
-        contract,
+        disabled_contract,
         environment,
         requirement,
         profiler.profile(paths["raw_x"]),

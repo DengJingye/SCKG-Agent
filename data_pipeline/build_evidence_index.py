@@ -11,12 +11,15 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from engine.evidence_discovery_index import (
+    CATALOG_CHUNKS_PATH,
     CHUNKS_PATH,
     VECTORS_PATH,
     build_formal_tsv_chunks,
+    catalog_tool_chunks,
     document_chunks,
     source_manifest_chunks,
     write_indexes,
+    write_catalog_chunks,
 )
 
 
@@ -36,6 +39,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Build local EvidenceChunk JSONL indexes.")
     parser.add_argument("--chunks-output", type=Path, default=CHUNKS_PATH)
     parser.add_argument("--vectors-output", type=Path, default=VECTORS_PATH)
+    parser.add_argument("--catalog-chunks-output", type=Path, default=CATALOG_CHUNKS_PATH)
+    parser.add_argument(
+        "--catalog-snapshot",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "catalog" / "scrna_tools_snapshot.json",
+    )
     parser.add_argument(
         "--documents",
         nargs="*",
@@ -83,6 +92,8 @@ def main() -> None:
         vectors_path=args.vectors_output,
         with_embeddings=args.with_embeddings,
     )
+    catalog_chunks = catalog_tool_chunks(args.catalog_snapshot)
+    summary.update(write_catalog_chunks(catalog_chunks, args.catalog_chunks_output))
     summary["documents"] = len(documents)
     summary["source_manifest_chunks"] = len(manifest_chunks)
     summary["source_manifests"] = source_manifest_summaries

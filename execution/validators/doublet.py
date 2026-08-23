@@ -81,20 +81,6 @@ class DoubletValidator:
             else:
                 truth.append(label_truth)
 
-        sanity_checks.update(
-            {
-                "scores_finite_and_in_range": invalid_scores == 0,
-                "predicted_labels_boolean": invalid_labels == 0,
-                "ground_truth_labels_boolean": invalid_truth == 0,
-            }
-        )
-        if invalid_scores:
-            failures.append("score_non_finite_or_out_of_range")
-        if invalid_labels:
-            failures.append("predicted_label_type_invalid")
-        if invalid_truth:
-            failures.append("ground_truth_label_type_invalid")
-
         metadata: dict[str, object] = {}
         metadata_path = run.artifact_paths.get("result_metadata.json")
         if metadata_path and Path(metadata_path).is_file():
@@ -103,26 +89,60 @@ class DoubletValidator:
             except (OSError, json.JSONDecodeError):
                 failures.append("result_metadata_invalid")
         is_scientific = metadata.get("execution_purpose") == "scientific_pilot"
+        is_preview = metadata.get("execution_purpose") == "representative_preview"
+
+        sanity_checks.update(
+            {
+                "scores_finite_and_in_range": invalid_scores == 0,
+                "predicted_labels_boolean": invalid_labels == 0,
+                "ground_truth_labels_boolean": (
+                    "not_applicable" if is_preview else invalid_truth == 0
+                ),
+            }
+        )
+        if invalid_scores:
+            failures.append("score_non_finite_or_out_of_range")
+        if invalid_labels:
+            failures.append("predicted_label_type_invalid")
+        if invalid_truth and not is_preview:
+            failures.append("ground_truth_label_type_invalid")
         metadata_checks = {
             "scrublet_actually_executed": metadata.get("scrublet_actually_executed") is True,
-            "user_data_not_used": metadata.get("user_data_used") is False,
-            "qualification_mode": metadata.get("qualification_mode") is True,
         }
-        if is_scientific:
+        if is_preview:
             metadata_checks.update(
                 {
+                    "user_data_provenance_retained": metadata.get("user_data_used") is True,
+                    "qualification_mode_false": metadata.get("qualification_mode") is False,
+                    "preview_only": metadata.get("preview_only") is True,
+                    "scientific_claim_forbidden": metadata.get("scientific_claim_allowed") is False,
+                    "non_synthetic": metadata.get("synthetic_fixture") is False,
+                    "non_public_dataset": metadata.get("public_dataset") is False,
+                }
+            )
+        elif is_scientific:
+            metadata_checks.update(
+                {
+                    "user_data_not_used": metadata.get("user_data_used") is False,
+                    "qualification_mode": metadata.get("qualification_mode") is True,
                     "public_dataset": metadata.get("public_dataset") is True,
                     "accession_allowlisted": metadata.get("accession") == "GSE108313",
                     "non_synthetic": metadata.get("synthetic_fixture") is False,
                 }
             )
         else:
-            metadata_checks["synthetic_fixture"] = metadata.get("synthetic_fixture") is True
+            metadata_checks.update(
+                {
+                    "user_data_not_used": metadata.get("user_data_used") is False,
+                    "qualification_mode": metadata.get("qualification_mode") is True,
+                    "synthetic_fixture": metadata.get("synthetic_fixture") is True,
+                }
+            )
         sanity_checks["metadata_checks"] = metadata_checks
         if not all(metadata_checks.values()):
             failures.append("qualification_metadata_invalid")
 
-        if len(predicted) == len(truth) == expected_cells:
+        if not is_preview and len(predicted) == len(truth) == expected_cells:
             tp = sum(call and actual for call, actual in zip(predicted, truth))
             fp = sum(call and not actual for call, actual in zip(predicted, truth))
             fn = sum(not call and actual for call, actual in zip(predicted, truth))
@@ -150,11 +170,31 @@ class DoubletValidator:
         }
         if run.peak_memory_mb is None:
             failures.append("memory_observation_missing")
-        warnings.append(
-            "scientific pilot metrics are dataset-specific and not a universal performance claim"
-            if is_scientific
-            else "synthetic engineering metrics do not establish biological performance"
-        )
+        if is_preview:
+            preview_plot = run.artifact_paths.get("doublet_score_histogram.png")
+            preview_plot_valid = bool(
+                preview_plot
+                and Path(preview_plot).is_file()
+                and run.artifact_hashes.get("doublet_score_histogram.png")
+                == _sha256(Path(preview_plot))
+            )
+            artifact_checks["preview_histogram_present_and_hashed"] = preview_plot_valid
+            if not preview_plot_valid:
+                failures.append("preview_histogram_missing_or_invalid")
+            task_metrics["preview_predicted_doublet_call_rate"] = (
+                sum(predicted) / expected_cells if len(predicted) == expected_cells else None
+            )
+            warnings.append(
+                "preview engineering checks do not establish full-data or biological performance"
+            )
+        elif is_scientific:
+            warnings.append(
+                "scientific pilot metrics are dataset-specific and not a universal performance claim"
+            )
+        else:
+            warnings.append(
+                "synthetic engineering metrics do not establish biological performance"
+            )
         unique_failures = sorted(set(failures))
         return ValidationResult(
             validation_id=f"validation-{run.run_id}",
@@ -167,9 +207,18 @@ class DoubletValidator:
             warnings=warnings,
             failures=unique_failures,
             metric_authority=(
-                "scientific_pilot_metric"
-                if is_scientific
-                else "synthetic_engineering_metric"
+                "preview_engineering_metric"
+                if is_preview
+                else (
+                    "scientific_pilot_metric"
+                    if is_scientific
+                    else "synthetic_engineering_metric"
+                )
+            ),
+            validation_version=(
+                "doublet-preview-validator-v1"
+                if is_preview
+                else "doublet-validator-v1"
             ),
         )
 

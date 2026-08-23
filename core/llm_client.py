@@ -17,13 +17,16 @@ def get_llm(runtime_config: Optional[Dict[str, Any]] = None):
             "LLM calls are disabled by SCKG_OFFLINE_LLM=true or DISABLE_LLM_CALLS=true."
         )
     runtime_config = runtime_config or {}
+    if not runtime_config.get("privacy_authorized"):
+        raise RuntimeError("LLM call requires explicit outbound disclosure approval")
     if runtime_config.get("api_key"):
+        settings.require_external_network("LLM")
         base_url = str(runtime_config.get("api_base") or settings.chat_api_base)
         api_key = str(runtime_config["api_key"])
         model_name = str(runtime_config.get("model_name") or settings.model_name or "deepseek-chat")
     else:
         base_url, api_key, model_name = settings.require_llm()
-    
+
     # 初始化 LangChain 的 ChatOpenAI 客户端
     llm = ChatOpenAI(
         model=model_name,
@@ -32,5 +35,5 @@ def get_llm(runtime_config: Optional[Dict[str, Any]] = None):
         temperature=0.1,  # 温度设低一点(0.1)，保证 Agent 输出的逻辑性和科学严谨性
         max_retries=2
     )
-    
+
     return llm

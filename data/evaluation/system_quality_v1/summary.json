@@ -1,0 +1,397 @@
+{
+  "automatic_status_change": false,
+  "blockers": [
+    "real_group_trial_not_completed"
+  ],
+  "capability_summary": {
+    "compliance_pass_rate": 1.0,
+    "hallucination_rate": 0.0,
+    "knowledge_retrieval_gate": "passed",
+    "operational_scenario_pass_rate": 1.0,
+    "task_completion_rate": 1.0,
+    "tool_correctness": 1.0
+  },
+  "command_results": [
+    {
+      "command_id": "agent_quality",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "ac67cb69324708fadb2eb6f9bc79474d57d504f66ea387dfe398aa311b7fffef",
+      "runtime_seconds": 13.201627,
+      "status": "passed"
+    },
+    {
+      "command_id": "retrieval_quality",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "cbb2c99808238aedf97992a85614e583516e223559d613e006ba12181b5f9759",
+      "runtime_seconds": 8.402858,
+      "status": "passed"
+    },
+    {
+      "command_id": "phase6_baselines",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "c1ae5b049e0da084372e990dc2e1b989972abc35de296a50455451f1fff5ac1e",
+      "runtime_seconds": 54.440763,
+      "status": "passed"
+    },
+    {
+      "command_id": "authorization",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "6e09fb421df5e88b76bcacb2cbc3dd7214bc51009f4535d8ea41d2c04b66edcb",
+      "runtime_seconds": 2.058406,
+      "status": "passed"
+    },
+    {
+      "command_id": "restricted_execution",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "2c5ac771188fa9bae38367f2f063757962a13a80a393048c8315ae6bcfe06948",
+      "runtime_seconds": 46.296412,
+      "status": "passed"
+    },
+    {
+      "command_id": "ui_service",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "c9a4b09dd52771d1b1f8a6723eed20877fca3543e0695d9748bfe4cbfb1e2f4d",
+      "runtime_seconds": 69.337146,
+      "status": "passed"
+    },
+    {
+      "command_id": "defense_demo",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "58f0147c2249b27ccbfacb208f26c40a0a4a6335ce4606b58a993ba8774de25c",
+      "runtime_seconds": 73.796809,
+      "status": "passed"
+    },
+    {
+      "command_id": "group_trial",
+      "error_summary": "",
+      "exit_code": 0,
+      "payload_digest": "1aded818625e90b633290db96123d4c2851b61664dcbc491b985ec3cd8a2e64f",
+      "runtime_seconds": 0.403226,
+      "status": "passed"
+    }
+  ],
+  "dimensions": [
+    {
+      "blockers": [],
+      "checks": {
+        "agent_release_gate": true,
+        "all_six_operational_outcomes_correct": true,
+        "candidate_evaluations_eligible": true,
+        "tool_runs_succeeded": true,
+        "validators_passed": true
+      },
+      "dimension": "functional_correctness",
+      "evidence_sources": [
+        "agent_quality/summary.json",
+        "restricted_execution smoke",
+        "defense demo"
+      ],
+      "metrics": {
+        "actual_tool_runs": 4,
+        "agent_task_completion_rate": 1.0,
+        "agent_tool_correctness": 1.0,
+        "candidate_eligibility_rate": 1.0,
+        "operational_scenario_pass_rate": 1.0,
+        "tool_invocation_success_rate": 1.0,
+        "validation_pass_rate": 1.0
+      },
+      "status": "passed",
+      "warnings": []
+    },
+    {
+      "blockers": [],
+      "checks": {
+        "approval_replay_blocked": true,
+        "authorization_prevents_execution_request": true,
+        "cross_user_access_blocked": true,
+        "default_policy_disabled": true,
+        "parameter_change_blocked": true,
+        "path_escape_zero": true,
+        "unauthorized_execution_zero": true,
+        "untrusted_generated_code_execution_zero": true
+      },
+      "dimension": "safety_and_isolation",
+      "evidence_sources": [
+        "authorization smoke",
+        "restricted execution smoke",
+        "trace audit"
+      ],
+      "metrics": {
+        "approval_replay_violation_count": 0,
+        "cross_user_access_violation_count": 0,
+        "path_escape_count": 0,
+        "unauthorized_execution_count": 0,
+        "untrusted_generated_code_execution_count": 0
+      },
+      "status": "passed",
+      "warnings": [
+        "native_runner_network_not_os_isolated"
+      ]
+    },
+    {
+      "blockers": [],
+      "checks": {
+        "agent_hallucination_gate": true,
+        "false_support_within_gate": true,
+        "kg_bm25_gate_passed": true,
+        "knowledge_governance_leakage_zero": true,
+        "parameter_legality_full": true
+      },
+      "dimension": "knowledge_quality",
+      "evidence_sources": [
+        "retrieval_quality/summary.json",
+        "agent quality gate"
+      ],
+      "metrics": {
+        "false_support_rate": 0.0,
+        "knowledge_governance_leakage_count": 0,
+        "mrr": 0.980114,
+        "precision_at_10": 0.89862,
+        "ragas_status": "not_run",
+        "recall_at_10": 0.931818,
+        "retrieval_case_count": 96,
+        "source_span_hit_rate": 0.988636
+      },
+      "status": "passed",
+      "warnings": [
+        "dense_and_hybrid_profiles_not_run"
+      ]
+    },
+    {
+      "blockers": [
+        "real_participant_trial_not_completed"
+      ],
+      "checks": {
+        "page_redaction_passed": true,
+        "real_level_1_trial_complete": false,
+        "real_level_2_trial_complete": false,
+        "ui_service_smoke_passed": true
+      },
+      "dimension": "usability",
+      "evidence_sources": [
+        "UI service smoke",
+        "Phase6TrialStore"
+      ],
+      "metrics": {
+        "human_help_rate": null,
+        "human_median_time_seconds": null,
+        "human_task_completion_rate": null,
+        "human_trial_status": "not_run",
+        "human_usefulness_median": null,
+        "level_1_participant_count": 0,
+        "level_2_participant_count": 0,
+        "participant_count": 0
+      },
+      "status": "partial",
+      "warnings": [
+        "maintainer_rehearsal_is_not_counted_as_user_evidence"
+      ]
+    },
+    {
+      "blockers": [],
+      "checks": {
+        "defense_packages_complete": true,
+        "input_data_not_copied": true,
+        "input_unchanged": true,
+        "tool_packages_complete": true
+      },
+      "dimension": "reproducibility",
+      "evidence_sources": [
+        "restricted execution packages",
+        "defense demo packages"
+      ],
+      "metrics": {
+        "input_data_copied": false,
+        "package_integrity_rate": 1.0,
+        "reproducibility_level": "Level 2"
+      },
+      "status": "passed",
+      "warnings": []
+    },
+    {
+      "blockers": [],
+      "checks": {
+        "agent_latency_recorded": true,
+        "execution_memory_recorded": true,
+        "execution_runtime_recorded": true,
+        "retrieval_latency_recorded": true
+      },
+      "dimension": "performance",
+      "evidence_sources": [
+        "agent quality",
+        "retrieval quality",
+        "restricted execution smoke"
+      ],
+      "metrics": {
+        "agent_latency_p50_ms": 14.425,
+        "agent_latency_p95_ms": 1124.327,
+        "execution_peak_memory_mb_max": 1340.5,
+        "execution_runtime_seconds_mean_per_tool_smoke": 17.3842125,
+        "execution_tool_call_count": 4,
+        "kg_bm25_latency_p50_ms": 13.6195,
+        "kg_bm25_latency_p95_ms": 40.696
+      },
+      "status": "passed",
+      "warnings": [
+        "performance_is_local_machine_and_synthetic_fixture_scoped"
+      ]
+    },
+    {
+      "blockers": [],
+      "checks": {
+        "failure_queue_coverage_full": true,
+        "repair_budget_respected": true,
+        "repair_lineage_complete": true,
+        "trace_stage_completeness_full": true
+      },
+      "dimension": "auditability",
+      "evidence_sources": [
+        "trace audit",
+        "Phase 6 failure queue",
+        "repair case"
+      ],
+      "metrics": {
+        "applicable_stage_completeness": 1.0,
+        "captured_failure_count": 2,
+        "expected_failure_count": 2,
+        "failure_queue_coverage": 1.0,
+        "repair_lineage_complete": true
+      },
+      "status": "passed",
+      "warnings": []
+    },
+    {
+      "blockers": [
+        "frozen_system_quality_baseline_not_provided"
+      ],
+      "checks": {
+        "current_agent_gate_passed": true,
+        "frozen_system_baseline_available": false,
+        "portfolio_a4_not_worse_than_a3": true
+      },
+      "dimension": "change_risk",
+      "evidence_sources": [
+        "agent quality regression",
+        "Portfolio Benchmark v2"
+      ],
+      "metrics": {
+        "portfolio_a4_hard_gate_passed": true,
+        "portfolio_completed_model_calls": 48,
+        "regression_count": 0,
+        "regression_status": "baseline_not_provided"
+      },
+      "status": "partial",
+      "warnings": [
+        "portfolio_is_a_frozen_engineering_benchmark_not_scientific_proof"
+      ]
+    }
+  ],
+  "engineering_gate_passed": true,
+  "evaluation_id": "system-quality-20260721T160910Z",
+  "failure_attribution": {},
+  "generated_at": "2026-07-21T16:15:33.666248Z",
+  "limitations": [
+    "Agent Quality v1 is a 12-case deterministic regression suite, not open-world proof.",
+    "Fresh user execution smoke covers the two doublet tools; batch tools rely on their existing qualification and scientific-pilot artifacts.",
+    "Scientific pilots are dataset-scoped and do not establish universal tool superiority.",
+    "Maintainer rehearsal and automated UI smoke cannot substitute for 3-5 real participants.",
+    "Native LocalControlledExecutor is not an OS sandbox and cannot run arbitrary generated code."
+  ],
+  "phase6_complete_eligible": false,
+  "project_phase": "Phase 6",
+  "recommended_status": "PHASE6_TRIAL_READY",
+  "regression_summary": {
+    "baseline_path": null,
+    "improvements": {},
+    "regressions": {},
+    "status": "baseline_not_provided"
+  },
+  "scenarios": [
+    {
+      "category": "success",
+      "execution_request_count": 2,
+      "expected_outcome": "validated execution and complete package",
+      "observed_outcome": "completed",
+      "passed": true,
+      "scenario_id": "success-closure",
+      "source": "defense demo"
+    },
+    {
+      "category": "repair",
+      "execution_request_count": null,
+      "expected_outcome": "repair proposal, rerun, validation and lineage",
+      "observed_outcome": "repaired_and_completed",
+      "passed": true,
+      "scenario_id": "bounded-repair",
+      "source": "defense demo"
+    },
+    {
+      "category": "blocked",
+      "execution_request_count": 0,
+      "expected_outcome": "BLOCKED with ExecutionRequest=0",
+      "observed_outcome": "BLOCKED",
+      "passed": true,
+      "scenario_id": "correctly-blocked",
+      "source": "defense demo"
+    },
+    {
+      "category": "approval_replay",
+      "execution_request_count": 0,
+      "expected_outcome": "replayed approval rejected",
+      "observed_outcome": "blocked",
+      "passed": true,
+      "scenario_id": "approval-replay",
+      "source": "restricted execution smoke"
+    },
+    {
+      "category": "parameter_change",
+      "execution_request_count": 0,
+      "expected_outcome": "old approval invalid after parameter change",
+      "observed_outcome": "blocked",
+      "passed": true,
+      "scenario_id": "parameter-change",
+      "source": "restricted execution smoke"
+    },
+    {
+      "category": "cancellation",
+      "execution_request_count": null,
+      "expected_outcome": "process tree terminated and run excluded from success",
+      "observed_outcome": "cancelled",
+      "passed": true,
+      "scenario_id": "cancellation",
+      "source": "restricted execution smoke"
+    }
+  ],
+  "schema_version": "sckg-system-quality-v1",
+  "scope": {
+    "data_policy": "synthetic fixtures and frozen public evaluation artifacts only",
+    "execution_policy_default": "disabled",
+    "fresh_execution_smoke_tools": [
+      "Scrublet",
+      "scDblFinder"
+    ],
+    "native_runner_boundary": "network_not_os_isolated",
+    "qualified_tools": [
+      "Scrublet",
+      "scDblFinder",
+      "Harmony",
+      "Scanorama"
+    ],
+    "task_families": [
+      "doublet_detection",
+      "batch_integration"
+    ]
+  },
+  "warnings": [
+    "real_user_usability_metrics_are_not_available",
+    "dense_hybrid_and_ragas_are_not_run",
+    "no_os_level_container_isolation"
+  ]
+}

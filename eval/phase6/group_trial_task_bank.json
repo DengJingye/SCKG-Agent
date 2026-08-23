@@ -1,0 +1,123 @@
+{
+  "schema_version": "phase6-group-trial-task-bank-v1",
+  "trial_status": "not_started",
+  "levels": {
+    "level_1": {
+      "mode": "read_only_pre_generated_demo",
+      "participants": "all 3-5 trial participants",
+      "real_execution": false,
+      "user_data_required": false,
+      "task_ids": ["P6-T01", "P6-T02", "P6-T03", "P6-T04", "P6-T05", "P6-T06", "P6-T07", "P6-T08", "P6-T09", "P6-T10"]
+    },
+    "level_2": {
+      "mode": "maintainer_supervised_synthetic_execution",
+      "participants": "1-2 technical trial participants",
+      "real_execution": true,
+      "user_data_required": false,
+      "allowed_data": "maintainer-provided synthetic fixture only",
+      "task_ids": ["P6-T02", "P6-T03", "P6-T04", "P6-T05", "P6-T06", "P6-T09", "P6-T10"]
+    }
+  },
+  "tasks": [
+    {
+      "task_id": "P6-T01",
+      "instruction": "从首页找到并进入 Restricted Execution 一级页面。",
+      "expected_answer": "侧边栏和首页都提供 Restricted Execution 明确入口，不需要经过 Legacy Recommendation Chat。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T02",
+      "instruction": "判断当前 execution policy，并说明页面是否可以自行改变它。",
+      "expected_answer": "默认 policy 是 disabled；UI 无权修改，只有维护者配置 allowlisted_local_users 后才可能执行。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T03",
+      "instruction": "读取 DataProfile 中的细胞数、基因数和 count source。",
+      "expected_answer": "准确指出 Cells、Genes 和 Count source；无法确定 count source 时应识别为 blocking。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T04",
+      "instruction": "识别页面上的 warning 或 blocker，并说明它是否阻止执行。",
+      "expected_answer": "指出具体 blocker，例如 policy disabled、用户未 allowlist、缺少 data grant 或 approval；存在 blocker 时 Execute 不可用。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T05",
+      "instruction": "从 WorkflowPlan 和参数区识别工具、环境、关键参数和预期输出。",
+      "expected_answer": "工具仅为 Scrublet 0.2.3 或 scDblFinder 1.24.0，环境为对应固定 registry 环境，参数来自 contract，输出包括 score、label 和审计 artifact。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T06",
+      "instruction": "解释 plan-specific approval 绑定了什么，以及参数变化后会怎样。",
+      "expected_answer": "approval 绑定用户、artifact、plan、工具/contract、environment 和 parameter hash；参数或 scope 变化后旧 approval 失效。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T07",
+      "instruction": "在 Bounded repair Demo 中解释失败原因、修改字段和 lineage。",
+      "expected_answer": "初始 n_prin_comps 过大导致失败；RepairPolicy 仅降低 n_prin_comps；新 run 通过 parent_run_id 追溯原失败 run。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T08",
+      "instruction": "在 Correctly blocked Demo 中解释阻断原因，并确认 ExecutionRequest 数量。",
+      "expected_answer": "approval scope/fingerprint 与变化后的请求不匹配，因此在执行前 BLOCKED，ExecutionRequest 数量为 0。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T09",
+      "instruction": "解释 DecisionResult 的推荐、Pareto alternatives 和 limitation。",
+      "expected_answer": "推荐来自合格 CandidateEvaluation 与当前 preference；Pareto alternatives 是未被支配候选；synthetic 指标不能证明普遍生物学最优。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    },
+    {
+      "task_id": "P6-T10",
+      "instruction": "解释 reproducibility package 的用途、完整性和数据隐私边界。",
+      "expected_answer": "package 保存 plan、contract/environment snapshot、runs、validation、decision、hash 和 rerun 信息；不复制用户原始输入，只记录 artifact ID 与 input hash。",
+      "completion": false,
+      "time_seconds": null,
+      "help_count": 0,
+      "critical_error": false,
+      "observer_notes": ""
+    }
+  ]
+}

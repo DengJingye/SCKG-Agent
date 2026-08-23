@@ -127,13 +127,16 @@ def test_failed_planning_gate_routes_to_contract_review(router_context):
 
 
 def test_execution_gate_failure_keeps_dry_run(router_context):
+    failed_gate = router_context["execution_gate"].model_copy(
+        update={"allowed": False, "reasons": ["execution_policy_disabled"]}
+    )
     decision = DeterministicRouter().route(
         mode=RouterMode.EXECUTION,
         requirement=router_context["requirement"],
         data_profile=router_context["raw_profile"],
         tool_contract=router_context["contract"],
         planning_gate=router_context["planning_gate"],
-        execution_gate=router_context["execution_gate"],
+        execution_gate=failed_gate,
         plan=router_context["plan"],
     )
     assert decision.route == RouterRoute.PLAN_ONLY

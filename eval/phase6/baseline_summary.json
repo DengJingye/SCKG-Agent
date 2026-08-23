@@ -1,0 +1,122 @@
+{
+  "applicable_stage_completeness": 1.0,
+  "baselines": {
+    "A1_llm_only": {
+      "case_count": 1,
+      "metrics": {
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "no frozen current-phase LLM-only outputs; external LLM/API calls are forbidden"
+      ],
+      "status": "not_run",
+      "track": "A"
+    },
+    "A2_ordinary_rag": {
+      "case_count": 8,
+      "metrics": {
+        "blocking_correctness": 1.0,
+        "latency_seconds": 1.051481,
+        "source_coverage": 0.0,
+        "tool_workflow_recall": 0.991071,
+        "unsafe_action": 0.0,
+        "unsupported_claim": 0.0
+      },
+      "reasons": [
+        "deterministic workflow planner plus controlled document retrieval; parameter legality is not represented in this frozen baseline"
+      ],
+      "status": "run",
+      "track": "A"
+    },
+    "A3_kg_rag": {
+      "case_count": 1,
+      "metrics": {
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "no frozen isolated KG-RAG entrypoint using the same cases and metrics"
+      ],
+      "status": "not_run",
+      "track": "A"
+    },
+    "A4_kg_rag_tool_contract": {
+      "case_count": 1,
+      "metrics": {
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "no frozen isolated KG-RAG plus ToolContract baseline across the planning gold set"
+      ],
+      "status": "not_run",
+      "track": "A"
+    },
+    "B1_expert_static_reviewed_script": {
+      "case_count": 1,
+      "metrics": {
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "no independent frozen expert-static baseline artifact distinct from controlled wrappers"
+      ],
+      "status": "not_run",
+      "track": "B"
+    },
+    "B2_one_shot_llm_generated_code": {
+      "case_count": 1,
+      "metrics": {
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "no frozen human-reviewed one-shot artifact; executing newly generated code is forbidden"
+      ],
+      "status": "not_run_safety_boundary",
+      "track": "B"
+    },
+    "B3_contract_no_repair": {
+      "case_count": 1,
+      "metrics": {
+        "artifact_completeness": 0.0,
+        "failure_detection": 1.0,
+        "repair_success": 0.0,
+        "run_count": 2.0,
+        "runtime_seconds": 25.0963,
+        "task_executable_completion": 0.0,
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "paired initial runs from the B4 orchestration, evaluated before repair"
+      ],
+      "status": "run",
+      "track": "B"
+    },
+    "B4_contract_bounded_repair": {
+      "case_count": 1,
+      "metrics": {
+        "artifact_completeness": 1.0,
+        "failure_detection": 1.0,
+        "repair_success": 1.0,
+        "run_count": 4.0,
+        "runtime_seconds": 32.16649,
+        "task_executable_completion": 1.0,
+        "unsafe_action": 0.0
+      },
+      "reasons": [
+        "same initial executions as B3, followed by deterministic bounded repair"
+      ],
+      "status": "run",
+      "track": "B"
+    }
+  },
+  "failure_queue_path": "eval/phase6/failure_queue.tsv",
+  "generated_at": "2026-07-21T16:10:17.703117+00:00",
+  "guardrail": "not_run and not_run_safety_boundary are first-class results; missing scores are never imputed.",
+  "per_case_path": "eval/phase6/baseline_per_case.tsv",
+  "safety": {
+    "external_llm_or_api_calls": 0,
+    "new_or_untrusted_generated_code_executions": 0,
+    "unsafe_action_count": 0
+  },
+  "schema_version": "phase6-baseline-v1",
+  "trace_audit_passed": true,
+  "trace_audit_path": "eval/phase6/trace_audit.json"
+}

@@ -1,13 +1,20 @@
 # scKG-Agent 2.0 中文开发规约
 
-版本：2.4.0  
-状态：Active，Phase 4 execution orchestration + bounded repair completed；用户执行仍禁用  
-生效日期：2026-07-11  
+版本：2.9.12-dev
+状态：Active，Phase 5 completed；Phase 6 trial_ready；全局 ExecutionPolicy 默认 disabled
+生效日期：2026-08-12
 维护语言：中文  
 适用仓库：`SCKG-Agent`  
 历史规约：`docs/DEV_SPEC_scKG_CN.md`，冻结为 1.x 设计与演进记录  
 
 > 本规约是 scKG-Agent 2.0 的唯一主开发基准。需求、代码、测试、评测、界面和文档发生冲突时，以本规约中当前 Phase 的边界和验收标准为准。完成每个 Phase 后必须反向更新本文档。
+
+### 2026-08-14 Stepwise Tutorial Notebook v3
+
+- Research Chat 的 synthetic handoff 使用 deferred widget selection，禁止在同一 Streamlit render 中修改已创建的 artifact selector。
+- Notebook 模板 digest 纳入 backend cache identity；代码热更新后旧 compiler 不得继续生成旧模板。已有 Notebook digest 过期时，页面必须展开参数区并提供明确更新动作。
+- Scrublet Notebook 固定采用教程式小单元：输入画像与 QC、参数 provenance、初始化、评分、输出校验、score/rank/call diagnostics、manifold 和 interpretation boundary。
+- Notebook 使用已登记 Runtime Pack，不包含安装命令，不自动运行；修改后的 cell 继续不能取得受控执行权威。
 
 ---
 
@@ -57,11 +64,11 @@ for Single-Cell Workflow Planning, Execution, Validation, and Repair
 | 首个任务 | Doublet Detection |
 | 首个输入 | 本地 `.h5ad` / AnnData，scRNA-seq |
 | 首个真实工具 | Scrublet |
-| 第二独立工具 | 在 Python 闭环稳定后引入 `scDblFinder` 或 `DoubletFinder`，不得伪装成已完成 |
-| Batch Integration | 第二个动态任务，不与首个闭环并行开发 |
+| 第二独立工具 | scDblFinder 1.24.0 已按独立 R 环境完成 qualification 与 dataset-scoped pilot |
+| Batch Integration | 第二个动态任务；Phase 5 双工具工程资格、scientific pilot 与 ActionBundle 已完成 |
 | 执行模式 | `LocalControlledExecutor`，应用层受控 worker，`shell=False`，wrapper allowlist，有限预算 |
-| 环境 | `sckg_env` 为控制平面；`scRNAseq` 为首选执行环境候选 |
-| RAG 范围 | 只优先覆盖执行白名单工具，不要求 1800+ 工具全部下载 PDF 和切 chunk |
+| 环境 | 轻量控制平面与按任务族 Runtime Pack 分离；环境安装审批与数据执行审批分离 |
+| RAG 范围 | 全量 catalog metadata 建目录 chunk；只为高频/核心及执行白名单工具补 README、论文全文和 benchmark chunk，不要求 1800+ 工具全部下载 PDF |
 | Dense embedding | 不是 Phase 1 阻塞项；稀疏检索和结构化契约先服务执行 |
 | 决策方式 | Pareto frontier + 透明偏好，不输出无统计定义的伪精确置信度 |
 | Memory | 只保存偏好、资源约束和运行教训，不成为科学证据或参数权威 |
@@ -71,6 +78,7 @@ for Single-Cell Workflow Planning, Execution, Validation, and Repair
 | 任务路由 | Parent Agent 负责语义规划；deterministic Router 负责权限、状态和预算路由；任何 Specialist 都无最终执行权 |
 | 动态 Agent 范围| 允许动态选择 route、工具、probe、参数搜索和 repair；不允许动态生成任意 Agent 类型或任意工具权限  |
 | RAG 地位 | Execution-oriented Hybrid KG-RAG 是核心知识能力，但不能直接越过 ToolContract 生成执行参数|
+| Action Space | Decision Graph 是唯一权威动作图；`ActionBundle` 将 Task、Action、ToolContract、I/O、Environment、Failure、Validation、KnowHow、Source 与 scoped Evaluation 组合为规划上下文，但永不授权执行 |
 | 服务化原则 | MVP 采用 modular monolith + separate execution worker；核心 Python API 稳定后再包装 MCP/FastAPI |
 | Skill 原则 | Skill 是版本化、可测试的能力单元，不等于 Agent；所有执行型 Skill 必须绑定 schema、权限、contract 和测试 |
 
@@ -109,6 +117,39 @@ for Single-Cell Workflow Planning, Execution, Validation, and Repair
 - GNN、RL、learning-to-rank；
 - 用户行为 Agent；
 - 自动生成最终生物学结论。
+
+### 0.3 Biomni 对齐与差异化裁决
+
+Science 2026 发表的 Biomni 将生物医学 Agent 拆为统一 action environment 与 generalist agent，证明“资源检索、code-centric planning、执行观察和动态修订”是可落地路线。scKG-Agent 不复制其全权限动态代码执行，也不追求短期覆盖整个生物医学领域，而采用以下定位：
+
+参考入口：PubMed `PMID: 42424436`、DOI `10.1126/science.adz4351`、公开项目论文 `https://biomni.stanford.edu/paper.pdf`、官方仓库 `https://github.com/snap-stanford/Biomni`。
+
+```text
+Biomni：通用生物医学 action space 的广度
+scKG-Agent：单细胞 action space 的证据、数据状态、安全执行和可复现深度
+```
+
+固定借鉴：
+
+- 将图谱从工具目录升级为 Agent 可组合的 action space；
+- 离线 action discovery 负责发现候选，在线 Parent Agent 只消费经过治理的 ActionBundle；
+- 查询时只召回相关 action/tool/software/data/know-how 子集；
+- 用 held-out task、消融和真实执行轨迹评价 Agent，而不是只评价最终自然语言报告。
+
+固定不照搬：
+
+- 不允许 LLM 生成任意 Python/R/Bash 后直接获得宿主机权限；
+- 不让 action-discovery 输出自动成为 trusted capability、formal evidence 或 ToolContract；
+- 不用多 Agent 数量代替工具资格、数据兼容性、Validator 和复现包；
+- 不因相对 benchmark 提升而声称达到普遍专家水平。
+
+在线拓扑仍是中心化 Parent Agent；Action Discovery 属于离线能力建设流程，不构成运行时多 Agent 协商。
+
+#### 0.3.1 Biomni 能力对照边界
+
+截至 2026-07-16，scKG-Agent 已实现与 Biomni 同方向的 action retrieval、结构化 planning、Python/R 固定 wrapper 执行、观察/验证、有界 repair、trace 与复现包；并额外要求 ToolContract、数据画像、逐请求 approval 和 ownership gate。
+
+但当前绝不表述为“已经实现 Biomni 全部能力”：scKG-Agent 只有 4 个 execution-qualified 工具和 2 个 qualified Action；尚无 Biomni 规模的通用 action environment、开放式 Python/R/Bash 代码组合、跨 25 个生物医学领域的工具/数据库覆盖、湿实验协议与仪器控制、以及大规模 held-out benchmark。两者当前关系是“借鉴架构原则并在单细胞受控执行上做深”，不是功能等价。
 
 ---
 
@@ -970,7 +1011,23 @@ flowchart TD
     OUT --> MEM[Operational Reflection Memory]
 ```
 
-### 5.1 四个平面
+### 5.1 Bounded Parent Agent Loop
+
+Phase 6 提供 plan-first Parent Agent runtime：自然语言需求依次调用 deterministic gateway、governed GraphRAG、ToolContract/Environment、AnnDataProfiler、ExecutionPlanCompiler 与 DeterministicRouter。每次调用记录 capability、input/output summary、elapsed time、status 和 warning。
+
+固定 route 至少包括：
+
+```text
+PLAN_ONLY
+WAITING_DATA_AUTHORIZATION
+WAITING_EXECUTION_APPROVAL
+EVIDENCE_RECOVERY
+BLOCKED
+```
+
+Parent Agent 不接收任意文件路径和命令，不得覆盖 Router。plan-only UI 试跑必须保持 `execution_request_count=0`；真实执行仍只能进入 Phase 6 restricted local execution backend，并重新经过 exact approval、policy、ownership 和 execution gate。
+
+### 5.2 四个平面
 
 控制平面：
 
@@ -1816,12 +1873,23 @@ KG-RAG 仍然是 2.0 的核心，但职责从“支持报告推荐”变为“�
 - workflow transition；
 - 兼容与不兼容条件。
 
-### 10.2 EvidenceChunk 扩展
+### 10.2 SourceDocument 与 EvidenceChunkV2
 
-在兼容旧 schema 的前提下新增：
+原文语料以 `SourceDocumentRecord` 去重，不再为每个工具重复保存同一篇论文。`EvidenceChunkV2` 按 page、section 和 paragraph 切分，目标长度 350–700 tokens，overlap 80 tokens，不得将整页长文本直接写成一条 chunk。
+
+字段至少包括：
 
 ```yaml
 claim_type: str
+source_id: str
+chunk_id: str
+tool_names: [str]
+canonical_task: str | null
+source_span: str
+page: int | null
+section: str | null
+source_type: str
+content_hash: str
 tool_version: str | null
 parameter_name: str | null
 parameter_value: any | null
@@ -1865,7 +1933,7 @@ RAG snippet 不能直接变成可执行参数。参数要进入执行必须：
 
 ### 10.4 Dense retrieval 的位置
 
-当前 dense vectors 为 0。2.0 不把 dense embedding 作为 Phase 1 阻塞项。
+Dense 是可删除的本地 model pack，不是 control plane 硬依赖。未安装 `BAAI/bge-m3` 或向量索引缺失时，系统必须自动回退到 `KG + SQLite FTS5 BM25`，不报错、不调用云 embedding API。
 
 优先顺序：
 
@@ -1877,7 +1945,7 @@ RAG snippet 不能直接变成可执行参数。参数要进入执行必须：
 -> 小规模 dense retrieval
 ```
 
-当执行白名单 source coverage 稳定后，再用 `BAAI/bge-m3` 为相关 chunks 建立 dense index。必须记录模型、provider、维度、费用、失败率和重建版本。
+向量使用归一化 NumPy mmap 保存；必须记录模型、provider、维度、vector count、source digest 和重建版本。本地 dense 索引不得改变 evidence authority。
 
 ### 10.5 RAG 评测
 
@@ -1904,6 +1972,65 @@ KG + sparse + dense + rerank + LLM
 
 Retriever Router 必须根据 query type 选择最低成本、最低风险且足够完成任务的检索路线。
 
+2026-08-04 的检索纠偏进一步规定：显式命名工具的查询必须先执行 content-level tool attribution，不能仅因一篇共享 benchmark 在 source registry 中关联该工具，就把没有提及该工具的 chunk 当作该工具证据。输入、输出、参数、失败模式和 benchmark 等 claim type 必须使用兼容的 source span；广义工具发现允许按工具去重与限额，避免单个工具的多个 chunk 挤占 Top-k。与当前 Action Space 明确不兼容的 genome assembly、BAM somatic variant、protein structure 等 hard negative 必须在 KG hard filter 阶段停止，不能因为 query 中出现一个已知工具名就召回其文档。
+
+同日 96-case 重测结果为：`KG + BM25` 的 Recall@10/Precision@10/MRR/span=`0.996212/0.931088/0.991477/1.0`，warm p95=`75.905 ms`；`KG + Hybrid + ToolContract` 为 `0.996212/0.929951/0.991477/1.0`，warm p95=`93.596 ms`，两者 false-support 与 governance leakage 均为 0。Dense 没有提高主要质量指标，因此 route policy 必须诚实选择 `KG + BM25` 作为当前默认；Dense 继续用于 ambiguous、migration、低 source coverage 等自适应升级场景，不得为了展示 embedding 而强制启用。
+
+### 10.7 Evidence-governed Knowledge Graph v2
+
+Phase 6 的知识底座以 `CanonicalKnowledgeSnapshot` 为本地唯一事实源，Catalog Graph 和 Decision Graph 是绑定同一 `canonical_snapshot_id/source_digest` 的两个投影；Neo4j 只是可选 shadow projection：
+
+```text
+formal TSV + formal audit
++ official scRNA-tools full catalog snapshot + catalog chunks
++ source registry + source chunks
++ ToolContract + EnvironmentRecord
++ scientific pilot package
++ normalized Task/Modality/Language/RuntimePlatform/AlgorithmFamily ontology
++ provenance-bound legacy relation hypotheses
+-> canonical source/ontology builder
+-> CanonicalKnowledgeSnapshot
+-> deterministic Catalog/Decision projection
+-> data/knowledge_graph_v2/nodes.jsonl
+-> data/knowledge_graph_v2/edges.jsonl
+-> quality_report.json + manifest.json
+-> Neo4j KGv2Node/KG_V2_REL shadow namespace
+```
+
+治理层级固定为：
+
+```text
+trusted_core
+execution_verified
+retrieval_only
+frozen
+quarantined
+```
+
+硬规则：
+
+- `retrieval_only` 只负责候选发现，不能支持主推荐；
+- `frozen` 与 `quarantined` 的 `recommendation_eligible` 必须为 false；
+- execution qualification 只能产生 `execution_verified`，不能替代 formal publication/benchmark 晋升；
+- scientific pilot 关系必须保存 dataset scope 与 limitations；
+- catalog seed 可以形成 Tool 实体；语义关系必须明确区分 source-bound relation 与 legacy-derived hypothesis；
+- 官方 catalog 必须保存全量字段快照、同步 drift audit、Category、publication/preprint 元数据和一工具一目录 chunk；这些记录固定为 `retrieval_only`，不得冒充 full-text evidence；
+- legacy LLM profile/embedding 不进入 canonical capability edge；若作为候选召回信号，必须留在 candidate layer，不得进入 Decision projection；
+- KG v2 JSONL 是可审计主快照，Neo4j 只做隔离的 shadow projection；旧 Neo4j Tool/Algorithm 图不得自动覆盖 KG v2 gate；
+- `dangling_edge_count`、canonical task junk、projection drift、unsupported capability edge、`frozen_recommendation_leakage_count` 和 snapshot hash 必须进入固定评测。
+- catalog connectivity、source-bound coverage、contract coverage 和 formal evidence coverage 必须分别报告；禁止用“连通率 100%”暗示科学语义完整。
+- canonical Task 只允许规约登记的 15 个 task family；hash、文件片段和未解析标签不得进入 canonical Task。
+
+Agent 的 hard-constraint retrieval 在 KG v2 存在时优先读取 governed local snapshot，并为每个候选标记：
+
+```text
+execution_verified
+catalog_metadata
+graph_hypothesis
+```
+
+`execution_verified` 表示固定 ToolContract/Environment 组合具备受控执行资格；`catalog_metadata` 表示有官网来源绑定的 category/scope 路径；`graph_hypothesis` 表示旧 profile 的未核验关系。后两者只负责候选发现，不能表达推荐结论。固定 retrieval gold 必须与 formal evidence 分离，不能成为 promotion 来源。
+
 | Query 类型    | 首选路线                            | 备选路线                    |
 | ----------- | ------------------------------- | ----------------------- |
 | 参数是否合法      | ToolContract exact lookup       | 无                       |
@@ -1917,7 +2044,46 @@ Retriever Router 必须根据 query type 选择最低成本、最低风险且足
 | 类似历史运行      | episodic run retrieval          | 不作为科学证据                 |
 | 最新工具版本      | official package/release source | 人工确认                    |
 
-### 10.7 Retrieval Route 输出
+### 10.7.1 Action Space 与 ActionBundle
+
+Decision Graph v3.1 在原 provenance-only 决策图内增加以下权威节点，不创建第三张彼此割裂的知识图谱：
+
+```text
+Task -> Action
+ToolContract -> IMPLEMENTS_ACTION -> Action
+Action -> CONSUMES_INPUT / MAY_PRODUCE_OUTPUT
+Action -> REQUIRES_ASSUMPTION
+Action -> GUARDED_AGAINST FailureMode
+Action -> VALIDATED_BY ValidationRule
+Action -> INFORMED_BY_KNOW_HOW KnowHow
+Tool -> SourceChunk / Dataset-scoped Evaluation
+```
+
+`ActionBundleRetriever` 只从 decision-eligible contract path 编译：
+
+```text
+ActionBundle
+  action/task/modality
+  tool + versioned contract + environment
+  input/output/preconditions/parameters
+  failure modes + validation rules + reviewed know-how
+  source material + dataset-scoped evaluations
+  DataProfile compatibility
+  planning blockers + execution gate blockers + limitations
+```
+
+硬边界：
+
+- catalog-only、legacy hypothesis 和未经晋升的 chunk task 标签不能生成 ActionBundle；
+- `DataProfile` 缺失时 bundle 只能标记 `generic`，不得假装数据兼容；
+- raw-count 条件满足时可标记 `compatible`；scaled/unresolved count source 必须标记 `blocked`；
+- ActionBundle 的 `execution_allowed` 恒为 false，`execution_request_count` 恒为 0；
+- contract execution qualification 不等于一次具体请求获批，后者仍由 policy、data grant、exact approval、ownership、Router 和 safety gate 决定；
+- SourceChunk 仍是 evidence-discovery context；ActionBundle 不执行 formal evidence promotion。
+
+首个黄金切片固定为一个共享 `Doublet Detection` Action，由 Scrublet 0.2.3 与 scDblFinder 1.24.0 两个 contract 实现。下一任务只有在形成相同的 Action/Contract/Data/Validation 闭环后才能进入严格图。
+
+### 10.7.2 Retrieval Route 输出
 
 每次检索必须输出：
 
@@ -1982,6 +2148,90 @@ KG + Hybrid RAG + ToolContract
 * downstream plan blocking correctness。
 
 高 RAG 分数不能绕过 ToolContract 和 execution gate。
+
+### 10.10 Knowledge Intelligence Recovery 实现基线
+
+Phase 6 知识质量收口固定以下边界：
+
+- 1,847 条 catalog record 是发现层，不是 1,847 条已核验能力；工具名大小写归一后的 canonical Tool node 可少于 catalog record。
+- 首批 source corpus 固定覆盖 16 个核心工具，四个 qualified tool 必须全部具有 `Tool -> Contract -> Task -> Environment -> DatasetPilot -> EvidenceSource` 路径。
+- `PRECEDES` 与 `REQUIRES_OUTPUT_OF` 只能来自 canonical workflow 规约；未被来源或合同支持的关系留在 candidate layer。
+- retrieval 主 gate 使用 source-bound ID metrics；RAGAS 仅是可选二级诊断，evaluator 不可用或未授权时必须记录 `not_run`。
+- 对话默认使用统一 Research Chat；LangGraph、dense pack、Neo4j 或外部模型不可用时，deterministic Parent Agent 仍必须可完成本地检索、阻断说明与 dry-run planning。
+- retrieval context、memory、reflection 和 skill candidate 均不得写 formal TSV、trusted graph 或直接改变执行决策。
+
+### 10.11 Knowledge Intelligence v2.7 实现裁决
+
+2026-07-23 的本地消融已建立 `retrieval-bge-m3` 独立 Model Pack，并仅对 source-bound、非 catalog-only chunk 构建归一化 dense index。模型、revision、snapshot digest、source digest、chunk 顺序和 rebuild command 必须全部写入 metadata；任一项变化都使旧索引失效。模型包缺失、损坏或失配时必须无异常回退 `KG + BM25`，禁止切换到云 embedding。
+
+六路线 96-case 评测表明：独立 BM25、Dense 和 BM25+Dense 都因 hard-negative false-support 超标而失败；`KG + BM25`、`KG + Hybrid` 与 `KG + Hybrid + ToolContract` 通过治理 gate。后者相对 `KG + BM25` 同时提高 Recall@10、Precision@10、MRR 和 source-span hit，且 false-support=0、parameter legality=1、governance leakage=0、warm p95<500 ms，因此当前默认路线可切换为 `KG + Hybrid + ToolContract`。该默认值必须由版本化 route policy 决定，不能硬编码；未来重建后若 gate 退化，应自动恢复 `KG + BM25`。
+
+Research Chat 发布 gate 扩展为 80 个 scenario、3 种自然语言改写、共 240 次 deterministic run，并单独执行 30-case Memory gate。错误级联只记录一个 root stage，再关联下游 symptom，不能把同一上游错误重复计算为多个独立根因。外部模型 16×3 稳定性评测和 RAGAS 仍需单独的脱敏外发/evaluator 授权；无授权时必须为 `not_run`。当前实测 Agent p50=96.130 ms、p95=827.632 ms，相对 `rc-2.6.4` 存在 p50 延迟回归，因此不得自动冻结 `rc-2.7.0`。
+
+Cell Type Annotation 当前只完成 evidence admission：CellTypist 与 SingleR 具有 source-bound planning-only ToolContract 和 ActionBundle，Parent Agent 路由为 `CONTRACT_REVIEW`。二者均保持 wrapper/environment/scientific pilot 未实现、`execution_contract_qualified=false`、`ExecutionRequest=0`。错误 DOI `10.1093/bib/bbad418` 继续隔离，禁止作为 annotation benchmark 来源。
+
+### 10.12 Knowledge Intelligence v2.7.1 性能与 Annotation Gate
+
+2026-07-25 的性能收口增加了 `intent -> KG filter -> BM25 -> dense encode -> fusion -> Parent planning -> answer compose` 分阶段 timing。Research Chat 进程内复用 Parent、Decision Graph 与 contract registry；dense worker 在后台预热，首个请求在模型未就绪时立即回退 `KG + BM25`。query embedding LRU 必须绑定 query、model revision 与 source digest，任一版本变化都使缓存失效。检索路线由确定性策略选择并记录原因，LLM 无权决定是否绕过 KG 或 ToolContract。
+
+本轮 96-case 重测中，`KG + BM25` 的 Recall@10/Precision@10/MRR/span 分别为 `0.931818/0.898620/0.980114/0.988636`，p95=`36.258 ms`；`KG + Hybrid + ToolContract` 为 `0.971591/0.912256/0.991477/1.0`，p95=`37.377 ms`，false-support 与 governance leakage 均为 0。240-run Agent Quality 的 task、routing、intent、tool、workflow、blocker、source、compliance、trace 与 stability 均为 1.0，p50=`47.382 ms`、p95=`159.751 ms`；30-case Memory 全部通过且 scientific-authority violation=0。strict-offline 冷启动在无 Runtime Pack/dense/Neo4j/外部模型时仍可完成本地图谱、BM25、DataProfile 与 dry-run plan，`ExecutionRequest=0`。
+
+Cell Type Annotation 已实现但尚未取得执行资格：
+
+- 新增确定性的 annotation data profile、development/evaluation synthetic probe、CellTypist Python wrapper、SingleR Python/R wrapper、共享 AnnotationValidator、聚合/Pareto 支持、Zheng68K manifest/split/evaluator 与 500 次 bootstrap 评测能力。
+- 新增受签名保护的 `annotation-python` 与 `annotation-r` Runtime Pack；SingleR 2.14.0 使用锁定 R/Bioconductor 依赖和官方 source digest。reference 必须作为独立版本化 pack 存在，执行期间禁止下载。
+- 24-case annotation admission 的 governed route 达到 Recall/Precision/MRR/span=1、false-support=0；错误 `bbad418` 来源继续 quarantine。
+- 当前验收时可用空间约 4 GiB，不满足 `projected install size + 6 GiB reserve`；CellTypist model、SingleR reference、Zheng68K h5ad/manifest/label mapping/split 也尚未登记。因此 2×3 qualification、真实 scientific pilot、双工具复现包和第三个 qualified Decision Action 均保持 blocked，实际工具运行数和 ExecutionRequest 均为 0。
+
+在上述 blocker 解除并完成真实 qualification/pilot 前，CellTypist 与 SingleR 必须保持：
+
+```text
+wrapper_status=implemented
+environment_status=missing
+execution_status=untested
+scientific_validation_status=not_evaluated
+enabled_for_execution=false
+```
+
+连续评测相对 `rc-2.6.4` 仍记录 Agent/retrieval p50 的 3 项趋势回归，但本轮 Agent p50、workflow p95 和 retrieval p95 均满足 v2.7.1 硬阈值，且 Agent p95 由 `880.125 ms` 降至 `159.751 ms`。外部模型重复方差、RAGAS 和真实用户试用仍为 `not_run`，所以 release signal 保持 `WATCH`，不得自动冻结 `rc-2.7.1`。
+
+### 10.13 v2.7.2 唯一产品主链与模块分级
+
+产品主线固定为：
+
+```text
+用户目标 + 已登记 AnnData
+-> ASK / PLAN / RUN Gateway
+-> DataProfile
+-> governed Action Space
+-> WorkflowPlan
+-> data grant + plan-specific approval
+-> controlled execution
+-> validation + bounded repair
+-> CandidateEvaluation + Pareto
+-> reproducibility package
+```
+
+`ResearchChatService.run_request` 是唯一应用任务入口，公共接口统一为 `AgentMode`、`ResearchAgentRequest`、`ResearchAgentState`、`ResearchAgentResponse` 与 `ExecutionHandoff`。`ASK` 不编译 plan，`PLAN` 不创建 ExecutionRequest，`RUN` 只将 profile/plan/status 引用交接给现有授权执行后端。Parent Agent 无权覆盖 Router、Contract、Approval、Validator 或 evidence authority。
+
+高层节点为 `gateway -> requirement_parse -> action_retrieval -> [plan_compile -> deterministic_route] -> answer_or_handoff`。安装 LangGraph 时由 `StateGraph` 调度；未安装时确定性调度器调用完全相同的节点函数。依赖状态不得再将同一请求切换到旧 `agent/workflow.py`。矩阵和大型 artifact 不进入 Agent State，执行长任务继续由 `ExecutionOrchestrator` 状态机管理。
+
+模块分级固定为：
+
+```text
+Product core
+  Research Workspace / Runs & Results / Graph Explorer
+  Bounded Parent Agent / Action Space / deterministic safety plane
+
+Advanced/Admin
+  Evidence & RAG / Evaluation / Memory / Runtime Packs / failure audit
+
+Frozen baseline or lab
+  agent/workflow.py / recommendation 1.x / Planning Lab annotation
+  experimental migration / Subagent / MCP / container / WSL2 / GNN
+```
+
+正式执行范围只包含 Doublet Detection 与 Batch Integration 四个 qualified tool。CellTypist/SingleR 仍为 Planning Lab；算法迁移只能输出 `exploratory_hypothesis`，不能进入黄金 Demo 或执行空间。
 
 ---
 
@@ -2218,10 +2468,11 @@ Phase 3 仅提供 policy-level network prohibition，不声明系统级网络隔
 
 ### 13.4 环境调用
 
-控制平面通过环境注册表调用 worker，例如：
+控制平面通过 Runtime Pack resolver 与环境注册表调用固定 worker。不得在 wrapper 或业务代码中写死 Conda 安装根目录，例如：
 
 ```text
-conda run -n scRNAseq python -m execution.wrappers.scrublet ...
+RuntimePackResolver("doublet-python")
+-> <verified-prefix>/bin/python -m execution.wrappers.scrublet ...
 ```
 
 但 command argv 由 registry 构造，不接受 LLM 或用户直接提供命令字符串。
@@ -2233,6 +2484,50 @@ NUMBA_CACHE_DIR=<run cache>
 MPLCONFIGDIR=<run cache>
 XDG_CACHE_HOME=<run cache>
 ```
+
+#### 13.4.1 环境规模策略
+
+不得因为 Catalog Graph 收录 1847 个工具，就在本机安装 1847 套依赖。Catalog/SourceChunk/ToolContract 可以处于 planning-only；只有通过任务优先级、维护者 qualification 和安全 gate 的固定工具/环境组合才进入 execution allowlist。
+
+固定策略：
+
+- 控制平面与 worker 环境分离；兼容工具按任务族共享版本锁定环境，而不是一工具一常驻环境；
+- 新环境由维护者以 digest 固定 manifest 按需 qualification；UI 只能在显式环境审批后执行该固定安装计划，Agent 不能自动批准或拼接安装命令；
+- 高频 CPU 工具保留本地环境，低频、GPU 或冲突严重工具后续路由到容器/远程 worker/HPC；
+- 保存 lockfile、contract 和 environment snapshot，允许删除不活跃环境后按锁文件重建；
+- Conda package cache 可以复用，但环境存在主要消耗磁盘，只有实际进程运行时才消耗相应 RAM；
+- Phase 7 前不得把应用层隔离描述为 OS sandbox。
+
+#### 13.4.2 Runtime Pack 与双重审批
+
+Mac Beta 的本地产品采用：
+
+```text
+轻量控制平面
++ 本地压缩 KG / sparse RAG
++ 按任务族 Runtime Pack
++ 环境安装审批
++ plan-specific 数据执行审批
+```
+
+`RuntimePackManifest` 必须绑定平台、架构、任务族、工具/环境/wrapper、lockfile SHA256、来源、license、下载/安装估算、安装域名、运行网络策略和 qualification 状态，并通过 release 内置 Ed25519 公钥验证 detached maintainer signature。私钥不得进入 Git 或产品包。Runtime Pack 安装到 `SCKG_HOME`（默认 `~/.sckg`），不进入 Git、核心发布包或用户数据 workspace。
+
+缺少环境时固定路由为：
+
+```text
+PLANNED
+-> WAITING_ENVIRONMENT_APPROVAL
+-> INSTALLING
+-> VERIFYING
+-> ENVIRONMENT_READY
+-> WAITING_EXECUTION_APPROVAL
+```
+
+环境 approval 绑定 `user + pack + manifest_digest + plan + expiration`，一次性消费，支持撤销。环境就绪不授予数据访问或执行权限；原有 artifact/plan/contract/environment/parameter fingerprint approval 继续生效。Parent Agent 无权覆盖环境 Router。
+
+首批逻辑包：`doublet-python`、`doublet-r`、`batch-cpu`。现有 `scRNAseq`、`scDblFinder-R`、`sckg-batch-cpu` 作为 legacy compatibility source 由同一 resolver 读取；新增 annotation 工具前必须先通过该机制。
+
+2026-07-19 当前机器 clean-prefix 验收：固定 Micromamba 2.8.1、control-plane conda/pip lock、STRICT_OFFLINE 冷启动和三个 Runtime Pack 的真实安装/卸载/重建均通过；`batch-cpu` 首次失败暴露并修复了 `--no-deps` 下缺失 Scanorama 依赖的问题，失败 lineage 保留。该验收只允许标记 `RELEASE_CANDIDATE`，第二台干净 Apple Silicon Mac 复验前不得标记 `clean_machine_accepted`，也不得据此提前启动 Annotation、WSL2 或 MCP。
 
 ### 13.5 资源边界
 
@@ -2557,7 +2852,7 @@ read_validation_result
 
 ### 18.5 Memory 分层
 
-Memory 必须分为四层，不能统一写入一个长期记忆库。
+Memory 必须保持四个逻辑权限层。它们可以使用同一个 `SCKG_HOME/state/workbench.sqlite3` 作为物理存储，但必须使用独立表、authority 标记和服务 API，不得将用户偏好与科学知识混成一种记忆。
 
 #### Thread State
 
@@ -2835,7 +3130,21 @@ reproducibility_package/
 
 统一应用继续使用 `app.py`，但必须等后端 contract 稳定后再增加执行控件。
 
-### 20.1 用户侧
+### 20.1 统一应用外壳
+
+`app.py` 使用同一套本地产品外壳。导航必须先于对话历史，并按职责分组：
+
+```text
+Primary
+  Research Workspace / Runs & Results / Graph Explorer
+Advanced/Admin
+  Knowledge Review / Defense Demo / Evidence & RAG / Evaluation
+  Runtime Packs / Memory / Architecture / Legacy Agent Baseline
+```
+
+最近对话只作为 Research Workspace 的辅助入口，不能挤压核心工作流。`Runs & Results` 只能调用现有授权与执行服务，不能实现第二套执行逻辑；`Graph Explorer` 只用于检查知识与 Action Space，不作为首页。所有页面使用统一的紧凑页头、状态标签、表格、指标和 8px 以内圆角；不得用大面积渐变、营销式 hero 或原始 JSON 墙替代工作界面。
+
+### 20.2 用户侧
 
 `Home / Chat` 目标交互：
 
@@ -2852,7 +3161,41 @@ reproducibility_package/
 -> reproducibility package
 ```
 
-### 20.2 管理员侧
+Graph Explorer 是独立一级页面，不得嵌套在 Knowledge Review、Action Space 或 Tool Dossier 标签页内。它必须提供真正的层级下钻，而不是只高亮静态关系：
+
+```text
+Catalog -> Category -> Tool -> Metadata / Publication / Preprint
+Decision Tool -> Capability Group -> Governed Node -> Scope / Provenance / Properties
+```
+
+Catalog 路径必须提供搜索、面包屑、Back、Overview 和大类别分页。Decision/Search 网络路径使用统一的 bounded interactive canvas，并作为 Graph Explorer 默认入口：完整 Decision Graph 进入可展开池，首屏按 `Task -> Action -> Tool -> ToolContract -> I/O/Environment/Evaluation` 语义泳道展示平衡的连通骨架；参数、失败模式、验证规则、原文和其他相邻节点每次最多展开 12 个并围绕父节点分环布局。画布必须支持滚轮缩放、按钮缩放、画布平移、节点拖拽、双击展开、逐关系跳转、收起、类型/治理层过滤、搜索、适配画布和详情检查器。全量目录保持可达，但节点坐标不表达流程顺序，catalog metadata 仍不能绕过 Decision Graph 与 execution gate。
+
+`Knowledge Review` 只承载面向 Parent Agent 问答与规划审查的 `Action Space / Tool Dossier / Governance`，不得重复嵌入图谱画布。界面必须同时显示覆盖层级：1,847 条 catalog record、1,839 个 canonical Tool node、15 个 canonical task family、16 个 source-rich tool 与 2 个 qualified task。每个数字必须明确是 discovery、source、contract 还是 execution coverage。
+
+新增任务不得从原始 catalog 标签直接生成能力。必须映射到 canonical task ontology，并按以下优先级逐项完成 `catalog mapping -> source coverage -> contract -> qualification -> scientific pilot`：
+
+```text
+P0 qualified
+  doublet detection / batch integration
+P1 frequent core
+  quality control and filtering / ambient RNA removal
+  normalization and feature selection / clustering
+  cell type annotation / marker and differential expression
+P2 biological inference
+  trajectory and pseudotime / RNA velocity and fate
+  cell-cell communication / gene regulatory network
+P3 multi-omics
+  multimodal integration / spatial mapping and deconvolution
+  perturbation analysis
+```
+
+该列表是 15 个首批 canonical task family 的建设 backlog，不表示当前均已执行资格化。新增 task 必须至少先进入 planning-only 图层，不能仅凭 catalog category 生成 qualified Action。
+
+节点坐标和拖拽位置只用于阅读，不表达流程先后或证据强弱。只有 `WorkflowPlan` DAG、Orchestrator 状态机和带方向的显式 relation 才表达顺序；工具相关性必须来自 source-bound typed edge、contract compatibility、dataset-scoped evaluation 或明确标为 retrieval-only 的 hypothesis，不能从视觉距离推断。
+
+KEGG/GO 不作为装饰节点直接并入 Action Graph。后续如建设生物解释层，应以带版本和来源的 `Gene / GOTerm / Pathway / AnalysisArtifact` 子图承接 enrichment 与结果解释，并与 ToolContract 执行准入分层；来源许可、版本和 evidence code 未记录前不得进入 trusted decision edge。
+
+### 20.3 管理员侧
 
 目标导航：
 
@@ -2869,7 +3212,7 @@ Settings
 
 现有独立 dashboard 保留作为管理端和调试端。不要在 backend 未完成时用静态 JSON 假装真实执行。
 
-### 20.3 人工确认点
+### 20.4 人工确认点
 
 首版至少需要：
 
@@ -2891,6 +3234,7 @@ Settings
 ```text
 Modular Monolith
 + Separate Controlled Execution Worker
++ On-demand Runtime Packs
 ```
 
 控制平面和执行平面进程分离，但不立即拆成大量微服务。
@@ -2975,16 +3319,12 @@ local retrieval index
 Conda controlled worker
 ```
 
-#### Stage 2：组内试用
+#### Stage 2：Windows/Linux worker 适配（未开始）
 
 ```text
-FastAPI control service
-PostgreSQL
-shared Neo4j
-job queue
-Docker execution worker
-shared artifact storage
-basic authentication
+Windows launcher/UI + WSL2 Linux worker
+linux-64 lock / OCI worker
+same contract, approval and trace plane
 ```
 
 #### Stage 3：服务化
@@ -3002,6 +3342,8 @@ authentication and quotas
 ```
 
 Phase 1 至 Phase 4 不实施 Stage 3。
+
+首发顺序固定为 Apple Silicon Mac Beta -> Windows WSL2 -> Linux/HPC。MCP 是 Phase 7 的可选 adapter，不是产品本体；MCP 的 tool-call permission 不能替代 scKG 环境审批或 plan-specific execution approval。
 
 ### 20A.5 打包与发布
 
@@ -3408,6 +3750,8 @@ tests/test_execution_planner.py
 
 目标：证明系统能真实执行、记录、校验、阻断和重跑，不证明 Scrublet 在真实数据上的科学准确率。
 
+实现状态（2026-07-13）：`completed`。
+
 新增建议：
 
 ```text
@@ -3455,6 +3799,8 @@ AnnData
 
 进入条件：Phase 3A-E 全部通过。
 
+实现状态（2026-07-13）：`completed_as_scientific_pilot`，仅覆盖 GSE108313 Cell Hashing PBMC。
+
 目标：在独立正交标签上检验参数选择和 probe 外推，而不是复用 Scrublet 相似的 synthetic 生成机制自证性能。
 
 验收：
@@ -3472,6 +3818,8 @@ AnnData
 ### Phase 3B：第二独立 Doublet 工具
 
 目标：完成多工具 empirical comparison。
+
+实现状态（2026-07-13）：`completed`。第二工具为 scDblFinder 1.24.0；Scrublet 与 scDblFinder 已完成同输入工程比较和同一 GSE108313 evaluation split 的 scientific pilot。
 
 进入条件：Phase 3A-E 全部通过。若目标包含科学工具比较，还必须完成 Phase 3A-S 或为第二工具建立同等级正交验证。
 
@@ -3494,6 +3842,8 @@ AnnData
 ### Phase 4：有限 Repair Loop + Decision Engine
 
 目标：Agent 能根据执行观察有限修复，而不是失败后只写报告。
+
+实现状态（2026-07-13）：`completed`。
 
 固定状态机：
 
@@ -3524,6 +3874,26 @@ Repair 只允许 `reduce_probe_size`、`reduce_n_prin_comps`、`switch_approx_ne
 
 目标：验证框架能从分类型任务扩展到多目标 integration。
 
+实现状态（2026-07-16）：`completed`。Harmony 2.0.0 与 Scanorama 1.7.4 已完成独立环境、受控执行、验证、工程评估、scientific pilot、决策与复现闭环；全局执行策略仍默认关闭。
+
+已完成：
+
+- `TaskName=batch_integration` 与 task-aware `TaskDataGate`；
+- AnnData multi-batch profile：batch key/count、missing label、batch size/imbalance、PCA components/finite state；
+- Batch Integration 不再错误继承 Doublet Detection 的 raw-count blocking gate；
+- Harmony 2.0.0 与 Scanorama 1.7.4 source-reviewed contract；
+- 两个候选各自的 10 节点 dry-run DAG，包含 batch design、representation、PCA plan、output validation、mixing、biology conservation、aggregation 与 package；
+- label 缺失时显式降级 biology conservation，不伪造指标；
+- 单 batch、missing batch label、invalid PCA 与 unresolved representation 在执行请求前阻断。
+- 独立 `sckg-batch-cpu` CPU 环境，固定 `harmonypy==2.0.0` 与 `scanorama==1.7.4`；
+- 两个固定 wrapper 均经 `LocalControlledExecutor`，Scanorama 恢复原始细胞顺序；
+- 3 biological classes x 3 batches 的独立 development/evaluation probe，12 次 development + 2 次 frozen evaluation 全部通过；
+- 统一 `IntegrationValidator`、batch mixing ASW、biology conservation ASW、seed stability、runtime、memory 与跨工具 Pareto；
+- scIB pancreas 16,382-cell 公开数据登记，固定 3,000/3,000 split、500 次 bootstrap CI 与 Level 2 package；
+- Decision Graph 将 Batch Integration 晋升为 qualified Action，Harmony/Scanorama 各生成一个受 gate 控制的 ActionBundle；ActionBundle 仍不能创建 ExecutionRequest。
+
+当前限制：scientific pilot 只覆盖 scIB pancreas/source PCA；不表达任一工具普遍最优，也不自动开放本地用户执行。
+
 候选优先：
 
 ```text
@@ -3545,6 +3915,33 @@ scVI optional, not required for CPU MVP
 ### Phase 6：统一评估与 UI 集成
 
 目标：形成可答辩、可演示、可复盘的 2.0 版本。
+
+实现状态（2026-07-17）：`trial_ready`。授权、plan-specific approval、ownership、受限本地执行、取消、Streamlit UI、双轨 baseline、答辩 Demo、匿名 Trial Runner、append-only task telemetry、验收 gate 与 KG v2 固定治理评测已实现；3 至 5 人真实组内试用仍未开始，因此不得标记 complete。
+
+面试级能力证明收口增加以下固定边界：
+
+- 统一 Parent Agent trace 串联 `Gateway -> KG-RAG/ActionBundle -> DataProfile -> WorkflowPlan -> Router -> Approval -> Executor -> Validator/Repair -> Decision -> Package`，其中 LLM 只产生需求解析和候选规划，Router、Contract、Approval 与 Validator 保留最终否决权；
+- 固定 48 条 deterministic portfolio gold case，其中 16 条代表场景执行 A2 ordinary RAG、A3 KG-RAG、A4 KG-RAG + ToolContract 的同 case 对照；模型不可用时必须记录 `not_run`，不能补造分数；
+- 一键 interview bundle 必须包含 Doublet Detection、Batch Integration、bounded repair 和正确阻断四类案例；正确阻断案例的 `ExecutionRequest` 数必须为 0；
+- Biomni 仅做官方代码只读架构审计，采用 `Adopt / Adapt / Reject` 记录；不得安装其大型环境，也不得将 LLM 生成代码直接纳入 scKG execution allowlist；
+- 面试收口不能自动把 Phase 6 标记为 complete，真实参与人数仍按 Trial Gate 单独验收。
+
+Portfolio Benchmark v2 进一步固定以下评测语义：
+
+- `PortfolioScenarioState` 是测试输入，保存 artifact/grant/approval/hash/wrapper/path/evidence 等运行事实；它必须与 `expected_route`、`required_blockers` 等 gold label 分离；
+- A2/A3/A4 接收相同 query 与 scenario facts，不再用 expected task 作为检索输入；
+- A4 保存 `raw_response`，再由只读 ActionBundle、ToolContract 与 deterministic policy 生成 `admitted_response`；所有字段变化必须进入 `governance_interventions`；
+- parameter schema、source refs、I/O、route、blocker 和 execution veto 只能由当前 context 投影，裁决器不得读取 gold route、gold blocker 或 expected tools；
+- summary 必须同时报告 raw execution request、execution veto、parameter adjudication、admitted unauthorized request、`new_model_calls`、`recovered_model_calls` 与 `replayed_model_calls`；同一 output root 的中断恢复属于 recovered new calls，显式零调用重放才属于 replay；
+- A4 admitted hard gate 通过不等于 LLM 原始响应全对，面试和文档必须同时展示 raw/admitted 差异。
+
+Trial Runner 固定约束：
+
+- Level 1 只能读取预生成 Demo，`ExecutionRequest=0`；
+- Level 2 只能跳转既有 Restricted Execution，不能修改 policy、allowlist 或 gate；
+- `maintainer_rehearsal` 与真实 participant 分离，永远不计入人数和完成率；
+- 页面只记录匿名 task result、耗时、help count、critical error 与脱敏 notes；
+- telemetry 和 gate 不能自动修改项目状态，最终状态必须由维护者确认。
 
 任务：
 
@@ -3570,6 +3967,8 @@ scVI optional, not required for CPU MVP
 ### Phase 7：服务化与 MCP
 
 进入条件：本地 contract、权限和评测稳定。
+
+实现状态（2026-07-13）：`not_started`。
 
 可以做：
 
@@ -3936,46 +4335,180 @@ AnnData Profiler
 
 ## 27. 当前下一步
 
-Phase 4 execution orchestration 与 bounded repair 已完成：`ExecutionOrchestrator` 统一串联 profiler、contract/environment registry、plan compiler、Router、ProbeBuilder、ExperimentRunner、LocalControlledExecutor、Validator、CandidateAggregator、Pareto 和 ReproducibilityPackager。RepairPolicy 只执行确定性白名单动作，不生成代码或 shell command。
+当前 roadmap 状态：Phase 3B、Phase 4 与原 Phase 5 Batch Integration 已完成；Phase 6 保持 `PHASE6_TRIAL_READY`，Trial Runner 与维护者自测已通过，但真实组内试用人数仍为 0，因此尚未 complete；Phase 7 服务化/MCP 尚未开始。`Release Hardening` 不是新的正式 Phase。
 
-当前固定状态：
-
-```text
-source_review_status=reviewed
-execution_critical_fields_reviewed=true
-wrapper_status=smoke_passed
-environment_status=smoke_passed
-execution_status=integration_passed
-scientific_validation_status=scientific_pilot
-enabled_for_execution=false
-```
-
-因此 planning gate 通过，统一 execution gate 仍因 contract/environment 两个 execution enable 开关关闭而失败。Phase 4 仅允许 maintainer + allowlisted synthetic fixture 或已登记的 GSE108313 scientific pilot artifact，不得接入 Agent 主链、Streamlit 或用户数据。
-
-Phase 4 已实现范围：
+四个已资格化的固定组合为 Scrublet 0.2.3 + `scRNAseq`、scDblFinder 1.24.0 + `scDblFinder-R`、Harmony 2.0.0 + `sckg-batch-cpu` 和 Scanorama 1.7.4 + `sckg-batch-cpu`。其 contract/environment execution flag 已开启，但真实执行仍受独立 policy 和逐请求授权约束：
 
 ```text
-新增：
-  execution/execution_orchestrator.py
-  execution/repair_policy.py
-  scripts/run_phase4_repair_smoke.py
+contract.enabled_for_execution=true
+environment.enabled_for_execution=true
+ExecutionPolicy=disabled  # global default
 
-可能修改：
-  core/deterministic_router.py
-  execution/reproducibility_packager.py
-  core/execution_models.py（仅将组合 batch 上限扩展到总预算 18）
-  docs/DEV_SPEC_2.0.md
-
-本阶段不修改：
-  data/tool_publications.tsv
-  data/tool_benchmarks.tsv
-  Neo4j trusted graph
-  MCDM 主推荐逻辑
-  subagent runtime
-  formal evidence TSV
-  Neo4j trusted graph
-  subagent runtime
+仅当维护者配置 allowlisted_local_users，且 local user allowlist、data grant、
+unchanged plan、exact approval、parameter hash、contract/environment 和 use count
+全部匹配时，才能创建 restricted local ExecutionRequest。
 ```
+
+Phase 5 已按 gate 完成。当前 Mac 的隔离 clean-prefix 已证明 control plane 与三个 Pack 可从 lock 重建，但第二台干净 Apple Silicon Mac 复验和 3 至 5 位真实组内试用仍未完成，因此正式状态保持 Phase 6 `trial_ready` 和 Mac `release_candidate`。知识层继续保持 Catalog Graph 负责召回、Decision Graph/Action Space 负责动作准入；四个 qualified ActionBundle 都只能提供规划上下文，不能绕过 policy、授权和 approval 创建执行请求。Annotation、Container、WSL2 与 Phase 7 MCP 不得提前启动。
+
+v2.7.2 收束后，主 UI 不再导入 `run_sckg_workflow_traced`，也不再依据 LangGraph import 成功与否切换业务链。ASK/PLAN/RUN 均进入同一个 `ResearchChatService` 与复用的 `AuditedParentAgent`；RUN 的正式审批和启动只发生在 `Runs & Results`。Harmony/Scanorama 已从既有 qualification 链接回本地用户入口并使用 `IntegrationValidator`，不得再误用 doublet validator。
+
+本轮新增 `MainlineQualityGate`，固定检查普通问答不生成 plan、Top-k caveat 数量、smoke-tested workflow bundle、无数据 generic plan、RUN 缺数据/不支持任务的正确阻断、零 ExecutionRequest、零 governance leakage，以及 Doublet/Batch 两个 scientific package 的 manifest hash。该小型 gate 是产品主链验收，不替代 96-case retrieval、240-run Agent Quality、System Quality 或真实用户试用。
+
+2026-07-28 Portfolio RC fresh 验收结果为：`363 passed`；Mainline Quality Gate `6/6`；96-case `KG + Hybrid + ToolContract` 的 Recall@10/Precision@10/MRR/span 为 `0.971591/0.912256/0.991477/1.0`，false-support 与 governance leakage 均为 0，p50/p95=`8.823/24.406 ms`；240-run Agent Quality 的核心 correctness/stability/compliance 指标均为 1.0，hallucination=0，p50/p95=`21.419/69.840 ms`。统一验收 bundle 写入 `.sckg_exec/portfolio/rc-2.7.2-<timestamp>`，四类案例状态和 package integrity 全部通过，trace completeness=1.0，correctly blocked 的 `ExecutionRequest=0`，release/portfolio privacy issue=0；具体 digest 以包内 `portfolio_acceptance.json` 为准。外部模型稳定性、RAGAS 与真实用户试用均为 `not_run`；这些仍是冻结工程评测，不替代真实组内试用或开放世界科学验证。
+
+Portfolio Acceptance 是发布验收编排器，不是新的业务 Phase。它只调用既有 pytest、Mainline、Retrieval、Agent Quality、Memory 和 Interview Demo 入口，并记录 Git HEAD、dirty worktree、artifact manifest、环境快照和 worktree digest。最新状态为 `RC_READY_FOR_USER_REVIEW`；Phase 6 继续为 `PHASE6_TRIAL_READY`，ExecutionPolicy 继续为 `disabled`，真实参与人数继续为 0。RC 结果不得自动 commit、创建 tag、开放执行策略或宣称 Phase 6 complete。
+
+Research Chat 必须先做回答意图分流，再决定是否编译 WorkflowPlan：普通方法推荐返回可操作的算法选择，`workflow` 明确请求才生成 dry-run DAG，`caveat comparison` 只返回简短对照，算法迁移必须标记为 `exploratory_hypothesis`。原文 span 作为就近引用和末尾参考资料，不得取代面向用户的结论、适用条件和下一步动作。该协议由固定多轮回归集约束，不能再用一个工作流模板覆盖所有问题。
+
+Research Chat 的多轮追问只把“最新用户句子”送入 intent classifier，上一轮任务通过结构化 conversation context 继承；禁止把上一轮完整问题拼进追问文本，以免 `top-k/caveat` 等旧标记污染新的 workflow 意图。普通问答可在用户显式授权脱敏外发后调用 `deepseek-v4-pro` 做受控 prose synthesis；LLM 只能读取 governed context，不能覆盖 Router、ToolContract、Approval、Validator 或 evidence authority。默认仍为本地确定性回答，页面必须明确显示实际 runtime mode。
+
+明确请求 workflow 时，用户主输出不再暴露 `plan_tool_candidate_only` 一类内部节点作为最终答案。对于已经维护者审核并通过 synthetic smoke 的任务，Research Chat 返回 `WorkflowCodeBundle`：包含版本化固定脚本、模拟数据入口、真实 `.h5ad` 入口、输入要求、参数、结果表、标注后对象、诊断图、限制和 recipe digest。当前固定 bundle 为 Scrublet doublet detection 与 Harmony batch integration。该脚本是可复制的复现配方，不是 LLM 任意生成代码；在 scKG 内部真实运行仍必须经过 DataRegistry、plan-specific approval、Executor 和 Validator。
+
+DrBioRight 2.0 的借鉴范围限定为“普通问答/分析请求分流、代码-校验闭环、交互式分析图和可复现报告”。scKG 不复制其 cancer/RPPA 数据后端，也不因为其使用动态 code generation 就放宽当前安全模型。未知算法只能生成 `exploratory_hypothesis` 和受限 toy-demo 候选；在独立隔离 runner、测试和人工准入前不得进入 allowlist。
+
+### 27.1 Research Chat 基础智能恢复与事故复盘（2026-07-30）
+
+Research Chat 采用逐消息 `AUTO` 路由，不允许 UI 中的历史 ASK/PLAN/RUN 状态覆盖新消息。只有“这个分析、上一种方法、继续”等明确省略型追问可以继承结构化 task reference；显式新工具、新任务或非单细胞领域请求必须重置任务，并由 canonical task、ActionBundle 和 Contract gate 重新判定。RUN 缺少登记数据时首行必须显示“尚未执行”、`WAITING` 与 `ExecutionRequest=0`。
+
+外部 LLM 承担有界语义规划与回答组织。通用 `GENERAL` ASK 只调用一次 DeepSeek，且不得检索随机单细胞工具；明确单细胞 ASK 固定采用两阶段闭环：`DeepSeek semantic/tool plan -> read-only KG/RAG/Contract tools -> DeepSeek grounded synthesis -> claim audit`。工具调用只允许 `search_catalog、search_evidence、get_tool_contract、compile_workflow`，不得暴露 shell、安装器、Executor 或 evidence 写入。PLAN 只允许一次语义解析并返回资格化任务的固定 smoke-tested bundle；Safety Precheck 在任何外部调用之前完成，正确阻断的 provider call 与 `ExecutionRequest` 均为 0。禁止任意循环或隐藏重试。PLAN/RUN 的执行准入仍由本地 Router、合同、数据授权和 plan-specific approval 判定。模型结果必须保存 provider、model、token、延迟、调用状态、tool observation 和 grounded-answer audit；无效引用、无 source context 或虚构执行成功时拒绝模型答案并回退 `DEGRADED LOCAL FALLBACK`。Router、ToolContract、Approval、Validator 和 evidence authority 始终拥有最终否决权。
+
+2026-07-31 的真实 UI 故障进一步收紧了域路由：系统身份与运行状态问题由本地 `system_info` 路径回答；普通非单细胞 ASK 在用户显式授权后进入通用 DeepSeek 对话层，必须跳过 KG/RAG；只有 canonical task、结构化 follow-up、单细胞领域词或 scRNA-tools catalog 实体命中时，才进入专用 KG/RAG/ToolContract 链。通用 LLM 未启用或失败时不得以随机工具候选代答。越界 PLAN/RUN 直接返回 `UNSUPPORTED_ACTION`、candidate=0、reference=0、`ExecutionRequest=0`，不需要为了阻断而调用 LLM。保存加密 API key 与授权本会话外发是两个独立动作，UI 必须分别显示 saved、unlocked 和 enabled 状态。
+
+真实外部验收固定为 5 个顺序高风险问题，通过后才允许 20 case × 3 的稳定性评测。5-turn 必须覆盖推荐、workflow follow-up、Top-3 caveat、蛋白质结构任务切换和 CellPhoneDB 自动安装请求；60-turn 必须重复同一句问题三次，并报告 intent/task/tool、显式切换、Top-k、grounded citation、unsupported claim、治理干预、延迟、token 和失败率。凭据、授权或前置 smoke 任一缺失时状态必须为 `blocked/not_run`，provider 调用数为 0。
+
+DeepSeek v4 的 external semantic/prose 层必须显式设置 `thinking=disabled`。该层只执行意图解析和 governed context 改写，不需要长思维链；默认 thinking 会使思考内容和正文共享 `max_tokens`，可导致 empty response 或截断 JSON。Semantic parser 同时使用 JSON Output 和字段类型容错；对当前句显式跨域的任务，确定性 veto 必须阻止 LLM 继承旧 canonical task。用户“想执行”的意图和“系统不允许执行”的准入结果必须分开评测。
+
+2026-07-31 真实 DeepSeek 验收结果：5-turn=5/5；20 case × 3 的 requested/attempted/completed 为 60/60/60，failed=0。task、intent、tool、blocker、workflow、grounded citation、Top-k 和 explicit task switch 均为 1.0，unsupported claim rate=0，unauthorized ExecutionRequest=0，candidate/evidence leakage=0，平均延迟 `3651.763 ms`。权威 artifact 为 `.sckg_exec/evaluations/live-llm-smoke-20260731-r6-final` 与 `.sckg_exec/evaluations/external-agent-stability-20260731-final`。
+
+所有真实用户故障、评测退化和 correction 追加到 [`docs/status/ISSUE_RETROSPECTIVE_LOG.md`](status/ISSUE_RETROSPECTIVE_LOG.md)。文档不得删除历史结论，也不得用确定性测试冒充真实 LLM 验收。
+
+### 27.2 开放世界自然问题与三态领域路由（2026-07-31）
+
+Research Chat 发布评测必须同时包含内部回归和来源独立的自然问题集。`NaturalQueryCase` 保存来源、采集日期、原始表达、expected domain/intent/task、answerability、允许来源和 blocker；当前 v1 固定为 120 条，拆分为 `72 development / 24 evaluation / 24 hidden`。external issue/FAQ 标题只提供领域和任务路由 gold，不得自动当作科学答案 gold。hidden split 只能在候选路线冻结后运行一次，运行后不得继续据此调规则。
+
+领域路由固定为 `GENERAL / SINGLE_CELL / UNCERTAIN`。通用 ASK 只使用经授权的通用 LLM，不检索随机单细胞工具；明确单细胞问题进入规范化、KG/RAG 和 grounded synthesis；`UNCERTAIN` 在 LLM 可用时请求结构化 domain/intent/task/confidence，低置信度时澄清。只有“这个分析、上一条推荐”等明确省略表达继承结构化 task reference，上一轮 PLAN/RUN mode 永不粘滞。系统身份、能力、版本和运行状态必须由本地 `RuntimeBuildIdentity` 与 capability manifest 回答。
+
+开放世界消融固定比较 `DeepSeek-only / KG-RAG-only / DeepSeek+BM25 / DeepSeek+KG Hybrid / DeepSeek+KG Hybrid+ToolContract`。外部模型路线必须显式授权，保存调用状态、token、延迟和脱敏后的结果摘要；模型或凭据不可用时为 `not_run`。不得预设合同路线胜出，也不得用内部 96-case 检索回归替代开放问题结果。
+
+### 27.3 Claim-level Grounding 与指标分账（2026-07-31，2026-08-03 修订）
+
+`GroundedAnswerAuditV3` 对每个科学 claim 保存 `claim_id、claim_text、claim_type、source_span_ids、authority、lexical_support、citation_mapping、scope_match、numeric_scope_match、semantic_review_status、governance_action`。只有 source-bound/ToolContract 且 citation、工具范围与数值范围映射合格的 span 可以进入已核验区；catalog、memory、candidate、migration hypothesis 和模型通识不能晋升为科学证据。`unsupported` claim 必须删除或明确降级，冲突来源必须并列展示。
+
+V3 明确不再把词项重叠命名为 entailment。确定性层只能证明 claim/source 的结构映射、authority、scope 与 numeric scope；未经独立语义 judge 或人工抽检时，`semantic_claim_correctness=null`。长尾回答必须分为“已核验证据”和“模型通识，尚未核验”，后者禁止引用 governed source，也不能进入 PLAN/RUN。`governance_violation_rate` 只衡量 candidate leakage、未经授权执行和证据边界违规；科学事实正确性必须另用 claim correctness 和独立抽检。
+
+2026-07-31 本轮实测：full pytest=`398 passed`；Mainline=`6/6`；96-case `KG + Hybrid + ToolContract` 的 Recall@10/Precision@10/MRR/span 为 `0.971591/0.912256/0.991477/1.0`，false-support 与 leakage 均为 0，p95=`37.923 ms`。但 32-case 开放世界本地 `KG/RAG-only` 路线的 route/task/blocker correctness 仅为 `0.34375/0.777778/0.5625`。DeepSeek 四条生成路线因 CLI 未解锁本地加密凭据且 `.env` 被 macOS 回收为 dataless 而保持 `not_run`，hidden 未运行。因此 Research Chat 只能标记为 `OPEN_WORLD_EVAL_PENDING`，不能恢复完整 RC。
+
+2026-08-03 修订：Research Chat 已实现显式 LLM 工具循环。为适配最多 200 次 provider call，live panel 固定为 24 条 evaluation + 4 条 answer gold；A/C/D/E 的总预算为 `28 x (1 + 2 x 3)=196`，Safety gold 由零外发的确定性 lane 单独验收。最新本地 28-case 的 tool success、citation precision 与 structural support 均为 `1.0`，unsupported claim、unauthorized execution 与 candidate leakage 均为 `0`，p95=`73.451 ms`；但 domain/intent 仅为 `0.807692/0.666667`。full pytest=`417 passed`、Mainline=`6/6`。外部 A/C/D/E 与 hidden 仍为 `not_run`，因此该实现只能标记为“工具闭环已完成、真实模型消融待验收”，不得恢复 Research Chat RC。
+
+2026-08-04 纠偏：单细胞 ASK 的两阶段 DeepSeek 链只允许接收经过显式工具、canonical task、claim type 和 authority 共同筛选的 governed snippets。推荐回答必须为主工具补齐机制、输入、输出和失败模式，并为 Top-k 中每个工具提供独立 source path；Evidence QA 必须覆盖用户同时请求的全部 claim type。DeepSeek prompt 将 requested tools 和 required claim types 作为 coverage contract，最终答案仍需经过 claim/source type、工具范围和 citation mapping 审计。通用问题不得触发随机 KG/RAG，明确跨域问题重置旧 task；当前 CLI 因加密配置未解锁，真实 DeepSeek 页面重放仍为 `not_run`，不得用本地 453 项回归替代外部语义验收。
+
+开放世界 runner 必须逐 `(case_id, baseline)` checkpoint，整批完成后再生成 summary。进程、网络或会话中断时从 checkpoint 恢复，禁止重复消耗已保存 case 的 provider call。凭据来源必须显式为 `auto / encrypted / environment`；默认 `auto` 保持加密存储优先，环境 fallback 不得静默发生。
+
+Phase 6 的发布评测采用统一 System Quality Gate，不再把单元测试、检索分数、执行 smoke 或维护者演练中的任一项单独解释为 Agent 已完成。统一 gate 必须复用现有 Agent Quality、Retrieval、Baseline、Authorization、Restricted Execution、UI Service、Defense Demo 和 Trial Store，并分别报告：功能正确性、安全与隔离、知识质量、真实可用性、复现性、性能、审计完整性和变更风险。
+
+System Quality Gate 之上增加 Continuous Agent Evaluation Pipeline。它不替代确定性单元测试和零容忍安全 gate，而是把 Agent 的开放输入、随机输出、多轮状态和工具副作用持续映射为四类质量信号：`effectiveness / efficiency / stability / compliance`。每项指标必须绑定具体业务域、Agent 架构阶段、评测 lane、样本量、目标、来源产物和限制，状态只能是 `measured / not_run / insufficient_data`；缺失的外部模型、RAGAS 或真实用户数据不得填零、填满分或推断。
+
+持续评估覆盖 `knowledge_qa、workflow_planning、doublet_detection_execution、batch_integration_execution、bounded_repair、authorization_and_safety、reproducibility、user_trial`，并逐项映射 Gateway、KG-RAG、ToolContract、DataProfiler、Planner、Router/Approval、Executor、Validator、Repair、Pareto、Packager 和 UI/Telemetry。未授权执行、路径逃逸、审批重放、跨用户访问、不可信生成代码、repair budget 和 evidence boundary 属于零容忍指标；任一实测违规都必须将质量信号置为 `BLOCKED`。普通阈值退化置为 `WATCH`，不能通过平均分掩盖。
+
+当前候选基线固定在 `data/evaluation/continuous_agent_quality_v1/baselines/rc-2.6.4.json`。后续版本必须显式传入该基线比较，输出 metric-level delta、regression count、failure owner 和 optimization priority；基线不可静默覆盖。持续报告只能给出质量信号，不能自动改变 Phase、ExecutionPolicy、allowlist 或 execution approval。
+
+“任务成功”按预期结果判断：成功执行、受控修复、正确阻断、审批重放拒绝、参数变化拒绝和取消进程都可以是正确结果。工具进程成功率只适用于预期执行场景，不能把正确阻断计为工具失败。数据访问越权与知识证据越权是两个独立 gate：前者检查 artifact/owner/approval，后者检查 false support、source authority、candidate leakage 和 governance leakage。
+
+### 27.4 Research Workspace Path-to-Preview Shadow（2026-08-12）
+
+下一产品增量采用 `AnnData path -> backed profile -> Representative Preview -> governed Notebook Shadow`，但必须复用现有 DataRegistry、DataAccessGrant、ToolContract 与 Runtime Pack，禁止另建一套 Path Registry、授权系统或任意代码 Executor。P1 只支持本地 `.h5ad` 与 Scrublet 固定模板；scDblFinder 跨语言 Notebook、MuData、SpatialData、checkpoint/stale、Error Intelligence 和用户数据 Preview 自动执行均保持 deferred。
+
+`DataAssetProfile` 只以 backed read-only 方式读取 AnnData metadata 与有界矩阵样本，记录 count source、schema、batch candidate、内存估计和阻断原因，且必须声明 `full_matrix_materialized=false`。`RepresentativePreviewManifest` 保存固定 seed、抽样策略、细胞 ID/index hash、source/preview hash 和 strata coverage；Preview 是受控副本，不能修改原始文件，`scientific_claim_allowed=false`。
+
+`StepContract` 是页面和 Notebook 的单一事实来源，由已审核的 Scrublet ToolContract 派生参数范围、默认值、验证器和 source refs。`NotebookShadowCompiler` 只能组装维护者固定模板，所有 cell 带 step/version/trust metadata；编译不执行、`ExecutionRequest=0`，用户编辑后的 cell 不再拥有系统验证状态。Synthetic fixture 可以在现有 `doublet-python` Runtime Pack 的干净 kernel 中执行，证明结构、依赖和 artifact contract；该 smoke 不能替代用户数据审批、全量 RUN 或科学验证。
+
+P1 的阶段性完成必须分账：当前 `profile/preview/compiler/UI shadow/synthetic clean-kernel` 已实现；UI 必须以状态推进测试覆盖 path/register/authorize/profile/preview/notebook，空状态渲染不能单独视为验收。用户数据 Preview runtime、统一 ValidationResult/ErrorContext、checkpoint/stale propagation 与页面内执行结果回读仍未完成。全局 `ExecutionPolicy=disabled` 不变，Shadow 面板不得创建 ExecutionRequest。
+
+### 27.5 Controlled Representative Preview Runtime（2026-08-12）
+
+P1 后续增量增加 `PreviewRunPreparation / PreviewRunRequest / PreviewRunResult / ErrorContext`。Preview 真执行只允许固定 Scrublet StepTemplate，经本地 allowlist、`artifact + preview + notebook + parameters + ToolContract + environment + user` 绑定的单次审批、`LocalControlledExecutor` 与现有 `DoubletValidator` 完成；可编辑 Notebook 永远不是该按钮的执行源。任何 Preview、Notebook 或参数 hash 漂移都必须在审批消费和进程创建前阻断。
+
+`representative_preview` 是独立 execution purpose，不能冒充 `synthetic_qualification` 或 `scientific_pilot`。Preview 产物可包含 score 表与诊断图，但指标 authority 固定为 `preview_engineering_metric`、`scientific_claim_allowed=false`，不计算没有 ground truth 的 F1/AUPRC，也不得晋升全量数据结论。原始数据不复制进 run；受控子集保留 `user_data=true` provenance。默认 `ExecutionPolicy=disabled` 不变，页面加载、Profile、Preview 与 Notebook 编译的 `ExecutionRequest` 仍为 0。
+
+### 27.6 Preview Result Recovery and Integrity（2026-08-12）
+
+受控 Preview 的终态不得只保存在 Streamlit `session_state`。`PreviewResultStore` 将强类型 `PreviewRunResult v2` 写入 owner-scoped research workspace，同时保存独立 result digest；`Runs & Results` 可在页面刷新或进程重载后按本地用户恢复 `COMPLETED / BLOCKED / FAILED` 历史。每次读取重新核验 result digest、执行 workspace 所有权、artifact path containment 和 artifact hash；任一失败都降为 `FAILED` 并拒绝展示诊断图。
+
+结果历史是现有 execution run 的只读索引，不创建第二套 Executor、Validator 或 scheduler。页面默认只展示状态、Validation、runtime、memory 和工程边界；trace、artifact hash 与完整 ValidationResult 放入高级详情，完整本地路径不渲染。跨用户读取、symlink escape 和页面渲染触发执行均必须为 0。该能力仍不赋予科学 claim authority，也不改变默认 `ExecutionPolicy=disabled`。
+
+### 27.7 Checkpoint and Stale Propagation（2026-08-12）
+
+Research Workspace 的派生链固定为 `source -> profile -> preview -> notebook -> approval -> result`。`PreviewLineageSnapshot` 在受控运行时冻结 source/profile/preview/notebook/parameter、StepTemplate、ToolContract、environment 与 approval fingerprint；`WorkspaceCheckpointService` 只读取现有 registry/manifest/hash 并计算派生状态，不创建 ExecutionRequest，也不复制 Executor 状态机。
+
+最早失效节点决定重建起点，后续节点按依赖传播 `STALE`。源数据 hash 变化从 source/profile 重建；Preview 文件变化从 preview 重建；Notebook、参数、StepTemplate 或 ToolContract 变化从 notebook 重建并使旧 approval 失效；environment fingerprint 变化从 approval 重新审查；结果 artifact hash 失败为 FAILED，禁止展示。已完成 run 的一次性 approval 正常消费不使历史结果过期；旧版无完整 lineage 的结果仍可读取，但明确降级为 `STALE`。
+
+UI 统一显示 `CURRENT / MISSING / WAITING / STALE / BLOCKED / FAILED`，并只提供“从失效节点重置下游引用”的显式动作，不自动 profile、compile、approve 或 execute。source digest 使用 file stat 绑定的本地缓存，文件 size/mtime 变化时重算，避免页面刷新反复读取大型数据。全局 `ExecutionPolicy=disabled` 与 scientific authority=false 保持不变。
+
+### 27.8 Preview Result Interpretation and Error Intelligence（2026-08-12）
+
+受控 Preview 的 `ValidationResult` 不得只以原始 JSON 或单个 call rate 暴露给用户。`PreviewResultInterpreter` 复用已经完成 owner/path/hash/checkpoint 校验的 `PreviewRunResult`，输出结构化 `PreviewResultInterpretation`：发生了什么、可观察指标、图的读法、参数影响、限制与下一步。该解释层只做确定性翻译，不调用 LLM、不改变 Validator、不自动修改参数或创建 ExecutionRequest。
+
+成功结果只能声明 fixed wrapper、artifact、schema、hash、score range、label 与资源观测通过工程验证，authority 固定为 `preview_engineering_metric`。call rate 与 score quantile 是 Preview diagnostic，不是 ground-truth doublet rate、accuracy、sensitivity 或 specificity。结果图必须解释 X/Y 轴、高分尾部的查看方式和无独立 truth label 的限制；全量分析必须重新 profile/plan/approval。
+
+`PreviewErrorIntelligence` 按 lineage、preflight、execution、validation、integrity 分类失败，保留结构化 evidence、likely cause 与用户动作。stale lineage 指向最早 rebuild checkpoint；artifact hash/path/result digest 失败为 critical 且禁止展示；可重试 runtime failure 也不自动重试，参数、输入或 scope 变化必须重新经过 contract 与 approval。UI 默认展示用户可读摘要，完整 Validation、trace、hash 和 manifest 继续放在高级详情。
+
+### 27.9 Chat-Governed Stepwise Analysis（2026-08-13）
+
+`Research Workspace` 是唯一任务入口。只有本轮对话已经产生 `workspace_handoff`，且任务为资格化的 Doublet Detection、工具为 Scrublet、代码来源为维护者固定模板时，页面才显示“关联数据并逐步验证”。`Stepwise Analysis` 不再作为侧边栏独立产品入口；它必须显示 conversation、source query、task 和 tool，并只执行该 handoff 确认的任务。聊天页不得自动登记数据、编译 Notebook、审批或运行。
+
+页面与 Notebook 共用 Scrublet `StepContract`，用户路径固定为：
+
+```text
+register_data
+-> profile_data
+-> build_preview
+-> compile_notebook
+-> approve_execution
+-> run_tool
+-> validate_outputs
+-> review_result
+```
+
+`InteractiveStepRuntime` 只根据现有 DataProfile、Preview、Notebook、Approval、ExecutionRun 和 ValidationResult 推导 `READY / CURRENT / WAITING / STALE / BLOCKED / FAILED / COMPLETED`，不复制 Orchestrator 或 Executor，也不创建 ExecutionRequest。每次执行继续由固定 wrapper 在单独进程中完成；所谓“逐步”是明确的治理检查点、用户动作和结果事件，不是运行任意 Notebook cell。
+
+Preview 构建后不得自动生成 Notebook。用户必须先检查 ToolContract 参数，再显式确认并编译 Notebook Shadow。Notebook 保存 task context digest、完整参数快照、逐参数 provenance 和维护者 cell source digest；传入参数即使等于合同默认值，也必须记录为 `user_confirmed`。任意参数变化形成 `StepParameterPatch`，使当前 Notebook、approval 和 result 进入 stale；旧审批被撤销，旧结果只保留为历史，重新运行必须重建 Notebook 并进行新的精确审批。
+
+Notebook 在线执行权限只来自系统生成且 hash 完整的固定模板。`NotebookTrustReport` 对每个 cell 标记 `VERIFIED / MODIFIED / UNTRACKED`；维护者 cell 被修改或出现自定义 cell 时，Notebook 可供用户本地查看，但不得成为 scKG 在线执行源。在线按钮仍只调用固定 Scrublet wrapper，并输出 `run_tool` 与 `validate_outputs` 结构化 step event。默认 `ExecutionPolicy=disabled`；本地维护者可对当前 artifact 启用 30 分钟、最多一次的 Preview capability，但环境启用不能替代 plan-specific execution approval。
+
+用户操作入口见 [`docs/demo/STEPWISE_ANALYSIS_GUIDE.md`](demo/STEPWISE_ANALYSIS_GUIDE.md)，故障与 correction 继续追加到 [`docs/status/ISSUE_RETROSPECTIVE_LOG.md`](status/ISSUE_RETROSPECTIVE_LOG.md)。
+
+### 27.10 Expired Preview Allowance Recovery（2026-08-14）
+
+本地 Preview capability 与 exact execution approval 仍是两个独立后端记录，但不得因旧 allowance 同时产生 `expired / artifact / tool-environment pair` blocker 而让恢复入口消失。只有当全部非审批 blocker 都属于可重新签发的本地 Preview allowance 范围时，页面才允许一次显式动作完成“重新签发当前 artifact 的 30 分钟单次 capability + 创建当前 fingerprint 的一次性 execution approval”。该动作不执行工具、不改变数据、不开放其他 artifact、tool 或 environment，也不改变启动时默认 `ExecutionPolicy=disabled`。
+
+确认文本错误、data grant 无效、scope 不是固定 Scrublet 0.2.3/environment pair、Runtime Pack 未就绪或其他安全 blocker 存在时必须继续禁用审批。审批成功后仍需用户确认 Preview 不是全量科学结论并单独点击运行。Streamlit resource cache 必须绑定 execution/workspace/preview service 实现 digest，后端代码变更后不得出现新页面复用旧 service instance 的混合构建。
+
+### 27.11 Zero-install Scrublet Preview Onboarding（2026-08-14）
+
+Runtime Packs 页面必须优先揭示“已有兼容环境可直接复用”的路径，不能让首次体验默认落到未资格化 Annotation Pack 的安装计划。`doublet-python` 能力探测为 READY 时，用户可生成或复用维护者固定 seed 的 synthetic AnnData，并以 `doublet_detection + Scrublet` handoff 进入同一 Stepwise Analysis。
+
+该快捷入口只允许：在 approved input root 内生成版本化合成 fixture、登记当前 owner artifact、清空旧 Preview 派生状态并切换页面。它不得下载、安装、审批或执行工具，也不得把 engineering Preview 描述成科学结果。Runtime Pack 未就绪时必须显示 BLOCKED；不能为了展示 Demo 绕过 capability probe。
+
+### 27.12 Progressive Preview Approval UX（2026-08-14）
+
+Preview 的安全模型保持 data grant、local allowance、exact execution approval 与 run confirmation 分层，但普通界面不得把这四个后端对象平铺成内部状态墙。Synthetic Demo 只展示“确认当前 Preview”和“运行并验证”两个连续主动作；Policy、fingerprint、raw blocker 和 executor 边界收进高级详情。
+
+`approval_scope_or_fingerprint_mismatch`、missing、not found 或 fully consumed 均表示旧审批不能用于当前 scope，而不是当前 scope 永远不可审批。UI 必须将 approval blockers 与 allowance/runtime/contract blockers 分开；用户确认当前 exact scope 后撤销旧审批并创建新审批。真实用户数据继续要求粘贴精确确认文本，synthetic engineering fixture 可使用明确 checkbox + button 完成同等 scope-bound consent。批准和运行仍是两个独立动作。
+
+### 27.13 Interactive Notebook First（2026-08-14）
+
+面向探索、学习和参数迭代的默认交付是本地交互式 Notebook，而不是把 Executor 的全部治理检查投影为主界面。Notebook Shadow 继续由维护者固定模板生成，包含参数、输入校验、Scrublet、artifact validation、结果表和诊断图；`kernelspec` 绑定 `sckg-doublet-python` Runtime Pack。用户可显式点击在受支持的本地编辑器中打开，逐 cell 执行并修改参数。
+
+本地 Notebook launcher 只允许 owner workspace 内、hash 未变化、`trusted_code_source=maintainer_step_template` 的 `.ipynb`；使用固定 argv、`shell=False`，只注册指向 READY Runtime Pack Python 的小型 Jupyter kernelspec，不安装包、不执行 Notebook。用户打开后修改和运行的代码属于本地 user-controlled exploration，不自动取得 scKG evidence authority、Validation 或复现包。需要审计、固定 wrapper、Validation 和 lineage 时，用户再显式展开“受控验证运行”。
+
+### 27.14 Contextual Notebook Diagnostics（2026-08-14）
+
+Research Chat 对资格化的 `doublet_detection + Scrublet` workflow 必须返回上下文动作，而不是把 Stepwise Analysis 作为脱离任务的机械页面。用户可选择“用模拟数据在 JupyterLab 试跑”或“关联我的 .h5ad”；handoff 保存 conversation、source query、task、tool、plan 和 recipe 引用。聊天渲染不得自动登记数据、编译 Notebook、启动 Jupyter 或执行 cell，启动本地进程仍需用户明确点击。
+
+Notebook 必须在正文解释 DataProfile 的 raw-count gate、代表性 Preview 与原始数据的关系，以及逐参数 provenance。参数只能来自版本化 ToolContract 或用户确认的合同范围内覆盖值；不得描述为 LLM 临时生成或全部直接来自论文。`expected_doublet_rate` 必须明确要求按真实 capture 的 loading/recovery 复核。
+
+运行诊断 cell 必须同时内联展示结果表、doublet score 分布、阈值和预测类别数量，并保存同一诊断图 artifact。Scrublet 数值 warning 不得作为无法理解的红色输出墙；已捕获 warning 需写入结构化 artifact 并在 cell 中给出数量。clean-kernel smoke 必须验证执行后的 `.ipynb` 真正包含 `image/png`，不能只检查磁盘上的 PNG 文件。
 
 ---
 
@@ -4006,6 +4539,45 @@ Phase 4 已实现范围：
 | 2026-07-11 | 2.3.1 | 完成 development/evaluation probe、多配置多 seed、CandidateEvaluation、配置级 Pareto 与 Level 2 复现包；科学验证和用户执行仍未开始 | `docs/status/PROJECT_STATUS_2.0.md` |
 | 2026-07-11 | 2.3.2 | 完成 GSE108313 Cell Hashing PBMC scientific pilot；引入 scientific_pilot 独立状态、正交 HTO 标签、冻结 evaluation 和 bootstrap CI；用户执行仍禁用 | `docs/status/PROJECT_STATUS_2.0.md` |
 | 2026-07-11 | 2.4.0 | 完成统一 ExecutionOrchestrator、确定性 bounded RepairPolicy、repair Router、结构化 trace、lineage 与 Level 2 repair package；第二工具和用户执行仍未开始 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-15 | 2.4.6 | 将全量 Catalog Graph 与严格 Decision Graph 分层；新增 provenance-only contract/I-O/environment/evaluation 决策路径和任务/工具档案 UI，禁止 legacy hypothesis 与未复核 chunk task 标签进入能力边 | `docs/design/DECISION_GRAPH_V3.md` |
+| 2026-07-15 | 2.4.7 | 统一 Streamlit 产品外壳和导航层级；目录图与严格决策图改为可搜索、可返回、可分页的多层展开视图，不改变 evidence/execution gate | `docs/design/DECISION_GRAPH_V3.md` |
+| 2026-07-15 | 2.4.8 | 在 Defense Demo 内增加匿名 Trial Runner、任务计时/求助/断点恢复、维护者演练隔离、结构化汇总与人工确认 gate；真实参与人数仍为 0 | `docs/status/PHASE6_CLOSURE_REVIEW.md` |
+| 2026-07-16 | 2.4.9 | 对齐 Biomni 的 action-space 思路，将 Decision Graph v3 扩展为唯一权威 Action Graph；新增 ActionBundle、数据兼容性和 Parent Agent 消费路径，同时保持 execution approval 边界 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-16 | 2.5.0 | 启动原 Phase 5 planning foundation：新增 task-aware multi-batch profile gate、Harmony/Scanorama planning-only contract 与 Batch Integration dry-run DAG；不开放真实执行 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-16 | 2.5.1 | 将 Decision/Search 图统一为可缩放、平移、拖拽和逐邻居展开的 bounded canvas；明确布局不表达语义顺序、KEGG/GO 未来分层边界和按任务懒加载执行环境策略 | `docs/design/DECISION_GRAPH_V3.md` |
+| 2026-07-16 | 2.5.2 | 完成原 Phase 5：Harmony/Scanorama 隔离 CPU 环境、受控 wrapper、统一 integration Validator、12+2 engineering qualification、scIB pancreas scientific pilot、跨工具 Pareto、Level 2 package 与 Batch Integration ActionBundle 晋升；全局 policy 仍 disabled | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-17 | 2.5.3 | Phase 6 面试级收口：统一 Parent Agent trace、48-case portfolio gold bank、A2/A3/A4 同 case 对照、一键 interview bundle 与 Biomni Adopt/Adapt/Reject 审计；不改变 execution policy 和真实试用 gate | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-17 | 2.5.4 | Portfolio Benchmark v2：分离 scenario facts 与 gold labels，修复 Batch Integration ontology，增加 A4 raw/admitted deterministic adjudication、字段级 interventions、零调用 replay 与治理效果指标 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-17 | 2.5.5 | 完成冻结 Portfolio v2 与 checkpoint provenance：48/48 同模型调用、raw/admitted 双指标、recovered/new/replay 分账和 interview bundle v2 展示 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-17 | 2.5.6 | 将参考工具包的三栏交互网络提升为 Knowledge Graph 默认入口；完整 Decision Graph 可展开，语义泳道首屏、节点拖拽/缩放/平移、每批 12 个邻居展开与清爽首屏完成 | `engine/interactive_graph_workspace.py` |
+| 2026-07-17 | 2.5.7 | 将 Graph Explorer 拆为独立一级页面；Action Space、Tool Dossier、Governance 收敛到 Knowledge Review，并明确 catalog task label 与 qualified task 的能力边界 | `app.py` |
+| 2026-07-18 | 2.5.8 | 落地 Mac 本地优先 Runtime Pack foundation：三个 task-family manifest/lock、resolver、环境审批状态机、CLI、Runtime Packs UI、LOCAL_HYBRID/STRICT_OFFLINE 外发 gate 与数据无关 release manifest；容器、WSL2 和 MCP 仍未实现 | `docs/product/LOCAL_FIRST_PRODUCT_ARCHITECTURE.md` |
+| 2026-07-19 | 2.5.9 | 完成当前 Apple Silicon Mac clean-prefix Release Candidate 演练：固定 Micromamba/control-plane lock，三个 Pack 真实安装、失败保留、卸载与重建，SBOM/license inventory 和 release privacy audit；第二台干净 Mac 与真实用户试用仍是 gate | `docs/status/MAC_BETA_ACCEPTANCE_REPORT.md` |
+| 2026-07-20 | 2.6.0 | 完成 Knowledge Intelligence Recovery：15 个 canonical task、16 工具 Source Corpus v2、单一 canonical snapshot、SQLite FTS5 BM25 + KG fallback、96-case retrieval eval、Research Chat 与统一 workbench memory；dense/RAGAS 仍按真实依赖状态记录 `not_run` | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-21 | 2.6.1 | 修复 Research Chat 回答意图塌缩，明确 recommendation/workflow/caveat/migration 四类输出协议；修复跨浏览器图展开与聊天布局，并增加重复运行、幻觉、合规、回归和失败归因的 Agent Quality gate | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-21 | 2.6.2 | 建立统一 System Quality Gate：八维质量模型、六类运行场景、真实脚本编排、断点续跑、知识/数据双边界、版本回归和真实试用分账；自动测试不得冒充用户可用性证据 | `docs/eval/RESEARCH_EVAL_PROTOCOL.md` |
+| 2026-07-22 | 2.6.3 | 修复多轮追问的历史意图污染；增加显式授权的 DeepSeek prose layer 与首个 smoke-tested `WorkflowCodeBundle`，workflow 直接交付模拟数据、可运行 Scrublet 代码、表格和诊断图，同时保持任意生成代码禁止进入 executor | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-22 | 2.6.4 | 建立面向 scKG 业务域与 Agent 架构阶段的持续评估流水线；统一测量效能、效率、稳定性、合规、覆盖率、零容忍风险、版本趋势、失败责任域和优化优先级，缺失外部模型/RAGAS/真实试用时严格记录 `not_run` | `docs/eval/RESEARCH_EVAL_PROTOCOL.md` |
+| 2026-07-23 | 2.7.0-dev | 完成本地 bge-m3 Model Pack、773 条 source-bound dense index、96-case 六路线消融、240-run Agent Quality v2、30-case Memory gate，并将 CellTypist/SingleR 晋升为 planning-only ActionBundle；外部模型、RAGAS、真实试用和 annotation 执行仍未完成，未冻结 rc-2.7.0 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-25 | 2.7.1-dev | 完成 Research Chat 分阶段 timing、Parent/registry 复用、后台 dense 预热、版本绑定 query LRU 与自适应检索；实现 annotation profiler、双工具 wrapper/validator、签名 Runtime Pack 和 Zheng68K pilot 代码。因容量、reference 与冻结数据资产 gate，真实 annotation 运行保持 0，未晋升第三个 qualified Action | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-27 | 2.7.2-dev | 收束唯一产品主链：ResearchChatService 统一 ASK/PLAN/RUN，LangGraph 与确定性调度复用同节点，旧 workflow 移出主 UI；导航收敛为 Workspace/Runs/Graph，Batch Integration 接回本地用户 Validator/审批链，并新增 Mainline Quality Gate | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-28 | 2.7.2-rc | 恢复并核验 tracked Git 内容；新增一键 Portfolio Acceptance，统一全量测试、主链、检索、Agent、Memory、Interview、Git 与隐私 Gate；形成唯一主链架构图和可追踪 RC bundle，不改变 Phase、Policy 或执行范围 | `docs/status/PROJECT_STATUS_2.0.md` |
+| 2026-07-30 | 2.7.2-rc correction | 修复 Research Chat 模式粘滞、任务上下文污染、LLM 状态误导和 RUN 无数据提示；建立追加式事故日志、5-turn live LLM gate 与受 smoke 约束的 20×3 稳定性评测。确定性路径已验证，真实 LLM 因凭据缺失保持 blocked | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-03 | 2.8.0-dev | 将开放世界 gold 拆为 routing/answer/safety 三层，增加 ConversationTaskState、确定性 Safety Precheck、LLM+KG/RAG 协作返回、长尾双层答案和 GroundedAnswerAuditV3；hidden 保持封存，真实 A/C/D/E 仍待显式授权 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-04 | 2.8.1-dev | 建立统一评估驱动开发流水线：版本化 Dataset Registry、component/trajectory/answer evaluator、独立 Judge 校准边界、paired regression、并列 release gate、PR/nightly/release 分层和 failure 回灌；不改变 Agent 执行权限 | `docs/eval/RESEARCH_EVAL_PROTOCOL.md` |
+| 2026-08-04 | 2.8.2-dev | 修复显式工具与 claim 检索串台、共享 benchmark 伪归属、Top-k 单工具拥挤、通用问题误触发 RAG 和静态引用漂移；DeepSeek 只消费 claim-aware governed context，默认检索路线按 96-case 实测选择 KG+BM25，Dense 保持自适应升级 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-12 | 2.9.0-dev | 启动 Research Workspace P1 Shadow：复用现有 DataRegistry/授权，新增 backed DataAssetProfile、可复现 Representative Preview、Scrublet StepContract、固定 Notebook compiler、页面薄层和 synthetic clean-kernel smoke；不开放任意代码或用户数据自动执行 | `docs/review/RESEARCH_WORKSPACE_UPGRADE_REVIEW.md` |
+| 2026-08-12 | 2.9.1-dev | 完成受控 Representative Preview runtime：新增强类型 request/result/error、精确审批、固定 Scrublet wrapper、统一 Validator、诊断图与 UI 结果回读；不执行可编辑 Notebook，不开放全量数据或任意代码 | `docs/review/RESEARCH_WORKSPACE_UPGRADE_REVIEW.md` |
+| 2026-08-12 | 2.9.2-dev | 完成 Preview 结果恢复与完整性闭环：owner-scoped 结果索引、独立 digest、artifact hash/path 复核、刷新后历史导航和只读 Runs & Results 展示；不新增执行能力 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-12 | 2.9.3-dev | 完成 source/profile/preview/notebook/approval/result 六段 checkpoint 与确定性 stale propagation；保存版本化 lineage、显示最早失效节点并只允许显式重建，不自动执行 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-12 | 2.9.4-dev | 增加 Preview Result Interpretation 与 Error Intelligence：把 validation/score/参数/图/失败翻译为受限用户解释，保持 scientific authority=false 且禁止自动调参或重试 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-13 | 2.9.5-dev | 将 Preview 收束为聊天 handoff 驱动的 Stepwise Analysis；增加共享步骤状态、参数 patch/stale、Notebook cell trust、逐步事件和可操作审批说明，仍禁止任意 Notebook 代码执行 | `docs/demo/STEPWISE_ANALYSIS_GUIDE.md` |
+| 2026-08-14 | 2.9.6-dev | 修复过期/错作用域 Preview allowance 使审批按钮永久禁用的问题；增加 exact-scope capability reissue + approval 服务和后端实现 digest 缓存失效，保持运行按钮与执行审批分离 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-14 | 2.9.7-dev | 增加零安装 Scrublet synthetic Preview onboarding；复用已就绪 Runtime Pack，生成版本化合成 AnnData 并带任务上下文进入 Stepwise Analysis，不安装、不审批、不自动执行 | `docs/demo/STEPWISE_ANALYSIS_GUIDE.md` |
+| 2026-08-14 | 2.9.8-dev | 将 synthetic Preview 收敛为“确认批准 -> 运行验证”两个主动作；approval mismatch 改为可替换旧审批，技术状态移入高级详情 | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-14 | 2.9.9-dev | 将交互式 Notebook 提升为 Preview 默认路径；一键在本地 Cursor 打开并绑定已有 Runtime Pack kernel，受控验证折叠为可选审计模式 | `docs/demo/STEPWISE_ANALYSIS_GUIDE.md` |
+| 2026-08-14 | 2.9.10-dev | 将本地浏览器 JupyterLab 升为交互主入口；复用 READY Runtime Pack kernel、localhost token、core mode 与完整 Notebook bundle，不安装依赖、不自动执行 | `docs/demo/STEPWISE_ANALYSIS_GUIDE.md` |
+| 2026-08-14 | 2.9.11-dev | 补齐聊天上下文到 synthetic/真实数据 Stepwise handoff、DataProfile 与参数 provenance 说明，以及 Notebook 内联表格和双诊断图；clean-kernel smoke 验证真实 image output | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
 
 ---
 

@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import secrets
 import sqlite3
 import time
@@ -13,8 +14,11 @@ from typing import Any, Dict, List, Optional
 from core.settings import PROJECT_ROOT
 
 
-DEFAULT_STORE_DIR = PROJECT_ROOT / ".sckg_user"
-DEFAULT_STORE_PATH = DEFAULT_STORE_DIR / "user_store.sqlite3"
+DEFAULT_STORE_DIR = Path(
+    os.environ.get("SCKG_HOME", str(PROJECT_ROOT / ".sckg_user"))
+).expanduser() / "state"
+DEFAULT_STORE_PATH = DEFAULT_STORE_DIR / "workbench.sqlite3"
+LEGACY_STORE_PATH = PROJECT_ROOT / ".sckg_user" / "user_store.sqlite3"
 KDF_ITERATIONS = 200_000
 
 
@@ -26,6 +30,8 @@ def init_store(db_path: Path = DEFAULT_STORE_PATH) -> Path:
     """Create the local user store if needed and return its path."""
 
     db_path.parent.mkdir(parents=True, exist_ok=True)
+    if db_path == DEFAULT_STORE_PATH and not db_path.exists() and LEGACY_STORE_PATH.is_file():
+        _migrate_legacy_store(LEGACY_STORE_PATH, db_path)
     with _connect(db_path) as conn:
         conn.executescript(
             """
@@ -81,6 +87,13 @@ def init_store(db_path: Path = DEFAULT_STORE_PATH) -> Path:
         )
         _ensure_column(conn, "sessions", "pinned", "INTEGER NOT NULL DEFAULT 0")
     return db_path
+
+
+def _migrate_legacy_store(source: Path, destination: Path) -> None:
+    """Copy the local workbench DB once without deleting the legacy file."""
+
+    with sqlite3.connect(source) as source_conn, sqlite3.connect(destination) as dest_conn:
+        source_conn.backup(dest_conn)
 
 
 def create_session(title: str = "New research chat", db_path: Path = DEFAULT_STORE_PATH) -> str:
@@ -245,6 +258,10 @@ def save_project_memory(
             """,
             (key, json.dumps(value, ensure_ascii=False), source, now, now),
         )
+    if db_path == DEFAULT_STORE_PATH and source == "user":
+        from core.unified_memory import UnifiedMemoryStore
+
+        UnifiedMemoryStore(db_path).set_explicit_preference("local", key, value)
 
 
 def load_project_memory(db_path: Path = DEFAULT_STORE_PATH) -> Dict[str, Any]:

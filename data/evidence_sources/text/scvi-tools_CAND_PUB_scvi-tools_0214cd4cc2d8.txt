@@ -1,0 +1,336 @@
+[PDF_PAGE 1]
+
+Supplementary Figures
+Supplementary Figure 1: Multiple covariates. a, b , Low-dimensional embeddings derived from
+scanpy.pp.regress_out function followed by (a) Scanpy’s external bbknn and (b) harmony methods
+(Regress-bbknn, Regress-harmony; Methods). UMAP plot is colored by batch, PCNA (cell cycle gene),
+IncRNA:roX1 (cell sex gene), and vg (gene marking spatial compartment within the wing disc).
+Supplementary Figure 2: Multiple covariates runtime on Heart Cell Atlas. a , Runtime of workﬂows to
+correct multiple continuous and categorical covariates on subsampled versions of the Heart Cell Atlas dataset.
+25
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 2]
+
+Supplementary Figure 3: Sequential integration of PBMC samples with totalVI and the scArches method.
+a, b, UMAP embedding of the totalVI reference and query latent spaces from default totalVI model run colored
+by (a) the reference labels and predicted query labels and (b) the dataset of origin. c-e, UMAP embedding of the
+totalVI scArches query latent space from colored by (c) study-derived labels, (d) predicted labels from totalVI
+scArches, and (e) predicted labels from totalVI default. f, Runtime of totalVI default versus totalVI scArches.
+Supplementary Figure 4: Black box components of scvi-tools’ application programming interface for
+developers. a, The training plan conﬁgures several aspects relevant for model training, like the optimizers, and
+the actual training optimization step in which data gets passed through a module. b, The AnnDataLoader is used
+to load minibatches of data directly from an AnnData object into a module. c, Mixins are Python classes with
+pre-coded functionality that can be inherited into many models, introducing isolated feature sets, like getting
+metrics relevant to V AEs (V AEMixin).
+26
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 3]
+
+Supplementary Figure 5: Reproducibility of Stereoscope implementation in scvi-tools. a , Scatter plot for
+six cell types of the hippocampus dataset. Each point in the scatter plot represents one spot. The x axis is
+the proportion inferred by the original Stereoscope software and the y axis is the proportion inferred by our
+implementation. We report the Pearson coeﬃcient for each cell type. The top three cell types are the most
+reproducible and the bottom three cell types are the least reproducible. b, Box plot of correlations of proportions
+between the two implementations. Each dot in the box plot is a cell type. Golden line in the box plot is the
+median.
+27
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 4]
+
+Supplementary Figure 6: Evaluation of CellAssign implementation in scvi-tools. a , b, UMAP embedding
+of follicular lymphoma single-cell expression data, labeled by maximum probability assignments from the (a)
+original CellAssign implementation and (b) scvi-tools implementation. c, Row-normalized confusion matrix of
+scvi-tools predicted labels (rows) and study-derived cell annotations (columns) for follicular lymphoma expression
+data. d, e, UMAP embedding of HGSC single-cell expression data, labeled by maximum probability assignments
+from the (d) original CellAssign implementation and (e) scvi-tools implementation. f, Row-normalized confusion
+matrix of scvi-tools predicted labels (rows) and study-derived cell annotations (columns) for HGSC single-cell
+expression data. g, Runtime on downsampled versions of 68k peripheral blood mononuclear cells dataset for the
+original and scvi-tools implementations.
+28
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 5]
+
+Supplementary Tables
+Modality Model Tasks
+scRNA-seq
+scVI [5] Dimensionality reduction, removal of unwanted variation, inte-
+gration across replicates, donors, and technologies, diﬀerential
+expression, imputation, normalization of other cell- and sample-
+level confounding factors
+LDV AE [50] scVI tasks with linear decoder
+scANVI [12] Automated annotation, all scVI tasks
+AutoZI [91] Gene-wise model selection for zero-inﬂation
+Solo [42] Doublet detection
+CellAssign [39] Marker-based automated annotation
+CITE-seq totalVI [21] Dimensionality reduction, removal of unwanted variation, inte-
+gration across replicates, donors, and technologies, diﬀerential
+expression, protein imputation, imputation, normalization of
+other cell- and sample-level confounding factors
+scATAC-seq PeakVI [24] Dimensionality reduction, removal of unwanted variation, diﬀer-
+ential accessibility, imputation, normalization of other cell- and
+sample-level confounding factors
+Spatial Transcriptomics
+gimVI [52] Imputation of missing genes in spatial data using scRNA-seq
+reference
+Stereoscope [40] Deconvolution of spatial transcriptomics proﬁles
+DestVI [41] Multi-resolution deconvolution of spatial transcriptomics proﬁles
+Multiple scArches [38] Transfer learning for reference-query integration applied on top
+of peakVI, scVI, scANVI, totalVI
+Supplementary Table 1: Overview of models and functionality currently implemented in scvi-tools.
+29
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 6]
+
+Cell Sex Genes Cell Cycle Genes Marker Genes
+lncRNA:roX1 PCNA Argk
+lncRNA:roX2 dnk Nrt
+Sxl RnrS Ten-a
+msl-2 RnrL Ten-m
+Claspin wb
+Mcm5 Act57B
+Caf1-180 drl
+RPA2 mid
+HipHop nemy
+stg lms
+Mcm6 CG11835
+dup Gyg
+WRNexo ara
+Mcm7 tok
+dpa kirre
+CG10336 NK7.1
+Mcm3 fj
+Mcm2 beat-IIIc
+RpA-70 CG33993
+Chrac-14 dpr16
+CG13690 CG15529
+RPA3 CG9593
+asf1 beat-IIb
+DNApol-alpha73 robo2
+CycE Ama
+DNApol-alpha50 fz2
+Kmn1 elB
+Lam noc
+Nph nkd
+msd5 fng
+msd1 vg
+ctp
+Set
+scra
+Chrac-16
+ncd
+Ote
+pzg
+HDAC1
+nesd
+tum
+CG8173
+aurB
+feo
+pav
+CG6767
+sip2
+Det
+Cks30A
+CycB
+B52
+Supplementary Table 2: Gene sets for multiple covariates Drosophila analysis.
+30
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 7]
+
+Supplementary Note 1
+In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external
+methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe
+the statistical model of CellAssign, highlighting diﬀerences between the scvi-tools implementation
+and the original implementation. Then we evaluate the scvi-tools implementation against the original
+on two datasets used in the original publication [ 39].
+Preliminaries
+CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along
+with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if
+a gene is a marker of a particular cell type. A size factor s for each cell may also be provided as
+input, otherwise it is computed empirically as the total unique molecular identiﬁer count of a cell.
+Additionally, a design matrix D containing p observed covariates, such as day, donor, etc, is an
+optional input.
+Generative process
+CellAssign uses a negative binomial mixture model to make cell-type predictions. The cell-type
+proportion is drawn from a Dirichlet distribution,
+(π 1, ..., π C) ∼ Dirichlet(α, ..., α ), (1)
+with α = 0. 01.
+CellAssign then posits that the observed gene expression counts xng for cell n and gene g are generated
+by the following process:
+δgc ∼ LogNormal(¯δ, σ 2) (2)
+log µ ngc = log sn + δgcρgc + βg0 +
+∑
+p
+βgpdpn (3)
+˜φ ngc =
+B∑
+i=1
+ai × exp(− b × (µ ngc − vi)2) (4)
+zn ∼ Discrete(π ) (5)
+xng |zn = c ∼ NegativeBinomial(µ ngc, ˜φ ngc) (6)
+Notably, the logarithm of the mean of the negative binomial for cell n, gene g, given that it belongs
+to cell type c (Equation 3) is computed as the sum of (1) the base expression of a gene g, βg0, (2) a
+cell-type-speciﬁc overexpression term for a gene, δgc, (3) an oﬀset for the size factor, log sn, and (4) a
+linear combination of covariates in the design matrix (weighted by coeﬃcients βgi). A cell-speciﬁc
+discrete latent variable, zn, represents the cell-type assignment for cell n.
+Furthermore, the inverse dispersion of the negative binomial, ˜φ ngc (Equation 4) is computed with a
+sum of radial basis functions of the mean centered on vi with parameters ai and b. In total, there are
+B centers v1, v 2, ..., v 10 that are set a priori to be equally spaced between 0 and the maximum count
+value of X. Additionally, as in the original implementation we used B = 10. The parameters ai and
+b are further described below.
+Inference
+CellAssign uses expectation maximization, which optimizes its parameters and provides a cell-type
+prediction for each cell.
+Initialization CellAssign initializes parameters as follows: δgc is initialized with a LogNormal(0, 1)
+draw, ¯δ is initialized to 0, σ 2 is initialized to 1, π i is initialized to 1/C , βgi is initialized with a N (0, 1)
+draw, and the inverse dispersion parameter log ai is initialized to zero. Additionally, b is ﬁxed a priori
+to be
+b = 1
+2(v2 − v1)2 , (7)
+where v1 and v2 are the ﬁrst and second center determined as stated previously.
+31
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 8]
+
+E step The E step consists of computing the expected joint log likelihood with respect to the
+conditional posterior, p(zn |xn, δ, β, a, π ), for each cell. This conditional posterior is computed in
+closed form as
+γnc := p(zn = c |xn, δ, β, a, π ) ∝ p(zn = c |π )
+∏
+g
+p(xng |µ ngc, ˜φ ngc), (8)
+which is normalized over all c. The expected joint log likelihood over all N cells is then computed
+as
+Ez|X,π,δ,β,a [log p(X, π, δ |β, a, ¯δ, σ 2)] =
+N∑
+n=1
+C∑
+c=1
+γnc
+G∑
+g=1
+log p(xng|zn = c)
++ log p(π ) + log p(δ).
+(9)
+Herein lies the major diﬀerence between the scvi-tools implementation and the original CellAssign
+implementation. Notably, in scvi-tools we compute this expected joint log likelihood using a
+mini-batch of 1,024 cells, using the fact that
+N∑
+n=1
+C∑
+c=1
+γnc
+G∑
+g=1
+log p(xng|zn = c) ≈ N
+M
+M∑
+m=1
+C∑
+c=1
+γnc
+G∑
+g=1
+log p(xτ (m)g|zn = c) (10)
+for a minibatch of M < N cells, where τ is a function describing a permutation of the data indices
+{1, 2, ..., N }.
+M step The parameters of the expected joint log likelihood ( π, δ, β, a, ¯δ, σ 2) are optimized as in
+the original implementation, using the Adam optimizer [ 92], except that now an optimization step
+corresponds to data from one minibatch. Following the original implementation, we also clamped
+δ > 2. We also added early stopping with respect to the log likelihood of a held-out validation
+set.
+Evaluation
+We downloaded two datasets with full metadata and cell-type marker matrices from the original
+publication [ 39] (from https://zenodo.org/record/3372746) and compared the scvi-tools
+implementation predictions to the original predictions for these datasets. The ﬁrst dataset consisted of
+9,156 cells from lymph node biopses of two follicular lymphoma (FL) patients. The second dataset
+consisted of 4,848 cells from a high-grade serous carcinoma (HGSC) patient. On both datasets, the
+scvi-tools implementation predictions were highly reproducible with the original implementation
+(Supplementary Figure 6a-f). UMAP embeddings used in Supplementary Figure 6 were the original
+embeddings from the publication and were retrieved from the downloaded objects.
+Next, we evaluated the runtime of the two implementations on a desktop with an Intel Core i9-10900K
+3.7 GHz processor, 2x CorsairVengeance LPX 64GB ram, and an NVIDIA RTX 3090 GPU. To do
+so, we used a dataset of 68k peripheral blood mononuclear cells from 10x Genomics [ 78], and used
+the same cell-type marker matrix as the FL dataset (23 markers, 5 cell types). Across a range of
+cells, we observed that the scvi-tools implementation is consistently faster and thus more scalable
+(Supplementary Figure
+6g). This is mostly due in part to the minibatching, which is a capability
+present in the original codebase, but not set as default (also no guidance on how to set it). Thus, we
+have shown that the scvi-tools implementation of CellAssign is both reproducible, and by default,
+more scalable than the original implementation.
+32
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint 
+
+
+[PDF_PAGE 9]
+
+References
+[5] Romain Lopez, Jeﬀrey Regier, Michael B Cole, Michael I Jordan, and Nir Y osef. “Deep generative
+modeling for single-cell transcriptomics”. In: Nature Methods (2018).
+[12] Chenling Xu, Romain Lopez, Edouard Mehlman, Jeﬀrey Regier, Michael I. Jordan, and Nir Y osef.
+“Probabilistic harmonization and annotation of single-cell transcriptomics data with deep generative
+models”. In: Molecular Systems Biology (2021).
+[21] Adam Gayoso, Zoë Steier, Romain Lopez, Jeﬀrey Regier, Kristopher L Nazor, Aaron Streets, and Nir
+Y osef. “Joint probabilistic modeling of single-cell multi-omic data with totalVI”. In: Nature Methods
+(2021).
+[24] PeakVI. 2021. /u.sc/r.sc/l.sc: https://github.com/YosefLab/scvi-tools.
+[38] Mohammad Lotfollahi, Mohsen Naghipourfar, Malte Luecken, Matin Khajavi, Maren Büttner, Ziga Avsec,
+Alexander Misharin, and Fabian Theis. “Query to reference single-cell integration with transfer learning”.
+In: bioRxiv (2020).
+[39] Allen W Zhang, Ciara O’Flanagan, Elizabeth A Chavez, Jamie LP Lim, Nicholas Ceglia, Andrew
+McPherson, Matt Wiens, Pascale Walters, Tim Chan, et al. “Probabilistic cell-type assignment of
+single-cell RNA-seq for tumor microenvironment proﬁling”. In: Nature Methods (2019).
+[40] Alma Andersson, Joseph Bergenstråhle, Michaela Asp, Ludvig Bergenstråhle, Aleksandra Jurek, José
+Fernández Navarro, and Joakim Lundeberg. “Single-cell and spatial transcriptomics enables probabilistic
+inference of cell type topography”. In: Communications Biology (2020).
+[41] DestVI. 2021. /u.sc/r.sc/l.sc: https://github.com/romain-lopez/DestVI-reproducibility .
+[42] Nicholas J Bernstein, Nicole L Fong, Irene Lam, Margaret A Roy, David G Hendrickson, and David R
+Kelley. “Solo: doublet identiﬁcation in single-cell RNA-Seq via semi-supervised deep learning”. In: Cell
+Systems (2020).
+[50] Valentine Svensson, Adam Gayoso, Nir Y osef, and Lior Pachter. “Interpretable factor models of single-cell
+RNA-seq via variational autoencoders”. In: Bioinformatics (2020).
+[52] Romain Lopez, Achille Nazaret, Maxime Langevin, Jules Samaran, Jeﬀrey Regier, Michael I Jordan, and
+Nir Y osef. “A joint model of unpaired data from scRNA-seq and spatial transcriptomics for imputing
+missing gene expression measurements”. In: ICML workshop in Computational Biology . 2019.
+[78] 10x Genomics. 2017. /u.sc/r.sc/l.sc: https://support.10xgenomics.com/single-cell-gene-expression/
+datasets.
+[91] Oscar Clivio, Romain Lopez, Jeﬀrey Regier, Adam Gayoso, Michael I Jordan, and Nir Y osef. “Detecting
+zero-inﬂated genes in single-cell transcriptomics data”. In: Machine Learning in Computational Biology
+(MLCB). 2019.
+[92] Diederik P . Kingma and Jimmy Lei Ba. “Adam: A method for stochastic optimization”. In: International
+Conference on Learning Representations. 2015.
+33
+.CC-BY 4.0 International licenseavailable under a 
+was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made 
+The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint

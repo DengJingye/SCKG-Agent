@@ -1,0 +1,45 @@
+{
+  "elapsed_ms": 1967.098,
+  "guardrail": "Default mode does not download PDFs. Source text remains retrieval-only and cannot promote formal TSV evidence.",
+  "mode": "offline_refresh",
+  "ok": true,
+  "pipeline": "scKG PDF / Literature Source Pipeline v2.3",
+  "steps": [
+    {
+      "command": "/opt/anaconda3/bin/python data_pipeline/build_source_registry.py",
+      "elapsed_ms": 113.525,
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "{\n  \"candidate_quarantine_rows\": 2,\n  \"candidate_rows\": 35,\n  \"candidate_validation_status_counts\": {\n    \"candidate_unvalidated\": 18,\n    \"no_candidate\": 15,\n    \"source_metadata_mismatch\": 2\n  },\n  \"download_summary\": {\n    \"attempted_rows\": 23,\n    \"candidate_found\": 8,\n    \"download_failed\": 8,\n    \"downloaded\": 0,\n    \"errors\": 0,\n    \"live\": true,\n    \"not_found\": 7,\n    \"skipped_existing\": 8,\n    \"source_rows\": 23\n  },\n  \"guardrail\": \"Candidate discovery and source validation do not promote formal evidence. Metadata mismatches stay quarantined until DOI/title/source is corrected.\",\n  \"pdf_candidate_registry\": \"data/evidence_candidates/pdf_candidate_registry.tsv\",\n  \"shared_source_records\": 2,\n  \"source_records\": 20,\n  \"source_registry\": \"data/evidence_candidates/source_registry.tsv\",\n  \"source_rows\": 23,\n  \"source_status_counts\": {\n    \"pdf_extraction_failed\": 2,\n    \"source_metadata_mismatch\": 1,\n    \"source_text_available\": 17\n  },\n  \"source_validation_report\": \"data/evidence_candidates/source_validation_report.tsv\",\n  \"validation_status_counts\": {\n    \"pdf_exists_but_extract_failed\": 2,\n    \"source_metadata_mismatch\": 1,\n    \"validated_source_text_available\": 17\n  }\n}",
+      "step": "build_source_registry"
+    },
+    {
+      "command": "/opt/anaconda3/bin/python data_pipeline/build_literature_source_coverage.py",
+      "elapsed_ms": 334.194,
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "",
+      "stdout_tail": "ce_text_available\": 19\n  },\n  \"guardrail\": \"Literature source coverage is retrieval-only until review packet validation. PDF text cannot promote formal TSV evidence automatically.\",\n  \"manual_checklist\": \"data/evidence_candidates/pdf_manual_download_checklist.tsv\",\n  \"manual_queue_rows\": 4,\n  \"min_source_text_chars\": 1000,\n  \"missing_source_text\": 4,\n  \"output_md\": \"data/evidence_candidates/core_literature_manual_download_queue.md\",\n  \"output_tsv\": \"data/evidence_candidates/core_literature_source_coverage.tsv\",\n  \"per_tool\": {\n    \"CellRank\": {\n      \"missing\": 0,\n      \"source_text_available\": 2,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"CellTypist\": {\n      \"missing\": 1,\n      \"source_text_available\": 1,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"Harmony\": {\n      \"missing\": 0,\n      \"source_text_available\": 2,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"Scanpy\": {\n      \"missing\": 0,\n      \"source_text_available\": 3,\n      \"source_text_too_short\": 0,\n      \"total\": 3\n    },\n    \"Scrublet\": {\n      \"missing\": 0,\n      \"source_text_available\": 2,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"Seurat\": {\n      \"missing\": 2,\n      \"source_text_available\": 1,\n      \"source_text_too_short\": 0,\n      \"total\": 3\n    },\n    \"SingleR\": {\n      \"missing\": 1,\n      \"source_text_available\": 1,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"cell2location\": {\n      \"missing\": 0,\n      \"source_text_available\": 2,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"scVelo\": {\n      \"missing\": 0,\n      \"source_text_available\": 2,\n      \"source_text_too_short\": 0,\n      \"total\": 2\n    },\n    \"scvi-tools\": {\n      \"missing\": 0,\n      \"source_text_available\": 3,\n      \"source_text_too_short\": 0,\n      \"total\": 3\n    }\n  },\n  \"rows\": 23,\n  \"source_manifest\": \"data/evidence_candidates/evidence_pdf_source_manifest_full.tsv\",\n  \"source_text_available\": 19,\n  \"source_text_too_short\": 0\n}",
+      "step": "build_literature_source_coverage"
+    },
+    {
+      "command": "/opt/anaconda3/bin/python data_pipeline/build_evidence_index.py --source-manifest /Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_pdf_source_manifest_full.tsv --source-manifest /Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/core_tool_source_manifest_v2.tsv",
+      "elapsed_ms": 613.026,
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "/opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field \"model_name\" has conflict with protected namespace \"model_\".\n\nYou may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.\n  warnings.warn(",
+      "stdout_tail": "{\n  \"chunks\": 819,\n  \"chunks_path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/indexes/evidence_chunks.jsonl\",\n  \"documents\": 0,\n  \"embedding_model\": \"BAAI/bge-m3\",\n  \"source_manifest_chunks\": 777,\n  \"source_manifests\": [\n    {\n      \"chunks\": 451,\n      \"exists\": true,\n      \"path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_pdf_source_manifest_full.tsv\"\n    },\n    {\n      \"chunks\": 326,\n      \"exists\": true,\n      \"path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/core_tool_source_manifest_v2.tsv\"\n    }\n  ],\n  \"vectors\": 0,\n  \"vectors_path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/indexes/evidence_vectors.jsonl\"\n}",
+      "step": "build_coverage_and_indexes"
+    },
+    {
+      "command": "/opt/anaconda3/bin/python data_pipeline/build_algorithm_representations_v2.py --source-manifest /Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_pdf_source_manifest_full.tsv --source-manifest /Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/core_tool_source_manifest_v2.tsv",
+      "elapsed_ms": 906.206,
+      "returncode": 0,
+      "status": "ok",
+      "stderr_tail": "/opt/anaconda3/lib/python3.12/site-packages/pydantic/_internal/_fields.py:161: UserWarning: Field \"model_name\" has conflict with protected namespace \"model_\".\n\nYou may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.\n  warnings.warn(",
+      "stdout_tail": "{\n  \"audit_path\": \"data/evidence_candidates/algorithm_representation_v2_audit.tsv\",\n  \"chunks_path\": \"data/indexes/evidence_chunks.jsonl\",\n  \"dense_vector_chunk_count\": 0,\n  \"legacy_embedding_count\": 1691,\n  \"output_path\": \"data/indexes/tool_representations_v2.jsonl\",\n  \"policy\": [\n    \"ToolRepresentationV2 is for migration_context and retrieval only.\",\n    \"Source chunks cannot promote formal TSV evidence automatically.\",\n    \"Legacy embeddings are candidate recall signals only.\"\n  ],\n  \"quality_flag_counts\": {\n    \"dense_embedding_missing\": 1834,\n    \"legacy_embedding_missing\": 143,\n    \"legacy_embedding_present_recall_only\": 1691,\n    \"low_source_coverage\": 1818,\n    \"structured_profile_missing\": 1814,\n    \"toolkit_requires_module_split\": 3\n  },\n  \"representation_count\": 1834,\n  \"representation_version\": \"tool-representation-v2.0\",\n  \"source_chunk_count\": 777,\n  \"source_manifests\": [\n    {\n      \"chunks\": 451,\n      \"exists\": true,\n      \"path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/evidence_pdf_source_manifest_full.tsv\"\n    },\n    {\n      \"chunks\": 326,\n      \"exists\": true,\n      \"path\": \"/Users/lris/Desktop/scKG_agent/SCKG-Agent/data/evidence_candidates/core_tool_source_manifest_v2.tsv\"\n    }\n  ],\n  \"toolkit_module_required\": [\n    \"Scanpy\",\n    \"Seurat\",\n    \"scvi-tools\"\n  ],\n  \"tools_with_dense_vectors\": 0,\n  \"tools_with_source_chunks\": 16,\n  \"tools_without_source_chunks\": 1818,\n  \"vectors_path\": \"data/indexes/evidence_vectors.jsonl\"\n}",
+      "step": "build_algorithm_representations_v2"
+    }
+  ]
+}

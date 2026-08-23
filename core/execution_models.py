@@ -14,6 +14,8 @@ class StrictModel(BaseModel):
 
 class TaskName(str, Enum):
     DOUBLET_DETECTION = "doublet_detection"
+    BATCH_INTEGRATION = "batch_integration"
+    CELL_TYPE_ANNOTATION = "cell_type_annotation"
 
 
 class ModalityName(str, Enum):
@@ -235,8 +237,16 @@ class DataProfile(StrictModel):
     var_keys: List[str] = Field(default_factory=list)
     batch_key: Optional[str] = None
     batch_count: Optional[int] = Field(default=None, ge=0)
+    batch_missing_count: int = Field(default=0, ge=0)
+    batch_min_cells: Optional[int] = Field(default=None, ge=0)
+    batch_max_cells: Optional[int] = Field(default=None, ge=0)
+    batch_imbalance_ratio: Optional[float] = Field(default=None, ge=1.0)
     label_key: Optional[str] = None
+    label_count: Optional[int] = Field(default=None, ge=0)
+    label_missing_count: int = Field(default=0, ge=0)
     has_pca: bool = False
+    pca_n_components: Optional[int] = Field(default=None, ge=0)
+    pca_finite: Optional[bool] = None
     has_neighbors: bool = False
     has_clustering: bool = False
     matrix_profiles: List[MatrixProfile] = Field(default_factory=list)
@@ -265,6 +275,115 @@ class DataProfile(StrictModel):
     @property
     def is_blocked(self) -> bool:
         return bool(self.blocking_errors)
+
+
+class AnnotationDataProfile(StrictModel):
+    profile_id: str = Field(min_length=1)
+    file_path_redacted: str
+    file_hash: str = Field(min_length=64, max_length=64)
+    n_cells: int = Field(ge=0)
+    n_genes: int = Field(ge=0)
+    expression_source: str = Field(min_length=1)
+    expression_state: Literal[
+        "raw_counts",
+        "log1p_normalized",
+        "scaled",
+        "unknown",
+    ]
+    normalization_target: Literal[
+        "ready_log1p_10000",
+        "normalize_log1p_10000",
+        "rank_based_compatible",
+        "blocked",
+    ]
+    gene_identifier_type: Literal[
+        "gene_symbol",
+        "ensembl_human",
+        "ensembl_mouse",
+        "mixed",
+        "unknown",
+    ]
+    species: Literal["human", "mouse", "unknown"]
+    duplicate_gene_count: int = Field(default=0, ge=0)
+    reference_id: str = ""
+    reference_digest: str = ""
+    reference_gene_count: int = Field(default=0, ge=0)
+    overlapping_gene_count: int = Field(default=0, ge=0)
+    gene_overlap_rate: float = Field(default=0.0, ge=0.0, le=1.0)
+    warnings: List[str] = Field(default_factory=list)
+    blocking_errors: List[str] = Field(default_factory=list)
+    profile_version: str = "annotation-profiler-v1"
+
+    @model_validator(mode="after")
+    def validate_annotation_profile(self) -> "AnnotationDataProfile":
+        if self.normalization_target == "blocked" and not self.blocking_errors:
+            raise ValueError("blocked annotation profile requires a blocking reason")
+        if self.reference_id and not self.reference_digest:
+            raise ValueError("selected annotation reference requires a digest")
+        if self.reference_gene_count == 0 and self.overlapping_gene_count:
+            raise ValueError("gene overlap requires a reference gene set")
+        return self
+
+    @property
+    def is_blocked(self) -> bool:
+        return bool(self.blocking_errors)
+
+
+class AnnotationReferenceManifest(StrictModel):
+    schema_version: Literal["1.0"] = "1.0"
+    reference_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    tool_name: Literal["CellTypist", "SingleR"]
+    reference_type: Literal["celltypist_model", "singler_reference"]
+    version: str = Field(min_length=1)
+    species: Literal["human", "mouse"]
+    tissue_scope: List[str] = Field(default_factory=list)
+    label_ontology_version: str = Field(min_length=1)
+    gene_identifier_type: Literal["gene_symbol", "ensembl_human", "ensembl_mouse"]
+    gene_count: int = Field(gt=0)
+    labels: List[str] = Field(min_length=1)
+    local_path: str = Field(min_length=1)
+    sha256: str = Field(min_length=64, max_length=64)
+    gene_list_path: str = Field(min_length=1)
+    gene_list_sha256: str = Field(min_length=64, max_length=64)
+    source_url: str = Field(min_length=1)
+    license: str = Field(min_length=1)
+    runtime_network_allowed: bool = False
+    qualification_status: Literal["manifest_only", "verified", "pilot_passed"] = (
+        "manifest_only"
+    )
+
+
+class AnnotationLabelMapping(StrictModel):
+    mapping_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    version: str = Field(min_length=1)
+    source_labels: List[str] = Field(default_factory=list)
+    canonical_labels: List[str] = Field(default_factory=list)
+    mapping: Dict[str, str] = Field(default_factory=dict)
+    unknown_label: str = "unknown"
+    mapping_digest: str = Field(min_length=64, max_length=64)
+    ai_generated: bool = False
+
+
+class TaskDataEligibility(StrictModel):
+    task: TaskName
+    allowed: bool
+    selected_representation: Optional[str] = None
+    batch_key: Optional[str] = None
+    batch_count: Optional[int] = Field(default=None, ge=0)
+    biology_label_mode: Literal["available", "degraded_no_label", "not_applicable"] = (
+        "not_applicable"
+    )
+    blocking_reasons: List[str] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)
+    checks: Dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_allowed_state(self) -> "TaskDataEligibility":
+        if self.allowed and self.blocking_reasons:
+            raise ValueError("allowed task eligibility cannot contain blocking reasons")
+        if not self.allowed and not self.blocking_reasons:
+            raise ValueError("blocked task eligibility requires a reason")
+        return self
 
 
 class ContractRule(StrictModel):
@@ -486,9 +605,35 @@ class ActorContext(StrictModel):
     role: Literal["maintainer", "user"]
 
 
+class ApprovalScope(StrictModel):
+    user_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    artifact_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    plan_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    tool_name: str = Field(min_length=1)
+    tool_version: str = Field(min_length=1)
+    contract_version: str = Field(min_length=1)
+    environment_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    parameter_hash: str = Field(min_length=64, max_length=64)
+
+    @property
+    def fingerprint(self) -> str:
+        import hashlib
+        import json
+
+        return hashlib.sha256(
+            json.dumps(
+                self.model_dump(mode="json"),
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+
+
 class QualificationContext(StrictModel):
     mode: bool = False
-    purpose: Literal["synthetic_qualification", "scientific_pilot"] = (
+    purpose: Literal[
+        "synthetic_qualification", "scientific_pilot", "representative_preview"
+    ] = (
         "synthetic_qualification"
     )
     authorized: bool = False
@@ -509,6 +654,23 @@ class QualificationArtifact(StrictModel):
     expected_cells: int = Field(gt=0)
 
 
+class RestrictedUserExecutionContext(StrictModel):
+    user_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    artifact_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    approval_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    allowance_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    request_fingerprint: str = Field(min_length=64, max_length=64)
+    contract_version: str
+    tool_name: str
+    tool_version: str
+    environment_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    parameter_hash: str = Field(min_length=64, max_length=64)
+    approval_consumption_index: int = Field(ge=1)
+    approval_max_uses: int = Field(ge=1)
+    access_origin: Literal["local"] = "local"
+    approval_consumed: bool = True
+
+
 class ExecutionRequest(StrictModel):
     request_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     run_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
@@ -518,12 +680,26 @@ class ExecutionRequest(StrictModel):
     wrapper_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     environment_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     input_artifact_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    execution_seed: int = Field(default=0, ge=0, le=2_147_483_647)
     parameters: Dict[str, Any]
     parameter_provenance: Dict[str, Any] = Field(default_factory=dict)
     timeout_seconds: int = Field(gt=0, le=900)
     artifact_policy_id: Literal["default_run_artifacts"] = "default_run_artifacts"
     actor: ActorContext
     qualification: QualificationContext
+    execution_mode: Literal["qualification", "restricted_local_user"] = "qualification"
+    user_execution: Optional[RestrictedUserExecutionContext] = None
+
+    @model_validator(mode="after")
+    def validate_execution_mode(self) -> "ExecutionRequest":
+        if self.execution_mode == "restricted_local_user":
+            if self.actor.role != "user" or self.user_execution is None:
+                raise ValueError("restricted user execution requires user actor and context")
+            if self.qualification.mode:
+                raise ValueError("restricted user execution cannot claim qualification mode")
+        elif self.user_execution is not None:
+            raise ValueError("qualification request cannot contain user execution context")
+        return self
 
 
 class ProcessCleanup(StrictModel):
@@ -532,6 +708,8 @@ class ProcessCleanup(StrictModel):
     kill_sent: bool = False
     child_processes_seen: int = Field(default=0, ge=0)
     residual_processes: List[int] = Field(default_factory=list)
+    cancellation_triggered: bool = False
+    cancellation_reason: Optional[str] = None
 
 
 class ExecutionRun(StrictModel):
@@ -546,6 +724,7 @@ class ExecutionRun(StrictModel):
     environment_id: str
     command_argv_redacted: List[str]
     parameters: Dict[str, Any]
+    execution_seed: int = Field(default=0, ge=0, le=2_147_483_647)
     parameter_provenance: Dict[str, Any] = Field(default_factory=dict)
     input_hash: str
     start_time: datetime
@@ -558,7 +737,9 @@ class ExecutionRun(StrictModel):
     stderr_path: str
     artifact_paths: Dict[str, str] = Field(default_factory=dict)
     artifact_hashes: Dict[str, str] = Field(default_factory=dict)
-    status: Literal["queued", "running", "succeeded", "failed", "timeout", "blocked"]
+    status: Literal[
+        "queued", "running", "succeeded", "failed", "timeout", "cancelled", "blocked"
+    ]
     error_type: Optional[str] = None
     error_message: Optional[str] = None
     process_cleanup: ProcessCleanup = Field(default_factory=ProcessCleanup)
@@ -567,9 +748,13 @@ class ExecutionRun(StrictModel):
     synthetic_fixture: bool = True
     public_dataset: bool = False
     user_data_used: bool = False
-    execution_purpose: Literal["synthetic_qualification", "scientific_pilot"] = (
+    execution_purpose: Literal[
+        "synthetic_qualification", "scientific_pilot", "representative_preview"
+    ] = (
         "synthetic_qualification"
     )
+    owner_user_id: Optional[str] = None
+    approval_id: Optional[str] = None
 
 
 class ValidationResult(StrictModel):
@@ -586,11 +771,17 @@ class ValidationResult(StrictModel):
     eligible_for_candidate_aggregation: bool = False
     repairable: bool = False
     metric_authority: Literal[
-        "synthetic_engineering_metric", "scientific_pilot_metric"
+        "synthetic_engineering_metric",
+        "scientific_pilot_metric",
+        "preview_engineering_metric",
     ] = (
         "synthetic_engineering_metric"
     )
     validation_version: str = "doublet-validator-v1"
+
+
+class AnnotationValidationResult(ValidationResult):
+    validation_version: Literal["annotation-validator-v1"] = "annotation-validator-v1"
 
 
 class ConfigurationSpec(StrictModel):
@@ -680,7 +871,12 @@ class PreferenceProfile(str, Enum):
 class DecisionResult(StrictModel):
     decision_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     decision_scope: Literal[
-        "scrublet_configuration", "multitool_doublet_detection"
+        "scrublet_configuration",
+        "multitool_doublet_detection",
+        "batch_integration_configuration",
+        "multitool_batch_integration",
+        "cell_type_annotation_configuration",
+        "multitool_cell_type_annotation",
     ] = "scrublet_configuration"
     eligible_candidate_ids: List[str]
     pareto_candidate_ids: List[str]
@@ -787,6 +983,184 @@ class ScientificEvaluationResult(StrictModel):
     failed: bool = False
     metric_authority: Literal["scientific_pilot_metric"] = "scientific_pilot_metric"
     limitations: List[str]
+
+
+class IntegrationProbeSpec(StrictModel):
+    probe_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    profile_id: str = Field(min_length=1)
+    source_fixture_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    split_role: Literal["development", "evaluation"]
+    random_seed: int = Field(ge=0)
+    n_cells: int = Field(gt=0)
+    n_features: int = Field(gt=1)
+    n_batches: int = Field(gt=1)
+    n_biology_labels: int = Field(gt=1)
+    batch_key: str = "batch"
+    label_key: str = "cell_type"
+    selected_obs_indices_hash: str = Field(min_length=64, max_length=64)
+    probe_artifact_path: str
+    probe_hash: str = Field(min_length=64, max_length=64)
+    metadata_path: str
+    source_input_hash: str = Field(min_length=64, max_length=64)
+    source_unchanged: bool = True
+    synthetic: bool = True
+    scientific_claim_allowed: bool = False
+
+
+class AnnotationProbeSpec(StrictModel):
+    probe_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    profile_id: str = Field(min_length=1)
+    source_fixture_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    split_role: Literal["development", "evaluation"]
+    random_seed: int = Field(ge=0)
+    n_cells: int = Field(gt=0)
+    n_genes: int = Field(gt=1)
+    n_cell_types: int = Field(gt=1)
+    expression_state: Literal["log1p_normalized"]
+    gene_identifier_type: Literal["gene_symbol"]
+    species: Literal["human", "mouse"]
+    reference_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    reference_digest: str = Field(min_length=64, max_length=64)
+    selected_cell_hash: str = Field(min_length=64, max_length=64)
+    ground_truth_hash: str = Field(min_length=64, max_length=64)
+    probe_artifact_path: str
+    probe_hash: str = Field(min_length=64, max_length=64)
+    metadata_path: str
+    source_input_hash: str = Field(min_length=64, max_length=64)
+    source_unchanged: bool = True
+    synthetic: bool = True
+    scientific_claim_allowed: bool = False
+
+
+class AnnotationSplitArtifact(StrictModel):
+    artifact_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    fixture_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    accession: Literal["Zheng68K"] = "Zheng68K"
+    split_role: Literal["development", "evaluation"]
+    path: str
+    probe_hash: str = Field(min_length=64, max_length=64)
+    cell_id_hash: str = Field(min_length=64, max_length=64)
+    label_hash: str = Field(min_length=64, max_length=64)
+    n_cells: int = Field(gt=0)
+    n_labels: int = Field(gt=1)
+    split_seed: int = Field(ge=0)
+    reference_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    reference_digest: str = Field(min_length=64, max_length=64)
+    label_mapping_digest: str = Field(min_length=64, max_length=64)
+    public_dataset: bool = True
+    user_data: bool = False
+    scientific_claim_scope: Literal["pilot"] = "pilot"
+
+
+class AnnotationDatasetManifest(StrictModel):
+    schema_version: Literal["1.0"] = "1.0"
+    dataset_id: Literal["Zheng68K"] = "Zheng68K"
+    accession: Literal["Zheng68K"] = "Zheng68K"
+    title: str = Field(min_length=1)
+    source_url: str = Field(min_length=1)
+    license: str = Field(min_length=1)
+    processed_h5ad_path: str = Field(min_length=1)
+    processed_h5ad_sha256: str = Field(min_length=64, max_length=64)
+    n_cells: int = Field(gt=0)
+    n_genes: int = Field(gt=0)
+    label_key: str = Field(min_length=1)
+    source_label_count: int = Field(gt=1)
+    raw_counts_preserved: bool
+    frozen: bool = True
+    user_data: bool = False
+
+
+class AnnotationSplitManifest(StrictModel):
+    schema_version: Literal["1.0"] = "1.0"
+    accession: Literal["Zheng68K"] = "Zheng68K"
+    dataset_sha256: str = Field(min_length=64, max_length=64)
+    split_seed: int = Field(ge=0)
+    label_key: str = Field(min_length=1)
+    label_mapping_digest: str = Field(min_length=64, max_length=64)
+    stratification_fields: List[str] = Field(default_factory=lambda: ["canonical_label"])
+    development: AnnotationSplitArtifact
+    evaluation: AnnotationSplitArtifact
+    cell_overlap_count: int = Field(ge=0)
+    manifest_hash: str = Field(min_length=64, max_length=64)
+
+    @model_validator(mode="after")
+    def validate_annotation_split(self) -> "AnnotationSplitManifest":
+        if self.development.probe_hash == self.evaluation.probe_hash:
+            raise ValueError("annotation development and evaluation artifacts must differ")
+        if self.cell_overlap_count:
+            raise ValueError("annotation split cannot contain overlapping cells")
+        if self.development.label_mapping_digest != self.label_mapping_digest:
+            raise ValueError("development split label mapping digest mismatch")
+        if self.evaluation.label_mapping_digest != self.label_mapping_digest:
+            raise ValueError("evaluation split label mapping digest mismatch")
+        return self
+
+
+class AnnotationScientificEvaluationResult(StrictModel):
+    evaluation_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    run_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    tool_name: Literal["CellTypist", "SingleR"]
+    tool_version: str = Field(min_length=1)
+    configuration_hash: str = Field(min_length=64, max_length=64)
+    split_role: Literal["development", "evaluation"]
+    split_hash: str = Field(min_length=64, max_length=64)
+    label_mapping_digest: str = Field(min_length=64, max_length=64)
+    n_cells: int = Field(gt=0)
+    metrics: Dict[str, float]
+    per_class_metrics: Dict[str, Dict[str, float]]
+    confusion_matrix: Dict[str, Dict[str, int]]
+    bootstrap_ci: Dict[str, BootstrapInterval]
+    runtime_seconds: float = Field(ge=0.0)
+    peak_memory_mb: Optional[float] = Field(default=None, ge=0.0)
+    metric_authority: Literal["scientific_pilot_metric"] = "scientific_pilot_metric"
+    limitations: List[str] = Field(default_factory=list)
+
+
+class IntegrationDatasetManifest(StrictModel):
+    dataset_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    accession: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    source_url: str = Field(min_length=1)
+    license: str = Field(min_length=1)
+    downloaded_at: str
+    source_file_path: str
+    source_file_sha256: str = Field(min_length=64, max_length=64)
+    processed_h5ad_path: str
+    processed_h5ad_sha256: str = Field(min_length=64, max_length=64)
+    n_cells: int = Field(gt=0)
+    n_genes: int = Field(gt=0)
+    batch_key: str
+    label_key: str
+    n_batches: int = Field(gt=1)
+    n_labels: int = Field(gt=1)
+    user_data: bool = False
+
+
+class IntegrationSplitArtifact(StrictModel):
+    artifact_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    fixture_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    accession: str = Field(min_length=1)
+    split_role: Literal["development", "evaluation"]
+    path: str
+    probe_hash: str = Field(min_length=64, max_length=64)
+    cell_id_hash: str = Field(min_length=64, max_length=64)
+    n_cells: int = Field(gt=0)
+    n_batches: int = Field(gt=1)
+    n_labels: int = Field(gt=1)
+    split_seed: int = Field(ge=0)
+    public_dataset: bool = True
+    user_data: bool = False
+    scientific_claim_scope: Literal["pilot"] = "pilot"
+
+
+class IntegrationSplitManifest(StrictModel):
+    accession: str = Field(min_length=1)
+    split_seed: int = Field(ge=0)
+    stratification_fields: List[str]
+    development: IntegrationSplitArtifact
+    evaluation: IntegrationSplitArtifact
+    cell_overlap_count: int = Field(ge=0)
+    manifest_hash: str = Field(min_length=64, max_length=64)
 
 
 class EnvironmentRecord(StrictModel):

@@ -1,0 +1,158 @@
+{
+  "contract_id": "scanorama:1.7.4",
+  "contract_version": "0.3.0-phase5-scientific-pilot",
+  "tool_name": "Scanorama",
+  "tool_version": "1.7.4",
+  "task": "batch_integration",
+  "language": "python",
+  "environment_id": "sckg-batch-cpu",
+  "wrapper_id": "scanorama_v1_7_4",
+  "input_object": "AnnData",
+  "required_fields": [
+    "obs batch key with at least two non-empty batches",
+    "finite cell-by-PC representation"
+  ],
+  "optional_fields": [
+    "obs biology label for conservation evaluation"
+  ],
+  "preconditions": [
+    {
+      "rule_id": "scanorama_batch_key_required",
+      "field": "batch_key",
+      "operator": "exists",
+      "expected": true,
+      "blocking": true,
+      "message": "Scanorama integration requires a batch key."
+    },
+    {
+      "rule_id": "scanorama_multi_batch_required",
+      "field": "batch_count",
+      "operator": "gte",
+      "expected": 2,
+      "blocking": true,
+      "message": "Scanorama requires at least two batches."
+    },
+    {
+      "rule_id": "scanorama_nonempty_matrix",
+      "field": "matrix_shape",
+      "operator": "gte",
+      "expected": 2,
+      "blocking": true,
+      "message": "The AnnData matrix must contain at least two cells and genes."
+    }
+  ],
+  "not_supported": [
+    "single-batch data",
+    "missing batch labels",
+    "non-finite PCA embeddings",
+    "remote URLs and non-AnnData objects"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "scanorama_integrated_embedding",
+      "artifact_type": "cell_embedding_table",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "integration_embedding_schema_v1"
+    },
+    {
+      "artifact_id": "scanorama_parameter_snapshot",
+      "artifact_type": "parameter_snapshot",
+      "format": "json",
+      "required": true,
+      "validator_id": "parameter_snapshot_schema_v1"
+    },
+    {
+      "artifact_id": "scanorama_result_metadata",
+      "artifact_type": "execution_metadata",
+      "format": "json",
+      "required": true,
+      "validator_id": "integration_result_metadata_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "knn": {"type": "integer", "minimum": 1, "maximum": 200},
+      "sigma": {"type": "number", "minimum": 0.1, "maximum": 100.0},
+      "approx": {"type": "boolean"},
+      "alpha": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+      "batch_size": {"type": "integer", "minimum": 64, "maximum": 100000}
+    }
+  },
+  "default_parameters": {
+    "knn": 20,
+    "sigma": 15.0,
+    "approx": true,
+    "alpha": 0.1,
+    "batch_size": 5000
+  },
+  "paper_parameters": [
+    {
+      "parameter_name": "direct_assemble_api",
+      "value_or_range": "scanorama.assemble on stable batch groups followed by original-order restoration",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "https://github.com/brianhie/scanorama",
+      "source_span": "scanorama.assemble function signature and integration parameters",
+      "tool_version": "1.7.4",
+      "applicable_scope": "Scanorama 1.7.4 direct Python API",
+      "limitations": [
+        "Approximate neighbor mode can vary by seed; execution seed is recorded separately."
+      ]
+    }
+  ],
+  "searchable_parameters": {
+    "knn": {"minimum": 10, "maximum": 50},
+    "sigma": {"minimum": 5.0, "maximum": 30.0},
+    "alpha": {"minimum": 0.05, "maximum": 0.2},
+    "approx": {"values": [true, false]}
+  },
+  "failure_checks": [
+    "missing_batch_key",
+    "single_batch",
+    "missing_batch_labels",
+    "missing_pca_representation",
+    "non_finite_embedding",
+    "cell_order_mismatch",
+    "input_hash_mismatch"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "embedding_finite_fraction",
+    "embedding_cell_alignment",
+    "batch_mixing_metric",
+    "biology_conservation_metric_when_labels_available"
+  ],
+  "resource_requirements": {
+    "cpu_only_supported": true,
+    "gpu_required": false,
+    "planning_max_cells": 100000,
+    "qualification_max_cells": 5000,
+    "qualification_timeout_seconds": 180,
+    "memory_enforcement": "monitor_only"
+  },
+  "source_refs": [
+    "https://github.com/brianhie/scanorama",
+    "https://scanpy.readthedocs.io/en/1.9.x/generated/scanpy.external.pp.scanorama_integrate.html",
+    "doi:10.1038/s41587-019-0113-3"
+  ],
+  "execution_critical_review": {
+    "reviewer": "codex_execution_source_review_2026_07_16",
+    "review_scope": [
+      "AnnData batch and PCA input semantics",
+      "scanorama.assemble 1.7.4 argument and output semantics",
+      "integrated embedding output semantics"
+    ],
+    "claim_boundary": "Engineering execution contract only; scientific performance requires an independent pilot."
+  },
+  "schema_status": "valid",
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "smoke_passed",
+  "environment_status": "smoke_passed",
+  "execution_status": "integration_passed",
+  "scientific_validation_status": "scientific_pilot",
+  "enabled_for_execution": true
+}

@@ -1,0 +1,208 @@
+{
+  "contract_id": "celltypist:1.7.1",
+  "contract_version": "0.2.0-wrapper-implemented",
+  "tool_name": "CellTypist",
+  "tool_version": "1.7.1",
+  "task": "cell_type_annotation",
+  "language": "python",
+  "environment_id": "annotation-python",
+  "wrapper_id": "celltypist_v1_7_1",
+  "input_object": "AnnData",
+  "required_fields": [
+    "cell-by-gene AnnData expression matrix",
+    "log1p-normalized expression to 10000 counts per cell in X or raw.X",
+    "gene symbols compatible with the selected model",
+    "explicit versioned CellTypist model"
+  ],
+  "optional_fields": [
+    "over-clustering labels for majority voting",
+    "known organism and tissue context"
+  ],
+  "preconditions": [
+    {
+      "rule_id": "celltypist_log1p_to_10k",
+      "field": "normalization_target",
+      "operator": "in",
+      "expected": [
+        "ready_log1p_10000"
+      ],
+      "blocking": true,
+      "message": "CellTypist AnnData prediction requires log1p-normalized expression to 10000 counts per cell."
+    },
+    {
+      "rule_id": "celltypist_gene_symbols",
+      "field": "gene_identifier_type",
+      "operator": "equals",
+      "expected": "gene_symbol",
+      "blocking": true,
+      "message": "Input genes must be symbols compatible with the selected model."
+    },
+    {
+      "rule_id": "celltypist_model_required",
+      "field": "annotation_reference",
+      "operator": "exists",
+      "expected": true,
+      "blocking": true,
+      "message": "A local versioned CellTypist model must be selected before execution."
+    }
+  ],
+  "not_supported": [
+    "scaled expression with negative values",
+    "raw AnnData counts passed without deterministic normalization",
+    "gene identifiers not mapped to model gene symbols",
+    "automatic model download during execution",
+    "claiming unknown labels are biologically validated without review"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "celltypist_predicted_labels",
+      "artifact_type": "cell_annotation_table",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "annotation_label_schema_v1"
+    },
+    {
+      "artifact_id": "celltypist_probability_matrix",
+      "artifact_type": "annotation_score_matrix",
+      "format": "tsv",
+      "required": true,
+      "validator_id": "annotation_score_schema_v1"
+    },
+    {
+      "artifact_id": "celltypist_result_metadata",
+      "artifact_type": "execution_metadata",
+      "format": "json",
+      "required": true,
+      "validator_id": "annotation_metadata_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "model": {
+        "type": "string"
+      },
+      "mode": {
+        "type": "string",
+        "enum": [
+          "best match",
+          "prob match"
+        ]
+      },
+      "p_thres": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "majority_voting": {
+        "type": "boolean"
+      },
+      "min_prop": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 1.0
+      },
+      "use_GPU": {
+        "type": "boolean"
+      }
+    }
+  },
+  "default_parameters": {
+    "model": "celltypist-immune-all-low-v1",
+    "mode": "best match",
+    "p_thres": 0.5,
+    "majority_voting": false,
+    "min_prop": 0.0,
+    "use_GPU": false
+  },
+  "paper_parameters": [
+    {
+      "parameter_name": "prediction_input",
+      "value_or_range": "AnnData log1p-normalized to 10000 counts per cell; genes are symbols",
+      "origin_type": "source_bound_prior",
+      "source_type": "official_tutorial",
+      "source_id": "https://celltypist.readthedocs.io/en/stable/celltypist.annotate.html",
+      "source_span": "Prediction function parameters: filename and model",
+      "tool_version": "1.7.1",
+      "applicable_scope": "planning-only CellTypist annotation",
+      "limitations": [
+        "Input compatibility does not establish label correctness."
+      ]
+    },
+    {
+      "parameter_name": "mode_and_threshold",
+      "value_or_range": {
+        "mode": "best match",
+        "p_thres": 0.5
+      },
+      "origin_type": "contract_default",
+      "source_type": "official_default",
+      "source_id": "https://celltypist.readthedocs.io/en/stable/celltypist.annotate.html",
+      "source_span": "annotate signature and mode/p_thres parameter descriptions",
+      "tool_version": "1.7.1",
+      "applicable_scope": "planning-only CellTypist annotation",
+      "limitations": [
+        "Probability thresholds require independent evaluation for each deployment context."
+      ]
+    }
+  ],
+  "searchable_parameters": {
+    "p_thres": {
+      "minimum": 0.1,
+      "maximum": 0.9
+    },
+    "min_prop": {
+      "minimum": 0.0,
+      "maximum": 1.0
+    }
+  },
+  "failure_checks": [
+    "annotation_expression_state_invalid",
+    "gene_identifier_mismatch",
+    "model_missing_or_digest_mismatch",
+    "species_or_tissue_scope_mismatch",
+    "label_count_mismatch",
+    "score_non_finite",
+    "cell_order_mismatch"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "cell_order_preservation",
+    "label_coverage",
+    "unknown_or_unassigned_rate",
+    "score_finite_fraction"
+  ],
+  "resource_requirements": {
+    "planning_only": true,
+    "runtime_pack": "annotation-python",
+    "model_pack_required": true,
+    "network_during_execution": "forbidden",
+    "qualification_timeout_seconds": 900,
+    "max_memory_mb": 4096
+  },
+  "source_refs": [
+    "data/evidence_sources/text/core_docs/CellTypist_github_readme.txt",
+    "data/evidence_sources/text/CellTypist_CAND_PUB_CellTypist_0ab6945053d3.txt",
+    "https://celltypist.readthedocs.io/en/stable/celltypist.annotate.html",
+    "https://pypi.org/project/celltypist/1.7.1/"
+  ],
+  "execution_critical_review": {
+    "reviewer": "codex_source_bound_planning_review_2026_07_23",
+    "review_scope": [
+      "prediction input expression state",
+      "gene symbol and model compatibility",
+      "documented annotate parameters and outputs",
+      "unknown/multi-label boundary"
+    ],
+    "claim_boundary": "Execution-critical source fields and a fixed wrapper are implemented; runtime, reference, engineering qualification and scientific evaluation remain gated."
+  },
+  "schema_status": "valid",
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "implemented",
+  "environment_status": "missing",
+  "execution_status": "untested",
+  "scientific_validation_status": "not_evaluated",
+  "enabled_for_execution": false
+}

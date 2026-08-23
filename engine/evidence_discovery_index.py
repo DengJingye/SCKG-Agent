@@ -21,6 +21,7 @@ PUBLICATIONS_PATH = PROJECT_ROOT / "data" / "tool_publications.tsv"
 BENCHMARKS_PATH = PROJECT_ROOT / "data" / "tool_benchmarks.tsv"
 INDEX_DIR = PROJECT_ROOT / "data" / "indexes"
 CHUNKS_PATH = INDEX_DIR / "evidence_chunks.jsonl"
+CATALOG_CHUNKS_PATH = INDEX_DIR / "scrna_tools_catalog_chunks.jsonl"
 VECTORS_PATH = INDEX_DIR / "evidence_vectors.jsonl"
 APPROVED_STATUSES = {"reviewed", "verified", "human_reviewed"}
 INDEX_VERSION = "evidence-discovery-v0.1"
@@ -64,6 +65,19 @@ class EvidenceChunk:
     kg_version: str = "v0.1"
     embedding_version: str = ""
     created_at: str = ""
+    schema_version: str = "evidence-chunk-v2"
+    source_document_id: str = ""
+    canonical_task: str = ""
+    task_tags: List[str] = field(default_factory=list)
+    tool_names: List[str] = field(default_factory=list)
+    claim_type: str = "general"
+    page: Optional[int] = None
+    section: str = ""
+    paragraph_index: Optional[int] = None
+    token_count: int = 0
+    content_hash: str = ""
+    source_bound: bool = False
+    retrieval_status: str = "retrieval_only"
 
 
 @dataclass(frozen=True)
@@ -279,6 +293,75 @@ def source_manifest_chunks(manifest_path: Path) -> List[EvidenceChunk]:
     return chunks
 
 
+def catalog_tool_chunks(snapshot_path: Path) -> List[EvidenceChunk]:
+    if not snapshot_path.is_file():
+        return []
+    value = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    rows = value.get("tools", []) if isinstance(value, dict) else value
+    if not isinstance(rows, list):
+        return []
+    chunks: List[EvidenceChunk] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        tool_name = clean(row.get("Tool"))
+        if not tool_name:
+            continue
+        categories = [clean(item) for item in row.get("Categories", []) if clean(item)]
+        reference_titles = [
+            clean(reference.get("Title"))
+            for field in ("Publications", "Preprints")
+            for reference in row.get(field, [])
+            if isinstance(reference, dict) and clean(reference.get("Title"))
+        ]
+        text = join_nonempty(
+            tool_name,
+            row.get("Description"),
+            "Categories: " + ", ".join(categories),
+            "Platform: " + clean(row.get("Platform")),
+            "License: " + clean(row.get("License")),
+            "References: " + " | ".join(reference_titles),
+        )
+        chunks.append(
+            EvidenceChunk(
+                chunk_id=f"catalog-tool:{stable_id('scrna-tools', tool_name)}",
+                evidence_id=f"catalog:{tool_name}",
+                source_id=f"scrna-tools:{tool_name}",
+                source_type="scrna_tools_catalog_metadata",
+                source_span=f"tools entry:{tool_name}",
+                source_kind="catalog_tool",
+                source_table="data/catalog/scrna_tools_snapshot.json",
+                source_record_id=f"catalog:{tool_name}",
+                tool_name=tool_name,
+                task="; ".join(categories),
+                modality="scRNA-seq",
+                source_url="https://www.scrna-tools.org/tools",
+                title=f"scRNA-tools catalog entry: {tool_name}",
+                chunk_text=text,
+                claim_boundary=(
+                    "Catalog metadata for retrieval and candidate recall only; "
+                    "not full-text evidence and cannot support recommendation or execution."
+                ),
+                review_status="catalog_metadata",
+                trust_level="source_bound_catalog",
+                graph_layer="retrieval_only",
+                embedding_version=get_settings().embedding_version,
+                created_at=clean(row.get("Updated")),
+            )
+        )
+    return chunks
+
+
+def write_catalog_chunks(
+    chunks: Sequence[EvidenceChunk], path: Path = CATALOG_CHUNKS_PATH
+) -> Dict[str, Any]:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for chunk in chunks:
+            handle.write(json.dumps(chunk_to_dict(chunk), ensure_ascii=False, sort_keys=True) + "\n")
+    return {"catalog_chunks": len(chunks), "catalog_chunks_path": str(path)}
+
+
 def write_indexes(
     chunks: Sequence[EvidenceChunk],
     *,
@@ -291,7 +374,7 @@ def write_indexes(
     vector_rows: List[Dict[str, Any]] = []
     with chunks_path.open("w", encoding="utf-8") as chunk_handle:
         for chunk in chunks:
-            chunk_handle.write(json.dumps(asdict(chunk), ensure_ascii=False) + "\n")
+            chunk_handle.write(json.dumps(chunk_to_dict(chunk), ensure_ascii=False) + "\n")
             if with_embeddings:
                 vector = embed_text(chunk.chunk_text)
                 if vector:
@@ -315,40 +398,69 @@ def search_hybrid_evidence(
     max_snippets: int = 12,
     chunks_path: Path = CHUNKS_PATH,
     vectors_path: Path = VECTORS_PATH,
+    catalog_chunks_path: Path = CATALOG_CHUNKS_PATH,
 ) -> Dict[str, Any]:
-    started = time.perf_counter()
-    chunks = load_chunks(chunks_path) if chunks_path.exists() else build_formal_tsv_chunks()
-    vector_by_chunk = load_vectors(vectors_path) if vectors_path.exists() else {}
     query_text = query_string(constraints=constraints, tool_names=tool_names)
-    sparse_ranked = sparse_search(chunks, query_text)
-    dense_ranked = dense_search(chunks, query_text, vector_by_chunk) if vector_by_chunk else []
-    fused = rrf_fusion(sparse_ranked, dense_ranked)
-    reranked = governance_rerank(fused, constraints=constraints, tool_names=tool_names)
-    snippets = [snippet_from_chunk(chunk, score) for chunk, score in reranked[:max_snippets]]
-    latency_ms = (time.perf_counter() - started) * 1000
+    # Import lazily to preserve the legacy API without a module import cycle.
+    from core.knowledge_intelligence_models import HybridRetrievalRequest
+    from engine.hybrid_retrieval import HybridRetrievalService
+
+    service = HybridRetrievalService(
+        evidence_chunks_path=chunks_path,
+        catalog_chunks_path=catalog_chunks_path,
+        fts_index_path=chunks_path.parent / "evidence_fts5.sqlite",
+        index_manifest_path=chunks_path.parent / "evidence_index_manifest.json",
+        coverage_path=chunks_path.parent / "retrieval_coverage_v2.json",
+        dense_matrix_path=chunks_path.parent / "evidence_vectors.npy",
+        dense_metadata_path=chunks_path.parent / "evidence_vector_metadata.json",
+    )
+    task = str(constraints.get("task", "")).strip()
+    result = service.search(
+        HybridRetrievalRequest(
+            query=query_text,
+            tool_names=[str(value) for value in tool_names if str(value).strip()],
+            canonical_tasks=[task] if task else [],
+            top_k=max_snippets,
+            enable_dense=True,
+        )
+    )
+    snippets = [
+        {
+            "record_id": hit.source_id,
+            "chunk_id": hit.chunk_id,
+            "source_id": hit.source_id,
+            "source_type": "source_document" if hit.source_bound else "catalog",
+            "tool_name": hit.tool_name,
+            "task": hit.canonical_task,
+            "source_span": hit.source_span,
+            "title": hit.title,
+            "claim_span": hit.text,
+            "relevance_score": hit.score,
+            "graph_layer": hit.governance_status,
+            "recommendation_eligible": str(hit.recommendation_eligible).lower(),
+            "claim_boundary": "Retrieval context only; cannot authorize execution or promote formal evidence.",
+        }
+        for hit in result.hits
+    ]
     return {
-        "pipeline": [
-            "evidence_chunks_jsonl" if chunks_path.exists() else "formal_tsv_rows",
-            "sparse_evidence_retrieval",
-            "dense_evidence_retrieval" if dense_ranked else "dense_evidence_retrieval_skipped",
-            "rrf_fusion",
-            "governance_aware_rerank",
-            "retrieval_context",
-        ],
-        "mode": "local_hybrid_evidence_retrieval",
-        "index_version": INDEX_VERSION,
-        "source_tables": sorted({chunk.source_table for chunk in chunks}),
+        "pipeline": result.pipeline,
+        "mode": result.mode,
+        "index_version": result.index_build_id,
+        "source_tables": ["data/indexes/evidence_chunks.jsonl"],
         "selection_policy": [
             "Use chunks for evidence discovery only.",
             "Do not promote retrieved chunks into formal evidence.",
             "Do not let RAG chunks change MCDM ranking directly.",
         ],
-        "chunk_count": len(chunks),
-        "retrieved_count": len(reranked),
+        "chunk_count": service.chunk_count,
+        "retrieved_count": len(result.hits),
         "snippet_count": len(snippets),
-        "latency_ms": round(latency_ms, 3),
+        "latency_ms": result.latency_ms,
         "matched_tools": sorted({snippet["tool_name"] for snippet in snippets if snippet.get("tool_name")}),
         "snippets": snippets,
+        "dense_status": result.dense_status,
+        "warnings": result.warnings,
+        "governance_leakage_count": result.governance_leakage_count,
     }
 
 
@@ -359,6 +471,10 @@ def load_chunks(path: Path) -> List[EvidenceChunk]:
             if line.strip():
                 chunks.append(EvidenceChunk(**json.loads(line)))
     return chunks
+
+
+def chunk_to_dict(chunk: EvidenceChunk) -> Dict[str, Any]:
+    return asdict(chunk)
 
 
 def load_vectors(path: Path) -> Dict[str, List[float]]:

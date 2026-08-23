@@ -141,7 +141,7 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
     if task != "Unknown" and modality != "Unknown":
         try:
             client = Neo4jClient()
-            kg_provider = "offline_graph" if client.offline_store is not None else "neo4j"
+            kg_provider = client.candidate_provider
             modality_queries = [modality]
             # 兼容旧图谱：早期数据可能把 Nanopore/PacBio 这类平台写进 Modality。
             if platform != "Unknown" and platform not in modality_queries:
@@ -167,6 +167,7 @@ def hard_constraint_node(state: ScKGAgentState) -> ScKGAgentState:
                         rows_by_tool[tool_name]["matched_tasks"].append(task_query)
                         rows_by_tool[tool_name]["matched_modalities"].append(modality_query)
                         rows_by_tool[tool_name]["retrieval_sources"].append("graph")
+                        kg_provider = client.candidate_provider
                 if rows_by_tool:
                     print(f"   🔎 硬约束命中: task_terms={task_terms}, modality={modality_query}")
                     break

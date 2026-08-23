@@ -267,6 +267,27 @@ def render_run_trace(service: TraceService) -> None:
 
 
 def render_evidence_rag(service: TraceService, evidence_recovery_service: EvidenceRecoveryService) -> None:
+    coverage_v2 = _read_json_file(
+        PROJECT_ROOT / "data" / "indexes" / "retrieval_coverage_v2.json"
+    )
+    eval_v2 = _read_json_file(
+        PROJECT_ROOT / "data" / "evaluation" / "retrieval_eval_v2" / "summary.json"
+    )
+    kg_bm25 = (eval_v2.get("profiles") or {}).get("kg_bm25") or {}
+    if coverage_v2:
+        st.markdown("### Knowledge Intelligence v2")
+        metrics = st.columns(6)
+        metrics[0].metric("Source docs", coverage_v2.get("source_document_count", 0))
+        metrics[1].metric("Chunks", coverage_v2.get("chunk_count", 0))
+        metrics[2].metric(
+            "Core coverage", f"{coverage_v2.get('core_tool_source_coverage_rate', 0) * 100:.1f}%"
+        )
+        metrics[3].metric("Recall@10", f"{kg_bm25.get('recall_at_10', 0) * 100:.1f}%")
+        metrics[4].metric("Precision@10", f"{kg_bm25.get('precision_at_10', 0) * 100:.1f}%")
+        metrics[5].metric("Warm p95", f"{kg_bm25.get('latency_p95_ms', 0):.1f} ms")
+        st.caption(
+            "Local KG + SQLite FTS5 BM25 is the active deterministic path. Dense and RAGAS remain optional and display not_run when unavailable."
+        )
     trace = service.latest_agent_run()
     if not trace:
         st.info("No evidence trace found. Run `python scripts/run_agent_trace_smoke.py` first.")
@@ -792,7 +813,7 @@ def render_settings() -> None:
         {"component": "Project", "field": "kg_version", "value": settings.kg_version},
         {"component": "Project", "field": "embedding_version", "value": settings.embedding_version},
         {"component": "Path", "field": "trace_log", "value": "logs/traces.jsonl"},
-        {"component": "Path", "field": "memory_db", "value": "data/memory/project_memory.sqlite"},
+        {"component": "Path", "field": "memory_db", "value": "SCKG_HOME/state/workbench.sqlite3"},
         {"component": "Path", "field": "reflection_log", "value": "data/memory/reflection_events.jsonl"},
         {"component": "Path", "field": "skill_candidates", "value": "data/skill_candidates/"},
     ]
