@@ -8,7 +8,12 @@ from core.execution_models import (
     ExperimentBatchResult,
     RequirementSpec,
     WorkflowPlan,
+    ValidationResult,
 )
+from core.capability_pack_registry import CapabilityPackRegistry
+from core.representation_models import RepresentationLedger, RepresentationRecord
+from execution.environment_registry import EnvironmentRegistry
+from core.tool_contract_registry import ToolContractRegistry
 from execution.reproducibility_packager import REQUIRED_FILES, ReproducibilityPackager
 from tests.qualification_helpers import build_qualification_case
 
@@ -128,3 +133,83 @@ def test_packager_rejects_user_data_and_non_independent_probes(tmp_path):
             candidate_evaluations=[], decision_result=decision, rerun_command="false",
             user_data_used=False,
         )
+
+
+def test_capability_level2_package_preserves_pack_ledger_trace_and_plot_hashes(tmp_path):
+    registry = CapabilityPackRegistry()
+    manifest = registry.load("scanpy_core", "1.0.0")
+    ledger = RepresentationLedger(
+        ledger_id="capability-package-ledger",
+        profile_id="capability-package-profile",
+        source_artifact_id="registered-fixture",
+        source_hash="a" * 64,
+        cell_index_hash="b" * 64,
+        gene_index_hash="c" * 64,
+        records=[
+            RepresentationRecord(
+                representation_record_id="package-raw",
+                representation_id="raw_counts",
+                schema_version="1.0",
+                value_state="nonnegative_integer",
+                slot="layers/counts",
+                provenance=["count_source_validated"],
+                cell_index_hash="b" * 64,
+                gene_index_hash="c" * 64,
+                validated=True,
+            )
+        ],
+    )
+    plan = WorkflowPlan(
+        plan_id="capability-package-plan",
+        requirement_id="capability-package-requirement",
+        profile_id=ledger.profile_id,
+        plan_status="dry_run",
+        execution_eligible=False,
+    )
+    validation = ValidationResult(
+        validation_id="capability-package-validation",
+        run_id="capability-package-run",
+        passed=True,
+        eligible_for_candidate_aggregation=True,
+        validation_version="capability-validation-pipeline-v1",
+    )
+    plot = tmp_path / "umap_clusters.png"
+    plot.write_bytes(b"governed-plot")
+    environments = EnvironmentRegistry()
+    contracts = ToolContractRegistry(environment_registry=environments)
+
+    result = ReproducibilityPackager(
+        package_root=tmp_path / "capability-packages"
+    ).build_capability_package(
+        package_id="scanpy-core-level2",
+        pack_manifest=manifest,
+        representation_ledger=ledger,
+        workflow_plan=plan,
+        contract_snapshots=[contracts.load("scanpy", "1.11.2")],
+        environment_snapshots=[environments.get("scRNAseq")],
+        trace_records=[
+            {
+                "trace_id": "capability-package-trace",
+                "stage": "package",
+                "status": "completed",
+            }
+        ],
+        validation_results=[validation],
+        plot_paths=[plot],
+        limitations=["Synthetic engineering package; not a biological conclusion."],
+        rerun_command="python scripts/run_scanpy_core_capability_smoke.py",
+        user_data_used=False,
+    )
+
+    package = Path(result.package_path)
+    manifest_payload = json.loads(
+        (package / "reproducibility_manifest.json").read_text(encoding="utf-8")
+    )
+    assert result.complete is True
+    assert result.manifest_hashes_valid is True
+    assert result.user_data_copied is False
+    assert manifest_payload["reproducibility_level"] == "Level 2"
+    assert manifest_payload["execution_policy"] == "disabled"
+    assert manifest_payload["execution_request_count"] == 0
+    assert (package / "plots" / plot.name).is_file()
+    assert not list(package.rglob("*.h5ad"))

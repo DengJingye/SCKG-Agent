@@ -36,6 +36,10 @@ def test_recent_conversation_titles_are_readable_and_css_forbids_character_wrap(
     assert "1. 确认并批准当前 Preview" in source
     assert "2. 运行并验证 Preview" in source
     assert "_backend_implementation_digest" in source
+    assert '"core/capability_workspace_models.py"' in source
+    assert '"core/execution_models.py"' in source
+    assert '"engine/data_profiler.py"' in source
+    assert '"execution/renderers/scanpy_core.py"' in source
     assert "_cached_preview_execution_backend" in source
     assert "execution_service.approve_local_preview" in source
     assert "APPROVE PREVIEW" in source

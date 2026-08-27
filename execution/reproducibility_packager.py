@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import Iterable
 
+from core.capability_pack_models import CapabilityPackManifest
 from core.execution_models import (
     CandidateEvaluation,
     DataProfile,
@@ -29,6 +30,7 @@ from core.execution_models import (
     ValidationResult,
     WorkflowPlan,
 )
+from core.representation_models import RepresentationLedger
 from core.settings import PROJECT_ROOT
 from execution.repair_policy import RepairAction, RepairProposal
 
@@ -61,6 +63,172 @@ class ReproducibilityPackager:
     ) -> None:
         self.package_root = Path(package_root).resolve()
         self.repository_root = Path(repository_root).resolve()
+
+    def build_capability_package(
+        self,
+        *,
+        package_id: str,
+        pack_manifest: CapabilityPackManifest,
+        representation_ledger: RepresentationLedger,
+        workflow_plan: WorkflowPlan,
+        contract_snapshots: list[ToolContract],
+        environment_snapshots: list[EnvironmentRecord],
+        trace_records: list[dict],
+        validation_results: list[ValidationResult],
+        plot_paths: list[Path],
+        limitations: list[str],
+        rerun_command: str,
+        user_data_used: bool,
+    ) -> ReproducibilityPackageResult:
+        """Build a Level 2 package for a registry-driven capability workflow."""
+
+        if user_data_used:
+            raise ValueError("capability package cannot copy user data")
+        if not package_id or any(
+            character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-"
+            for character in package_id
+        ):
+            raise ValueError("unsafe package id")
+        package_dir = (self.package_root / package_id).resolve()
+        _require_within(package_dir, self.package_root)
+        if package_dir.exists():
+            raise FileExistsError(f"package already exists: {package_dir}")
+        package_dir.mkdir(parents=True)
+        plots_dir = package_dir / "plots"
+        plots_dir.mkdir()
+
+        _write_model(package_dir / "capability_pack_manifest.json", pack_manifest)
+        _write_json(
+            package_dir / "tool_contract_snapshots.json",
+            [item.model_dump(mode="json") for item in contract_snapshots],
+        )
+        _write_json(
+            package_dir / "environment_snapshots.json",
+            [item.model_dump(mode="json") for item in environment_snapshots],
+        )
+        _write_json(
+            package_dir / "evidence_snapshot.json",
+            [item.model_dump(mode="json") for item in pack_manifest.evidence_bindings],
+        )
+        _write_model(package_dir / "representation_ledger.json", representation_ledger)
+        _write_model(package_dir / "workflow_plan.json", workflow_plan)
+        _write_jsonl(package_dir / "trace.jsonl", trace_records)
+        _write_json(
+            package_dir / "validation_results.json",
+            [item.model_dump(mode="json") for item in validation_results],
+        )
+
+        plot_manifest: list[dict[str, str]] = []
+        for source in plot_paths:
+            source = Path(source).resolve()
+            if not source.is_file():
+                raise FileNotFoundError(f"capability plot is missing: {source.name}")
+            destination = plots_dir / source.name
+            if destination.exists():
+                raise ValueError(f"duplicate capability plot name: {source.name}")
+            shutil.copy2(source, destination)
+            plot_manifest.append(
+                {
+                    "name": source.name,
+                    "relative_path": f"plots/{source.name}",
+                    "sha256": _sha256(destination),
+                }
+            )
+
+        artifact_manifest = {
+            "source_artifact_id": representation_ledger.source_artifact_id,
+            "source_hash": representation_ledger.source_hash,
+            "user_original_data_copied": False,
+            "representations": [
+                {
+                    "record_id": item.representation_record_id,
+                    "representation_id": item.representation_id,
+                    "slot": item.slot,
+                    "status": item.status,
+                    "cell_index_hash": item.cell_index_hash,
+                    "gene_index_hash": item.gene_index_hash,
+                    "parameter_hash": item.parameter_hash,
+                }
+                for item in representation_ledger.records
+            ],
+            "plots": plot_manifest,
+        }
+        _write_json(package_dir / "artifact_manifest.json", artifact_manifest)
+        (package_dir / "limitations.md").write_text(
+            "# Limitations\n\n" + "".join(f"- {item}\n" for item in limitations),
+            encoding="utf-8",
+        )
+        (package_dir / "rerun_instructions.md").write_text(
+            "# Rerun Instructions\n\n"
+            f"```bash\n{rerun_command}\n```\n\n"
+            "The command rebuilds governed artifacts from registered inputs. "
+            "No original input matrix is copied into this package.\n",
+            encoding="utf-8",
+        )
+
+        file_hashes = {
+            str(path.relative_to(package_dir)): _sha256(path)
+            for path in sorted(package_dir.rglob("*"))
+            if path.is_file() and path.name != "reproducibility_manifest.json"
+        }
+        reproducibility_manifest = {
+            "package_id": package_id,
+            "reproducibility_level": "Level 2",
+            "package_type": "capability_workflow",
+            "capability_pack": {
+                "pack_id": pack_manifest.pack_id,
+                "pack_version": pack_manifest.pack_version,
+                "content_digest": pack_manifest.content_digest,
+            },
+            "contract_ids": [item.contract_id for item in contract_snapshots],
+            "environment_ids": [item.environment_id for item in environment_snapshots],
+            "representation_ledger_id": representation_ledger.ledger_id,
+            "workflow_plan_id": workflow_plan.plan_id,
+            "execution_policy": "disabled",
+            "execution_request_count": 0,
+            "user_data_copied": False,
+            "parameter_provenance_preserved": True,
+            "cross_platform_byte_identity_required": False,
+            "git": _git_metadata(self.repository_root),
+            "rerun_command": rerun_command,
+            "file_hashes": file_hashes,
+        }
+        _write_json(package_dir / "reproducibility_manifest.json", reproducibility_manifest)
+
+        required = [
+            "capability_pack_manifest.json",
+            "tool_contract_snapshots.json",
+            "environment_snapshots.json",
+            "evidence_snapshot.json",
+            "representation_ledger.json",
+            "workflow_plan.json",
+            "trace.jsonl",
+            "validation_results.json",
+            "artifact_manifest.json",
+            "reproducibility_manifest.json",
+            "rerun_instructions.md",
+            "limitations.md",
+        ]
+        all_hashes = {
+            str(path.relative_to(package_dir)): _sha256(path)
+            for path in sorted(package_dir.rglob("*"))
+            if path.is_file()
+        }
+        hashes_valid = all(
+            (package_dir / name).is_file()
+            and _sha256(package_dir / name) == expected
+            for name, expected in file_hashes.items()
+        )
+        return ReproducibilityPackageResult(
+            package_id=package_id,
+            package_path=str(package_dir),
+            required_files=required,
+            artifact_hashes=all_hashes,
+            complete=all((package_dir / name).is_file() for name in required)
+            and bool(plot_manifest),
+            manifest_hashes_valid=hashes_valid,
+            user_data_copied=False,
+        )
 
     def build(
         self,

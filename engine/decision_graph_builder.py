@@ -165,7 +165,8 @@ class DecisionGraphBuilder:
             self._contract_tools.add(contract.tool_name.casefold())
             if planning_allowed:
                 self._planning_contract_tools.add(contract.tool_name.casefold())
-                self._planning_action_implementation_count += 1
+                if contract.action_space_registration == "admitted":
+                    self._planning_action_implementation_count += 1
             if verified:
                 self._verified_contract_tools.add(contract.tool_name.casefold())
             contract_id = f"contract:{_slug(contract.contract_id)}"
@@ -204,9 +205,13 @@ class DecisionGraphBuilder:
             )
             task_id = self._task(contract.task, governance)
             self._add_edge(contract_id, task_id, "CONTRACTS_TASK", governance)
-            action_id = self._action(contract.task, governance)
-            self._add_edge(contract_id, action_id, "IMPLEMENTS_ACTION", governance)
-            self._add_edge(action_id, task_id, "REALIZES_TASK", governance)
+            # Registered drafts remain discoverable as contracts, but cannot
+            # create a formal Action before their planning gate succeeds.
+            action_id: str | None = None
+            if planning_allowed and contract.action_space_registration == "admitted":
+                action_id = self._action(contract.task, governance)
+                self._add_edge(contract_id, action_id, "IMPLEMENTS_ACTION", governance)
+                self._add_edge(action_id, task_id, "REALIZES_TASK", governance)
             input_id = f"input:{_slug(str(contract.input_object))}"
             self._add_node(
                 DecisionNode(
@@ -218,13 +223,15 @@ class DecisionGraphBuilder:
                 )
             )
             self._add_edge(contract_id, input_id, "ACCEPTS_INPUT", governance)
-            self._add_edge(action_id, input_id, "CONSUMES_INPUT", governance)
+            if action_id:
+                self._add_edge(action_id, input_id, "CONSUMES_INPUT", governance)
             self._contract_io[contract.tool_name.casefold()]["input"] = True
             for requirement in contract.required_fields:
                 assumption_id = self._assumption(
                     contract_id, contract, requirement, "required_field", governance
                 )
-                self._add_edge(action_id, assumption_id, "REQUIRES_ASSUMPTION", governance)
+                if action_id:
+                    self._add_edge(action_id, assumption_id, "REQUIRES_ASSUMPTION", governance)
             for rule in contract.preconditions:
                 assumption_id = self._assumption(
                     contract_id,
@@ -234,7 +241,8 @@ class DecisionGraphBuilder:
                     governance,
                     properties=rule.model_dump(mode="json"),
                 )
-                self._add_edge(action_id, assumption_id, "REQUIRES_ASSUMPTION", governance)
+                if action_id:
+                    self._add_edge(action_id, assumption_id, "REQUIRES_ASSUMPTION", governance)
             for artifact in contract.output_artifacts:
                 output_id = f"output:{_slug(contract.tool_name)}:{_slug(artifact.artifact_id)}"
                 self._add_node(
@@ -247,7 +255,8 @@ class DecisionGraphBuilder:
                     )
                 )
                 self._add_edge(contract_id, output_id, "PRODUCES_OUTPUT", governance)
-                self._add_edge(action_id, output_id, "MAY_PRODUCE_OUTPUT", governance)
+                if action_id:
+                    self._add_edge(action_id, output_id, "MAY_PRODUCE_OUTPUT", governance)
                 self._contract_io[contract.tool_name.casefold()]["output"] = True
             environment_id = f"environment:{_slug(contract.environment_id)}"
             environment_properties = (
@@ -324,7 +333,7 @@ class DecisionGraphBuilder:
     def _failure_modes(
         self,
         contract_id: str,
-        action_id: str,
+        action_id: str | None,
         contract: ToolContract,
         governance: DecisionGovernance,
     ) -> None:
@@ -342,12 +351,13 @@ class DecisionGraphBuilder:
                 )
             )
             self._add_edge(contract_id, node_id, "DECLARES_FAILURE_MODE", governance)
-            self._add_edge(action_id, node_id, "GUARDED_AGAINST", governance)
+            if action_id:
+                self._add_edge(action_id, node_id, "GUARDED_AGAINST", governance)
 
     def _validation_rules(
         self,
         contract_id: str,
-        action_id: str,
+        action_id: str | None,
         contract: ToolContract,
         governance: DecisionGovernance,
     ) -> None:
@@ -369,12 +379,13 @@ class DecisionGraphBuilder:
                 )
             )
             self._add_edge(contract_id, node_id, "USES_VALIDATION_RULE", governance)
-            self._add_edge(action_id, node_id, "VALIDATED_BY", governance)
+            if action_id:
+                self._add_edge(action_id, node_id, "VALIDATED_BY", governance)
 
     def _know_how(
         self,
         contract_id: str,
-        action_id: str,
+        action_id: str | None,
         contract: ToolContract,
         governance: DecisionGovernance,
     ) -> None:
@@ -398,7 +409,8 @@ class DecisionGraphBuilder:
             )
         )
         self._add_edge(contract_id, node_id, "HAS_REVIEWED_KNOW_HOW", governance)
-        self._add_edge(action_id, node_id, "INFORMED_BY_KNOW_HOW", governance)
+        if action_id:
+            self._add_edge(action_id, node_id, "INFORMED_BY_KNOW_HOW", governance)
 
     def _load_scientific_pilot(self) -> None:
         package_specs = [

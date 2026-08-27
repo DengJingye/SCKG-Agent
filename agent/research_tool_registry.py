@@ -14,6 +14,7 @@ from core.research_agent_models import (
     ResearchToolPlan,
 )
 from core.tool_contract_registry import ToolContractRegistry
+from core.capability_pack_registry import CapabilityPackRegistry
 from engine.hybrid_retrieval import HybridRetrievalService
 from engine.workflow_code_service import WorkflowCodeService
 
@@ -24,6 +25,7 @@ class ResearchToolExecution:
     retrieval_results: list[HybridRetrievalResult] = field(default_factory=list)
     contract_context: list[dict[str, Any]] = field(default_factory=list)
     workflow_bundles: list[dict[str, Any]] = field(default_factory=list)
+    capability_context: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def retrieval(self) -> HybridRetrievalResult | None:
@@ -43,10 +45,12 @@ class ResearchToolRegistry:
         retrieval: HybridRetrievalService,
         contracts: ToolContractRegistry | None = None,
         workflow_code: WorkflowCodeService | None = None,
+        capability_packs: CapabilityPackRegistry | None = None,
     ) -> None:
         self.retrieval = retrieval
         self.contracts = contracts or ToolContractRegistry()
         self.workflow_code = workflow_code or WorkflowCodeService()
+        self.capability_packs = capability_packs or CapabilityPackRegistry()
 
     def execute(
         self,
@@ -132,6 +136,27 @@ class ResearchToolRegistry:
                             },
                         )
                     )
+                elif call.tool_name == "discover_capabilities":
+                    capabilities = self._capability_context(
+                        task=call.canonical_task or fallback_task,
+                        query=call.query or fallback_query,
+                    )
+                    result.capability_context.extend(capabilities)
+                    result.observations.append(
+                        ResearchToolObservation(
+                            call_id=call.call_id,
+                            tool_name=call.tool_name,
+                            status="completed" if capabilities else "blocked",
+                            result_count=len(capabilities),
+                            latency_ms=_elapsed_ms(started),
+                            payload={"capabilities": capabilities},
+                            warnings=(
+                                []
+                                if capabilities
+                                else ["matching_capability_pack_missing"]
+                            ),
+                        )
+                    )
             except Exception as exc:
                 result.observations.append(
                     ResearchToolObservation(
@@ -214,6 +239,67 @@ class ResearchToolRegistry:
                 }
             )
         return rows[:5]
+
+    def _capability_context(
+        self,
+        *,
+        task: str,
+        query: str,
+    ) -> list[dict[str, Any]]:
+        terms = {term.casefold() for term in [task, *query.replace("/", " ").split()] if term}
+        rows: list[dict[str, Any]] = []
+        for manifest in self.capability_packs.load_all():
+            gate = self.capability_packs.gate(manifest)
+            non_human_consumed = {
+                requirement.representation_id
+                for method in manifest.methods
+                if method.implementation_kind != "human_review"
+                for requirement in method.consumes
+            }
+            suggested_targets = list(manifest.workspace_targets) or sorted(
+                {
+                    production.representation_id
+                    for method in manifest.methods
+                    if method.implementation_kind != "human_review"
+                    for production in method.produces
+                    if production.representation_id not in non_human_consumed
+                }
+            )
+            for capability in manifest.capabilities:
+                searchable = {
+                    manifest.pack_id.casefold(),
+                    *[item.casefold() for item in manifest.task_families],
+                    capability.capability_id.casefold(),
+                    capability.task_family.casefold(),
+                    *capability.title.casefold().split(),
+                }
+                if terms and not any(
+                    term == value
+                    or (len(term) >= 4 and term in value)
+                    or (len(value) >= 4 and value in term)
+                    for term in terms
+                    for value in searchable
+                ):
+                    continue
+                rows.append(
+                    {
+                        "pack_id": manifest.pack_id,
+                        "pack_version": manifest.pack_version,
+                        "capability_id": capability.capability_id,
+                        "capability_title": capability.title,
+                        "task_family": capability.task_family,
+                        "method_ids": [
+                            item.method_id
+                            for item in manifest.methods
+                            if item.capability_id == capability.capability_id
+                        ],
+                        "suggested_workspace_targets": suggested_targets,
+                        "readiness": [str(item) for item in gate.readiness],
+                        "execution_eligible": gate.execution_eligible,
+                        "blockers": gate.blockers,
+                    }
+                )
+        return rows[:12]
 
 
 def _merge_retrieval_results(

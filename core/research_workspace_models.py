@@ -12,6 +12,11 @@ from core.execution_models import (
     StrictModel,
     ValidationResult,
 )
+from core.capability_pack_models import (
+    RepresentationProduction,
+    RepresentationRequirement,
+    StateRequirement,
+)
 
 
 class DataAssetMatrixSummary(StrictModel):
@@ -113,15 +118,31 @@ class StepParameterSpec(StrictModel):
 
 
 class StepContract(StrictModel):
-    schema_version: Literal["sckg-step-contract-v1"] = "sckg-step-contract-v1"
+    schema_version: Literal["sckg-step-contract-v1", "sckg-step-contract-v2"] = (
+        "sckg-step-contract-v1"
+    )
     step_id: str = Field(min_length=1)
     step_version: str = Field(min_length=1)
-    task_family: Literal["doublet_detection"] = "doublet_detection"
-    operation: Literal["scrublet_preview"] = "scrublet_preview"
-    tool_contract_id: Literal["scrublet:0.2.3"] = "scrublet:0.2.3"
+    task_family: str = Field(default="doublet_detection", min_length=1)
+    capability_id: str = Field(default="doublet_detection", min_length=1)
+    method_id: str = Field(default="scrublet", min_length=1)
+    operation: str = Field(default="scrublet_preview", min_length=1)
+    implementation_kind: Literal[
+        "tool", "human_review", "composed_action", "method_family"
+    ] = "tool"
+    tool_contract_id: str = Field(default="scrublet:0.2.3", min_length=1)
     tool_contract_version: str = Field(min_length=1)
-    requires_object_type: Literal["AnnData"] = "AnnData"
-    requires_matrix_state: Literal["raw_counts"] = "raw_counts"
+    requires_object_type: str = Field(default="AnnData", min_length=1)
+    requires_matrix_state: str = Field(default="raw_counts", min_length=1)
+    consumes: list[RepresentationRequirement] = Field(default_factory=list)
+    produces: list[RepresentationProduction] = Field(default_factory=list)
+    requires: list[StateRequirement] = Field(default_factory=list)
+    invalid_predecessors: list[str] = Field(default_factory=list)
+    environment_id: str | None = None
+    execution_adapter_id: str | None = None
+    notebook_renderer_id: str | None = None
+    scientific_validator_id: str | None = None
+    gold_case_ids: list[str] = Field(default_factory=list)
     parameters: dict[str, StepParameterSpec]
     input_artifacts: list[str]
     output_artifacts: list[str]
@@ -129,6 +150,19 @@ class StepContract(StrictModel):
     source_refs: list[str] = Field(default_factory=list)
     invalidates_downstream: list[str] = Field(default_factory=list)
     template_digest: str = Field(min_length=64, max_length=64)
+
+    @model_validator(mode="after")
+    def validate_versioned_contract(self) -> "StepContract":
+        if self.schema_version == "sckg-step-contract-v2":
+            if not self.consumes or not self.produces:
+                raise ValueError("v2 step contracts require typed consumes and produces")
+            if not self.notebook_renderer_id:
+                raise ValueError("v2 step contracts require a renderer binding")
+            if self.implementation_kind == "tool" and not self.execution_adapter_id:
+                raise ValueError("v2 tool steps require an execution adapter binding")
+            if not self.scientific_validator_id:
+                raise ValueError("v2 step contracts require a scientific validator")
+        return self
 
 
 class StepParameterChange(StrictModel):

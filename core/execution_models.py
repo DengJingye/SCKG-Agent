@@ -462,6 +462,7 @@ class ToolContract(StrictModel):
     environment_status: ContractEnvironmentStatus = ContractEnvironmentStatus.MISSING
     execution_status: ContractExecutionStatus = ContractExecutionStatus.UNTESTED
     scientific_validation_status: ScientificValidationStatus = ScientificValidationStatus.NOT_EVALUATED
+    action_space_registration: Literal["candidate", "admitted"] = "admitted"
     enabled_for_execution: bool = False
 
     @model_validator(mode="after")

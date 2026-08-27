@@ -1,12 +1,141 @@
 # scKG-Agent 2.0 项目状态
 
-更新时间：2026-08-14
+更新时间：2026-08-27
 当前正式 Phase：Phase 5（`completed`）；Phase 6 保持 `PHASE6_TRIAL_READY`
 主规约：`docs/DEV_SPEC_2.0.md`
-主规约版本：2.9.12-dev
+主规约版本：2.10.2-dev
 作品集状态：`EVALUATION_PIPELINE_IMPLEMENTED / RESEARCH_CHAT_RELEASE_GATE_BLOCKED`
 全局执行策略：`disabled`（默认）
 科学验证：`scientific_pilot`
+
+### 2026-08-27 Scanpy Product Integration Baseline Freeze
+
+- Closure marker：`SCANPY_PRODUCT_INTEGRATION_CLOSURE_VERIFIED`。
+- Repository baseline：branch=`phase5a-checkpoint`，HEAD=`d4143a5444983fadcf97cf751933bbf0c96e846f`；没有发现 closure report 之外的新代码改动。
+- 已实现：generic Capability Pack registry、Method Graph、RepresentationLedger、registry-driven Planner、Capability Workspace、reviewed Scanpy Notebook renderer、固定 wrapper/runtime binding、composed Validation 与 Level 2 Reproducibility Packager 已接入现有 Research Chat / Stepwise Analysis 产品链路。Capability Pack 继续保持 generic；Canonical Graph 与 RepresentationLedger 的职责边界不变。当前 runtime execution records / execution history / runtime provenance 只记录实际执行历史，不代表统一的 end-to-end Agent Trace system 已实现。
+- 已验证：closure full regression=`572 passed, 8 warnings in 756.11s`；`INC-2026-08-24-031/032/033` 未在该完整回归或 PBMC3k 浏览器链路中复现。Baseline-freeze round 未重新运行 full suite；本轮重新运行的是 focused status consistency check 与 `git diff --check`。
+- 已验证 raw browser UAT：`pbmc3k_raw.h5ad`=`2700 x 32738`，SHA256=`89a96f1b...7ea653a1` 且前后不变；生成 Notebook=`scanpy_core-d9c99384d66b.ipynb`，18/18 code cells 执行、error=0、inline PNG=5，实际 kernel argv 指向 `scRNAseq` Python 3.12。QC、Filter、Normalize、Log1p、HVG、Scale、scaled PCA、Neighbors、Leiden、Marker、annotation candidates 与 UMAP 均完成；marker source 为 full-gene unscaled log1p。
+- 已验证 controlled raw pilot：`scanpy-pbmc3k-20260824T150133Z` 输出=`2643 x 13697`、Leiden clusters=9、annotation candidates=9，Validation 全部通过；Level 2 package complete 且 15 个 manifest/plot hashes 有效，不复制 `.h5ad`。
+- 已验证 processed resume/reuse UAT：`pbmc3k.h5ad`=`2638 x 1838`，SHA256=`0db367b9...0025fe38` 且未变化；合法已有 log1p/PCA/neighbor graph/UMAP/cluster/marker 状态被复用或跳过，无 rebuild、无 planning blocker，最终只规划 `scanpy_core.marker_evidence_annotation`。Notebook=`scanpy_core-9f477bc69a9b.ipynb`，2/2 code cells 执行、error=0；唯一执行 blocker 仍为 `capability_pack_execution_not_eligible`。
+- 已验证 dirty scope：20 tracked modified + 44 untracked status entries（展开为 47 files）；共 37 个 product integration、26 个 regression/tests、4 个 documentation 文件，0 个 non-ignored runtime/generated 文件，0 个 unrelated 文件。Baseline freeze 前 tracked diff=`1784 insertions / 43 deletions`；本节只增加 closure 文档。
+- Non-blocking known issues：Research Chat 正文与 capability handoff 状态文案仍有表达割裂；复用 kernel 的 display name 仍为 `scKG Doublet Python`；Scanpy/Matplotlib FutureWarning 仍存在。本次 freeze 不修复这些项目。
+- Deferred / roadmap：独立 scientific qualification、Adaptive Parameter Resolver、Adaptive Scientific Notebook、统一 end-to-end Agent Trace v0、formal Scoped Authorization v0、KG/Evidence maintenance、Graph Delta、Method Path Search、Runtime Registry redesign、MCP、Sandbox 及其他工具 onboarding 均未在本轮实现，不能表述为已交付。现有 Policy、ApprovalService 与 scoped approval binding 已实现且保持不变；统一 Principal / Operation / Resource / Scope authorization model 仍属后续工作，不代表 OAuth、RBAC 或 enterprise IAM 已交付。
+- Governance boundary：全局 `ExecutionPolicy=disabled`，普通用户 trusted execution 保持关闭；editable Notebook 仍是 exploratory/untrusted execution，不能替代 ToolContract、Approval、Validation、Evidence 或 qualification gate。
+
+### 2026-08-24 Scanpy Core Product Integration 现场交接（历史快照）
+
+> 本节保存 2026-08-24 交接时状态；其中 full regression 与 PBMC3k browser replay 的 pending 项已由上方 baseline freeze 记录取代。
+
+- 交接时间：`2026-08-24 21:59 CST`；Git HEAD=`d4143a5444983fadcf97cf751933bbf0c96e846f`，分支=`phase5a-checkpoint`，工作区未提交。
+- 当前正式阶段不变：Phase 5=`completed`，Phase 6=`PHASE6_TRIAL_READY`。Scanpy Core 属于 Phase 6 产品整合工作，不创建新正式 Phase。
+- Scanpy Core 状态分层：`implemented=true`、`engineering_smoke_passed=true`、`dataset_scoped_real_data_pilot_passed=true`、`scientifically_validated=false`、`user_executable=false`。
+- Capability Pack=`scanpy_core:1.0.0`，manifest status=`reviewed`，content digest=`97531a205f8f26e57cae3d5cff3ea7fe72219de8412f28fbb4143d1184588c4a`。Registry gate 真实结果为 `discovered / planning_ready / notebook_ready / validation_ready`，digest valid、blocker=0，但未声明 `qualification_passed`，`execution_eligible=false`。
+- ToolContract=`Scanpy 1.11.2 / 1.1.0-post-s6`：wrapper/environment smoke passed、execution integration passed、`scientific_validation_status=not_evaluated`、`enabled_for_execution=false`。固定 adapter 为 `python -m execution.wrappers.scanpy_core`，绑定 `scRNAseq` 环境（Python 3.12.2 / Scanpy 1.11.2）。环境记录自身为 integration-passed，但不能覆盖 ToolContract、Pack 和全局 policy gate。
+- 全局 `ExecutionPolicy=disabled`；普通用户受信执行仍为 `ExecutionRequest=0`。Jupyter Notebook 是用户显式打开的 editable/untrusted analysis shadow，不因成功逐格运行而自动晋升为受信执行或科学证据。
+- 当前 backend implementation digest=`dae5e44f10d988db84582866bfc9b34f0ba70caf84e223757214bf2020948a97`，覆盖 20 个 capability/workspace/runtime 实现文件。
+- 交接时 Streamlit 正在 `127.0.0.1:8501` 运行且 health=`ok`；JupyterLab 正在 `127.0.0.1:59340` 运行，1 个连接、1 个 `sckg-doublet-python` kernel，kernel state=`idle`。随机访问 token 不写入文档。
+- 最近真实浏览器链路：Research Chat / Capability Workspace -> synthetic Scanpy handoff -> JupyterLab -> Run All Cells -> inline diagnostics。最新 Notebook=`.sckg_exec/research-workspace/local-user/capability-notebooks/scanpy_core-9c4b2b7978f6.ipynb`，SHA256=`e8eb5dadbf32598d785b481a9882ff4fd21c96cf0c1bbf912cb0c1428cf7b2a5`；17/17 个非空代码单元执行、error=0、inline `image/png=5`。另有 4 个用户新增空 code cell，不属于生成模板失败。
+- 最近三个产品事故均已在追加式日志记录：`INC-2026-08-24-031`（小型数据 QC top-N 越界）、`INC-2026-08-24-032`（Streamlit 热重载 Pydantic class identity 冲突）、`INC-2026-08-24-033`（浏览器 Notebook 未启用 inline formatter且诊断未遵循 `sc.pl`）。三项均有真实路径复现和修复证据。
+- 当前最新相关回归=`35 passed, 4 warnings`，覆盖 Pack/Workspace/handoff/renderer/extensibility/user journey/resume/PBMC3k/UI；`git diff --check=passed`。最后一次 fresh full regression 仍是 PBMC3k pilot 后的 `570 passed, 8 warnings`；031-033 的最终浏览器修复之后尚未重新运行 full pytest，因此不得把 570 写成当前 dirty worktree 的 fresh full 结果。
+- Git 现场：20 个 tracked 文件 modified，44 个 untracked entries，共 64 个 status entries；tracked diff=`1684 insertions / 43 deletions`，尚未提交。本轮只更新交接文档，不自动 commit。
+
+#### 当前开放缺口
+
+- 最新浏览器验证使用版本化 synthetic h5ad；PBMC3k 受控工程 pilot 已通过，但 post-033 的官方 `sc.pl` Notebook 交互路径尚未在 PBMC3k 上重新手动回放。
+- Scanpy Core 尚无独立 gold label 或跨数据集 scientific qualification，不能描述为广泛科学验证，也不能进入 ordinary user trusted execution。
+- Jupyter kernel display name 仍为 `scKG Doublet Python`，虽然实际环境包含并运行 Scanpy 1.11.2；这是环境复用后的命名/产品体验缺口，不是缺包或运行错误。
+- 旧 Notebook 是不可变历史 artifact，不会自动获得新的 inline/sc.pl 模板；用户必须重新生成 Notebook 才能得到当前 renderer。
+- Research Chat 的能力状态文案与 capability handoff 仍可能出现“正文强调未资格化、下方却可进入 planning-ready Workspace”的表达割裂，需要在不放宽 gate 的前提下统一呈现。
+- 聊天参数提取、Adaptive Parameter Resolution、Adaptive Scientific Notebook 尚未实现；当前 notebook 参数来自维护者 StepContract/default 与显式 Scale 偏好，不是任意上下文驱动代码生成。
+- 031-033 后的 fresh full pytest 尚未运行；在下一 RC 或提交前必须补跑。
+
+### NEXT ITERATION HANDOFF
+
+**Current phase**
+
+- 正式路线：Phase 5=`completed`，Phase 6=`PHASE6_TRIAL_READY`。
+- 当前工作窗口：`finish Scanpy Product Integration`，不是新 Phase，也不是 broad scientific validation。
+
+**Stable baseline**
+
+- Generic Capability Pack registry、Method Graph、RepresentationLedger、registry-driven Planner、generic Notebook renderer、Execution Adapter、composed Validator、Level 2 Packager 已接通。
+- Synthetic Scale on/off、intermediate-state resume、PBMC3k dataset-scoped engineering pilot 已通过；Annotation A 只产生候选并停在 human confirmation boundary。
+- `Canonical Graph = stable domain truth`；`RepresentationLedger = current dataset state`；`Runtime Trace = actual execution history`。三者不得互相替代或写入对方的动态状态。
+
+**Current uncommitted changes**
+
+- HEAD=`d4143a5`；20 tracked modified + 44 untracked entries。主要范围为 Capability Pack/Representation/Method Graph/Planner/Workspace/Notebook/Scanpy wrapper-validator-package、Research Chat handoff、UI、测试和状态文档。
+- 未提交、未打 tag；不得在未审阅 status/diff 和 fresh full regression 前宣称 RC frozen。
+
+**Current runtime/services state**
+
+- Streamlit：`127.0.0.1:8501`，health ok。
+- JupyterLab：`127.0.0.1:59340`，localhost only，1 个 idle kernel；token 不持久化到文档。
+- backend digest=`dae5e44f10d988db84582866bfc9b34f0ba70caf84e223757214bf2020948a97`。
+
+**Known open bugs / product gaps**
+
+- 当前没有在最新 synthetic Notebook 中复现的 blocking runtime error；剩余项是 full regression 未补跑、PBMC3k 新 renderer 浏览器回放未补、kernel 名称不清晰、Chat/Workspace 状态文案割裂和参数自适应尚未实现。
+- Scanpy Pack 仅到 validation-ready；ToolContract 仍 disabled/scientific not evaluated。CellTypist、SingleR 仍 planning-only，final annotation 必须人工确认。
+
+**Files/modules most recently modified**
+
+- `execution/renderers/scanpy_core.py`、`execution/capability_notebook.py`、`engine/capability_workspace_service.py`、`agent/research_chat_service.py`、`app.py`。
+- 回归：`tests/test_capability_runtime.py`、`tests/test_capability_product_handoff.py` 及 Scanpy Pack/Workspace/Journey/PBMC3k/UI 相关测试。
+- 复盘：`docs/status/ISSUE_RETROSPECTIVE_LOG.md`；阶段日志：`docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md`。
+
+**Last verified browser journey / Notebook**
+
+- 最后链路：Capability Workspace 生成 synthetic Scanpy Notebook -> 自动绑定 `sckg-doublet-python` -> JupyterLab Run All -> kernel Busy/Idle -> Marker 与 UMAP 等图在对应代码单元后直接显示。
+- Notebook=`scanpy_core-9c4b2b7978f6.ipynb`；17/17 非空代码单元执行，0 errors，5 inline PNG；输入源 hash 未被原地修改。
+
+**Last regression**
+
+- 最新相关 suite=`35 passed, 4 warnings`；最新 `git diff --check=passed`。
+- 最后 fresh full=`570 passed, 8 warnings`，发生在 031-033 最终修复之前；当前 dirty worktree full regression=`pending`。
+
+**Do-not-break invariants**
+
+- 全局 `ExecutionPolicy=disabled`；Notebook 页面渲染、生成或打开均不得自动执行。
+- Parent Agent、LLM、RAG、Notebook 自定义 cell 均不能覆盖 ToolContract、Representation compatibility、approval、Validator 或 qualification gate。
+- Marker 必须消费 full-gene unscaled log-normalized expression；UMAP 与 Leiden 都消费 neighbor graph；Scale 不能覆盖 marker source。
+- 用户源 h5ad 只读；package 默认只记录 artifact ID/hash，不复制输入矩阵。
+- Candidate/RAG/LLM output 不得直接写 trusted KG 或 formal evidence。
+- Knowledge maintenance 必须保持：`discovery -> candidate knowledge/evidence -> validation/review -> governed promotion -> canonical snapshot -> rebuild projections/indexes`。
+
+**Recommended next task**
+
+1. 先运行 fresh full pytest 与 `git diff --check`，建立 031-033 后的真实 baseline。
+2. 用现有 PBMC3k raw/processed 输入各生成一次当前 renderer Notebook，真实浏览器检查 profile/reuse、五类 inline diagnostics、warning/error 与 source hash。
+3. 只修复该链路实际发现的 blocking product gap；通过后再整理 commit，不提前进入 adaptive 或 onboarding 支线。
+
+**Deferred roadmap**
+
+1. finish Scanpy Product Integration（当前下一任务）
+2. Adaptive Parameter Resolution
+3. Adaptive Scientific Notebook
+4. Evidence-aware scientific recommendation
+5. KG / Evidence maintenance pipeline
+6. Graph Delta / governance visibility
+7. Method Path Search
+8. Runtime Registry / Resolver
+9. GitHub Tool Onboarding
+10. Container Sandbox for untrusted code
+11. long-read Capability Pack migration
+12. MCP later
+
+### 2026-08-24 Scanpy Core S0-S6 工程实现检查点
+
+- 状态分层：`implemented=true`、`engineering_smoke_passed=true`、`dataset_scoped_real_data_pilot_passed=true`、`scientifically_validated=false`、`user_executable=false`。
+- Scanpy Core 已通过 Capability Pack registry、Method Graph、RepresentationLedger、generic Planner/Notebook/Adapter、组合式 Validator、Doublet/Batch ActionBundle 组合、Annotation 人工确认边界和 Level 2 package 链路。
+- Scanpy 1.11.2 fixed wrapper 已在 synthetic fixture 上通过 `LocalControlledExecutor` 运行，产生 15 个 artifact 和 4 张诊断图；这仅是工程 smoke，不是广泛生物学验证。
+- CellTypist/SingleR 继续为 `planning_only / execution_eligible=false`；Annotation 未人工确认前不得产生 final label。
+- Post-S6 产品链已通过真实页面回放：Research Chat capability handoff 可进入同一 Stepwise Analysis，登记版本化 synthetic h5ad，生成 DataProfile、Representation-aware WorkflowPlan、tutorial notebook，并只读展示 Validation、4 类诊断图和 Level 2 package；页面不会自动执行。
+- 最终可复现 journey：`post-s6-scanpy-20260824T054951Z`；Scale on/off 均通过，package 位于 `.sckg_exec/packages/post-s6-scanpy-20260824T054951Z/`，完整性和 artifact hash 校验均通过。
+- 首次真实数据工程 pilot 使用 Scanpy 官方 PBMC3k：`pbmc3k_raw.h5ad` 从 raw counts 完成 QC 到 marker 的受控执行；`pbmc3k.h5ad` 正确复用 log-normalized/PCA/neighbor/cluster/marker/UMAP，仅规划 Annotation A 候选，不重复处理。
+- 最终 pilot `scanpy-pbmc3k-20260824T070044Z` 输出 2643 cells × 13697 genes、9 个 Leiden clusters、9 个 marker-based review candidates（其中 1 个显式 `unknown`），4 张诊断图与 Level 2 package；Validation、lineage/hash 和源文件只读检查全部通过。由于没有独立 gold labels，Scanpy contract 的 `scientific_validation_status` 仍为 `not_evaluated`。
+- fresh full regression=`570 passed, 8 warnings`；全局 `ExecutionPolicy=disabled`，普通 RUN 保持 `ExecutionRequest=0`。
+- 阶段证据与限制见 [`SCANPY_CORE_DEVELOPMENT_LOG.md`](SCANPY_CORE_DEVELOPMENT_LOG.md)。
 
 ### 2026-08-14 Stepwise Tutorial Notebook v3 检查点
 

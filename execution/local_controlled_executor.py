@@ -13,6 +13,7 @@ from typing import Any, Callable
 import psutil
 
 from core.deterministic_router import RouterDecision
+from core.scientific_dataset_policy import scientific_pilot_dataset_allowlisted
 from core.execution_models import (
     ExecutionRequest,
     ExecutionRun,
@@ -286,7 +287,7 @@ class LocalControlledExecutor:
         elif request.qualification.purpose == "scientific_pilot":
             if artifact.synthetic or not artifact.public_dataset:
                 return "public_scientific_dataset_required", "scientific pilot requires public real data"
-            if artifact.accession not in {"GSE108313", "scIB-pancreas", "Zheng68K"}:
+            if not scientific_pilot_dataset_allowlisted(artifact.accession):
                 return "scientific_dataset_not_allowlisted", str(artifact.accession)
         elif request.qualification.purpose == "representative_preview":
             return (

@@ -745,13 +745,18 @@ class ResearchChatService:
         workflow_code_bundle = (
             tool_execution.workflow_bundles[0]
             if tool_execution.workflow_bundles
-            else self._workflow_code.get_bundle(
-                task_id=task_id,
-                preferred_tool=explicit_tool,
-            ).model_dump(mode="json")
-            if mode is AgentMode.PLAN
             else None
         )
+        if workflow_code_bundle is None and mode is AgentMode.PLAN:
+            fixed_bundle = self._workflow_code.get_bundle(
+                task_id=task_id,
+                preferred_tool=explicit_tool,
+            )
+            workflow_code_bundle = (
+                fixed_bundle.model_dump(mode="json")
+                if fixed_bundle is not None
+                else None
+            )
         report = _report(
             intent=response_intent,
             query=query,
@@ -885,6 +890,7 @@ class ResearchChatService:
                 for item in tool_execution.observations
             ],
             "tool_contract_context": tool_execution.contract_context,
+            "capability_context": tool_execution.capability_context,
             "semantic_route": {
                 "domain": domain_decision.domain,
                 "confidence": domain_decision.confidence,
@@ -1244,7 +1250,14 @@ class ResearchChatService:
             claim_audit.get("unverified_model_knowledge_claims") or []
         )
         workflow_bundle = result.get("workflow_code_bundle") or {}
-        workspace_handoff = {
+        capability_handoff = _capability_workspace_handoff(
+            context_pack=context_pack,
+            mode=mode,
+            task=state.task,
+            plan_id=plan.get("plan_id") if isinstance(plan, dict) else None,
+            query=request.query,
+        )
+        workspace_handoff = capability_handoff or ({
             "status": "available",
             "task_family": state.task,
             "tool_name": workflow_bundle.get("tool_name"),
@@ -1262,7 +1275,7 @@ class ResearchChatService:
             "blockers": ["task_specific_workspace_not_available"]
             if workflow_bundle
             else [],
-        }
+        })
         return ResearchAgentResponse(
             state=state,
             user_query=request.query,
@@ -1540,6 +1553,19 @@ def _research_tool_plan(
             ),
         )
 
+    if mode in {AgentMode.PLAN, AgentMode.RUN} and not any(
+        call.tool_name == "discover_capabilities" for call in calls
+    ):
+        calls.append(
+            ResearchToolCall(
+                call_id="local-capability-discovery",
+                tool_name="discover_capabilities",
+                query=query,
+                canonical_task=task_id,
+                tool_names=requested_tools,
+                reason="plan_checks_registered_capability_packs_before_handoff",
+            )
+        )
     if mode in {AgentMode.PLAN, AgentMode.RUN} and not any(
         call.tool_name == "get_tool_contract" for call in calls
     ):
@@ -4793,6 +4819,104 @@ def _claim_segments(content: str) -> list[str]:
         pieces = re.split(r"(?<=[。！？!?])\s+", line)
         segments.extend(piece.strip() for piece in pieces if piece.strip())
     return segments
+
+
+def _capability_workspace_handoff(
+    *,
+    context_pack: dict[str, Any],
+    mode: AgentMode,
+    task: str,
+    plan_id: str | None,
+    query: str = "",
+) -> dict[str, Any] | None:
+    """Build a generic planning handoff from governed capability discovery."""
+
+    if mode not in {AgentMode.PLAN, AgentMode.RUN}:
+        return None
+    candidates = []
+    for item in context_pack.get("capability_context") or []:
+        if not isinstance(item, dict):
+            continue
+        readiness = {str(value).casefold() for value in item.get("readiness") or []}
+        if not any(value.endswith("planning_ready") for value in readiness):
+            continue
+        targets = [
+            str(value)
+            for value in item.get("suggested_workspace_targets") or []
+            if str(value)
+        ]
+        if not targets:
+            continue
+        candidates.append((item, targets))
+    if not candidates:
+        return None
+    task_key = task.casefold().replace("-", "_").strip()
+    task_terms = {
+        term
+        for term in task_key.split("_")
+        if term and term not in {"and", "workflow", "analysis"}
+    }
+
+    def matches_task(candidate: tuple[dict[str, Any], list[str]]) -> bool:
+        capability = candidate[0]
+        family = str(capability.get("task_family") or "").casefold()
+        capability_id = str(capability.get("capability_id") or "").casefold()
+        capability_title = str(capability.get("capability_title") or "").casefold()
+        if task_key and family == task_key:
+            return True
+        searchable = {
+            term
+            for term in re.split(
+                r"[^a-z0-9]+", f"{family} {capability_id} {capability_title}"
+            )
+            if term and term not in {"and", "workflow", "analysis", "scanpy", "core"}
+        }
+        return bool(task_terms and task_terms.intersection(searchable))
+
+    matched = next((candidate for candidate in candidates if matches_task(candidate)), None)
+    if matched is None:
+        return None
+    capability, targets = matched
+    preferred_method_ids: list[str] = []
+    query_key = query.casefold()
+    pack_id = str(capability.get("pack_id") or "")
+    if pack_id == "scanpy_core" and re.search(r"(?<![a-z])scale(?![a-z])", query_key):
+        explicitly_requires_scale = any(
+            phrase in query_key
+            for phrase in (
+                "不要跳过 scale",
+                "必须保留 scale",
+                "do not skip scale",
+                "don't skip scale",
+            )
+        )
+        disables_scale = not explicitly_requires_scale and any(
+            phrase in query_key
+            for phrase in (
+                "skip scale",
+                "without scale",
+                "disable scale",
+                "不使用 scale",
+                "跳过 scale",
+            )
+        )
+        preferred_method_ids = (
+            ["scanpy_core.pca_log_hvg"]
+            if disables_scale
+            else ["scanpy_core.scale_hvg", "scanpy_core.pca_scaled"]
+        )
+    return {
+        "status": "available",
+        "task_family": str(capability.get("task_family") or task),
+        "plan_id": plan_id,
+        "notebook_strategy": "capability_renderer",
+        "stepwise_preview_available": True,
+        "pack_id": pack_id,
+        "pack_version": str(capability.get("pack_version") or ""),
+        "target_representations": targets,
+        "preferred_method_ids": preferred_method_ids,
+        "blockers": list(capability.get("blockers") or []),
+    }
 
 
 def _looks_like_scientific_claim(text: str) -> bool:

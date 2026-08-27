@@ -19,6 +19,7 @@ from core.execution_models import (
     ValidationResult,
 )
 from core.runtime_pack_models import RuntimeCapabilityProbe, RuntimePackState
+from core.scientific_dataset_policy import scientific_pilot_dataset_allowlisted
 
 if TYPE_CHECKING:
     from execution.approval_service import AuthorizationValidation
@@ -124,7 +125,7 @@ class DeterministicRouter:
                 reasons.append("scientific_pilot_requires_public_real_dataset")
             if not artifact.public_dataset:
                 reasons.append("scientific_pilot_requires_public_dataset")
-            if artifact.accession not in {"GSE108313", "scIB-pancreas", "Zheng68K"}:
+            if not scientific_pilot_dataset_allowlisted(artifact.accession):
                 reasons.append("scientific_pilot_dataset_not_allowlisted")
         elif request.qualification.purpose == "representative_preview":
             reasons.append("representative_preview_requires_restricted_user_route")

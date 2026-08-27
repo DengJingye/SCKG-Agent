@@ -1565,3 +1565,128 @@
 - 浏览器 E2E 真实完成 Chat synthetic handoff -> authorization -> profile -> Preview -> 21-cell Notebook -> localhost JupyterLab；widget exception=false、stale compiler=false、raw JSON=false。
 - clean-kernel Notebook smoke 再次通过；输入 QC、score/rank/call 与 manifold 均产生内联 `image/png` 和 side artifacts，source unchanged、scientific authority=false、ExecutionRequest=0。
 - `git diff --check`、Streamlit health 与 Jupyter process cleanup 均通过；本条更新为 `VERIFIED`。
+
+---
+
+## INC-2026-08-24-031 - Scanpy Core 小型数据 QC 默认 top-N 越界
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-08-24 |
+| 修复日期 | 2026-08-24 |
+| 验证日期 | 2026-08-24 |
+| 当前状态 | VERIFIED |
+| 严重级别 | P0 - 首个 Scanpy Core Notebook 在官方演示入口无法完成 QC |
+| 责任 stage | Capability Notebook renderer / Scanpy QC compatibility |
+
+### 用户现象与根因
+
+- 用户在自动选择的 `sckg-doublet-python` kernel 中运行 180 cells x 240 genes 的版本化 synthetic fixture。
+- `sc.pp.calculate_qc_metrics(adata, inplace=True)` 使用 Scanpy 默认 `percent_top=(50, 100, 200, 500)`；500 超过 240 个特征，触发 `IndexError: Positions outside range of features`。
+- 该错误与用户输入、LLM 或 Jupyter 操作无关，是维护者 Notebook 模板没有按输入特征数约束 QC 参数。
+
+### 修复与验证
+
+- `calculate_qc` 模板现在按 `adata.n_vars` 过滤 `percent_top`；没有合法 top-N 时显式传 `None`。
+- focused regression=`8 passed`，并新增 4-gene AnnData 的模板执行断言，防止只检查字符串而漏掉运行错误。
+- 使用同一 180 x 240 fixture 重新编译 23-cell Notebook，并通过 `scRNAseq` kernel 从头执行：11 个代码 cell 全部完成、error output=0、实际 QC top-N=`[50, 100, 200]`。
+- Method Graph、ToolContract、执行审批与原始输入未被修改；全局 `ExecutionPolicy=disabled` 保持不变。
+
+### 后续预防
+
+- 所有依赖 feature/cell 数量的默认参数必须由输入 shape 约束，并在小型 fixture 上执行，不得只做静态模板断言。
+- Runtime compatibility smoke 必须覆盖小数据边界和版本化真实 API，不以环境 import 成功代替 workflow 成功。
+
+---
+
+## INC-2026-08-24-032 - Capability Workspace 热重载模型身份冲突
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-08-24 |
+| 修复日期 | 2026-08-24 |
+| 验证日期 | 2026-08-24 |
+| 当前状态 | VERIFIED |
+| 严重级别 | P0 - Scanpy Core 用户入口在生成 Workflow 时直接报错 |
+| 责任 stage | Streamlit backend cache / CapabilityWorkspace schema boundary |
+
+### 用户现象与根因
+
+- 用户选择版本化 Scanpy synthetic `.h5ad` 后点击“生成数据画像、Workflow 与 Notebook”，页面返回 `CapabilityWorkspaceResult.data_profile` Pydantic `model_type` validation error。
+- Streamlit 热重载保留了旧 `CapabilityWorkspaceService`，同时页面加载了新版本同名 `DataProfile`；虽然字段一致，但两个 Python class identity 不同，嵌套模型验证失败。
+- backend implementation digest 未覆盖 capability workspace models、DataProfiler、Representation profiler、Planner/Composer 与 Scanpy renderer，因此这些语义变化无法可靠淘汰旧缓存，也可能继续生成旧 Notebook。
+
+### 修复内容
+
+- Capability Workspace 在服务 schema 边界将嵌套 Pydantic 对象转换为稳定 JSON-compatible payload，再由当前 `CapabilityWorkspaceResult` 重建；不再跨热重载缓存传递易漂移的 class instance。
+- backend implementation digest 纳入 capability/core execution models、DataProfiler、Representation profiler、Planner、Composer 与 Scanpy renderer；相关实现变化会创建新的 backend resource。
+- 新增跨模型重载边界回归测试，使用非当前 class identity、但具有相同 `model_dump()` contract 的 DataProfile proxy，确保能够继续规划。
+
+### 验证结果
+
+- focused UI/workspace regression=`17 passed, 2 warnings`。
+- 浏览器真实 E2E 重新执行 Research Chat -> synthetic handoff -> Stepwise Analysis -> “生成数据画像、Workflow 与 Notebook”：validation error=0。
+- 页面真实显示 `180 cells / 240 genes / layers/counts`、Representation reuse、WorkflowPlan、Marker/PCA/QC/UMAP plots、Validation PASSED 与 Level 2 package integrity=true。
+- 最新 UI Notebook=`25 cells`，包含自适应 QC 修复，kernel metadata=`sckg-doublet-python`；页面生成过程中 `ExecutionRequest=0`。
+- 全局 `ExecutionPolicy=disabled`、用户源数据只读和审批边界均未放宽。
+
+### 后续预防
+
+- Streamlit 缓存服务不得以 Pydantic class identity 作为跨 reload 稳定协议；跨缓存边界使用版本化 payload/schema。
+- backend cache digest 必须覆盖所有会改变 profile、plan、renderer 或 validation 语义的实现文件。
+- Capability Workspace 验收必须包含真实浏览器点击链路，不能只依赖 service 单测。
+
+---
+
+## INC-2026-08-24-033 - Scanpy Notebook 完成计算但没有诊断图且忽略显式 Scale 偏好
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-08-24 |
+| 修复日期 | 2026-08-24 |
+| 验证日期 | 2026-08-24 |
+| 当前状态 | VERIFIED |
+| 严重级别 | P0 - 用户成功运行流程但无法查看核心分析图 |
+| 责任 stage | Capability Notebook diagnostics / Chat-to-plan method preference |
+
+### 用户现象与根因
+
+- JupyterLab 中 `scanpy_core-194434172dff.ipynb` 已执行至 `[12]`，kernel=`Idle`，Neighbors、Leiden、Marker 与 UMAP 均完成且没有 error output，但页面没有任何图。
+- 旧模板只调用 `sc.tl.*` 和 `sc.pp.*` 计算函数，没有调用绘图或显式 `display(fig)`；因此“运行成功”并不产生可见诊断结果。
+- 用户明确要求“不要跳过 Scale”，但 capability handoff 固定返回空 `preferred_method_ids`，Planner 选择了默认 `pca_log_hvg` 路线。
+- 初版修复中的简单子串规则又将“不要跳过 Scale”误判为“跳过 Scale”；定向测试失败后按否定范围修正。
+
+### 修复内容
+
+- Generic Notebook compiler 为每个 Notebook 提供稳定、独立的 output directory context。
+- Scanpy renderer 增加 5 组教程式诊断：QC distributions、HVG、PCA variance、ranked markers、UMAP by Leiden/optional batch；图形既内联到 Notebook，也保存为 PNG。
+- Research Chat handoff 现在保留显式 Scale/skip Scale 偏好，分别绑定 `scale_hvg + pca_scaled` 或 `pca_log_hvg`，仍由 Representation contract 和 Planner 校验。
+- `pca_scaled` 诊断从 `scaled.uns['pca']` 读取方差，避免错误读取未承载该 PCA provenance 的 `adata.uns`。
+
+### 验证结果
+
+- focused regression=`58 passed`；中文“不要跳过 Scale”和英文 `skip Scale` 均有独立断言。
+- 使用 180 x 240 structured synthetic fixture 和 `sckg-doublet-python` kernel 从头执行 Scale-on Notebook：35 cells、17 code cells executed、error output=0、inline PNG=5。
+- 五个 PNG side artifacts 均非空；人工检查 UMAP cluster/batch 与 ranked marker 图可读。
+- 已在用户当前 JupyterLab 打开 `scanpy_core-with-plots-171056.ipynb`；kernel metadata 正确，Notebook 含 Scale 并保留原始旧 Notebook。
+- `ExecutionRequest=0`、原始 `.h5ad` 未原地修改、全局 `ExecutionPolicy=disabled`。
+
+### 后续预防
+
+- Notebook workflow smoke 必须同时验证计算完成、内联图数量和 side artifact 非空，不能用无异常退出代替用户可见结果。
+- Chat 中显式方法选择必须进入结构化 method preference，并测试中文否定范围，不能只用无上下文关键词匹配。
+
+### Browser-runtime correction - 2026-08-24
+
+- 上述首次 `inline PNG=5` 来自 `nbconvert` 批处理结果，不能证明 JupyterLab 交互内核会采用相同 formatter；将其表述为浏览器内嵌验收属于验证口径错误。
+- 真实浏览器复现 `scanpy_core-9c848a24b8d6.ipynb`：17 个代码单元执行完成、error=0，但图形输出只有 `text/plain`，`image/png=0`；页面只显示 `<Figure ...>` 文本，PNG 仅存在于旁路目录。
+- 根因是生成模板没有在交互内核显式启用 inline Matplotlib formatter；同时诊断实现偏离 Scanpy 教程，主要使用手写 Matplotlib，而不是对应的 `sc.pl` 接口。
+- 修复后 bootstrap 显式执行 `%matplotlib inline`；QC、HVG、PCA variance、ranked markers 和 UMAP 分别使用审核过的 `sc.pl.violin`、`sc.pl.highly_variable_genes`、`sc.pl.pca_variance_ratio`、`sc.pl.rank_genes_groups`、`sc.pl.umap`。可复现 PNG 改存隐藏 `.sckg_notebook_artifacts/<notebook>`，不再作为主要用户界面。
+- 真实浏览器在 JupyterLab 运行 `scanpy_core-inline-172240.ipynb`：kernel 从 Busy 回到 Idle，17/17 个代码单元已执行、error=0、Notebook 内 `image/png=5`；人工页面检查确认 Marker 与 UMAP 图直接显示在对应代码单元之后，不再出现 `<Figure ...>` 占位文本。
+- 本次 correction 将“浏览器页面直接出现图”定义为该问题的最终验收证据；以后不得用 service test、PNG 文件存在或 `nbconvert` 结果替代真实交互路径。

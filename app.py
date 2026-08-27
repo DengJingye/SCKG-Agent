@@ -213,6 +213,9 @@ st.markdown(
         visibility: visible !important;
         opacity: 1 !important;
     }
+    [data-testid="stAppDeployButton"] {
+        display: none !important;
+    }
     [data-testid="stSidebarCollapseButton"],
     button[title="Open sidebar"],
     button[title="Close sidebar"],
@@ -2363,11 +2366,14 @@ def _workspace_handoff_payload(
         (state.get("extracted_constraints") or {}).get("canonical_task") or ""
     )
     tool_name = str(bundle.get("tool_name") or "")
-    if (
-        governed_handoff.get("status") != "available"
-        or task != "doublet_detection"
-        or tool_name != "Scrublet"
+    if governed_handoff.get("status") != "available":
+        return None
+    strategy = str(governed_handoff.get("notebook_strategy") or "none")
+    if strategy == "fixed_shadow" and (
+        task != "doublet_detection" or tool_name != "Scrublet"
     ):
+        return None
+    if strategy == "capability_renderer" and not governed_handoff.get("pack_id"):
         return None
     plan = state.get("workflow_plan") or {}
     return {
@@ -2379,6 +2385,14 @@ def _workspace_handoff_payload(
         "agent_mode": str(state.get("agent_mode") or "PLAN"),
         "plan_id": governed_handoff.get("plan_id") or plan.get("plan_id"),
         "notebook_strategy": governed_handoff.get("notebook_strategy"),
+        "pack_id": governed_handoff.get("pack_id"),
+        "pack_version": governed_handoff.get("pack_version"),
+        "target_representations": list(
+            governed_handoff.get("target_representations") or []
+        ),
+        "preferred_method_ids": list(
+            governed_handoff.get("preferred_method_ids") or []
+        ),
         "stepwise_preview_available": bool(
             governed_handoff.get("stepwise_preview_available")
         ),
@@ -2398,12 +2412,17 @@ def _render_workspace_handoff(
         '<div class="algorithm-surface-title">从对话继续到数据验证</div>',
         unsafe_allow_html=True,
     )
+    capability_mode = payload.get("notebook_strategy") == "capability_renderer"
     st.caption(
-        "系统识别到这是已资格化的 Doublet Detection workflow。对话中的任务、工具和计划会一并带入 Stepwise Analysis。"
+        "系统识别到一个已登记的 Capability Pack。对话中的任务、目标表示和计划会一并带入 Stepwise Analysis。"
+        if capability_mode
+        else "系统识别到这是已资格化的 Doublet Detection workflow。对话中的任务、工具和计划会一并带入 Stepwise Analysis。"
     )
     action_cols = st.columns(2)
     if action_cols[0].button(
-        "用模拟数据在 JupyterLab 试跑",
+        "用版本化模拟数据准备 Notebook"
+        if capability_mode
+        else "用模拟数据在 JupyterLab 试跑",
         key=f"{key}_demo",
         type="primary",
         width="stretch",
@@ -2412,7 +2431,10 @@ def _render_workspace_handoff(
         demo_payload["source_query"] = source_query.strip()
         demo_payload["fixture_type"] = "synthetic_engineering_demo"
         try:
-            _activate_scrublet_demo_handoff(demo_payload)
+            if capability_mode:
+                _activate_capability_demo_handoff(demo_payload)
+            else:
+                _activate_scrublet_demo_handoff(demo_payload)
             st.session_state.current_view = "data_preview"
             st.rerun()
         except Exception as exc:
@@ -2461,6 +2483,277 @@ def _activate_scrublet_demo_handoff(payload: Dict[str, Any]) -> None:
     # Apply its widget value at the start of the next render instead.
     st.session_state.workspace_pending_selected_artifact = artifact.artifact_id
     st.session_state.workspace_task_handoff = dict(payload)
+
+
+def _activate_capability_demo_handoff(payload: Dict[str, Any]) -> None:
+    """Register a pack-owned synthetic fixture without executing the workflow."""
+
+    from execution.execution_ui_service import configured_local_user_id
+    from execution.scanpy_synthetic_fixture import (
+        generate_scanpy_core_synthetic_fixture,
+    )
+
+    pack_id = str(payload.get("pack_id") or "")
+    if pack_id != "scanpy_core":
+        raise ValueError("this capability pack has no registered synthetic demo fixture")
+    service = _execution_ui_backend()
+    fixture_root = (
+        service.data_registry.approved_input_roots[0]
+        / "capability-fixtures"
+        / pack_id
+        / str(payload.get("pack_version") or "1.0.0")
+    )
+    fixture_path = fixture_root / "scanpy_core_synthetic_v1.h5ad"
+    manifest_path = fixture_root / "fixture_manifest.json"
+    if not (fixture_path.is_file() and manifest_path.is_file()):
+        generate_scanpy_core_synthetic_fixture(fixture_root)
+    artifact = service.register_local_artifact(
+        user_id=configured_local_user_id(), local_path=str(fixture_path)
+    )
+    _reset_workspace_from_stage("source")
+    st.session_state.workspace_artifact_id = artifact.artifact_id
+    st.session_state.workspace_pending_selected_artifact = artifact.artifact_id
+    st.session_state.capability_workspace_artifact_id = artifact.artifact_id
+    st.session_state.pop("capability_workspace_result", None)
+    st.session_state.workspace_task_handoff = dict(payload)
+
+
+def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
+    """Render the existing registry-driven capability workspace in Stepwise Analysis."""
+
+    from core.capability_workspace_models import (
+        CapabilityWorkspaceRequest,
+        CapabilityWorkspaceResult,
+    )
+    from execution.execution_ui_service import configured_local_user_id
+    from execution.runtime_pack_resolver import RuntimePackResolver
+
+    execution = _execution_ui_backend()
+    workspace = _capability_workspace_backend()
+    user_id = configured_local_user_id()
+    pack_id = str(payload.get("pack_id") or "")
+    pack_version = str(payload.get("pack_version") or "")
+    targets = [str(item) for item in payload.get("target_representations") or []]
+    st.markdown(
+        '<div class="data-workbench-section-title">Capability workflow</div>'
+        '<div class="data-workbench-section-copy">同一条链路完成数据画像、Representation 复用、DAG 与维护者模板 Notebook。页面不会自动执行代码。</div>',
+        unsafe_allow_html=True,
+    )
+    status_cols = st.columns(4)
+    status_cols[0].metric("Pack", pack_id or "UNRESOLVED")
+    status_cols[1].metric("Mode", "PLAN")
+    status_cols[2].metric("Policy", "DISABLED")
+    status_cols[3].metric("ExecutionRequest", "0")
+
+    with st.expander("登记 approved input root 中的 .h5ad", expanded=False):
+        local_path = st.text_input(
+            "本地 .h5ad 路径",
+            type="password",
+            key="capability_workspace_local_path",
+            help="完整路径仅用于本地登记，不发送给模型，也不写入页面历史。",
+        )
+        if st.button(
+            "登记 AnnData",
+            key="capability_workspace_register",
+            disabled=not local_path.strip(),
+        ):
+            try:
+                artifact = execution.register_local_artifact(
+                    user_id=user_id,
+                    local_path=local_path.strip(),
+                )
+                st.session_state.capability_workspace_artifact_id = artifact.artifact_id
+                st.session_state.pop("capability_workspace_result", None)
+                st.success(f"已登记：{artifact.redacted_path}")
+                st.rerun()
+            except Exception as exc:
+                st.error(execution.redact_text(str(exc)))
+
+    artifacts = execution.list_artifacts(user_id=user_id)
+    if not artifacts:
+        st.info("尚无已登记 AnnData。可返回对话选择版本化 synthetic fixture，或登记 approved input root 中的 .h5ad。")
+        return
+    labels = {
+        item.artifact_id: f"{item.artifact_id} · {item.redacted_path}"
+        for item in artifacts
+    }
+    selected = st.selectbox(
+        "当前 AnnData",
+        options=list(labels),
+        format_func=lambda value: labels[value],
+        index=(
+            list(labels).index(st.session_state.capability_workspace_artifact_id)
+            if st.session_state.get("capability_workspace_artifact_id") in labels
+            else 0
+        ),
+        key="capability_workspace_selected_artifact",
+    )
+    if st.session_state.get("capability_workspace_artifact_id") != selected:
+        st.session_state.capability_workspace_artifact_id = selected
+        st.session_state.pop("capability_workspace_result", None)
+    batch_key = st.text_input(
+        "Batch metadata key（可选）",
+        value="batch",
+        key="capability_workspace_batch_key",
+    )
+    if st.button(
+        "生成数据画像、Workflow 与 Notebook",
+        key="capability_workspace_prepare",
+        type="primary",
+        width="stretch",
+        disabled=not (pack_id and pack_version and targets),
+    ):
+        try:
+            notebook_root = (
+                _research_workspace_backend().workspace_root
+                / user_id
+                / "capability-notebooks"
+            )
+            notebook_path = notebook_root / f"{pack_id}-{uuid.uuid4().hex[:12]}.ipynb"
+            prepared = workspace.prepare(
+                CapabilityWorkspaceRequest(
+                    request_id=f"workspace-{uuid.uuid4().hex}",
+                    user_id=user_id,
+                    artifact_id=selected,
+                    pack_id=pack_id,
+                    pack_version=pack_version,
+                    mode="PLAN",
+                    requirement_id=f"chat-handoff-{uuid.uuid4().hex[:12]}",
+                    target_representations=targets,
+                    preferred_method_ids=list(
+                        payload.get("preferred_method_ids") or []
+                    ),
+                    batch_key=batch_key.strip() or None,
+                ),
+                notebook_path=notebook_path,
+            )
+            st.session_state.capability_workspace_result = prepared.model_dump(
+                mode="json"
+            )
+            st.rerun()
+        except Exception as exc:
+            st.error(execution.redact_text(str(exc)))
+
+    result_payload = st.session_state.get("capability_workspace_result")
+    if not result_payload:
+        return
+    result = CapabilityWorkspaceResult.model_validate(result_payload)
+    if result.status == "blocked":
+        st.error("Workflow 被阻断：" + " · ".join(result.blockers))
+        return
+    profile = result.data_profile
+    ledger = result.representation_ledger
+    plan = result.workflow_plan
+    if profile is not None:
+        profile_cols = st.columns(4)
+        profile_cols[0].metric("Cells", profile.n_cells)
+        profile_cols[1].metric("Genes", profile.n_genes)
+        profile_cols[2].metric("Count source", profile.selected_count_source or "UNRESOLVED")
+        profile_cols[3].metric("Existing states", len(ledger.available_ids()) if ledger else 0)
+    if ledger is not None:
+        st.caption("可复用表示：" + " · ".join(sorted(ledger.available_ids())))
+    if plan is not None:
+        st.markdown("#### WorkflowPlan")
+        st.dataframe(
+            [
+                {
+                    "step": index + 1,
+                    "method": item.operation,
+                    "consumes": ", ".join(item.input_artifacts),
+                    "produces": ", ".join(item.output_artifacts),
+                }
+                for index, item in enumerate(plan.steps)
+            ],
+            width="stretch",
+            hide_index=True,
+        )
+    notebook = dict(result.notebook_artifact)
+    notebook_path = Path(str(notebook.get("path") or ""))
+    if notebook_path.is_file():
+        notebook_cols = st.columns(2)
+        notebook_cols[0].download_button(
+            "下载 tutorial notebook",
+            data=notebook_path.read_bytes(),
+            file_name=notebook_path.name,
+            mime="application/x-ipynb+json",
+            key="capability_workspace_download_notebook",
+            width="stretch",
+        )
+        if notebook_cols[1].button(
+            "在本地 JupyterLab 打开",
+            key="capability_workspace_open_jupyter",
+            width="stretch",
+        ):
+            try:
+                manifest = workspace.pack_registry.load(pack_id, pack_version)
+                adapter = next(
+                    item
+                    for item in manifest.execution_adapters
+                    if item.runtime_kind == "python_module"
+                )
+                resolver = RuntimePackResolver()
+                runtime_pack_id = resolver.pack_for_environment(adapter.environment_id)
+                session = _local_jupyter_backend().start(
+                    owner_user_id=user_id,
+                    notebook_path=notebook_path,
+                    expected_sha256=str(notebook["sha256"]),
+                    runtime_python=resolver.python(runtime_pack_id),
+                    runtime_pack_id=runtime_pack_id,
+                )
+                st.session_state.capability_workspace_jupyter_url = session.launch_url
+            except Exception as exc:
+                st.error(execution.redact_text(str(exc)))
+        launch_url = st.session_state.get("capability_workspace_jupyter_url")
+        if launch_url:
+            st.link_button("打开已启动的 JupyterLab", launch_url, width="stretch")
+
+    st.warning(
+        "当前页面已完成 PLAN 与可编辑 Notebook 交付。全局 ExecutionPolicy=disabled，"
+        "因此不会对这份用户数据创建或运行 ExecutionRequest。"
+    )
+    latest = _latest_scanpy_journey_summary()
+    if latest is None:
+        st.info("尚无 Post-S6 synthetic acceptance bundle 可供只读展示。")
+        return
+    st.markdown("#### 最新 synthetic engineering acceptance（只读）")
+    st.caption(
+        "下列结果用于证明工程链路和 artifact schema，不代表当前所选数据的分析结果。"
+    )
+    route_tabs = st.tabs(
+        [str(route.get("route_id") or "route") for route in latest.get("routes") or []]
+    )
+    for tab, route in zip(route_tabs, latest.get("routes") or []):
+        with tab:
+            route_cols = st.columns(3)
+            route_cols[0].metric("Validation", "PASSED" if route.get("validation_passed") else "FAILED")
+            route_cols[1].metric("Output cells", int(route.get("output_cells") or 0))
+            route_cols[2].metric("Marker candidates", int(route.get("marker_candidate_count") or 0))
+            for plot_path in route.get("plot_paths") or []:
+                candidate = Path(str(plot_path))
+                if candidate.is_file():
+                    st.image(candidate, caption=candidate.stem.replace("_", " ").title())
+    st.success(
+        "Level 2 package: complete="
+        f"{bool(latest.get('package_complete'))}, hashes_valid="
+        f"{bool(latest.get('package_hashes_valid'))}."
+    )
+
+
+def _latest_scanpy_journey_summary() -> Dict[str, Any] | None:
+    root = Path(__file__).resolve().parent / ".sckg_exec" / "scanpy-user-journeys"
+    candidates = sorted(
+        root.glob("*/summary.json"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    for path in candidates:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if payload.get("package_complete") and payload.get("package_hashes_valid"):
+            return payload
+    return None
 
 
 def _greeting_reply(project_memory: Optional[Dict[str, Any]] = None) -> str:
@@ -4781,12 +5074,25 @@ def _render_defense_demo_page() -> None:
 
 
 _BACKEND_IMPLEMENTATION_FILES = (
+    "core/capability_composition_models.py",
+    "core/capability_pack_models.py",
+    "core/capability_pack_registry.py",
+    "core/capability_workspace_models.py",
+    "core/execution_models.py",
+    "core/representation_models.py",
+    "engine/capability_composer.py",
+    "engine/capability_planner.py",
+    "engine/capability_workspace_service.py",
+    "engine/data_profiler.py",
+    "engine/representation_profiler.py",
+    "execution/capability_notebook.py",
     "execution/execution_ui_service.py",
     "execution/interactive_step_runtime.py",
     "execution/local_jupyter_service.py",
     "execution/notebook_shadow.py",
     "execution/preview_execution_service.py",
     "execution/research_workspace_service.py",
+    "execution/renderers/scanpy_core.py",
     "execution/workspace_checkpoint.py",
 )
 
@@ -4844,6 +5150,28 @@ def _cached_research_workspace_backend(implementation_digest: str):
 
 def _research_workspace_backend():
     return _cached_research_workspace_backend(_backend_implementation_digest())
+
+
+@st.cache_resource
+def _cached_capability_workspace_backend(implementation_digest: str):
+    from engine.capability_workspace_service import CapabilityWorkspaceService
+    from execution.capability_notebook import (
+        GenericNotebookCompiler,
+        NotebookRendererRegistry,
+    )
+    from execution.renderers.scanpy_core import ScanpyCoreNotebookRenderer
+
+    execution = _cached_execution_ui_backend(implementation_digest)
+    return CapabilityWorkspaceService(
+        data_registry=execution.data_registry,
+        notebook_compiler=GenericNotebookCompiler(
+            NotebookRendererRegistry([ScanpyCoreNotebookRenderer()])
+        ),
+    )
+
+
+def _capability_workspace_backend():
+    return _cached_capability_workspace_backend(_backend_implementation_digest())
 
 
 @st.cache_resource
@@ -6356,6 +6684,15 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
 """,
             unsafe_allow_html=True,
         )
+
+    capability_stepwise_handoff = st.session_state.get("workspace_task_handoff") or {}
+    if (
+        data_preview_view
+        and capability_stepwise_handoff.get("notebook_strategy")
+        == "capability_renderer"
+    ):
+        _render_capability_stepwise_workspace(capability_stepwise_handoff)
+        st.stop()
 
     workflow_container = (
         st.container(border=False)

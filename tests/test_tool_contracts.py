@@ -35,11 +35,16 @@ def test_contract_registry_resolves_sources_and_environment():
         "celltypist:1.7.1",
         "harmony:2.0.0",
         "scanorama:1.7.4",
+        "scanpy:1.11.2",
         "scdblfinder:1.24.0",
         "scrublet:0.2.3",
         "singler:2.14.0",
     ]
-    assert all(registry.planning_gate(contract).allowed for contract in contracts)
+    gates = {contract.contract_id: registry.planning_gate(contract) for contract in contracts}
+    assert all(gate.allowed for gate in gates.values())
+    scanpy = next(contract for contract in contracts if contract.contract_id == "scanpy:1.11.2")
+    assert registry.execution_gate(scanpy).allowed is False
+    assert "contract_execution_disabled" in registry.execution_gate(scanpy).reasons
 
 
 def test_annotation_contracts_are_planning_only_and_execution_blocked():

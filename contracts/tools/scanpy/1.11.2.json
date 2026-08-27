@@ -1,0 +1,165 @@
+{
+  "contract_id": "scanpy:1.11.2",
+  "contract_version": "1.1.0-post-s6",
+  "tool_name": "Scanpy",
+  "tool_version": "1.11.2",
+  "task": "scanpy_core_workflow",
+  "language": "python",
+  "environment_id": "scRNAseq",
+  "wrapper_id": "scanpy_core_v1_11_2",
+  "input_object": "AnnData",
+  "required_fields": [
+    "typed representation selected through RepresentationLedger",
+    "cell and gene identity hashes for matrix transitions"
+  ],
+  "optional_fields": ["batch metadata", "curated marker evidence", "reference manifest"],
+  "preconditions": [
+    {
+      "rule_id": "scanpy_representation_resolved",
+      "field": "selected_representation",
+      "operator": "exists",
+      "expected": true,
+      "blocking": true,
+      "message": "Each operation requires a structurally and scientifically compatible representation."
+    }
+  ],
+  "not_supported": [
+    "inferring raw counts from scaled or integrated representations",
+    "marker testing on scaled, PCA, integrated, neighbor, or UMAP representations",
+    "automatic final cell-type confirmation",
+    "arbitrary notebook code as a trusted execution source"
+  ],
+  "output_artifacts": [
+    {
+      "artifact_id": "scanpy_step_artifact",
+      "artifact_type": "versioned_representation_artifact",
+      "format": "h5ad_or_json",
+      "required": true,
+      "validator_id": "scanpy_core_validation_pipeline_v1"
+    },
+    {
+      "artifact_id": "representation_ledger",
+      "artifact_type": "representation_lineage",
+      "format": "json",
+      "required": true,
+      "validator_id": "representation_ledger_schema_v1"
+    }
+  ],
+  "parameter_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "operation": {
+        "type": "string",
+        "enum": ["scanpy_core_workflow"]
+      },
+      "scale": {
+        "type": "boolean"
+      },
+      "min_genes": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 5000
+      },
+      "min_cells": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "max_pct_counts_mt": {
+        "type": "number",
+        "minimum": 0.0,
+        "maximum": 100.0
+      },
+      "target_sum": {
+        "type": "number",
+        "minimum": 1000,
+        "maximum": 100000
+      },
+      "n_top_genes": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 10000
+      },
+      "n_comps": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 200
+      },
+      "n_neighbors": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 100
+      },
+      "leiden_resolution": {
+        "type": "number",
+        "minimum": 0.05,
+        "maximum": 5.0
+      },
+      "max_scale_value": {
+        "type": "number",
+        "minimum": 1.0,
+        "maximum": 50.0
+      }
+    }
+  },
+  "default_parameters": {
+    "operation": "scanpy_core_workflow",
+    "scale": true,
+    "min_genes": 1,
+    "min_cells": 1,
+    "max_pct_counts_mt": 100.0,
+    "target_sum": 10000.0,
+    "n_top_genes": 30,
+    "n_comps": 20,
+    "n_neighbors": 12,
+    "leiden_resolution": 0.8,
+    "max_scale_value": 10.0
+  },
+  "paper_parameters": [],
+  "searchable_parameters": {},
+  "failure_checks": [
+    "representation_schema_incompatible",
+    "scientific_constraints_unverified",
+    "required_provenance_missing",
+    "cell_index_hash_mismatch",
+    "gene_index_hash_mismatch",
+    "stale_parent_representation"
+  ],
+  "validation_metrics": [
+    "artifact_schema_validity",
+    "representation_lineage_validity",
+    "cell_and_gene_alignment",
+    "scientific_state_compatibility"
+  ],
+  "resource_requirements": {
+    "cpu_only_supported": true,
+    "gpu_required": false,
+    "memory_enforcement": "monitor_only",
+    "qualification_timeout_seconds": 180
+  },
+  "source_refs": [
+    "https://scanpy.readthedocs.io/en/stable/api.html",
+    "https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering.html"
+  ],
+  "execution_critical_review": {
+    "review_scope": [
+      "typed representation inputs",
+      "fixed workflow parameters",
+      "QC and filtering thresholds",
+      "artifact schema",
+      "runtime budget",
+      "marker expression source"
+    ],
+    "claim_boundary": "S3 synthetic engineering qualification only; no dataset-wide scientific performance claim."
+  },
+  "schema_status": "valid",
+  "source_review_status": "reviewed",
+  "execution_critical_fields_reviewed": true,
+  "wrapper_status": "smoke_passed",
+  "environment_status": "smoke_passed",
+  "execution_status": "integration_passed",
+  "scientific_validation_status": "not_evaluated",
+  "action_space_registration": "candidate",
+  "enabled_for_execution": false
+}

@@ -95,7 +95,7 @@ def test_parent_cannot_override_qualification_router(tmp_path):
     assert decision.execution_allowed is False
 
 
-def test_scientific_pilot_route_only_allows_public_gse108313(tmp_path):
+def test_scientific_pilot_route_only_allows_registered_public_datasets(tmp_path):
     case = build_qualification_case(tmp_path)
     request = case["request"].model_copy(
         update={
@@ -130,6 +130,15 @@ def test_scientific_pilot_route_only_allows_public_gse108313(tmp_path):
         max_timeout_seconds=120,
     )
     assert allowed.execution_allowed is True
+    pbmc3k = router.route_qualification(
+        request=request,
+        artifact=artifact.model_copy(update={"accession": "Scanpy-PBMC3K"}),
+        tool_contract=case["contract"],
+        environment=case["environment_registry"].get("scRNAseq"),
+        planning_gate=case["planning_gate"],
+        max_timeout_seconds=120,
+    )
+    assert pbmc3k.execution_allowed is True
     assert "scientific_pilot_dataset_not_allowlisted" in blocked.reasons
 
 

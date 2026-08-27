@@ -1,0 +1,164 @@
+{
+  "schema_version": "sckg-capability-pack-v1",
+  "pack_id": "mock_r_capability",
+  "pack_version": "1.0.0",
+  "status": "reviewed",
+  "task_families": [
+    "architecture_test"
+  ],
+  "workspace_targets": [
+    "mock_r_table"
+  ],
+  "capabilities": [
+    {
+      "capability_id": "mock_r.transform",
+      "task_family": "architecture_test",
+      "title": "Mock R transform",
+      "description": "Non-Python architecture fixture"
+    }
+  ],
+  "representation_contracts": [
+    {
+      "representation_id": "mock_r_input",
+      "kind": "table",
+      "schema_version": "1.0",
+      "axes": [
+        "record"
+      ],
+      "value_state": "table",
+      "required_provenance": [
+        "mock_input_reviewed"
+      ],
+      "require_cell_hash": false,
+      "require_gene_hash": false,
+      "required_metadata": [],
+      "scientific_constraints": []
+    },
+    {
+      "representation_id": "mock_r_table",
+      "kind": "table",
+      "schema_version": "1.0",
+      "axes": [
+        "record"
+      ],
+      "value_state": "table",
+      "required_provenance": [
+        "mock_input_reviewed"
+      ],
+      "require_cell_hash": false,
+      "require_gene_hash": false,
+      "required_metadata": [],
+      "scientific_constraints": []
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "mock_r.identity",
+      "capability_id": "mock_r.transform",
+      "implementation_kind": "tool",
+      "consumes": [
+        {
+          "representation_id": "mock_r_input",
+          "accepted_schema_versions": [
+            "1.0"
+          ],
+          "accepted_value_states": [
+            "table"
+          ],
+          "required_provenance": [
+            "mock_input_reviewed"
+          ],
+          "require_cell_hash": false,
+          "require_gene_hash": false,
+          "required_metadata": [],
+          "scientific_requirements": []
+        }
+      ],
+      "produces": [
+        {
+          "representation_id": "mock_r_table",
+          "output_slot": "result/table",
+          "preserves_cell_hash": true,
+          "preserves_gene_hash": true,
+          "irreversible": false
+        }
+      ],
+      "requires": [
+        {
+          "requirement_id": "mock_input",
+          "description": "reviewed mock input",
+          "blocking": true
+        }
+      ],
+      "invalid_predecessors": [],
+      "tool_contract_ref": null,
+      "step_contract_ref": "steps/mock_r_step.json",
+      "environment_id": "mock-r-env",
+      "execution_adapter_id": "mock_rscript_adapter",
+      "notebook_renderer_id": "mock_r_renderer",
+      "validation_pipeline": {
+        "generic_primitives": [
+          "required_artifact",
+          "hash",
+          "schema"
+        ],
+        "scientific_validator_id": "mock_r_scientific"
+      },
+      "evidence_ids": [
+        "mock-r-evidence"
+      ],
+      "gold_case_ids": [
+        "mock-r-gold"
+      ],
+      "optional": false
+    }
+  ],
+  "execution_adapters": [
+    {
+      "adapter_id": "mock_rscript_adapter",
+      "runtime_kind": "rscript",
+      "entrypoint": [
+        "Rscript",
+        "mock_identity.R"
+      ],
+      "environment_id": "mock-r-env",
+      "allowlisted": false
+    }
+  ],
+  "notebook_renderers": [
+    {
+      "renderer_id": "mock_r_renderer",
+      "renderer_version": "1.0.0",
+      "maintainer_reviewed": true
+    }
+  ],
+  "evidence_bindings": [
+    {
+      "evidence_id": "mock-r-evidence",
+      "source_id": "architecture-fixture",
+      "source_ref": "internal:test-fixture",
+      "source_span": "mock-r-identity",
+      "claim_type": "architecture_test",
+      "authority": "official_documentation",
+      "review_status": "reviewed"
+    }
+  ],
+  "gold_case_bindings": [
+    {
+      "case_id": "mock-r-gold",
+      "dataset_ref": "fixture:mock-r-table",
+      "split": "development",
+      "applicable_metrics": [
+        "discovery",
+        "planning",
+        "notebook",
+        "validation"
+      ]
+    }
+  ],
+  "dependencies": [],
+  "limitations": [
+    "Architecture-only fixture; execution is forbidden."
+  ],
+  "content_digest": "9b9dce913d786c1769e110684cd5fb74563bda7a61ae486e29a6010e6c5c2654"
+}

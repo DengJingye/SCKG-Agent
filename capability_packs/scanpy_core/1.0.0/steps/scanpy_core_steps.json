@@ -1,0 +1,1815 @@
+[
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.profile_anndata",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.profile",
+    "method_id": "scanpy_core.profile_anndata",
+    "operation": "profile_anndata",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "registered_anndata",
+    "consumes": [
+      {
+        "representation_id": "registered_anndata",
+        "accepted_schema_versions": ["1.0"],
+        "accepted_value_states": ["table"],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": ["artifact_id", "source_hash"],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "representation_ledger",
+        "output_slot": "profile/representation_ledger.json",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.profile_anndata",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": ["registered_anndata"],
+    "output_artifacts": [
+      "representation_ledger"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:profile_anndata"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.neighbors_integrated",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.graph_construction",
+    "method_id": "scanpy_core.neighbors_integrated",
+    "operation": "neighbors",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "integrated_representation",
+    "consumes": [
+      {
+        "representation_id": "integrated_representation",
+        "accepted_schema_versions": ["1.0"],
+        "accepted_value_states": ["real_continuous"],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": ["batch_key"],
+        "scientific_requirements": ["batch_corrected_embedding"]
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "neighbor_graph",
+        "output_slot": "obsp/connectivities",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.neighbors_integrated",
+        "description": "Integrated embedding must preserve cell order and carry reviewed batch provenance",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": ["scanpy-core-08-integrated"],
+    "parameters": {},
+    "input_artifacts": ["integrated_representation"],
+    "output_artifacts": ["neighbor_graph"],
+    "validators": [
+      "required_artifact", "hash", "schema", "finite", "cell_order",
+      "shape", "runtime", "memory", "provenance", "scanpy_core_scientific_v1"
+    ],
+    "source_refs": ["https://scanpy.readthedocs.io/en/stable/api.html#method:neighbors"],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.calculate_qc",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.qc",
+    "method_id": "scanpy_core.calculate_qc",
+    "operation": "calculate_qc",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "raw_counts",
+    "consumes": [
+      {
+        "representation_id": "raw_counts",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_integer"
+        ],
+        "required_provenance": [
+          "count_source_validated"
+        ],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": [
+          "raw_umi_counts"
+        ]
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "qc_metrics",
+        "output_slot": "obs/var",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.calculate_qc",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "raw_counts"
+    ],
+    "output_artifacts": [
+      "qc_metrics"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:calculate_qc"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.filter_counts",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.filter",
+    "method_id": "scanpy_core.filter_counts",
+    "operation": "filter_counts",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "raw_counts",
+    "consumes": [
+      {
+        "representation_id": "raw_counts",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_integer"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      },
+      {
+        "representation_id": "qc_metrics",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "table"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "filtered_counts",
+        "output_slot": "layers/filtered_counts",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": true
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.filter_counts",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "raw_counts",
+      "qc_metrics"
+    ],
+    "output_artifacts": [
+      "filtered_counts"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:filter_counts"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.normalize_total",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.normalize",
+    "method_id": "scanpy_core.normalize_total",
+    "operation": "normalize_total",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "filtered_counts",
+    "consumes": [
+      {
+        "representation_id": "filtered_counts",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_integer"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "library_size_normalized",
+        "output_slot": "layers/normalized",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.normalize_total",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "filtered_counts"
+    ],
+    "output_artifacts": [
+      "library_size_normalized"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:normalize_total"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.log1p",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.normalize",
+    "method_id": "scanpy_core.log1p",
+    "operation": "log1p",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "library_size_normalized",
+    "consumes": [
+      {
+        "representation_id": "library_size_normalized",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "log1p_normalized",
+        "output_slot": "layers/log1p",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.log1p",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "library_size_normalized"
+    ],
+    "output_artifacts": [
+      "log1p_normalized"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:log1p"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.highly_variable_genes",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.feature_selection",
+    "method_id": "scanpy_core.highly_variable_genes",
+    "operation": "highly_variable_genes",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "log1p_normalized",
+    "consumes": [
+      {
+        "representation_id": "log1p_normalized",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": [
+          "full_gene_unscaled_log1p"
+        ]
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "hvg_selection",
+        "output_slot": "var/highly_variable",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.highly_variable_genes",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "log1p_normalized"
+    ],
+    "output_artifacts": [
+      "hvg_selection"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:highly_variable_genes"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.scale_hvg",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.feature_selection",
+    "method_id": "scanpy_core.scale_hvg",
+    "operation": "scale_hvg",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "log1p_normalized",
+    "consumes": [
+      {
+        "representation_id": "log1p_normalized",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      },
+      {
+        "representation_id": "hvg_selection",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "boolean_mask"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": false,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "scaled_hvg",
+        "output_slot": "layers/scaled_hvg",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.scale_hvg",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "log1p_normalized",
+      "hvg_selection"
+    ],
+    "output_artifacts": [
+      "scaled_hvg"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:scale_hvg"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.pca_scaled",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.dimension_reduction",
+    "method_id": "scanpy_core.pca_scaled",
+    "operation": "pca_scaled",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "scaled_hvg",
+    "consumes": [
+      {
+        "representation_id": "scaled_hvg",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "real_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": [
+          "hvg_scoped_scaled"
+        ]
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "pca",
+        "output_slot": "obsm/X_pca",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.pca_scaled",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "scaled_hvg"
+    ],
+    "output_artifacts": [
+      "pca"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:pca_scaled"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.pca_log_hvg",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.dimension_reduction",
+    "method_id": "scanpy_core.pca_log_hvg",
+    "operation": "pca_log_hvg",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "log1p_normalized",
+    "consumes": [
+      {
+        "representation_id": "log1p_normalized",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      },
+      {
+        "representation_id": "hvg_selection",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "boolean_mask"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": false,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "pca",
+        "output_slot": "obsm/X_pca",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.pca_log_hvg",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "log1p_normalized",
+      "hvg_selection"
+    ],
+    "output_artifacts": [
+      "pca"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:pca_log_hvg"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.neighbors",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.graph_construction",
+    "method_id": "scanpy_core.neighbors",
+    "operation": "neighbors",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "pca",
+    "consumes": [
+      {
+        "representation_id": "pca",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "real_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "neighbor_graph",
+        "output_slot": "obsp/connectivities",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.neighbors",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "pca"
+    ],
+    "output_artifacts": [
+      "neighbor_graph"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:neighbors"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.umap",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.embedding",
+    "method_id": "scanpy_core.umap",
+    "operation": "umap",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "neighbor_graph",
+    "consumes": [
+      {
+        "representation_id": "neighbor_graph",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "graph"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "umap",
+        "output_slot": "obsm/X_umap",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.umap",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "neighbor_graph"
+    ],
+    "output_artifacts": [
+      "umap"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:umap"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.leiden",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.clustering",
+    "method_id": "scanpy_core.leiden",
+    "operation": "leiden",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "neighbor_graph",
+    "consumes": [
+      {
+        "representation_id": "neighbor_graph",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "graph"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "cluster_labels",
+        "output_slot": "obs/leiden",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.leiden",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "neighbor_graph"
+    ],
+    "output_artifacts": [
+      "cluster_labels"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:leiden"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.rank_markers",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.marker",
+    "method_id": "scanpy_core.rank_markers",
+    "operation": "rank_markers",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "log1p_normalized",
+    "consumes": [
+      {
+        "representation_id": "log1p_normalized",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": [
+          "full_gene_unscaled_log1p"
+        ]
+      },
+      {
+        "representation_id": "cluster_labels",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "categorical"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "marker_result",
+        "output_slot": "uns/rank_genes_groups",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.rank_markers",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [
+      "scaled_hvg",
+      "pca",
+      "integrated_representation",
+      "neighbor_graph",
+      "umap"
+    ],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "log1p_normalized",
+      "cluster_labels"
+    ],
+    "output_artifacts": [
+      "marker_result"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:rank_markers"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.marker_evidence_annotation",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.annotation",
+    "method_id": "scanpy_core.marker_evidence_annotation",
+    "operation": "marker_evidence_annotation",
+    "implementation_kind": "method_family",
+    "tool_contract_id": "method-family:marker-evidence-annotation",
+    "tool_contract_version": "1.0.0",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "marker_result",
+    "consumes": [
+      {
+        "representation_id": "marker_result",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "table"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": [
+          "cluster_characterization_only"
+        ]
+      },
+      {
+        "representation_id": "cluster_labels",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "categorical"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "annotation_candidates",
+        "output_slot": "uns/annotation_candidates",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.marker_evidence_annotation",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": null,
+    "execution_adapter_id": null,
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "marker_evidence_annotation_validator_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "marker_result",
+      "cluster_labels"
+    ],
+    "output_artifacts": [
+      "annotation_candidates"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "marker_evidence_annotation_validator_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:marker_evidence_annotation"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.reference_annotation",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.annotation",
+    "method_id": "scanpy_core.reference_annotation",
+    "operation": "reference_annotation",
+    "implementation_kind": "method_family",
+    "tool_contract_id": "method-family:reference-annotation",
+    "tool_contract_version": "1.0.0",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "log1p_normalized",
+    "consumes": [
+      {
+        "representation_id": "log1p_normalized",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "nonnegative_continuous"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": [
+          "full_gene_unscaled_log1p"
+        ]
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "annotation_candidates",
+        "output_slot": "obs/annotation_candidates",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.reference_annotation",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": null,
+    "execution_adapter_id": null,
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "reference_annotation_validator_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "log1p_normalized"
+    ],
+    "output_artifacts": [
+      "annotation_candidates"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "reference_annotation_validator_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:reference_annotation"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.human_confirmation",
+    "step_version": "1.0.0-draft",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.annotation",
+    "method_id": "scanpy_core.human_confirmation",
+    "operation": "human_confirmation",
+    "implementation_kind": "human_review",
+    "tool_contract_id": "human-review:1.0",
+    "tool_contract_version": "1.0",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "annotation_candidates",
+    "consumes": [
+      {
+        "representation_id": "annotation_candidates",
+        "accepted_schema_versions": [
+          "1.0"
+        ],
+        "accepted_value_states": [
+          "table"
+        ],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [
+      {
+        "representation_id": "confirmed_annotation",
+        "output_slot": "obs/cell_type",
+        "preserves_cell_hash": true,
+        "preserves_gene_hash": true,
+        "irreversible": false
+      }
+    ],
+    "requires": [
+      {
+        "requirement_id": "req.human_confirmation",
+        "description": "All typed representation and provenance gates must pass",
+        "blocking": true
+      }
+    ],
+    "invalid_predecessors": [],
+    "environment_id": null,
+    "execution_adapter_id": null,
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": [
+      "scanpy-core-01-raw_x",
+      "scanpy-core-02-log_x_counts_layer",
+      "scanpy-core-03-normalized_not_log",
+      "scanpy-core-04-log_only",
+      "scanpy-core-05-valid_pca",
+      "scanpy-core-06-pca_only",
+      "scanpy-core-07-scaled_only",
+      "scanpy-core-08-integrated",
+      "scanpy-core-09-graph_cluster",
+      "scanpy-core-10-single_batch",
+      "scanpy-core-11-ambiguous_normalization",
+      "scanpy-core-12-stale_index",
+      "scanpy-core-13-invalid_matrix",
+      "scanpy-core-14-doublet_exclusion_change"
+    ],
+    "parameters": {},
+    "input_artifacts": [
+      "annotation_candidates"
+    ],
+    "output_artifacts": [
+      "confirmed_annotation"
+    ],
+    "validators": [
+      "required_artifact",
+      "hash",
+      "schema",
+      "finite",
+      "cell_order",
+      "gene_order",
+      "shape",
+      "runtime",
+      "memory",
+      "provenance",
+      "scanpy_core_scientific_v1"
+    ],
+    "source_refs": [
+      "https://scanpy.readthedocs.io/en/stable/api.html#method:human_confirmation"
+    ],
+    "invalidates_downstream": [],
+    "template_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.doublet_detection_action",
+    "step_version": "1.0.0",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.filter",
+    "method_id": "scanpy_core.doublet_detection_action",
+    "operation": "doublet_detection_action",
+    "implementation_kind": "composed_action",
+    "tool_contract_id": "action:doublet-detection",
+    "tool_contract_version": "qualified",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "filtered_counts",
+    "consumes": [{
+      "representation_id": "filtered_counts",
+      "accepted_schema_versions": ["1.0"],
+      "accepted_value_states": ["nonnegative_integer"],
+      "required_provenance": [],
+      "require_cell_hash": true,
+      "require_gene_hash": true,
+      "required_metadata": [],
+      "scientific_requirements": ["raw_umi_counts"]
+    }],
+    "produces": [{
+      "representation_id": "doublet_scores_and_calls",
+      "output_slot": "obs/doublet_scores_and_calls",
+      "preserves_cell_hash": true,
+      "preserves_gene_hash": true,
+      "irreversible": false
+    }],
+    "requires": [{
+      "requirement_id": "req.doublet_action_qualified",
+      "description": "Use the existing governed Doublet Detection ActionBundle",
+      "blocking": true
+    }],
+    "invalid_predecessors": ["library_size_normalized", "scaled_hvg"],
+    "environment_id": null,
+    "execution_adapter_id": null,
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "doublet_composition_validator_v1",
+    "gold_case_ids": ["scanpy-core-14-doublet_exclusion_change"],
+    "parameters": {},
+    "input_artifacts": ["filtered_counts"],
+    "output_artifacts": ["doublet_scores_and_calls"],
+    "validators": ["required_artifact", "hash", "cell_order", "provenance", "doublet_composition_validator_v1"],
+    "source_refs": ["action:doublet-detection"],
+    "invalidates_downstream": [],
+    "template_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.confirm_doublet_exclusion",
+    "step_version": "1.0.0",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.filter",
+    "method_id": "scanpy_core.confirm_doublet_exclusion",
+    "operation": "confirm_doublet_exclusion",
+    "implementation_kind": "human_review",
+    "tool_contract_id": "human-review:doublet-exclusion",
+    "tool_contract_version": "1.0.0",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "filtered_counts",
+    "consumes": [
+      {
+        "representation_id": "filtered_counts",
+        "accepted_schema_versions": ["1.0"],
+        "accepted_value_states": ["nonnegative_integer"],
+        "required_provenance": [],
+        "require_cell_hash": true,
+        "require_gene_hash": true,
+        "required_metadata": [],
+        "scientific_requirements": ["raw_umi_counts"]
+      },
+      {
+        "representation_id": "doublet_scores_and_calls",
+        "accepted_schema_versions": ["1.0"],
+        "accepted_value_states": ["table"],
+        "required_provenance": ["validated_doublet_action"],
+        "require_cell_hash": true,
+        "require_gene_hash": false,
+        "required_metadata": [],
+        "scientific_requirements": []
+      }
+    ],
+    "produces": [{
+      "representation_id": "doublet_filtered_counts",
+      "output_slot": "layers/doublet_filtered_counts",
+      "preserves_cell_hash": false,
+      "preserves_gene_hash": true,
+      "irreversible": true
+    }],
+    "requires": [{
+      "requirement_id": "req.doublet_exclusion_confirmation",
+      "description": "Bind an explicit human confirmation and selection hash",
+      "blocking": true
+    }],
+    "invalid_predecessors": [],
+    "environment_id": null,
+    "execution_adapter_id": null,
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "doublet_exclusion_validator_v1",
+    "gold_case_ids": ["scanpy-core-14-doublet_exclusion_change"],
+    "parameters": {},
+    "input_artifacts": ["filtered_counts", "doublet_scores_and_calls"],
+    "output_artifacts": ["doublet_filtered_counts"],
+    "validators": ["required_artifact", "hash", "cell_order", "gene_order", "provenance", "doublet_exclusion_validator_v1"],
+    "source_refs": ["action:doublet-detection"],
+    "invalidates_downstream": ["library_size_normalized", "log1p_normalized", "hvg_selection", "scaled_hvg", "pca", "integrated_representation", "neighbor_graph", "umap", "cluster_labels", "marker_result", "annotation_candidates", "confirmed_annotation"],
+    "template_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.normalize_after_doublet_exclusion",
+    "step_version": "1.0.0",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.normalize",
+    "method_id": "scanpy_core.normalize_after_doublet_exclusion",
+    "operation": "normalize_after_doublet_exclusion",
+    "implementation_kind": "tool",
+    "tool_contract_id": "Scanpy:1.11.2-draft",
+    "tool_contract_version": "1.11.2-draft",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "doublet_filtered_counts",
+    "consumes": [{
+      "representation_id": "doublet_filtered_counts",
+      "accepted_schema_versions": ["1.0"],
+      "accepted_value_states": ["nonnegative_integer"],
+      "required_provenance": ["validated_doublet_action", "human_confirmed_doublet_exclusion"],
+      "require_cell_hash": true,
+      "require_gene_hash": true,
+      "required_metadata": ["doublet_selection_hash"],
+      "scientific_requirements": ["raw_umi_counts", "cell_set_changed"]
+    }],
+    "produces": [{
+      "representation_id": "library_size_normalized",
+      "output_slot": "layers/normalized",
+      "preserves_cell_hash": true,
+      "preserves_gene_hash": true,
+      "irreversible": false
+    }],
+    "requires": [{
+      "requirement_id": "req.normalize_after_doublet_exclusion",
+      "description": "Recompute downstream representations after the confirmed cell-set change",
+      "blocking": true
+    }],
+    "invalid_predecessors": [],
+    "environment_id": "scRNAseq",
+    "execution_adapter_id": "scanpy_python_adapter",
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "scanpy_core_scientific_v1",
+    "gold_case_ids": ["scanpy-core-14-doublet_exclusion_change"],
+    "parameters": {},
+    "input_artifacts": ["doublet_filtered_counts"],
+    "output_artifacts": ["library_size_normalized"],
+    "validators": ["required_artifact", "hash", "schema", "finite", "cell_order", "gene_order", "provenance", "scanpy_core_scientific_v1"],
+    "source_refs": ["https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.normalize_total.html"],
+    "invalidates_downstream": [],
+    "template_digest": "4444444444444444444444444444444444444444444444444444444444444444"
+  },
+  {
+    "schema_version": "sckg-step-contract-v2",
+    "step_id": "scanpy_core.batch_integration_action",
+    "step_version": "1.0.0",
+    "task_family": "scanpy_core_workflow",
+    "capability_id": "scanpy_core.dimension_reduction",
+    "method_id": "scanpy_core.batch_integration_action",
+    "operation": "batch_integration_action",
+    "implementation_kind": "composed_action",
+    "tool_contract_id": "action:batch-integration",
+    "tool_contract_version": "qualified",
+    "requires_object_type": "AnnData",
+    "requires_matrix_state": "pca",
+    "consumes": [{
+      "representation_id": "pca",
+      "accepted_schema_versions": ["1.0"],
+      "accepted_value_states": ["real_continuous"],
+      "required_provenance": ["pca_seed_bound"],
+      "require_cell_hash": true,
+      "require_gene_hash": false,
+      "required_metadata": ["batch_key"],
+      "scientific_requirements": []
+    }],
+    "produces": [{
+      "representation_id": "integrated_representation",
+      "output_slot": "obsm/X_integrated",
+      "preserves_cell_hash": true,
+      "preserves_gene_hash": true,
+      "irreversible": false
+    }],
+    "requires": [{
+      "requirement_id": "req.batch_integration_action_qualified",
+      "description": "Use the existing governed Batch Integration ActionBundle with a reviewed batch key",
+      "blocking": true
+    }],
+    "invalid_predecessors": ["neighbor_graph", "umap", "cluster_labels"],
+    "environment_id": null,
+    "execution_adapter_id": null,
+    "notebook_renderer_id": "generic_step_renderer",
+    "scientific_validator_id": "integration-validator-v1",
+    "gold_case_ids": ["scanpy-core-08-integrated", "scanpy-core-10-single_batch"],
+    "parameters": {},
+    "input_artifacts": ["pca"],
+    "output_artifacts": ["integrated_representation"],
+    "validators": ["required_artifact", "hash", "finite", "cell_order", "shape", "provenance", "integration-validator-v1"],
+    "source_refs": ["action:batch-integration"],
+    "invalidates_downstream": [],
+    "template_digest": "5555555555555555555555555555555555555555555555555555555555555555"
+  }
+]

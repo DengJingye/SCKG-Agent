@@ -1,13 +1,33 @@
 # scKG-Agent 2.0 中文开发规约
 
-版本：2.9.12-dev
+版本：2.10.2-dev
 状态：Active，Phase 5 completed；Phase 6 trial_ready；全局 ExecutionPolicy 默认 disabled
-生效日期：2026-08-12
+生效日期：2026-08-23
 维护语言：中文  
 适用仓库：`SCKG-Agent`  
 历史规约：`docs/DEV_SPEC_scKG_CN.md`，冻结为 1.x 设计与演进记录  
 
 > 本规约是 scKG-Agent 2.0 的唯一主开发基准。需求、代码、测试、评测、界面和文档发生冲突时，以本规约中当前 Phase 的边界和验收标准为准。完成每个 Phase 后必须反向更新本文档。
+
+### 2026-08-23 Scanpy Core 科学与架构一致性修订
+
+- `scale` 改为 HVG 后、PCA 前的 optional representation transition；现代 Scanpy 流程可跳过它，但已有 scaled state 必须被正确识别，且 scaled matrix 不得进入 marker/DE 或 annotation evidence。
+- Doublet Detection 作为 Filtering 后、Normalization 前的 optional composed Action，复用 Scrublet/scDblFinder 既有 ActionBundle、contract、executor 和 validator；默认只写 score/call，是否排除必须显式确认。
+- Representation 从单线枚举改为带 lineage 的并存 ledger；UMAP 与 Leiden 从同一个 neighbor graph 分叉，Marker 固定读取未缩放的 log-normalized 全基因表达，Annotation A/B 保持 method-family abstraction。
+- Spatial/Squidpy 明确 deferred；本轮只增加 workflow-level gold case 设计，不进入 S0-S6 实现范围。
+
+### 2026-08-23 Extensibility / Capability Pack Contract 修订
+
+- Scanpy Core 是第一个 `CapabilityPack`，不是 Agent Core 内的 Scanpy 特殊分支；新增方法原则上只增加受版本控制的 pack 资产和 adapter/validator plugin。
+- Agent Core、Planner、ExecutionOrchestrator 与 ResearchChatService 不得依赖 Scanpy、Seurat、CellTypist、SingleR 或 Squidpy 名称；兼容性只能由 typed Representation、provenance、schema、cell/gene hash 与 state requirement 决定。
+- Notebook compilation 必须由 generic Step/Adapter/Renderer 逐步取代 `compile_scrublet()` 式工具特化；Validator 采用通用 primitives 与 capability-specific scientific validator 组合。
+- 本修订不改变 S0-S6 顺序和执行范围；只增加 pack schema、registry、静态 gate 与 mock-pack 扩展性验收。
+
+### 2026-08-24 Scanpy Core Workflow / Method Graph v0 实现状态
+
+- Scanpy Core S0-S6 已完成实现与 synthetic engineering smoke；当前状态为 `implemented / engineering_smoke_passed / scientific_validation_not_evaluated / user_execution_disabled`。这不等于 broad scientific validation，也不改变全局 `ExecutionPolicy=disabled`。
+- 该工作流必须复用 Research Workspace、WorkflowPlan、StepContract、Notebook compiler、ToolContract、LocalControlledExecutor、Validator、trace、Evaluation Pipeline 与 ReproducibilityPackager，不得创建第二套执行或 Notebook 框架。
+- canonical JSONL/manifest 继续作为唯一事实源；Method Graph v0 是 canonical snapshot 的受治理扩展，Neo4j 降为单向、可删除、可重建的 optional projection，不参与运行时正确性或执行准入。
 
 ### 2026-08-14 Stepwise Tutorial Notebook v3
 
@@ -79,6 +99,9 @@ for Single-Cell Workflow Planning, Execution, Validation, and Repair
 | 动态 Agent 范围| 允许动态选择 route、工具、probe、参数搜索和 repair；不允许动态生成任意 Agent 类型或任意工具权限  |
 | RAG 地位 | Execution-oriented Hybrid KG-RAG 是核心知识能力，但不能直接越过 ToolContract 生成执行参数|
 | Action Space | Decision Graph 是唯一权威动作图；`ActionBundle` 将 Task、Action、ToolContract、I/O、Environment、Failure、Validation、KnowHow、Source 与 scoped Evaluation 组合为规划上下文，但永不授权执行 |
+| Scanpy Core Workflow | S0-S6 与 Post-S6 synthetic engineering journey 已实现并通过 smoke；Scanpy 官方 PBMC3k 已完成 dataset-scoped real-data engineering pilot：raw 文件执行全流程、processed 文件验证 resume/skip；无独立 gold-label scientific validation，普通用户执行保持关闭 |
+| Method Graph | 在同一 canonical snapshot 内增加 Capability、Method、Representation 与有来源的 workflow relation；不创建第三份独立事实源 |
+| Graph 存储 | canonical nodes/edges JSONL + manifest 是唯一事实源；typed in-memory graph 是默认查询层，SQLite FTS5/NumPy dense 是派生索引，Neo4j 只做 optional projection |
 | 服务化原则 | MVP 采用 modular monolith + separate execution worker；核心 Python API 稳定后再包装 MCP/FastAPI |
 | Skill 原则 | Skill 是版本化、可测试的能力单元，不等于 Agent；所有执行型 Skill 必须绑定 schema、权限、contract 和测试 |
 
@@ -2232,6 +2255,322 @@ Frozen baseline or lab
 ```
 
 正式执行范围只包含 Doublet Detection 与 Batch Integration 四个 qualified tool。CellTypist/SingleR 仍为 Planning Lab；算法迁移只能输出 `exploratory_hypothesis`，不能进入黄金 Demo 或执行空间。
+
+### 10.14 Method Graph v0 与本地图存储边界
+
+#### 10.14.1 当前事实与设计动机
+
+截至 2026-08-23，canonical knowledge snapshot 包含 15 个 canonical task family、1,847 条 catalog record、37 个 SourceDocument 和 783 个 source-bound EvidenceChunk；KG v2 为 7,537 个节点、17,667 条边，Decision Graph v3 为 1,058 个节点、1,318 条边。四个 qualified tool 的 governed path coverage 为 100%，但 catalog/source/contract/formal-evidence coverage 必须继续分账，不能用图连通性替代方法语义完整性。
+
+现有 Scanpy 相关 source-bound chunk 共 34 条，主要覆盖 clustering 和 batch integration；QC、filtering、normalization、HVG、PCA、neighbors、UMAP、Leiden、marker 与 annotation 的逐步输入/输出、失败和验证证据尚未形成闭环。因此 Method Graph v0 只建设 Scanpy Core Workflow 小切片，不扩充全部 catalog，也不从目录标签推断未经来源支持的能力边。
+
+#### 10.14.2 三层语义
+
+Method Graph 必须区分：
+
+```text
+Task family
+  用户科研目标，例如 quality_control、batch_integration、clustering、
+  differential_expression、cell_type_annotation。
+
+Capability
+  系统可提供的稳定能力，例如 compute_qc_metrics、select_hvg、
+  construct_neighbor_graph、derive_marker_evidence。
+
+Method
+  对输入 Representation 执行确定性状态变换的具体方法，
+  例如 scanpy.pp.normalize_total、scanpy.pp.highly_variable_genes、
+  scanpy.tl.leiden、Harmony 或 Scanorama。
+```
+
+不得为了工作流顺序把每个函数都晋升为新的 canonical Task。现有 15 个 task family 保持兼容；细粒度步骤由 Capability、Method、Representation 和 StepContract 表达。
+
+#### 10.14.3 Method Graph v0 schema
+
+首版节点类型固定为：
+
+```text
+Task
+Capability
+Method
+Tool
+Representation
+InputArtifact
+OutputArtifact
+ToolContract
+StepContract
+FailureMode
+ValidationRule
+EvidenceSource
+EvidenceChunk
+HumanReviewGate
+```
+
+每个节点至少保存：
+
+```text
+node_id
+node_type
+canonical_name
+version
+scope
+properties
+governance_layer
+review_status
+decision_eligible
+provenance_refs
+source_span_ids
+content_digest
+```
+
+首版关系固定为：
+
+```text
+CONSUMES
+PRODUCES
+REQUIRES
+PRECEDES
+COMPATIBLE_WITH
+ALTERNATIVE_TO
+COMPLEMENTS
+HAS_LIMITATION
+SUPPORTED_BY
+IMPLEMENTS
+BOUND_BY
+VALIDATED_BY
+REQUIRES_REVIEW
+```
+
+关系本身必须保存 provenance、适用 scope、source span、review status 和 governance layer。`PRECEDES` 只表达有合同、数据状态或来源依据的先后约束；页面布局和节点坐标不表达科学顺序。`COMPATIBLE_WITH` 必须说明兼容的 Representation、版本和条件，不能只保存一个无范围布尔值。
+
+#### 10.14.4 Representation State Machine
+
+AnnData 的状态不是一个会被后一步覆盖的单值枚举。raw counts、log-normalized expression、scaled working matrix、embedding、neighbor graph 和 labels 可以同时存在于不同 slot。Method Graph v0 必须使用 `RepresentationLedger` 语义：
+
+```text
+RepresentationStateRecord
+  representation_id
+  representation_kind
+  storage_slot
+  parent_representation_ids
+  cell_index_hash
+  gene_index_hash
+  value_state
+  method_id / step_contract_id
+  parameter_hash
+  validation_status
+  created_at
+  stale_reason
+```
+
+首版 `representation_kind` 至少包含：
+
+```text
+raw_counts
+qc_metrics
+filtered_raw_counts
+doublet_scores_and_calls
+library_size_normalized_expression
+log1p_normalized_expression
+hvg_mask
+scaled_hvg_expression
+pca_embedding
+integrated_embedding
+neighbor_graph
+umap_embedding
+cluster_labels
+marker_result
+annotation_candidates
+human_confirmed_cell_labels
+```
+
+合法 transition graph 为：
+
+```text
+registered_anndata
+-> profile / representation ledger
+
+raw_counts
+-> QC metrics
+-> filtered_raw_counts
+-> optional Doublet Detection
+-> optional user-confirmed doublet exclusion
+-> library-size normalized expression
+-> log1p-normalized expression
+
+filtered_raw_counts OR log1p-normalized expression
+-> flavor-compatible HVG mask
+
+log1p-normalized expression + HVG mask
+-> [optional scale] -> scaled HVG expression
+
+[log1p-normalized expression + HVG mask] OR scaled HVG expression
+-> PCA embedding
+-> [none | Harmony | Scanorama] selected representation
+-> neighbor graph
+
+neighbor graph -> UMAP embedding
+neighbor graph -> Leiden cluster labels
+
+log1p-normalized full-gene expression + cluster labels
+-> marker result
+
+marker result + cluster labels + curated marker evidence
+-> marker/evidence annotation candidates
+
+method-compatible expression + versioned reference
+-> reference-based annotation candidates
+
+annotation candidates -> HumanReviewGate -> confirmed cell labels
+```
+
+上图中 UMAP 与 Leiden 是 neighbor graph 的两个消费者；UMAP 不是 Leiden、Marker 或 Annotation 的科学前置条件。界面可以先显示 UMAP 再显示 Leiden label，但 Method Graph 不得写 `UMAP PRECEDES Leiden` 的硬依赖。
+
+`sc.pp.scale` 不是所有现代 Scanpy pipeline 的必需步骤。官方当前 preprocessing tutorial 可直接在 HVG-aware log-normalized expression 上执行 PCA；legacy/特定分析流程则会在 PCA 前进行零中心、单位方差缩放。因此 Scale 必须作为 HVG 后、PCA 前的 optional StepContract：它只产生供 PCA 使用的 `scaled_hvg_expression`，不得覆盖保存的 counts 或全基因 log-normalized expression。`zero_center=True` 可能增加稀疏矩阵内存占用，必须进入 resource estimate；`max_value`、layer、gene mask 和参数来源必须写入 provenance。官方 API 语义以 [scanpy.pp.scale](https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.scale.html) 为 source-bound 基线。
+
+HVG 的输入由 flavor 决定：dispersion-based `seurat/cell_ranger` 路线读取 log-normalized expression；`seurat_v3/seurat_v3_paper` 路线读取 count layer。任何 flavor/input-state 不匹配都必须 blocking，不能让 Scanpy warning 代替 contract gate。官方语义以 [scanpy.pp.highly_variable_genes](https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html) 为基线。
+
+每个状态必须映射到明确的 AnnData slot，例如 `layers["counts"]`、受控 normalization/log layer、`var["highly_variable"]`、受控 scaled layer、`obsm["X_pca"]`、`obsm["X_harmony"]`/`obsm["X_scanorama"]`、`obsp["connectivities"]`、`obsm["X_umap"]`、`obs["leiden"]` 和 `uns["rank_genes_groups"]`。原始登记 artifact 默认只读；每一步产生新的受控 artifact 或显式派生副本，不允许静默覆盖唯一 raw-count source。
+
+失效传播按 lineage 和 index hash 计算：改变 cell/gene filter、doublet exclusion、normalization、HVG、scale、PCA 或 integration 参数时，只将其 descendants 标记 stale；兄弟 representation 不得被无差别删除。缺少 raw counts 可以阻断 count-only QC、Doublet Detection 和 count-based HVG，但不能自动阻断已经具备合法 log/PCA/neighbor state 的下游只读路径。
+
+#### 10.14.5 本地事实源与派生投影
+
+运行时存储顺序固定为：
+
+```text
+canonical nodes.jsonl / edges.jsonl / manifest.json
+-> typed Python in-memory graph service
+-> ActionBundle / WorkflowPlan compiler
+
+EvidenceChunk JSONL
+-> SQLite FTS5 BM25
+-> optional normalized NumPy dense index
+-> EvidenceContextPack
+
+canonical snapshot
+-> optional Neo4j projection for Graph Explorer/debug only
+```
+
+typed graph 默认沿用可审计 adjacency index；NetworkX 只可作为进程内算法视图，不是事实存储，也不能成为公共接口依赖。业务模块通过稳定的 `MethodGraphQueryService` 查询，不直接绑定 NetworkX 或 Cypher。
+
+Neo4j projection 必须满足：
+
+- 单向从 canonical snapshot 构建，禁止回写 canonical JSONL；
+- projection manifest 保存 canonical snapshot ID、source digest、node/edge count、schema version 和 import status；
+- 可删除、可重建，连接失败只影响高级可视化，不影响 Research Chat、RAG、planning、execution 或 Evaluation；
+- 不进入核心启动条件、默认 release dependency 或执行审批 fingerprint；
+- legacy Neo4j Algorithm embedding 只能保留为冻结的 candidate-recall 实验，不得进入 Method Graph、ActionBundle 或正式推荐。
+
+SQLite FTS5 和 NumPy dense index 都是可重建派生索引，不是图事实源。RAG 负责找到 supporting source span；Method Graph 负责验证数据状态转换；ToolContract/StepContract 负责参数与执行边界，三者不得相互越权。
+
+#### 10.14.6 Extensibility / Capability Pack Contract
+
+Agent Core 只理解稳定协议，不理解具体科研软件名称：
+
+```text
+CapabilityPackRegistry
+-> Capability / Method discovery
+-> typed Representation transition
+-> ToolContract + StepContract binding
+-> ExecutionAdapter protocol
+-> generic validation primitives + scientific validator
+-> Notebook Renderer binding
+-> Evidence binding + Gold Case binding
+```
+
+Scanpy Core 必须以第一个 `CapabilityPack` 接入。禁止在 Planner、ResearchChatService、ExecutionOrchestrator、ApprovalService 或 Router 中新增 `if tool == "Scanpy"`、`if task == "Seurat"` 一类分支。上述核心模块只能读取 pack 解析后的 method、representation transition、gate result 和稳定 ID。
+
+Capability Pack 最小 schema 固定为：
+
+```text
+CapabilityPackManifest
+  schema_version / pack_id / pack_version / status
+  task_families / capabilities
+  representation_contracts[]
+    representation_kind / schema_version / axes / value_state
+    required_provenance / require_cell_hash / require_gene_hash
+  methods[]
+    method_id / capability_id / implementation_kind
+    consumes[] / produces[] / requires[] / invalid_predecessors[]
+    tool_contract_ref / step_contract_ref / environment_id
+    execution_adapter / notebook_renderer
+    validation_pipeline
+      generic_primitives[] / scientific_validator_id
+    evidence_ids[] / gold_case_ids[]
+  evidence_bindings[]
+    evidence_id / source_id / source_ref / source_span
+    claim_type / authority / review_status
+  gold_case_bindings[]
+    case_id / dataset_ref / split / applicable_metrics
+  dependencies[] / limitations[] / content_digest
+```
+
+`ExecutionAdapter` 统一暴露版本化的 structured request/result protocol、固定 entrypoint、runtime kind 和 environment binding。Python module、Rscript 与未来 container worker 只是 adapter implementation；控制平面不得拼 shell，也不得因语言不同复制 Orchestrator。Pack 只能引用 allowlisted adapter，adapter 不拥有审批权。
+
+兼容性判断固定为：
+
+```text
+consumer RepresentationRequirement
+vs producer RepresentationContract
+-> kind/schema/value_state
+-> provenance requirements
+-> cell_index_hash/gene_index_hash compatibility
+-> required metadata and validation status
+```
+
+工具名、函数名、语言或 UI 标签不得作为 compatibility key。`Method Graph` 只表达 Capability、Method 与 Representation 的科学语义；具体 Tool 通过 `IMPLEMENTS Method`，ToolContract/StepContract 通过 `BOUND_BY` 挂载，Environment/Adapter/Validator 通过稳定引用连接。
+
+Notebook compilation 的目标接口为：
+
+```text
+GenericNotebookCompiler.compile(step_sequence, renderer_registry, context)
+```
+
+Renderer 只负责把 pack 注册的 StepContract 转成维护者审核的 markdown/code/figure cell；不得再增加 `compile_scanpy()`、`compile_celltypist()` 或 `compile_seurat()`。现有 `compile_scrublet()` 在 S3 前保持兼容入口，但其模板必须迁移为 registry-driven renderer 后才能作为扩展性验收依据。
+
+Validator pipeline 固定为两层：
+
+```text
+generic primitives
+  exit/status / required artifact / hash / schema / finite
+  cell order / gene order / shape / runtime / memory / provenance
+
+capability-specific scientific validator
+  QC range / representation variance / graph integrity
+  biology conservation / marker semantics / annotation conflict 等
+```
+
+两层继续输出同一个 `ValidationResult` schema。scientific validator 不得复制 process、hash、artifact ownership 或 resource 检查。
+
+未来加入 CellTypist、SingleR 或 Seurat，理论上只允许新增：
+
+```text
+capability_packs/<pack>/<version>/manifest.json
+capability_packs/<pack>/<version>/steps/*.json
+capability_packs/<pack>/<version>/gold_cases.json
+contracts/tools/<tool>/<version>.json
+execution/environments/<environment>.json 或 Runtime Pack manifest/lock
+execution/adapters/<adapter>.py 或既有 adapter 配置
+execution/renderers/<renderer>.py
+execution/validators/<capability_scientific_validator>.py
+execution/wrappers/<fixed_wrapper>.*
+source/evidence bindings and focused tests
+```
+
+核心文件原则上不得修改：
+
+```text
+engine/execution_planner.py
+execution/execution_orchestrator.py
+agent/research_chat_service.py
+core/deterministic_router.py
+execution/local_controlled_executor.py
+```
+
+只有稳定公共协议本身升级时，才允许对 pack registry、generic compiler、adapter registry、validator primitive registry 或 evaluation adapter 做向后兼容修改；不得为单一工具添加名称分支。
+
+扩展性架构验收新增零容忍 case：注册一个不含真实科研工具代码的 mock capability pack，在不修改 Planner、ResearchChatService 或 ExecutionOrchestrator 主逻辑的前提下，必须可被 discovery、transition planning、notebook binding、validation pipeline 和 evaluation gold discovery 使用。该 case 只证明协议扩展性，不证明真实工具科学资格或执行成功。
 
 ---
 
@@ -4510,6 +4849,239 @@ Notebook 必须在正文解释 DataProfile 的 raw-count gate、代表性 Previe
 
 运行诊断 cell 必须同时内联展示结果表、doublet score 分布、阈值和预测类别数量，并保存同一诊断图 artifact。Scrublet 数值 warning 不得作为无法理解的红色输出墙；已捕获 warning 需写入结构化 artifact 并在 cell 中给出数量。clean-kernel smoke 必须验证执行后的 `.ipynb` 真正包含 `image/png`，不能只检查磁盘上的 PNG 文件。
 
+### 27.15 Scanpy Core Workflow 与 Method Graph v0（2026-08-23，设计冻结）
+
+#### 27.15.1 状态与复用边界
+
+本工作线当前状态为：
+
+```text
+design_status=design_frozen
+implementation_status=implemented
+engineering_smoke_status=passed
+qualification_status=synthetic_engineering_passed
+scientific_validation_status=not_evaluated
+user_executable=false
+enabled_for_execution=false
+```
+
+上述状态必须按四层解释：`implemented` 只表示代码路径存在；`engineering_smoke_passed` 只证明固定 synthetic fixture 上的工程兼容性；`scientifically_validated` 当前为 false；`user_executable` 当前为 false。它不改变当前正式范围：Doublet Detection 与 Batch Integration 仍是仅有的 user-execution-qualified task family，CellTypist/SingleR 仍为 `implemented_unqualified / planning_only`，全局 `ExecutionPolicy=disabled`。
+
+必须直接复用：
+
+```text
+ResearchChatService ASK/PLAN/RUN
+ResearchWorkspaceService + DataRegistry + data grant
+AnnDataProfiler / AnnotationDataProfiler
+WorkflowPlan / WorkflowNode / ParameterProvenance
+StepContract / NotebookShadowCompiler / local Jupyter launcher
+ToolContractRegistry / EnvironmentRegistry / Runtime Pack resolver
+LocalControlledExecutor / WrapperRegistry
+ValidationResult / bounded RepairPolicy
+CandidateAggregator / ParetoDecision
+structured trace / EvaluationPipeline / ReproducibilityPackager
+```
+
+不得新建第二套 planner、executor、validator result schema、repair loop、Notebook workspace、approval service、trace 或 evaluation framework。现有 `StepContract` 和 `NotebookShadowCompiler.compile_scrublet` 需要在保持 Scrublet 回归兼容的前提下泛化为 registry-driven steps/compiler。
+
+#### 27.15.2 工作流 DAG
+
+正式设计 DAG 修订为：
+
+```text
+AnnData Profile
+-> QC metrics
+-> explicit Filtering
+-> optional Doublet Detection [Scrublet | scDblFinder]
+-> optional user-confirmed doublet exclusion
+-> preserve counts
+-> Normalize Total
+-> Log1p
+-> HVG
+-> optional Scale
+-> PCA
+-> [none | Harmony | Scanorama]
+-> Neighbors
+   |-> UMAP
+   `-> Leiden -> Marker Gene -> marker/evidence annotation
+
+Log1p-compatible expression + versioned reference
+-> reference-based annotation
+
+[marker/evidence annotation | reference-based annotation]
+-> Human Confirmation
+-> validated analyzed AnnData + report + Level 2 package
+```
+
+Filtering threshold、doublet handling、normalization target、HVG flavor/数量、Scale 是否启用、PCA 维数、integration branch、neighbors representation、Leiden resolution、marker test 和 annotation reference 都必须显示 ParameterProvenance 并由用户确认。LLM 可解析用户偏好和解释结果，但不能生成未经合同验证的参数、自由创造 cell type 或跳过数据状态 gate。
+
+Doublet Detection 不是另一个孤立 workflow。在 Scanpy Core 中，它是 Filtering 后、Normalization 前的 optional composed Action：
+
+```text
+filtered_raw_counts + capture/sample grouping
+-> existing Scrublet/scDblFinder ActionBundle
+-> existing ToolContract/Executor/Validator
+-> obs doublet score/call + run/validation references
+-> annotate_only OR explicit exclusion policy
+```
+
+默认策略为 `annotate_only`。模型或工具不能自行删除 predicted doublet；用户确认排除后才产生新的 `filtered_raw_counts` state，并通过 cell index hash 使旧 downstream descendants stale。独立 capture/sample 应分组运行，不能把技术上独立的 captures 无条件池化。没有 raw counts 时该 optional branch 被标记 unavailable，但只要其他 representation 合法，不应把整个 Scanpy Core workflow 一并阻断。
+
+#### 27.15.3 Task、Contract 与 Validator 清单
+
+| Step | Consumes | Produces | Requires | Invalid predecessor / hard block | Validator hard checks |
+| --- | --- | --- | --- | --- | --- |
+| AnnData Profile | registered `.h5ad` | RepresentationLedger + DataProfile | readable owner-authorized AnnData | missing/corrupt/empty object、duplicate indices、unsupported object | read-only/hash、shape、slot inventory、matrix/metadata/index state |
+| QC metrics | `raw_counts` 或 `filtered_raw_counts` | `qc_metrics` + figures | nonnegative count-like matrix、mt/ribo gene-set provenance | scaled/log-only/integrated embedding 不能生成 count QC；只有 log state 时 count QC 为 unavailable | alignment、required fields、finite/range、per-batch summary、source unchanged |
+| Filtering | counts + QC metrics | cell/gene mask + `filtered_raw_counts` | explicit thresholds、per-batch scope、nonempty input | normalized/scaled/embedding 不能反推 raw filtering；ambiguous threshold 不自动猜测 | threshold provenance、retention、nonempty、mask/index/hash |
+| Optional Doublet Detection | `filtered_raw_counts` + capture/sample grouping | `doublet_scores_and_calls` | existing Scrublet/scDblFinder ActionBundle、resolved counts、tool-specific minimum cells | normalized/log/scaled/PCA/integrated input；pooled independent captures without grouping | 复用现有 doublet Validator：order、score/label、finite/range、hash、runtime/memory |
+| Optional Doublet Exclusion | filtered counts + validated calls | new `filtered_raw_counts` | explicit user policy and exact call artifact | unvalidated calls、automatic LLM/tool deletion、stale score/index | exclusion manifest、cell hash、remaining nonempty、descendant stale propagation |
+| Normalize Total | `filtered_raw_counts` | `library_size_normalized_expression` | counts preserved in immutable slot、target_sum provenance | already normalized/log/scaled matrix；unresolved counts | per-cell totals、finite/nonnegative、counts preserved、no duplicate normalization |
+| Log1p | library-size normalized expression | `log1p_normalized_expression` | normalization lineage or explicit compatible input provenance | already log-transformed、scaled、embedding | finite/nonnegative、`uns.log1p`/method provenance、no duplicate log |
+| HVG | log1p expression for `seurat/cell_ranger`; counts for `seurat_v3*` | `hvg_mask` + statistics | flavor/input compatibility、gene index、optional batch key | flavor mismatch、scaled/integrated input、missing count layer for `seurat_v3*` | mask length/type、HVG count、finite statistics、batch-aware metadata |
+| Optional Scale | log1p expression + HVG mask | `scaled_hvg_expression` | explicit gene mask、zero-center/max-value/resource decision | raw/normalized-nonlog/integrated/neighbor input；scaling all genes unintentionally | mean/variance tolerance、finite、HVG scope、memory estimate、log source retained |
+| PCA | log1p expression + HVG mask OR scaled HVG expression | `pca_embedding` + loadings/variance | selected expression lineage、component bound、fixed seed | raw counts without declared transform、integrated embedding、neighbor/UMAP；stale HVG/scale | shape/order/finite、n_components、variance、cell/gene hash、input representation ID |
+| Optional Batch Integration | validated PCA + batch labels | `integrated_embedding` | existing Harmony/Scanorama contract、at least two batches、finite PCs | raw/log/scaled matrix、missing/stale PCA、single batch、missing labels | existing IntegrationValidator：order、shape、finite、mixing/biology warnings、hash |
+| Neighbors | selected `pca_embedding` OR validated `integrated_embedding` | `neighbor_graph` | explicit `use_rep` lineage、n_neighbors/components in bounds | raw/log/scaled matrix、UMAP、cluster labels；ambiguous/stale representation | square sparse matrices、order、finite、symmetry/connectivity warnings、representation ID |
+| UMAP | validated neighbor graph | `umap_embedding` | graph lineage、fixed seed | expression/PCA without neighbor graph、stale graph | n_cells x 2、finite、seed、graph hash、artifact hash |
+| Leiden | validated neighbor graph | `cluster_labels` | graph lineage、resolution/method provenance | UMAP as sole predecessor、expression/PCA without graph、stale graph | no missing labels、category schema、cluster-size/degeneracy warnings、resolution |
+| Marker Gene | full-gene `log1p_normalized_expression` + cluster labels | `marker_result` + plots | exact cell index match、explicit log layer/use_raw、group/reference/test method | scaled matrix、HVG-only matrix as sole source、PCA/integrated/neighbor/UMAP；raw counts for `rank_genes_groups` | group/gene coverage、finite effect/statistics、multiple-test metadata、source layer/index hash |
+| Annotation A family | marker result + cluster labels + curated marker evidence；可选 full-gene log expression | ranked annotation candidates/conflict/unknown | versioned marker source、organism/tissue scope、HumanReviewGate | integrated/scaled representation 作为 marker evidence、无来源自由标签、stale markers | candidate-to-marker/source mapping、negative markers、conflict/unknown、cluster coverage |
+| Annotation B family | method-compatible expression + gene mapping + versioned reference | label/confidence/unknown candidates | method-specific contract、species/gene overlap/reference digest | integrated embedding 代替 expression、reference mismatch、unknown method contract | cell order、gene overlap、reference hash、label/score schema、unknown/reject behavior |
+| Human Confirmation | A/B candidates + evidence + limitations | `human_confirmed_cell_labels` + review manifest | explicit reviewer decision；允许 unresolved/unknown | auto-confirm、LLM-only label、missing evidence/reference scope | reviewer/time/source、accepted/rejected/edited mapping、unresolved count、cell/cluster alignment |
+| Package | all valid step artifacts and ledger | analyzed h5ad/report/manifest | existing packager、validated lineage | stale/failed required step、hash mismatch | step hash、lineage、environment/contract snapshot、figures、limitations、input not copied |
+
+Scanpy 首版应建立一个版本化 ToolContract 作为 package/runtime/API 边界，由多个 StepContract 绑定同一工具与环境。不得为每个 Scanpy 函数复制完整 ToolContract，也不得用一个无操作范围的巨大 contract 覆盖所有步骤。
+
+Marker Gene 的统计输入必须与 clustering representation 分离。`scanpy.tl.rank_genes_groups` 期望 logarithmized expression，可通过显式 `layer` 或经过校验的 `raw` 读取；它不能读取 scaled matrix，也不能从 PCA、Harmony/Scanorama embedding、neighbor graph 或 UMAP 反推表达。marker 默认读取与 cluster labels 相同 cell set 的未缩放、全基因 log1p expression；HVG mask 可以用于 PCA，但不能导致 marker 测试静默丢失非 HVG marker。该步骤是 cluster characterization，不是跨样本条件比较的确认性差异表达；cell-level p-value 的 pseudoreplication limitation 必须显示，跨条件推断应进入未来独立 pseudobulk contract。官方 API 边界以 [scanpy.tl.rank_genes_groups](https://scanpy.readthedocs.io/en/latest/api/generated/scanpy.tl.rank_genes_groups.html) 为准。
+
+Marker/evidence annotation 与 reference-based annotation 必须并列建模为 method family，而不是绑定某一个 Scanpy API：
+
+```text
+A. marker/evidence based
+   manual marker curation | marker-set scoring | enrichment-supported matching
+   cluster markers + curated evidence + optional full-gene log expression
+   -> ranked candidates / conflict / unknown
+   -> required human confirmation
+
+B. reference based
+   classifier | correlation/reference matching | governed label transfer
+   compatible expression + versioned reference
+   -> CellTypist / SingleR / future qualified ingest or label transfer
+   -> confidence / unknown / reference scope
+   -> required human confirmation
+```
+
+`scanpy.tl.ingest` 只能作为 reference-based family 下的 future planning method，不能代表整个 Annotation B，也不能在独立 source、contract、reference 和 qualification gate 之前进入执行空间。Annotation B 不科学依赖 Leiden 或 Marker；它可在 compatible expression 就绪后独立运行，并与 Annotation A 互补，最终由 HumanReviewGate 协调冲突。
+
+任何模型生成的 label suggestion 只能是 `candidate / unverified`，不能写入 final cell type、scientific evidence、Decision Graph qualified edge 或执行结果权威字段。
+
+Spatial transcriptomics、spatial neighborhood、image feature、tissue coordinate 与 Squidpy 属于下一阶段 deferred scope。它们需要新的 spatial Representation、InputArtifact、Method、Validation 和数据隐私边界，不得复用 scRNA neighbor graph 假装兼容，也不进入当前 S0-S6、gold case 或 qualification。
+
+#### 27.15.4 分阶段实施
+
+**S0：Schema 与 evidence gate**
+
+- 实现 `CapabilityPackManifest`、typed Representation contract、registry 和静态 gate；Scanpy Core 作为首个 draft pack 注册，禁止核心工具名分支；
+- 冻结 Method Graph v0 typed schema、RepresentationLedger、representation vocabulary 和 step IDs；
+- 为 Scanpy Core 各步骤补官方 API/source span、输入状态、参数、输出、failure 和 validation evidence；
+- 明确 Normalize Total、Log1p、optional Scale 是三个独立 transition，并审计 HVG flavor 与 input state；
+- 将既有 Doublet Detection Action 作为可组合 optional branch 引用，不复制 contract；
+- 建立 source coverage matrix，不足的步骤保持 blocked；
+- 定义 Scanpy ToolContract draft 和 StepContract registry，不实现 wrapper。
+
+**S1：Canonical Method Graph projection**
+
+- 从 canonical snapshot、reviewed source、existing contract 生成 Scanpy Core Method Graph JSONL；
+- 增加 typed in-memory query：查前置 state set、合法 transition、invalid predecessor、替代/互补方法、限制和 supporting spans；
+- Decision Graph 只投影 planning-eligible method path；
+- Neo4j importer 改为 optional one-way projector，legacy direct-query 模块退出产品主链。
+
+**S2：Data state profiler 与 plan compiler**
+
+- 扩展 profiler 生成并存 RepresentationLedger，识别 QC、counts/filter、normalized、log-normalized、HVG、scaled、PCA、integrated、neighbors、UMAP、Leiden、marker 和 annotation state；
+- blocker 改为 per-step eligibility，不再把“没有 raw counts”无差别阻断所有只读下游检查；
+- 编译可跳过已完成且验证通过步骤的 data-aware WorkflowPlan；
+- 编译器按 parent representation ID、cell/gene index hash 和 parameter hash 传播 stale，禁止仅按 AnnData key 存在就跳步；
+- optional integration 只有存在有效 batch key 且至少两个 batch 时才可进入计划。
+
+**S3：Notebook 与受控 Scanpy steps**
+
+- 将 Notebook compiler 泛化为 registry-driven tutorial notebook，逐步骤显示输入状态、参数来源、代码、图、验证和 checkpoint；
+- 实现固定 Scanpy wrapper/adapter，所有受控运行经过现有 LocalControlledExecutor；
+- 每一步产生新的 step artifact、ValidationResult 和 trace，不执行可编辑 Notebook 代码；
+- 用固定 synthetic fixture 完成 QC 到 Marker 的 clean-kernel 与 controlled-run smoke，并覆盖 Scale enabled/disabled 两条 PCA route。
+
+**S4：Optional Action composition 与恢复**
+
+- 将 Scrublet/scDblFinder 组合到 Filtering 后、Normalization 前，默认 annotate-only，排除细胞必须另行确认；
+- 将已资格化 Harmony/Scanorama 作为 PCA 后可选分支组合进同一计划；
+- integration 输出必须恢复原 cell order 并成为 neighbors 的显式 selected representation；
+- 只复用已有白名单 repair，新增 repair 必须是确定性、合同内、可追踪且预算受限；
+- 任何一步失败不得覆盖上一个有效 checkpoint。
+
+**S5：双分支 Annotation**
+
+- 先实现 marker/evidence candidate + human confirmation；
+- CellTypist/SingleR 仅在现有环境、reference、wrapper、validator 和 scientific gate 全部通过后才能从 planning-only 晋升；
+- ingest/label transfer 首版只进入 Method Graph planning layer，不得冒充已实现执行能力；
+- unknown/conflict 是合法输出，不强迫每个 cluster 获得标签。
+
+**S6：端到端验收与产品接入**
+
+- Research Chat 识别完整分析目标后生成同一 WorkflowPlan，并将上下文参数传入 Stepwise Analysis；
+- Research Workspace 展示同一 DAG、checkpoint、图、Validation、人工确认和 package，不增加第二个顶层产品；
+- 统一 Evaluation Pipeline 增加 workflow-level representation gold、component、trajectory、answer、execution 和 safety cases；
+- 通过验收后才讨论 Scanpy Core 的 qualification 和新的正式 Action，不因 Notebook 可运行而自动晋升。
+
+#### 27.15.5 分阶段验收
+
+| Stage | 必须通过的验收 |
+| --- | --- |
+| S0 | Capability Pack schema/registry/static gate 可用；mock pack 无核心逻辑改动即可被 discovery/planning/notebook/validation/evaluation binding 发现；每个 Scanpy step 都有 consumes/produces/requires/invalid predecessor、参数来源、failure、validator 和 source span；HVG/Scale/Marker 输入语义明确；unsupported edge=0 |
+| S1 | canonical/Method/Decision projection drift=0；dangling edge=0；accidental orphan=0；UMAP 不成为 Leiden 前置；Neo4j unavailable 时 graph query/RAG/planning 可用 |
+| S2 | raw/normalized/log/scaled/PCA/integrated/partial fixture 均得到正确 state set 与 per-step eligibility；重复 transform、stale lineage、错误 representation 正确阻断 |
+| S3 | synthetic QC->Marker 全链受控执行；Scale on/off 均可；marker 固定读取 full-gene log state；artifact completeness=1.0；source 未修改 |
+| S4 | Doublet annotate/exclude 与 none/Harmony/Scanorama 分支正确组合；cell order/hash 完整；排除后 descendants stale；非法 repair=0 |
+| S5 | marker candidate citation coverage=1.0；unconfirmed final label=0；species/reference/gene-overlap mismatch blocker recall=1.0；unknown 可保留 |
+| S6 | workflow gold applicable-metric coverage=1.0；ASK 不误触发执行；PLAN DAG/代码/图完整；RUN 未审批 ExecutionRequest=0；trace/package integrity=1.0；现有黄金任务无硬回归 |
+
+#### 27.15.6 Workflow-level gold cases
+
+Scanpy Core 不能只用一个从 raw counts 开始的 happy path 验收。Evaluation Dataset Registry 必须加入以下冻结 gold；每条保存 initial RepresentationLedger、用户目标、expected run/skip/block/clarify、expected transition、stale descendants 和 forbidden operations：
+
+| Gold case | 初始状态 | 预期行为 | 必须禁止 |
+| --- | --- | --- | --- |
+| `SCW_RAW_X` | raw counts in `X`，无下游状态 | 从 QC 开始；可选 doublet；保存 counts 后 normalize/log/HVG/Scale optional/PCA | 在 counts 上直接 Marker 或 Neighbors |
+| `SCW_LOG_X_COUNTS_LAYER` | log1p `X` + raw `layers[counts]` | count-only QC/doublet/HVG-v3 读取 counts；验证 log provenance 后跳过 normalize/log | 重复 normalization/log、把 log matrix 当 counts |
+| `SCW_NORMALIZED_NOT_LOGGED` | library-size normalized expression + preserved counts | 跳过 Normalize Total，执行 Log1p；count branch仍可用 | 再次 normalize、直接把 normalized-nonlog 交给 marker |
+| `SCW_LOG_ONLY_NO_COUNTS` | validated full-gene log1p，无 counts | 允许 dispersion HVG、optional Scale、PCA、neighbors；count QC/doublet/count-HVG unavailable | 因无 counts 阻断全部流程；伪造 doublet result |
+| `SCW_HVG_PCA_VALID` | log1p + HVG mask + validated PCA lineage | 跳过已验证前驱，从 optional integration/Neighbors 继续 | 仅因 `X_pca` key 存在就忽略 lineage/hash |
+| `SCW_PCA_ONLY` | validated PCA，无表达矩阵 | 允许 integration/Neighbors/UMAP/Leiden；Marker 与 Annotation A blocked | 从 PCA/integrated embedding生成 marker gene |
+| `SCW_SCALED_ONLY` | validated scaled HVG + lineage，无 log/count | 允许 PCA；Marker/Doublet/count QC blocked | 把 scaled matrix当 log expression或 raw counts |
+| `SCW_INTEGRATED_READY` | validated integrated embedding + batch/cell lineage | 从 Neighbors 继续；Marker 仅在独立 full-gene log state存在时允许 | 对 integrated embedding做 rank_genes_groups/reference expression annotation |
+| `SCW_GRAPH_CLUSTER_READY` | neighbor graph + cluster labels + matching log expression | UMAP optional；Marker 可运行；Annotation A 可规划 | 要求 UMAP 才允许 Leiden/Marker；忽略 cell-index mismatch |
+| `SCW_SINGLE_BATCH_INTEGRATION_REQUEST` | valid PCA + one batch | integration branch blocked/clarified；可显式选择 unintegrated PCA route | 伪造多 batch 或静默运行 Harmony/Scanorama |
+| `SCW_AMBIGUOUS_NORMALIZATION` | float expression，无 counts、无 log/normalization provenance | clarification 或阻断 destructive transitions | 按数值范围猜测并静默重复 log/normalize |
+| `SCW_STALE_INDEX` | 下游 keys 存在但 cell/gene hash 与 parent 不一致 | 标记 earliest stale step 并重建 descendants | 把 stale UMAP/cluster/marker 视为可复用 |
+| `SCW_INVALID_MATRIX` | empty/corrupt/NaN/Inf/duplicate index | profile/block，ExecutionRequest=0 | fallback 到 generic executable plan |
+| `SCW_DOUBLET_EXCLUSION_CHANGE` | validated doublet calls + existing downstream artifacts | 用户确认 exclusion 后生成新 cell hash，PCA 及其 descendants stale | 复用排除前的 PCA/graph/labels |
+
+Gold evaluator 必须分别检查：state detection、transition legality、skip correctness、blocker correctness、forbidden operation、artifact lineage 和 ExecutionRequest count。`not_applicable` 不进入分母；已有 key 但缺 lineage 的 case 不能按通过计算。Spatial/Squidpy 不进入该数据集。
+
+全程零容忍 gate：
+
+```text
+unauthorized execution = 0
+path escape = 0
+approval replay = 0
+candidate/evidence leakage = 0
+LLM-authored final cell label without evidence/review = 0
+Neo4j writeback to canonical truth = 0
+```
+
+本工作线不是新的正式 Phase 编号。它是当前 Phase 6 之后、Phase 7 之前的能力扩展候选；只有 S0-S6 的相应 gate 实际通过后，PROJECT_STATUS 才能逐项更新，规约本身不得提前宣称完成。
+
 ---
 
 ## 28. 版本维护规则
@@ -4523,6 +5095,7 @@ Notebook 必须在正文解释 DataProfile 的 raw-count gate、代表性 Previe
 2.3：Scrublet execution closure
 2.4：repair + multi-tool decision
 2.5：batch integration
+2.10：Scanpy Core Workflow 与 Method Graph v0 设计基线
 ```
 
 每次设计更新必须在本节记录；动态测试值只写入状态文档：
@@ -4578,6 +5151,17 @@ Notebook 必须在正文解释 DataProfile 的 raw-count gate、代表性 Previe
 | 2026-08-14 | 2.9.9-dev | 将交互式 Notebook 提升为 Preview 默认路径；一键在本地 Cursor 打开并绑定已有 Runtime Pack kernel，受控验证折叠为可选审计模式 | `docs/demo/STEPWISE_ANALYSIS_GUIDE.md` |
 | 2026-08-14 | 2.9.10-dev | 将本地浏览器 JupyterLab 升为交互主入口；复用 READY Runtime Pack kernel、localhost token、core mode 与完整 Notebook bundle，不安装依赖、不自动执行 | `docs/demo/STEPWISE_ANALYSIS_GUIDE.md` |
 | 2026-08-14 | 2.9.11-dev | 补齐聊天上下文到 synthetic/真实数据 Stepwise handoff、DataProfile 与参数 provenance 说明，以及 Notebook 内联表格和双诊断图；clean-kernel smoke 验证真实 image output | `docs/status/ISSUE_RETROSPECTIVE_LOG.md` |
+| 2026-08-23 | 2.10.0-dev | 冻结 Scanpy Core Workflow、Method Graph v0 与 Neo4j optional projection 设计；明确逐步 DataProfile/StepContract/Validator、双分支 Annotation、复用既有执行闭环及 S0-S6 gate，所有新能力仍为未实现状态 | `docs/DEV_SPEC_2.0.md` |
+| 2026-08-23 | 2.10.1-dev | 完成 Scanpy Core 科学与架构一致性复核：新增并存 RepresentationLedger、optional Scale、Doublet composed Action、UMAP/Leiden 分支、Marker 表达来源硬约束、Annotation method-family abstraction 与 workflow-level gold cases；Spatial/Squidpy 保持 deferred | `docs/DEV_SPEC_2.0.md` |
+| 2026-08-23 | 2.10.2-dev | 增加 Extensibility / Capability Pack Contract：核心控制面禁止具体工具分支，以 typed Representation、generic adapter/renderer/validator pipeline 和 pack registry 扩展；S0 增加 mock-pack 架构验收 | `docs/DEV_SPEC_2.0.md` |
+| 2026-08-23 | 2.10.2-dev S0 | Capability Pack typed schema、registry、readiness gate、Scanpy draft pack 与非 Python Rscript mock binding 已实现；修复 registered contract 自动污染正式 Action Space 的旧投影问题；511 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-23 | 2.10.2-dev S1 | Canonical Method Graph v0 本地 JSONL 投影、typed query、质量审计与 optional Neo4j adapter 已实现；Representation 推导流程边，Graph/Ledger/Trace 边界通过测试；516 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-23 | 2.10.2-dev S2 | RepresentationLedger、AnnData 多状态画像、registry-driven generic planner、事务式候选回溯与 14 类 workflow gold 已实现；validated integrated representation 可进入 neighbors，Marker 表达来源硬约束通过；533 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-24 | 2.10.2-dev S3 | generic Notebook renderer/compiler、统一 Python/Rscript adapter、通用 primitive + scientific validator pipeline 与 fixed Scanpy wrapper 已实现；Scale on/off 均经 LocalControlledExecutor 真实运行并生成 checkpoints/ledger/四类诊断图；537 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-24 | 2.10.2-dev S4 | Doublet Detection 与 Batch Integration 通过通用 ActionBundle/Representation contract 组合进 Scanpy Core；显式 doublet 排除会更新 cell hash、使下游状态 stale 并使旧 approval 失效；四条组合路径及 543 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-24 | 2.10.2-dev S5 | Annotation A/B 已收敛为 marker/evidence 与 reference-based method families；CellTypist/SingleR 仅为 planning-only binding，最终标签必须绑定候选集 hash 并经过显式人工确认；550 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-24 | 2.10.2-dev S6 | Research Chat capability discovery、registry-driven ASK/PLAN/RUN application service、跨 Python/R renderer/adapter 验收、三类产品案例与 Capability Level 2 package 已完成；Scanpy synthetic controlled smoke 通过，普通 RUN 仍因全局 policy 保持 ExecutionRequest=0；556 项全量回归通过 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
+| 2026-08-24 | 2.10.2-dev Post-S6 | 完成版本化结构 synthetic h5ad、Scale on/off 全链路、三类中间状态 resume、Research Chat 到同一 Stepwise Workspace 的产品 handoff、真实浏览器桌面/小屏检查与 Level 2 package；最终 566 项全量回归通过，scientific validation 与普通用户执行仍未开放 | `docs/status/SCANPY_CORE_DEVELOPMENT_LOG.md` |
 
 ---
 

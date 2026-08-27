@@ -97,3 +97,34 @@ def test_unqualified_workflow_tool_is_blocked_without_execution(tmp_path):
 
     assert result.observations[0].status == "blocked"
     assert result.workflow_bundles == []
+
+
+def test_read_only_tool_registry_discovers_capability_pack_without_execution(tmp_path):
+    service = _service(tmp_path)
+    plan = ResearchToolPlan(
+        source="semantic_parser",
+        answer_strategy="grounded",
+        calls=[
+            ResearchToolCall(
+                call_id="capability-1",
+                tool_name="discover_capabilities",
+                query="Scanpy core workflow",
+                canonical_task="",
+            )
+        ],
+    )
+
+    result = service._research_tools.execute(
+        plan,
+        fallback_query="Scanpy core workflow",
+        fallback_task="",
+        enable_dense=False,
+        use_kg=True,
+        use_governance_rerank=True,
+        use_contract_gate=True,
+    )
+
+    assert result.observations[0].status == "completed"
+    assert result.capability_context
+    assert {item["pack_id"] for item in result.capability_context} == {"scanpy_core"}
+    assert all(item["execution_eligible"] is False for item in result.capability_context)

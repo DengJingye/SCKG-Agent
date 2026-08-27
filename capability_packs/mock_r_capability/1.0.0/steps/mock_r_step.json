@@ -1,0 +1,73 @@
+{
+  "schema_version": "sckg-step-contract-v2",
+  "step_id": "mock_r.identity",
+  "step_version": "1.0.0",
+  "task_family": "architecture_test",
+  "capability_id": "mock_r.transform",
+  "method_id": "mock_r.identity",
+  "operation": "identity",
+  "tool_contract_id": "mock-r:1.0",
+  "tool_contract_version": "1.0",
+  "requires_object_type": "Table",
+  "requires_matrix_state": "mock_r_input",
+  "consumes": [
+    {
+      "representation_id": "mock_r_input",
+      "accepted_schema_versions": [
+        "1.0"
+      ],
+      "accepted_value_states": [
+        "table"
+      ],
+      "required_provenance": [
+        "mock_input_reviewed"
+      ],
+      "require_cell_hash": false,
+      "require_gene_hash": false,
+      "required_metadata": [],
+      "scientific_requirements": []
+    }
+  ],
+  "produces": [
+    {
+      "representation_id": "mock_r_table",
+      "output_slot": "result/table",
+      "preserves_cell_hash": true,
+      "preserves_gene_hash": true,
+      "irreversible": false
+    }
+  ],
+  "requires": [
+    {
+      "requirement_id": "mock_input",
+      "description": "reviewed mock input",
+      "blocking": true
+    }
+  ],
+  "invalid_predecessors": [],
+  "environment_id": "mock-r-env",
+  "execution_adapter_id": "mock_rscript_adapter",
+  "notebook_renderer_id": "mock_r_renderer",
+  "scientific_validator_id": "mock_r_scientific",
+  "gold_case_ids": [
+    "mock-r-gold"
+  ],
+  "parameters": {},
+  "input_artifacts": [
+    "mock_r_input"
+  ],
+  "output_artifacts": [
+    "mock_r_table"
+  ],
+  "validators": [
+    "required_artifact",
+    "hash",
+    "schema",
+    "mock_r_scientific"
+  ],
+  "source_refs": [
+    "internal:test-fixture#mock-r-identity"
+  ],
+  "invalidates_downstream": [],
+  "template_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+}

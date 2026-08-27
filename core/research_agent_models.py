@@ -65,6 +65,7 @@ class ResearchToolCall(StrictModel):
         "search_evidence",
         "get_tool_contract",
         "compile_workflow",
+        "discover_capabilities",
     ]
     query: str = ""
     canonical_task: str = ""
@@ -155,8 +156,12 @@ class ResearchWorkspaceHandoff(StrictModel):
     task_family: str = ""
     tool_name: Optional[str] = None
     plan_id: Optional[str] = None
-    notebook_strategy: Literal["none", "fixed_shadow"] = "none"
+    notebook_strategy: Literal["none", "fixed_shadow", "capability_renderer"] = "none"
     stepwise_preview_available: bool = False
+    pack_id: Optional[str] = None
+    pack_version: Optional[str] = None
+    target_representations: list[str] = Field(default_factory=list)
+    preferred_method_ids: list[str] = Field(default_factory=list)
     blockers: list[str] = Field(default_factory=list)
 
 

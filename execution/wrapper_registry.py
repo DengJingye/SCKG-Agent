@@ -81,6 +81,7 @@ class WrapperRegistry:
                 _scdblfinder_definition(resolver),
                 _harmony_definition(resolver),
                 _scanorama_definition(resolver),
+                _scanpy_core_definition(resolver),
                 _celltypist_definition(resolver),
                 _singler_definition(resolver),
             ]
@@ -160,6 +161,18 @@ def _scanorama_definition(resolver: RuntimePackResolver) -> WrapperDefinition:
         tool_name="Scanorama",
         tool_version="1.7.4",
         module="execution.wrappers.scanorama",
+        resolver=resolver,
+    )
+
+
+def _scanpy_core_definition(resolver: RuntimePackResolver) -> WrapperDefinition:
+    return WrapperDefinition(
+        wrapper_id="scanpy_core_v1_11_2",
+        environment_id="scRNAseq",
+        tool_name="Scanpy",
+        tool_version="1.11.2",
+        module="execution.wrappers.scanpy_core",
+        runtime_pack_id="doublet-python",
         resolver=resolver,
     )
 

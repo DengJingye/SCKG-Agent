@@ -126,6 +126,8 @@ Allowed tools are:
 - get_tool_contract: inspect governed inputs, parameters, outputs, and readiness;
 - compile_workflow: request an existing smoke-tested workflow for an explicitly
   requested PLAN/RUN task. It never executes the workflow.
+- discover_capabilities: inspect registered Capability Packs and readiness without
+  installing or executing tools.
 GENERAL and UNCERTAIN requests must return an empty tool_calls list. Prefer one
 retrieval call plus get_tool_contract when sufficient; do not issue duplicate calls.
 A request that explicitly names a canonical single-cell task or a known single-cell
@@ -550,6 +552,7 @@ def _validated_tool_calls(
         "search_evidence",
         "get_tool_contract",
         "compile_workflow",
+        "discover_capabilities",
     }
     calls: list[ResearchToolCall] = []
     seen: set[tuple[str, str, tuple[str, ...]]] = set()
