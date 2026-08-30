@@ -5,6 +5,7 @@ import io
 import uuid
 import zipfile
 from pathlib import Path
+from typing import Literal
 
 from core.research_workspace_models import (
     DataAssetProfile,
@@ -44,7 +45,9 @@ class ResearchWorkspaceService:
     def profile(
         self, *, user_id: str, artifact_id: str, data_grant_id: str
     ) -> DataAssetProfile:
-        self._require_data_access(user_id, artifact_id, data_grant_id)
+        self._require_data_access(
+            user_id, artifact_id, data_grant_id, operation="profile"
+        )
         record = self.data_registry.get(artifact_id, user_id=user_id)
         path = self.data_registry.resolve_path(artifact_id, user_id=user_id)
         profile = self.adapter.profile(
@@ -71,7 +74,9 @@ class ResearchWorkspaceService:
         random_seed: int = 20260812,
         stratify_key: str | None = None,
     ) -> RepresentativePreviewManifest:
-        self._require_data_access(user_id, artifact_id, data_grant_id)
+        self._require_data_access(
+            user_id, artifact_id, data_grant_id, operation="plan"
+        )
         self._check_profile_owner(user_id, artifact_id, profile)
         source_path = self.data_registry.resolve_path(artifact_id, user_id=user_id)
         preview_dir = (
@@ -100,7 +105,9 @@ class ResearchWorkspaceService:
         parameters: dict | None = None,
         task_context: dict[str, str | None] | None = None,
     ) -> NotebookShadowBundle:
-        self._require_data_access(user_id, artifact_id, data_grant_id)
+        self._require_data_access(
+            user_id, artifact_id, data_grant_id, operation="plan"
+        )
         self._check_profile_owner(user_id, artifact_id, profile)
         if preview.owner_user_id != user_id or preview.artifact_id != artifact_id:
             raise PermissionError("cross-user preview access is forbidden")
@@ -236,10 +243,18 @@ class ResearchWorkspaceService:
             raise PermissionError("cross-user profile access is forbidden")
 
     def _require_data_access(
-        self, user_id: str, artifact_id: str, data_grant_id: str
+        self,
+        user_id: str,
+        artifact_id: str,
+        data_grant_id: str,
+        *,
+        operation: Literal["profile", "plan"],
     ) -> None:
         validation = self.approval_service.validate_data_access(
-            data_grant_id, user_id=user_id, artifact_id=artifact_id
+            data_grant_id,
+            user_id=user_id,
+            artifact_id=artifact_id,
+            operation=operation,
         )
         if not validation.allowed:
             raise PermissionError(";".join(validation.reasons))

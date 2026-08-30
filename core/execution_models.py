@@ -606,6 +606,40 @@ class ActorContext(StrictModel):
     role: Literal["maintainer", "user"]
 
 
+class AuthorizationPrincipal(StrictModel):
+    principal_type: Literal["local_user"] = "local_user"
+    principal_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+
+
+class AuthorizationResource(StrictModel):
+    resource_type: Literal["artifact"] = "artifact"
+    resource_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+    owner_principal_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
+
+
+class ScopedAuthorizationBinding(StrictModel):
+    schema_version: Literal["sckg-scoped-authorization-v0"] = (
+        "sckg-scoped-authorization-v0"
+    )
+    principal: AuthorizationPrincipal
+    operation: Literal["data.profile", "data.plan", "execution.run"]
+    resource: AuthorizationResource
+    scope_fingerprint: str = Field(min_length=64, max_length=64)
+
+    @model_validator(mode="after")
+    def validate_owner_binding(self) -> "ScopedAuthorizationBinding":
+        if self.principal.principal_id != self.resource.owner_principal_id:
+            raise ValueError("authorization resource owner must match principal")
+        return self
+
+
+class AuthorizationBindingDecision(StrictModel):
+    allowed: bool
+    mismatch_dimension: Literal[
+        "principal", "operation", "resource", "scope"
+    ] | None = None
+
+
 class ApprovalScope(StrictModel):
     user_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
     artifact_id: str = Field(pattern=r"^[A-Za-z0-9_.-]+$")
@@ -628,6 +662,18 @@ class ApprovalScope(StrictModel):
                 separators=(",", ":"),
             ).encode("utf-8")
         ).hexdigest()
+
+    @property
+    def authorization_binding(self) -> ScopedAuthorizationBinding:
+        return ScopedAuthorizationBinding(
+            principal=AuthorizationPrincipal(principal_id=self.user_id),
+            operation="execution.run",
+            resource=AuthorizationResource(
+                resource_id=self.artifact_id,
+                owner_principal_id=self.user_id,
+            ),
+            scope_fingerprint=self.fingerprint,
+        )
 
 
 class QualificationContext(StrictModel):

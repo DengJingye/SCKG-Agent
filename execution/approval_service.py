@@ -11,12 +11,22 @@ from typing import Literal
 
 from pydantic import Field, model_validator
 
-from core.execution_models import ApprovalScope, StrictModel
+from core.execution_models import (
+    ApprovalScope,
+    AuthorizationBindingDecision,
+    AuthorizationPrincipal,
+    AuthorizationResource,
+    ScopedAuthorizationBinding,
+    StrictModel,
+)
 
 __all__ = [
     "ApprovalScope",
     "ApprovalService",
+    "AuthorizationBindingDecision",
     "AuthorizationValidation",
+    "ScopedAuthorizationBinding",
+    "compare_scoped_authorization_bindings",
     "DataAccessGrant",
     "ExecutionApproval",
     "parameter_hash",
@@ -33,6 +43,7 @@ ValidationCode = Literal[
     "scope_mismatch",
     "owner_mismatch",
     "consumed",
+    "operation_mismatch",
 ]
 
 
@@ -52,6 +63,16 @@ class DataAccessGrant(StrictModel):
         if self.expires_at <= self.granted_at:
             raise ValueError("grant expiration must follow grant time")
         return self
+
+    def authorization_binding(
+        self, *, operation: Literal["profile", "plan"]
+    ) -> ScopedAuthorizationBinding:
+        return _data_access_binding(
+            user_id=self.user_id,
+            artifact_id=self.artifact_id,
+            permissions=self.permissions,
+            operation=operation,
+        )
 
 
 class ExecutionApproval(StrictModel):
@@ -80,6 +101,10 @@ class ExecutionApproval(StrictModel):
             raise ValueError("approval use count must match consumed request ids")
         return self
 
+    @property
+    def authorization_binding(self) -> ScopedAuthorizationBinding:
+        return self.scope.authorization_binding
+
 
 class AuthorizationValidation(StrictModel):
     allowed: bool
@@ -106,6 +131,7 @@ class ApprovalService:
         *,
         user_id: str,
         artifact_id: str,
+        permissions: list[Literal["profile", "plan"]] | None = None,
         ttl: timedelta = timedelta(hours=1),
         now: datetime | None = None,
     ) -> DataAccessGrant:
@@ -114,6 +140,9 @@ class ApprovalService:
             grant_id=f"grant-{uuid.uuid4().hex}",
             user_id=user_id,
             artifact_id=artifact_id,
+            permissions=(
+                permissions if permissions is not None else ["profile", "plan"]
+            ),
             granted_at=current,
             expires_at=current + ttl,
         )
@@ -127,8 +156,15 @@ class ApprovalService:
         *,
         user_id: str,
         artifact_id: str,
+        operation: Literal["profile", "plan"] = "plan",
         now: datetime | None = None,
     ) -> AuthorizationValidation:
+        if operation not in {"profile", "plan"}:
+            return AuthorizationValidation(
+                allowed=False,
+                code="operation_mismatch",
+                reasons=["unsupported_data_access_operation"],
+            )
         if not grant_id:
             return AuthorizationValidation(
                 allowed=False, code="missing", reasons=["data_access_grant_missing"]
@@ -139,11 +175,27 @@ class ApprovalService:
             return AuthorizationValidation(
                 allowed=False, code="missing", reasons=["data_access_grant_not_found"]
             )
-        if grant.user_id != user_id or grant.artifact_id != artifact_id:
+        expected_binding = _data_access_binding(
+            user_id=user_id,
+            artifact_id=artifact_id,
+            permissions=grant.permissions,
+            operation=operation,
+        )
+        binding_decision = compare_scoped_authorization_bindings(
+            actual=grant.authorization_binding(operation=operation),
+            expected=expected_binding,
+        )
+        if not binding_decision.allowed:
             return AuthorizationValidation(
                 allowed=False,
                 code="owner_mismatch",
                 reasons=["data_access_scope_mismatch"],
+            )
+        if operation not in grant.permissions:
+            return AuthorizationValidation(
+                allowed=False,
+                code="operation_mismatch",
+                reasons=["data_access_operation_not_granted"],
             )
         return _validate_lifetime(grant.revoked_at, grant.expires_at, now)
 
@@ -160,6 +212,7 @@ class ApprovalService:
             data_grant_id,
             user_id=scope.user_id,
             artifact_id=scope.artifact_id,
+            operation="plan",
             now=now,
         )
         if not access.allowed:
@@ -209,7 +262,11 @@ class ApprovalService:
         lifetime = _validate_lifetime(approval.revoked_at, approval.expires_at, now)
         if not lifetime.allowed:
             return lifetime
-        if approval.scope != expected_scope or approval.request_fingerprint != expected_scope.fingerprint:
+        binding_decision = compare_scoped_authorization_bindings(
+            actual=approval.authorization_binding,
+            expected=expected_scope.authorization_binding,
+        )
+        if not binding_decision.allowed:
             return AuthorizationValidation(
                 allowed=False,
                 code="scope_mismatch",
@@ -333,6 +390,54 @@ class ApprovalService:
 
 def parameter_hash(parameters: dict) -> str:
     return _canonical_hash(parameters)
+
+
+def compare_scoped_authorization_bindings(
+    *,
+    actual: ScopedAuthorizationBinding,
+    expected: ScopedAuthorizationBinding,
+) -> AuthorizationBindingDecision:
+    if actual.principal != expected.principal:
+        return AuthorizationBindingDecision(
+            allowed=False, mismatch_dimension="principal"
+        )
+    if actual.operation != expected.operation:
+        return AuthorizationBindingDecision(
+            allowed=False, mismatch_dimension="operation"
+        )
+    if actual.resource != expected.resource:
+        return AuthorizationBindingDecision(
+            allowed=False, mismatch_dimension="resource"
+        )
+    if actual.scope_fingerprint != expected.scope_fingerprint:
+        return AuthorizationBindingDecision(
+            allowed=False, mismatch_dimension="scope"
+        )
+    return AuthorizationBindingDecision(allowed=True)
+
+
+def _data_access_binding(
+    *,
+    user_id: str,
+    artifact_id: str,
+    permissions: list[Literal["profile", "plan"]],
+    operation: Literal["profile", "plan"],
+) -> ScopedAuthorizationBinding:
+    return ScopedAuthorizationBinding(
+        principal=AuthorizationPrincipal(principal_id=user_id),
+        operation=f"data.{operation}",
+        resource=AuthorizationResource(
+            resource_id=artifact_id,
+            owner_principal_id=user_id,
+        ),
+        scope_fingerprint=_canonical_hash(
+            {
+                "user_id": user_id,
+                "artifact_id": artifact_id,
+                "permissions": sorted(permissions),
+            }
+        ),
+    )
 
 
 def _canonical_hash(value: object) -> str:
