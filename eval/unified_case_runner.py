@@ -72,6 +72,7 @@ class UnifiedConversationCaseRunner:
             latency_ms = (time.perf_counter() - started) * 1000.0
             context = dict(state.get("context_pack") or {})
             route = dict(context.get("semantic_route") or {})
+            retrieval_context = dict(context.get("retrieval_context") or {})
             constraints = dict(state.get("extracted_constraints") or {})
             observed = {
                 "domain": str(state.get("domain") or route.get("domain") or ""),
@@ -84,6 +85,14 @@ class UnifiedConversationCaseRunner:
                     )
                 ),
                 "reference_span_ids": _reference_span_ids(state),
+                "candidate_tools": _candidate_tool_names(state),
+                "retrieval_route": str(
+                    (retrieval_context.get("adaptive_decision") or {}).get("route")
+                    or ""
+                ),
+                "retrieval_pipeline": [
+                    str(item) for item in retrieval_context.get("pipeline") or []
+                ],
                 "claim_audit": context.get("grounded_answer_audit") or {},
             }
             failures: list[dict[str, str]] = []
@@ -275,6 +284,18 @@ def _reference_span_ids(state: dict[str, Any]) -> list[str]:
         if value:
             values.append(str(value))
     return sorted(set(values))
+
+
+def _candidate_tool_names(state: dict[str, Any]) -> list[str]:
+    values: list[str] = []
+    for row in state.get("candidate_tools") or []:
+        if isinstance(row, dict):
+            value = row.get("tool_name") or row.get("name")
+        else:
+            value = row
+        if value:
+            values.append(str(value))
+    return list(dict.fromkeys(values))
 
 
 def _ratio_metric(

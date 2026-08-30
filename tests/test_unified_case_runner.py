@@ -14,8 +14,13 @@ class _Service:
             "deterministic_parent_result": {"execution_request_count": 0},
             "context_pack": {
                 "semantic_route": {"domain": "SINGLE_CELL"},
+                "retrieval_context": {
+                    "adaptive_decision": {"route": "kg_hybrid_contract"},
+                    "pipeline": ["kg_hard_filter", "tool_contract_gate"],
+                },
                 "grounded_answer_audit": {"invalid_citations": []},
             },
+            "candidate_tools": [{"tool_name": "Scrublet"}],
             "references": [
                 {"source_span_id": "sourcev2:e28960d0fd977f0c60ce"}
             ],
@@ -59,6 +64,12 @@ def test_unified_runner_scores_real_source_span_not_arbitrary_snippet():
     assert by_id["citation.coverage"].value == 1.0
     assert by_id["trace.completeness"].value == 0.0
     assert records[0].trace == []
+    assert records[0].observed["candidate_tools"] == ["Scrublet"]
+    assert records[0].observed["retrieval_route"] == "kg_hybrid_contract"
+    assert records[0].observed["retrieval_pipeline"] == [
+        "kg_hard_filter",
+        "tool_contract_gate",
+    ]
 
 
 class _CanonicalTraceService:
