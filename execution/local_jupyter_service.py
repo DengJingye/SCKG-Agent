@@ -13,17 +13,30 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
+import uuid
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 from typing import Callable
 
+from core.trace_context import (
+    TraceCollector,
+    TraceContext,
+    TraceCorrelationKind,
+    TraceKind,
+    TracePrivacyError,
+    TraceStage,
+    TraceStatus,
+    TraceValidationError,
+    trace_correlation_id,
+)
 from execution.local_notebook_launcher import KERNEL_NAME, write_kernel_spec
 
 
 @dataclass(frozen=True)
 class LocalJupyterSession:
     session_id: str
+    canonical_trace_id: str
     notebook_name: str
     kernel_name: str
     runtime_pack_id: str
@@ -63,6 +76,7 @@ class LocalJupyterService:
         readiness_probe: Callable[[str], bool] | None = None,
         port_allocator: Callable[[], int] | None = None,
         token_factory: Callable[[], str] | None = None,
+        trace_collector: TraceCollector | None = None,
     ) -> None:
         self.allowed_workspace_root = Path(allowed_workspace_root).resolve()
         self.state_root = Path(state_root).expanduser().resolve()
@@ -78,6 +92,7 @@ class LocalJupyterService:
         self.readiness_probe = readiness_probe or _server_ready
         self.port_allocator = port_allocator or _free_local_port
         self.token_factory = token_factory or (lambda: secrets.token_urlsafe(32))
+        self._trace_collector = trace_collector or TraceCollector()
 
     @property
     def available(self) -> bool:
@@ -96,7 +111,79 @@ class LocalJupyterService:
         runtime_python: Path,
         runtime_pack_id: str,
         timeout_seconds: float = 15.0,
+        request_id: str | None = None,
+        parent_trace_id: str | None = None,
+        handoff_id: str | None = None,
+        parent_request_id: str | None = None,
+        original_plan_id: str | None = None,
     ) -> LocalJupyterSession:
+        trace = _new_jupyter_trace(
+            owner_user_id=owner_user_id,
+            request_id=request_id or f"jupyter-request:{uuid.uuid4().hex}",
+            parent_trace_id=parent_trace_id,
+            handoff_id=handoff_id,
+            parent_request_id=parent_request_id,
+            original_plan_id=original_plan_id,
+        )
+        with self._trace_collector.request_scope(trace):
+            instrumentation = trace.instrumentation()
+            with instrumentation.span(
+                stage=TraceStage.RUNTIME_BIND,
+                component="local_jupyter_service",
+                operation="bind_notebook_runtime",
+                input_refs=[
+                    {
+                        "record_type": "notebook_artifact",
+                        "record_id": f"notebook:{expected_sha256}",
+                        "relation": "binds",
+                        "content_hash": expected_sha256,
+                    },
+                    {
+                        "record_type": "runtime_pack",
+                        "record_id": runtime_pack_id,
+                        "relation": "selects",
+                    },
+                ],
+                exception_error_code="runtime_bind_failed",
+            ) as runtime_span:
+                session, reused = self._start_session(
+                    owner_user_id=owner_user_id,
+                    notebook_path=notebook_path,
+                    expected_sha256=expected_sha256,
+                    runtime_python=runtime_python,
+                    runtime_pack_id=runtime_pack_id,
+                    timeout_seconds=timeout_seconds,
+                    canonical_trace_id=trace.trace_id,
+                )
+                response = replace(session, canonical_trace_id=trace.trace_id)
+                runtime_span.add_output_ref(
+                    record_type="jupyter_session",
+                    record_id=session.session_id,
+                    relation="bound",
+                )
+                runtime_span.add_decision(
+                    decision_type="runtime_binding",
+                    outcome="reused" if reused else "started",
+                    reason_code=(
+                        "existing_session_reused" if reused else "runtime_pack_bound"
+                    ),
+                    rule_version="local_jupyter_v0",
+                )
+                runtime_span.succeed()
+            instrumentation.set_request_outcome(TraceStatus.SUCCESS)
+        return response
+
+    def _start_session(
+        self,
+        *,
+        owner_user_id: str,
+        notebook_path: Path,
+        expected_sha256: str,
+        runtime_python: Path,
+        runtime_pack_id: str,
+        timeout_seconds: float,
+        canonical_trace_id: str,
+    ) -> tuple[LocalJupyterSession, bool]:
         if not self.available:
             raise FileNotFoundError(
                 "local JupyterLab is unavailable; no dependency was installed"
@@ -123,7 +210,7 @@ class LocalJupyterService:
         with _SESSION_LOCK:
             existing = _SESSIONS.get(session_key)
             if existing and _process_running(existing.process):
-                return existing.public
+                return existing.public, True
             if existing:
                 _SESSIONS.pop(session_key, None)
 
@@ -196,6 +283,7 @@ class LocalJupyterService:
         )
         public = LocalJupyterSession(
             session_id=session_key,
+            canonical_trace_id=canonical_trace_id,
             notebook_name=notebook.name,
             kernel_name=KERNEL_NAME,
             runtime_pack_id=runtime_pack_id,
@@ -215,6 +303,7 @@ class LocalJupyterService:
             json.dumps(
                 {
                     "session_id": session_key,
+                    "canonical_trace_id": canonical_trace_id,
                     "owner_user_id": owner_user_id,
                     "notebook_name": notebook.name,
                     "pid": pid,
@@ -228,7 +317,7 @@ class LocalJupyterService:
             + "\n",
             encoding="utf-8",
         )
-        return public
+        return public, False
 
     def get(
         self, *, session_id: str, owner_user_id: str
@@ -425,3 +514,36 @@ def _require_within(path: Path, root: Path) -> None:
         path.relative_to(root)
     except ValueError as exc:
         raise ValueError("notebook escapes the owned workspace") from exc
+
+
+def _new_jupyter_trace(
+    *,
+    owner_user_id: str,
+    request_id: str,
+    parent_trace_id: str | None,
+    handoff_id: str | None,
+    parent_request_id: str | None,
+    original_plan_id: str | None,
+) -> TraceContext:
+    try:
+        trace_request_id = trace_correlation_id(
+            request_id,
+            kind=TraceCorrelationKind.REQUEST,
+        )
+    except (TracePrivacyError, TraceValidationError):
+        trace_request_id = f"request-ref:opaque:{uuid.uuid4().hex}"
+    try:
+        return TraceContext.new_request(
+            trace_kind=TraceKind.STEPWISE,
+            request_id=trace_request_id,
+            parent_trace_id=parent_trace_id,
+            handoff_id=handoff_id,
+            parent_request_id=parent_request_id,
+            original_plan_id=original_plan_id,
+            principal_ref=owner_user_id,
+        )
+    except (TracePrivacyError, TraceValidationError):
+        return TraceContext.new_request(
+            trace_kind=TraceKind.STEPWISE,
+            request_id=trace_request_id,
+        )

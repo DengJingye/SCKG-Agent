@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from core.trace_context import TraceCollector
 from execution.local_jupyter_service import LocalJupyterService
 
 
@@ -63,6 +64,7 @@ def test_jupyter_uses_localhost_fixed_argv_and_existing_runtime(tmp_path):
         readiness_probe=lambda _url: True,
         port_allocator=lambda: 18888,
         token_factory=lambda: "fixed-token",
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     )
     session = service.start(
         owner_user_id="alice",
@@ -113,6 +115,7 @@ def test_jupyter_blocks_escape_hash_change_and_untrusted_notebook(tmp_path):
         server_python=server_python,
         process_launcher=lambda *args, **kwargs: _Process(),
         readiness_probe=lambda _url: True,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     )
     outside = tmp_path / "outside.ipynb"
     outside_digest = _trusted_notebook(outside)

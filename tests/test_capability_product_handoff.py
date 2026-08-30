@@ -129,6 +129,7 @@ def test_capability_workspace_returns_profile_and_jupyter_trusted_notebook(tmp_p
         notebook_compiler=GenericNotebookCompiler(
             NotebookRendererRegistry([ScanpyCoreNotebookRenderer()])
         ),
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     ).prepare(
         CapabilityWorkspaceRequest(
             request_id="product-handoff",

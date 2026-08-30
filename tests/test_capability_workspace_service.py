@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from core.capability_workspace_models import CapabilityWorkspaceRequest
+from core.trace_context import TraceCollector
 from engine.capability_workspace_service import CapabilityWorkspaceService
 from engine.data_profiler import AnnDataProfiler
 from execution.capability_notebook import GenericNotebookCompiler, NotebookRendererRegistry
@@ -63,6 +64,7 @@ def test_workspace_minimal_scanpy_plan_is_registry_driven_and_never_executes(tmp
     result = CapabilityWorkspaceService(
         data_registry=registry,
         notebook_compiler=compiler,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     ).prepare(
         _request(artifact.artifact_id),
         notebook_path=tmp_path / "minimal.ipynb",
@@ -83,6 +85,7 @@ def test_workspace_composes_doublet_and_batch_actions_without_direct_imports(tmp
     result = CapabilityWorkspaceService(
         data_registry=registry,
         notebook_compiler=compiler,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     ).prepare(
         _request(
             artifact.artifact_id,
@@ -111,6 +114,7 @@ def test_workspace_run_remains_blocked_by_global_policy_with_zero_requests(tmp_p
     result = CapabilityWorkspaceService(
         data_registry=registry,
         notebook_compiler=compiler,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     ).prepare(
         _request(
             artifact.artifact_id,
@@ -144,6 +148,7 @@ def test_workspace_rebuilds_profile_across_model_reload_boundary(tmp_path):
         data_registry=registry,
         notebook_compiler=compiler,
         data_profiler=ReloadBoundaryProfiler(),
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     ).prepare(
         _request(artifact.artifact_id, request_id="model-reload-boundary"),
         notebook_path=tmp_path / "model-reload.ipynb",

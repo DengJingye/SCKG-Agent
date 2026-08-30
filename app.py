@@ -2559,6 +2559,10 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
             prepared = workspace.prepare(
                 CapabilityWorkspaceRequest(
                     request_id=f"workspace-{uuid.uuid4().hex}",
+                    origin_trace_id=payload.get("origin_trace_id"),
+                    handoff_id=payload.get("handoff_id"),
+                    parent_request_id=payload.get("parent_request_id"),
+                    original_plan_id=payload.get("original_plan_id"),
                     user_id=user_id,
                     artifact_id=selected,
                     pack_id=pack_id,
@@ -2610,7 +2614,7 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
                 }
                 for index, item in enumerate(plan.steps)
             ],
-            width="stretch",
+            use_container_width=True,
             hide_index=True,
         )
     notebook = dict(result.notebook_artifact)
@@ -2645,13 +2649,25 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
                     expected_sha256=str(notebook["sha256"]),
                     runtime_python=resolver.python(runtime_pack_id),
                     runtime_pack_id=runtime_pack_id,
+                    request_id=f"jupyter-launch:{uuid.uuid4().hex}",
+                    parent_trace_id=result.canonical_trace_id,
+                    handoff_id=payload.get("handoff_id"),
+                    parent_request_id=result.request_id,
+                    original_plan_id=(plan.plan_id if plan is not None else None),
                 )
                 st.session_state.capability_workspace_jupyter_url = session.launch_url
+                st.session_state.capability_workspace_jupyter_trace_id = (
+                    session.canonical_trace_id
+                )
             except Exception as exc:
                 st.error(execution.redact_text(str(exc)))
         launch_url = st.session_state.get("capability_workspace_jupyter_url")
         if launch_url:
-            st.link_button("打开已启动的 JupyterLab", launch_url, width="stretch")
+            st.link_button(
+                "打开已启动的 JupyterLab",
+                launch_url,
+                use_container_width=True,
+            )
 
     st.warning(
         "当前页面已完成 PLAN 与可编辑 Notebook 交付。全局 ExecutionPolicy=disabled，"
@@ -2677,7 +2693,10 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
             for plot_path in route.get("plot_paths") or []:
                 candidate = Path(str(plot_path))
                 if candidate.is_file():
-                    st.image(candidate, caption=candidate.stem.replace("_", " ").title())
+                    st.image(
+                        str(candidate),
+                        caption=candidate.stem.replace("_", " ").title(),
+                    )
     st.success(
         "Level 2 package: complete="
         f"{bool(latest.get('package_complete'))}, hashes_valid="
@@ -7231,12 +7250,28 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                                 expected_sha256=notebook_bundle.notebook_hash,
                                 runtime_python=runtime_python,
                                 runtime_pack_id="doublet-python",
+                                request_id=f"jupyter-launch:{uuid.uuid4().hex}",
+                                parent_trace_id=(
+                                    (active_workspace_task or {}).get("origin_trace_id")
+                                ),
+                                handoff_id=(
+                                    (active_workspace_task or {}).get("handoff_id")
+                                ),
+                                parent_request_id=(
+                                    (active_workspace_task or {}).get("parent_request_id")
+                                ),
+                                original_plan_id=(
+                                    (active_workspace_task or {}).get("original_plan_id")
+                                ),
                             )
                             st.session_state.workspace_jupyter_session_id = (
                                 launched.session_id
                             )
                             st.session_state.workspace_jupyter_notebook_hash = (
                                 notebook_bundle.notebook_hash
+                            )
+                            st.session_state.workspace_jupyter_trace_id = (
+                                launched.canonical_trace_id
                             )
                             st.rerun()
                         except Exception as exc:
@@ -7251,7 +7286,7 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                             "打开 JupyterLab 工作区",
                             active_jupyter_session.launch_url,
                             type="primary",
-                            width="stretch",
+                            use_container_width=True,
                         )
                         if jupyter_actions[1].button(
                             "停止 JupyterLab",

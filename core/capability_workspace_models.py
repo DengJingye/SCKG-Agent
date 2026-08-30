@@ -11,6 +11,10 @@ from core.representation_models import RepresentationLedger
 
 class CapabilityWorkspaceRequest(StrictModel):
     request_id: str = Field(min_length=1)
+    origin_trace_id: str | None = None
+    handoff_id: str | None = None
+    parent_request_id: str | None = None
+    original_plan_id: str | None = None
     user_id: str = Field(min_length=1)
     artifact_id: str
     pack_id: str
@@ -28,6 +32,7 @@ class CapabilityWorkspaceRequest(StrictModel):
 
 class CapabilityWorkspaceResult(StrictModel):
     request_id: str
+    canonical_trace_id: str
     pack_id: str
     pack_version: str
     status: Literal[
