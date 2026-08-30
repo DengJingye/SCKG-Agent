@@ -194,7 +194,9 @@ class EvaluationRunRecord(StrictModel):
     repetition: int = Field(default=0, ge=0)
     status: Literal["completed", "blocked", "failed", "not_run"]
     observed: dict[str, Any] = Field(default_factory=dict)
+    canonical_trace_id: str = ""
     trace: list[dict[str, Any]] = Field(default_factory=list)
+    evaluation_failures: list[dict[str, Any]] = Field(default_factory=list)
     artifact_refs: list[str] = Field(default_factory=list)
     latency_ms: float | None = Field(default=None, ge=0.0)
     input_tokens: int | None = Field(default=None, ge=0)

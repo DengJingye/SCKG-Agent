@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 from agent.research_chat_service import ResearchChatService
@@ -12,14 +13,32 @@ from core.evaluation_models import (
     EvaluationSignal,
     EvaluatorResult,
 )
-from eval.evaluation_evaluators import evaluate_classification, normalized_answer_hash
+from core.trace_context import TraceCollector
+from eval.evaluation_evaluators import (
+    canonical_trace_complete,
+    canonical_trace_trajectory,
+    evaluate_classification,
+    evaluate_trajectory,
+    load_canonical_trace,
+    normalized_answer_hash,
+)
 
 
 class UnifiedConversationCaseRunner:
     """Run routing and source-bound answer cases through the real Research Chat."""
 
-    def __init__(self, *, service: ResearchChatService | None = None) -> None:
-        self.service = service or ResearchChatService()
+    def __init__(
+        self,
+        *,
+        service: ResearchChatService | None = None,
+        trace_path: Path | None = None,
+    ) -> None:
+        self.trace_path = Path(trace_path) if trace_path is not None else None
+        self.service = service or ResearchChatService(
+            trace_collector=(
+                TraceCollector(self.trace_path) if self.trace_path is not None else None
+            )
+        )
 
     def run(
         self,
@@ -36,6 +55,10 @@ class UnifiedConversationCaseRunner:
         citation_case_ids: list[str] = []
         clarification_values: list[bool] = []
         clarification_case_ids: list[str] = []
+        trace_complete_values: list[bool] = []
+        trace_case_ids: list[str] = []
+        trajectory_values: dict[str, list[bool]] = defaultdict(list)
+        trajectory_case_ids: dict[str, list[str]] = defaultdict(list)
 
         for case in cases:
             query = str(case.input.get("query") or "")
@@ -123,6 +146,44 @@ class UnifiedConversationCaseRunner:
                     )
 
             report = str(state.get("final_report") or "")
+            canonical_trace_id = str(state.get("canonical_trace_id") or "")
+            canonical_row = (
+                load_canonical_trace(self.trace_path, canonical_trace_id)
+                if self.trace_path is not None
+                else None
+            )
+            canonical_trajectory = canonical_trace_trajectory(canonical_row or {})
+            trace_complete = canonical_trace_complete(
+                canonical_row,
+                trace_id=canonical_trace_id,
+            )
+            trace_complete_values.append(trace_complete)
+            trace_case_ids.append(case.case_id)
+            if case.expected_trajectory is not None:
+                trajectory_result = evaluate_trajectory(
+                    case.expected_trajectory,
+                    canonical_trajectory,
+                )
+                for metric_id, value in (
+                    (
+                        "trajectory.required_steps",
+                        bool(trajectory_result["required_step_subset"]),
+                    ),
+                    (
+                        "trajectory.forbidden_steps",
+                        int(trajectory_result["forbidden_step_count"]) == 0,
+                    ),
+                    (
+                        "trajectory.ordering",
+                        bool(trajectory_result["ordering_correct"]),
+                    ),
+                    (
+                        "trajectory.stop_correctness",
+                        bool(trajectory_result["stop_correctness"]),
+                    ),
+                ):
+                    trajectory_values[metric_id].append(value)
+                    trajectory_case_ids[metric_id].append(case.case_id)
             records.append(
                 EvaluationRunRecord(
                     run_id=f"{experiment_id}:unified:{case.case_id}",
@@ -130,7 +191,9 @@ class UnifiedConversationCaseRunner:
                     case_id=case.case_id,
                     status="failed" if failures else "completed",
                     observed=observed,
-                    trace=failures,
+                    canonical_trace_id=canonical_trace_id,
+                    trace=canonical_trajectory,
+                    evaluation_failures=failures,
                     latency_ms=round(latency_ms, 3),
                     answer_hash=normalized_answer_hash(report),
                 )
@@ -175,6 +238,31 @@ class UnifiedConversationCaseRunner:
                 threshold=0.90,
             )
         )
+        metrics.append(
+            _ratio_metric(
+                "trace.completeness",
+                sum(trace_complete_values),
+                len(trace_complete_values),
+                case_ids=trace_case_ids,
+                threshold=1.0,
+            )
+        )
+        for metric_id in (
+            "trajectory.required_steps",
+            "trajectory.forbidden_steps",
+            "trajectory.ordering",
+            "trajectory.stop_correctness",
+        ):
+            values = trajectory_values.get(metric_id) or []
+            metrics.append(
+                _ratio_metric(
+                    metric_id,
+                    sum(values),
+                    len(values),
+                    case_ids=trajectory_case_ids.get(metric_id) or [],
+                    threshold=1.0,
+                )
+            )
         return records, metrics
 
 

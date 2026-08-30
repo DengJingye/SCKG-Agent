@@ -163,7 +163,9 @@ class EvaluationPipeline:
                         include_hidden=hidden_allowed,
                     )
                 )
-        unified_records, unified_metrics = UnifiedConversationCaseRunner().run(
+        unified_records, unified_metrics = UnifiedConversationCaseRunner(
+            trace_path=experiment_dir / "canonical_traces.jsonl"
+        ).run(
             unified_cases,
             experiment_id=experiment_id,
         )
@@ -311,7 +313,11 @@ class EvaluationPipeline:
             contract_digest=_digest_paths([PROJECT_ROOT / "contracts"]),
             environment_digest=_digest_paths([PROJECT_ROOT / "execution/environments"]),
             evaluator_digest=_digest_paths(
-                [PROJECT_ROOT / "eval/evaluation_evaluators.py", PROJECT_ROOT / "core/evaluation_models.py"]
+                [
+                    PROJECT_ROOT / "eval/evaluation_evaluators.py",
+                    PROJECT_ROOT / "eval/unified_case_runner.py",
+                    PROJECT_ROOT / "core/evaluation_models.py",
+                ]
             ),
             judge=judge_config,
             outbound_calls_allowed=authorize_outbound,
@@ -320,6 +326,7 @@ class EvaluationPipeline:
                 "PR metrics are deterministic engineering evidence, not open scientific answer proof.",
                 "Human trial remains separate and cannot be synthesized by this pipeline.",
                 "RAGAS is diagnostic only and is not an evidence-authority gate.",
+                "Canonical Trace evaluates request trajectory; evaluator mismatches remain separate failure evidence.",
             ],
         )
         failures.extend(_failure_records(case_results))

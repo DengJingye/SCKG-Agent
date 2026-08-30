@@ -47,7 +47,11 @@ def test_pipeline_writes_the_single_required_artifact_contract(tmp_path):
         manifest=manifest,
         case_results=[
             EvaluationRunRecord(
-                run_id="run", experiment_id="exp", case_id="case", status="completed"
+                run_id="run",
+                experiment_id="exp",
+                case_id="case",
+                status="completed",
+                canonical_trace_id="trace_11111111111111111111111111111111",
             )
         ],
         metrics=[metric],
@@ -67,6 +71,8 @@ def test_pipeline_writes_the_single_required_artifact_contract(tmp_path):
         "report.md",
     }
     assert expected.issubset({path.name for path in experiment.iterdir()})
+    case_row = (experiment / "case_results.jsonl").read_text(encoding="utf-8")
+    assert "trace_11111111111111111111111111111111" in case_row
 
 
 def test_experiment_manifest_rejects_inverted_timestamps():

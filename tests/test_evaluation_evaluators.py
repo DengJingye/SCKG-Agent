@@ -9,11 +9,15 @@ from core.evaluation_models import (
     ExpectedTrajectory,
     ReferenceClaim,
 )
+from core.trace_context import TraceCollector, TraceContext, TraceKind, TraceStage, TraceStatus
 from eval.evaluation_evaluators import (
     attribute_failure,
+    canonical_trace_complete,
+    canonical_trace_trajectory,
     decide_release_gate,
     evaluate_atomic_claims,
     evaluate_trajectory,
+    load_canonical_trace,
     response_stability,
 )
 
@@ -38,6 +42,96 @@ def test_trajectory_checks_tool_arguments_order_and_forbidden_actions():
     assert result["tool_argument_correctness"] is True
     assert result["ordering_correct"] is True
     assert result["stop_correctness"] is True
+
+
+def test_canonical_trace_bridge_evaluates_required_forbidden_and_ordering(tmp_path):
+    path = tmp_path / "canonical.jsonl"
+    trace = TraceContext.new_request(
+        trace_kind=TraceKind.CONTROLLED_EXECUTION,
+        request_id="edd-trajectory-request",
+    )
+    collector = TraceCollector(path)
+    with collector.request_scope(trace):
+        for stage, operation in (
+            (TraceStage.STATE_INSPECTION, "profile"),
+            (TraceStage.PLANNING, "plan"),
+            (TraceStage.APPROVAL, "approve"),
+            (TraceStage.EXECUTION, "execute"),
+            (TraceStage.VALIDATION, "validate"),
+        ):
+            with trace.span(stage=stage, component="edd_fixture", operation=operation):
+                pass
+
+    row = load_canonical_trace(path, trace.trace_id)
+    trajectory = canonical_trace_trajectory(row or {})
+    expected = ExpectedTrajectory(
+        required_steps=["data_profile", "plan", "approval", "execution", "validation"],
+        forbidden_steps=["repair"],
+        ordered_steps=["data_profile", "plan", "approval", "execution", "validation"],
+        must_stop_after="validation",
+    )
+    result = evaluate_trajectory(expected, trajectory)
+
+    assert canonical_trace_complete(row, trace_id=trace.trace_id) is True
+    assert result["required_step_subset"] is True
+    assert result["forbidden_step_count"] == 0
+    assert result["ordering_correct"] is True
+    assert result["stop_correctness"] is True
+
+    bad_result = evaluate_trajectory(
+        ExpectedTrajectory(
+            required_steps=["repair"],
+            forbidden_steps=["execution"],
+            ordered_steps=["validation", "execution"],
+        ),
+        trajectory,
+    )
+    assert bad_result["required_step_subset"] is False
+    assert bad_result["forbidden_step_count"] == 1
+    assert bad_result["ordering_correct"] is False
+
+
+def test_seeded_canonical_badcase_attributes_first_failed_span_by_sequence(tmp_path):
+    path = tmp_path / "badcase-trace.jsonl"
+    trace = TraceContext.new_request(
+        trace_kind=TraceKind.RESEARCH,
+        request_id="seeded-badcase",
+    )
+    collector = TraceCollector(path)
+    with collector.request_scope(trace):
+        with trace.span(
+            stage=TraceStage.ROUTING,
+            component="research_router",
+            operation="route",
+        ) as routing:
+            routing.fail("seeded_route_failure")
+        with trace.span(
+            stage=TraceStage.RETRIEVAL,
+            component="hybrid_retrieval",
+            operation="retrieve",
+        ) as retrieval:
+            retrieval.fail("downstream_retrieval_failure")
+        trace.set_request_outcome(
+            TraceStatus.FAILED,
+            error_code="seeded_request_failure",
+        )
+
+    row = load_canonical_trace(path, trace.trace_id)
+    record = EvaluationRunRecord(
+        run_id="seeded-run",
+        experiment_id="exp",
+        case_id="seeded-case",
+        status="failed",
+        canonical_trace_id=trace.trace_id,
+        trace=canonical_trace_trajectory(row or {}),
+    )
+    failure = attribute_failure(record)
+
+    assert failure is not None
+    assert failure.root_stage == "ROUTING"
+    assert failure.root_error_type == "seeded_route_failure"
+    assert failure.owner_module == "research_router"
+    assert failure.downstream_symptoms == ["downstream_retrieval_failure"]
 
 
 def test_atomic_claims_do_not_accept_unmapped_claims_or_arbitrary_citations():

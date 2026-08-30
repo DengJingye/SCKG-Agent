@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 from collections import Counter
+from pathlib import Path
 from typing import Any, Iterable
 
 from core.evaluation_models import (
@@ -17,6 +18,7 @@ from core.evaluation_models import (
     ReferenceClaim,
     ReleaseGateDecision,
 )
+from core.trace_context import TRACE_SCHEMA_VERSION, load_traces
 
 
 TRACE_STAGE_ORDER = (
@@ -36,6 +38,100 @@ TRACE_STAGE_ORDER = (
     "package",
     "audit",
 )
+
+CANONICAL_STAGE_ALIASES = {
+    "REQUEST": "request",
+    "ROUTING": "routing",
+    "RETRIEVAL": "retrieval",
+    "STATE_INSPECTION": "state_inspection",
+    "PLANNING": "planning",
+    "HANDOFF": "handoff",
+    "NOTEBOOK_COMPILE": "notebook_compile",
+    "RUNTIME_BIND": "runtime_bind",
+    "POLICY": "policy",
+    "APPROVAL": "approval",
+    "EXECUTION": "execution",
+    "VALIDATION": "validation",
+    "REPAIR": "repair",
+    "DECISION": "decision",
+    "PACKAGE": "package",
+}
+
+EXPECTED_STAGE_ALIASES = {
+    "data_profile": "state_inspection",
+    "plan": "planning",
+    "authorization": "policy",
+}
+
+
+def load_canonical_trace(path: Path, trace_id: str) -> dict[str, Any] | None:
+    """Return one schema-valid canonical trace, never a legacy or duplicate row."""
+
+    if not trace_id:
+        return None
+    matches = [
+        row
+        for row in load_traces(path)
+        if row.get("schema_version") == TRACE_SCHEMA_VERSION
+        and row.get("trace_id") == trace_id
+    ]
+    return matches[0] if len(matches) == 1 else None
+
+
+def canonical_trace_trajectory(row: dict[str, Any]) -> list[dict[str, Any]]:
+    """Project a canonical trace into bounded trajectory evidence for EDD."""
+
+    if row.get("schema_version") != TRACE_SCHEMA_VERSION:
+        return []
+    trace_id = str(row.get("trace_id") or "")
+    spans = row.get("spans")
+    if not trace_id or not isinstance(spans, list):
+        return []
+    trajectory: list[dict[str, Any]] = []
+    for span in spans:
+        if not isinstance(span, dict) or span.get("trace_id") != trace_id:
+            return []
+        decisions = span.get("decision_evidence") or []
+        reason_codes = [
+            str(decision.get("reason_code"))
+            for decision in decisions
+            if isinstance(decision, dict) and decision.get("reason_code")
+        ]
+        trajectory.append(
+            {
+                "trace_id": trace_id,
+                "span_id": str(span.get("span_id") or ""),
+                "parent_span_id": span.get("parent_span_id"),
+                "sequence": span.get("sequence"),
+                "stage": str(span.get("stage") or ""),
+                "status": str(span.get("status") or ""),
+                "component": str(span.get("component") or ""),
+                "operation": str(span.get("operation") or ""),
+                "error_code": str(span.get("error_code") or ""),
+                "reason_codes": reason_codes,
+            }
+        )
+    return trajectory
+
+
+def canonical_trace_complete(
+    row: dict[str, Any] | None,
+    *,
+    trace_id: str,
+) -> bool:
+    if row is None or row.get("trace_id") != trace_id:
+        return False
+    trajectory = canonical_trace_trajectory(row)
+    if not trajectory:
+        return False
+    roots = [item for item in trajectory if item["parent_span_id"] is None]
+    return (
+        len(roots) == 1
+        and roots[0]["stage"] == "REQUEST"
+        and [item["sequence"] for item in trajectory]
+        == list(range(1, len(trajectory) + 1))
+        and all(item["status"] not in {"", "RUNNING"} for item in trajectory)
+    )
 
 
 def normalized_answer_hash(answer: str) -> str:
@@ -110,18 +206,24 @@ def evaluate_classification(
 def evaluate_trajectory(
     expected: ExpectedTrajectory, trace: list[dict[str, Any]]
 ) -> dict[str, float | bool | int]:
-    observed_steps = [str(row.get("stage") or row.get("tool") or "") for row in trace]
+    observed_steps = [
+        _normalized_stage(str(row.get("stage") or row.get("tool") or ""))
+        for row in trace
+    ]
     observed_steps = [step for step in observed_steps if step]
     observed_calls = [
         row for row in trace if str(row.get("type") or "") in {"tool_call", "action"}
     ]
-    required = set(expected.required_steps)
-    forbidden = set(expected.forbidden_steps)
+    required = {_normalized_stage(step) for step in expected.required_steps}
+    forbidden = {_normalized_stage(step) for step in expected.forbidden_steps}
     required_step_subset = required.issubset(observed_steps)
     forbidden_step_count = sum(step in forbidden for step in observed_steps)
-    order_positions = [observed_steps.index(step) for step in expected.ordered_steps if step in observed_steps]
+    ordered_steps = [_normalized_stage(step) for step in expected.ordered_steps]
+    order_positions = [
+        observed_steps.index(step) for step in ordered_steps if step in observed_steps
+    ]
     ordering_correct = (
-        len(order_positions) == len(expected.ordered_steps)
+        len(order_positions) == len(ordered_steps)
         and order_positions == sorted(order_positions)
     )
     expected_tools = {call.tool_name: call for call in expected.required_tool_calls}
@@ -141,7 +243,10 @@ def evaluate_trajectory(
     redundant = sum(count - 1 for count in Counter(observed_tools).values() if count > 1)
     stop_correct = (
         not expected.must_stop_after
-        or (expected.must_stop_after in observed_steps and observed_steps[-1] == expected.must_stop_after)
+        or (
+            _normalized_stage(expected.must_stop_after) in observed_steps
+            and observed_steps[-1] == _normalized_stage(expected.must_stop_after)
+        )
     )
     return {
         "required_step_subset": required_step_subset,
@@ -211,16 +316,53 @@ def response_stability(answers: list[str]) -> float:
 
 
 def attribute_failure(record: EvaluationRunRecord) -> FailureAttribution | None:
-    failures = [row for row in record.trace if str(row.get("status") or "") in {"failed", "blocked", "error"}]
+    trace_failures = [
+        row
+        for row in record.trace
+        if str(row.get("status") or "").casefold() in {"failed", "blocked", "error"}
+    ]
+    is_canonical = bool(record.canonical_trace_id) and all(
+        row.get("trace_id") == record.canonical_trace_id
+        and isinstance(row.get("sequence"), int)
+        for row in record.trace
+    )
+    canonical_failures = trace_failures if is_canonical else []
+    non_root_failures = [
+        row for row in canonical_failures if str(row.get("stage") or "") != "REQUEST"
+    ]
+    if non_root_failures:
+        canonical_failures = non_root_failures
+    failures = (
+        canonical_failures
+        or (trace_failures if not is_canonical else [])
+        or list(record.evaluation_failures)
+    )
     if not failures:
         return None
-    positions = {stage: index for index, stage in enumerate(TRACE_STAGE_ORDER)}
-    root = min(failures, key=lambda row: positions.get(str(row.get("stage") or ""), math.inf))
+    if is_canonical and canonical_failures:
+        root = min(
+            failures,
+            key=lambda row: (
+                row.get("sequence")
+                if isinstance(row.get("sequence"), int)
+                else math.inf
+            ),
+        )
+    else:
+        positions = {stage: index for index, stage in enumerate(TRACE_STAGE_ORDER)}
+        root = min(
+            failures,
+            key=lambda row: positions.get(
+                _normalized_stage(str(row.get("stage") or "")), math.inf
+            ),
+        )
     root_stage = str(root.get("stage") or "unknown")
     symptoms = [
         str(
             row.get("failure_type")
             or row.get("error_type")
+            or row.get("error_code")
+            or next(iter(row.get("reason_codes") or []), "")
             or row.get("reason")
             or row.get("stage")
             or "unknown"
@@ -235,14 +377,27 @@ def attribute_failure(record: EvaluationRunRecord) -> FailureAttribution | None:
         root_error_type=str(
             root.get("failure_type")
             or root.get("error_type")
+            or root.get("error_code")
+            or next(iter(root.get("reason_codes") or []), "")
             or root.get("reason")
             or "unknown"
         ),
         downstream_symptoms=symptoms,
         evidence=[json.dumps(root, ensure_ascii=False, sort_keys=True)],
-        owner_module=str(root.get("owner") or root_stage),
+        owner_module=str(root.get("owner") or root.get("component") or root_stage),
         recommended_action=str(root.get("recommended_action") or f"inspect_{root_stage}"),
     )
+
+
+def _normalized_stage(stage: str) -> str:
+    value = stage.strip()
+    if not value:
+        return ""
+    canonical = CANONICAL_STAGE_ALIASES.get(value.upper())
+    if canonical:
+        return canonical
+    lowered = value.casefold()
+    return EXPECTED_STAGE_ALIASES.get(lowered, lowered)
 
 
 DEFAULT_RELEASE_GATES: dict[str, tuple[str, float]] = {
