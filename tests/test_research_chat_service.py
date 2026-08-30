@@ -10,6 +10,7 @@ from agent.research_chat_service import ResearchChatService, _audit_grounded_ans
 from core.research_agent_models import ResearchToolCall
 from engine.evidence_discovery_index import EvidenceChunk, chunk_to_dict
 from engine.hybrid_retrieval import HybridRetrievalService
+from core.trace_context import TraceCollector
 
 
 class _ParentResult:
@@ -91,6 +92,14 @@ def _service(tmp_path):
         retrieval=retrieval,
         parent_agent=_ParentAgent(),
         dense_default_enabled=False,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
+    )
+
+
+def _default_service(tmp_path):
+    return ResearchChatService(
+        dense_default_enabled=False,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     )
 
 
@@ -105,8 +114,8 @@ def test_research_chat_answers_without_langgraph_dense_or_neo4j(tmp_path):
     assert state["context_pack"]["memory_context"]["can_affect_scientific_authority"] is False
 
 
-def test_named_tool_overrides_competing_task_keyword_and_locks_evidence():
-    state = ResearchChatService(dense_default_enabled=False).run(
+def test_named_tool_overrides_competing_task_keyword_and_locks_evidence(tmp_path):
+    state = _default_service(tmp_path).run(
         "Scrublet 应该输入 raw counts 还是归一化矩阵？"
     )
 
@@ -116,8 +125,8 @@ def test_named_tool_overrides_competing_task_keyword_and_locks_evidence():
     assert "raw UMI count matrix" in state["final_report"]
 
 
-def test_evidence_question_covers_input_and_output_with_minimal_reference_set():
-    state = ResearchChatService(dense_default_enabled=False).run(
+def test_evidence_question_covers_input_and_output_with_minimal_reference_set(tmp_path):
+    state = _default_service(tmp_path).run(
         "Harmony 需要什么输入，输出是什么？"
     )
 
@@ -128,8 +137,8 @@ def test_evidence_question_covers_input_and_output_with_minimal_reference_set():
     assert "输出" in state["final_report"]
 
 
-def test_output_location_question_uses_scanorama_scanpy_span():
-    state = ResearchChatService(dense_default_enabled=False).run(
+def test_output_location_question_uses_scanorama_scanpy_span(tmp_path):
+    state = _default_service(tmp_path).run(
         "Scanorama 在 Scanpy 里会把整合结果放在哪里？"
     )
 
@@ -137,8 +146,8 @@ def test_output_location_question_uses_scanorama_scanpy_span():
     assert {row["tool_name"] for row in state["retrieval_results"]} == {"Scanorama"}
 
 
-def test_complete_general_question_does_not_enter_single_cell_retrieval():
-    result = ResearchChatService(dense_default_enabled=False).run(
+def test_complete_general_question_does_not_enter_single_cell_retrieval(tmp_path):
+    result = _default_service(tmp_path).run(
         "请解释一下什么是交叉验证"
     )
 
@@ -147,8 +156,8 @@ def test_complete_general_question_does_not_enter_single_cell_retrieval():
     assert result["retrieval_results"] == []
 
 
-def test_recommendation_completes_source_bound_evidence_for_top_tools():
-    state = ResearchChatService(dense_default_enabled=False).run(
+def test_recommendation_completes_source_bound_evidence_for_top_tools(tmp_path):
+    state = _default_service(tmp_path).run(
         "我有一批 10x PBMC scRNA-seq 数据，应该用什么方法检测 doublet？请说明证据和限制。"
     )
 
@@ -161,8 +170,8 @@ def test_recommendation_completes_source_bound_evidence_for_top_tools():
     assert "按独立 capture/sample" in state["final_report"]
 
 
-def test_top_three_caveats_use_tool_specific_source_spans():
-    state = ResearchChatService(dense_default_enabled=False).run(
+def test_top_three_caveats_use_tool_specific_source_spans(tmp_path):
+    state = _default_service(tmp_path).run(
         "doublet detection 里 top-3 工具的 caveat 分别是什么？"
     )
 
@@ -185,6 +194,7 @@ def test_eval_only_retrieval_profiles_change_real_pipeline_controls(tmp_path):
         parent_agent=_ParentAgent(),
         dense_default_enabled=False,
         evaluation_retrieval_profile="bm25",
+        trace_collector=TraceCollector(tmp_path / "bm25-traces.jsonl"),
     )
     state = bm25.run("What raw count input does Scrublet require?")
     pipeline = state["context_pack"]["retrieval_context"]["pipeline"]
@@ -202,6 +212,7 @@ def test_eval_only_retrieval_profiles_change_real_pipeline_controls(tmp_path):
         parent_agent=_ParentAgent(),
         dense_default_enabled=False,
         evaluation_retrieval_profile="kg_hybrid_contract",
+        trace_collector=TraceCollector(tmp_path / "governed-traces.jsonl"),
     )
     governed_state = governed.run("What raw count input does Scrublet require?")
     governed_pipeline = governed_state["context_pack"]["retrieval_context"]["pipeline"]

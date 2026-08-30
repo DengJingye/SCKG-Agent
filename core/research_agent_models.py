@@ -163,6 +163,10 @@ class ResearchWorkspaceHandoff(StrictModel):
     target_representations: list[str] = Field(default_factory=list)
     preferred_method_ids: list[str] = Field(default_factory=list)
     blockers: list[str] = Field(default_factory=list)
+    handoff_id: Optional[str] = None
+    origin_trace_id: Optional[str] = None
+    parent_request_id: Optional[str] = None
+    original_plan_id: Optional[str] = None
 
 
 class ResearchAgentState(StrictModel):
@@ -189,6 +193,7 @@ class ResearchAgentState(StrictModel):
     blockers: list[str] = Field(default_factory=list)
     next_actions: list[str] = Field(default_factory=list)
     trace_ids: list[str] = Field(default_factory=list)
+    canonical_trace_id: str
     conversation_state: ConversationTaskState = Field(
         default_factory=ConversationTaskState
     )
@@ -196,6 +201,7 @@ class ResearchAgentState(StrictModel):
 
 class ResearchAgentResponse(StrictModel):
     state: ResearchAgentState
+    canonical_trace_id: str
     user_query: str
     status: Literal["ANSWERED", "READY", "WAITING", "BLOCKED", "FAILED"]
     direct_answer: str

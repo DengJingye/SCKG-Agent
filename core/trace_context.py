@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -23,6 +24,7 @@ DEFAULT_TRACE_PATH = PROJECT_ROOT / "logs" / "traces.jsonl"
 MAX_SPANS, MAX_LINKS, MAX_REFS, MAX_DECISIONS, MAX_COUNTERS = 256, 32, 32, 16, 16
 
 _ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,255}$")
+_CORRELATION_SOURCE_ID = re.compile(r"^[A-Za-z0-9_.:-]+$")
 _CODE = re.compile(r"^[A-Za-z][A-Za-z0-9_.:-]{0,127}$")
 _HASH = re.compile(r"^[a-fA-F0-9]{64}$")
 _BEARER_CREDENTIAL = re.compile(
@@ -113,6 +115,11 @@ class TraceLinkType(str, Enum):
     ORIGIN_PLAN = "ORIGIN_PLAN"
 
 
+class TraceCorrelationKind(str, Enum):
+    REQUEST = "request"
+    CONVERSATION = "conversation"
+
+
 class _TraceMode(str, Enum):
     LEGACY = "LEGACY"
     V0 = "V0"
@@ -159,6 +166,46 @@ def _code(value: Any, name: str) -> None:
 def _optional_id(value: Any, name: str) -> None:
     if value is not None:
         _id(value, name)
+
+
+def trace_correlation_id(
+    source_id: str,
+    *,
+    kind: TraceCorrelationKind,
+) -> str:
+    """Return a Trace-safe correlation ID without changing the source ID.
+
+    Canonical request/conversation IDs are correlation identifiers. Safe source
+    IDs remain readable; non-secret Research-style opaque IDs that exceed the
+    Trace bound (or start with punctuation) receive a deterministic surrogate.
+    Unsafe paths, URLs, credentials, and free-form content are never hashed.
+    """
+
+    try:
+        correlation_kind = TraceCorrelationKind(kind)
+    except (TypeError, ValueError):
+        raise TraceValidationError("unsupported trace correlation kind") from None
+    if not isinstance(source_id, str) or not source_id:
+        raise TraceValidationError("trace correlation source must be a non-empty identifier")
+    _privacy(source_id)
+    try:
+        _id(source_id, "trace correlation source")
+    except TraceValidationError:
+        if _CORRELATION_SOURCE_ID.fullmatch(source_id) is None:
+            raise TraceValidationError(
+                "trace correlation source is not an opaque business identifier"
+            ) from None
+    else:
+        return source_id
+    digest = hashlib.sha256(
+        (
+            "sckg-trace-correlation-v0\0"
+            f"{correlation_kind.value}\0{source_id}"
+        ).encode("utf-8")
+    ).hexdigest()
+    surrogate = f"{correlation_kind.value}-ref:{digest}"
+    _id(surrogate, "trace correlation surrogate")
+    return surrogate
 
 
 def _timestamp(value: Any, name: str) -> datetime:

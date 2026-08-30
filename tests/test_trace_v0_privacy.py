@@ -2,7 +2,16 @@ from __future__ import annotations
 
 import pytest
 
-from core.trace_context import TraceCollector, TraceContext, TraceKind, TraceStage
+from core.trace_context import (
+    TraceCollector,
+    TraceContext,
+    TraceCorrelationKind,
+    TraceKind,
+    TracePrivacyError,
+    TraceStage,
+    TraceValidationError,
+    trace_correlation_id,
+)
 
 
 FORBIDDEN_VALUES = [
@@ -120,3 +129,19 @@ def test_credential_variants_are_rejected_without_persisting_raw_value(
     assert trace.collected is False
     assert credential not in persisted
     assert persisted.count("\n") == 1
+
+
+@pytest.mark.parametrize(
+    "unsafe",
+    [
+        "/Users/example/private/request-id",
+        "https://example.test/request-id",
+        "line-one\nline-two",
+        "sk-1234567890abcdef",
+        "jupyter-token-1234567890",
+        "secret=abcdefghijklmnop",
+    ],
+)
+def test_trace_correlation_never_hashes_sensitive_or_structured_values(unsafe):
+    with pytest.raises((TracePrivacyError, TraceValidationError)):
+        trace_correlation_id(unsafe, kind=TraceCorrelationKind.REQUEST)

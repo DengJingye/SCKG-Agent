@@ -13,6 +13,7 @@ from engine.capability_workspace_service import CapabilityWorkspaceService
 from execution.capability_notebook import GenericNotebookCompiler, NotebookRendererRegistry
 from execution.data_registry import DataRegistry
 from execution.renderers.scanpy_core import ScanpyCoreNotebookRenderer
+from core.trace_context import TraceCollector
 
 
 def test_capability_handoff_is_generic_and_carries_pack_targets():
@@ -198,8 +199,11 @@ def test_stepwise_ui_uses_capability_handoff_without_a_second_page():
     assert "capability_workspace_artifact_id = artifact.artifact_id" in source
 
 
-def test_real_scanpy_workflow_question_reaches_capability_stepwise_handoff():
-    result = ResearchChatService(dense_default_enabled=False).run(
+def test_real_scanpy_workflow_question_reaches_capability_stepwise_handoff(tmp_path):
+    result = ResearchChatService(
+        dense_default_enabled=False,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
+    ).run(
         "请为我的 scRNA-seq h5ad 生成 Scanpy Core QC 到聚类和 marker 的 workflow"
     )
 
@@ -209,3 +213,10 @@ def test_real_scanpy_workflow_question_reaches_capability_stepwise_handoff():
     assert handoff["notebook_strategy"] == "capability_renderer"
     assert handoff["pack_id"] == "scanpy_core"
     assert handoff["target_representations"] == ["annotation_candidates", "umap"]
+    assert handoff["origin_trace_id"] == result["canonical_trace_id"]
+    assert handoff["parent_request_id"] == result["request_id"]
+    assert handoff["handoff_id"].startswith("research-handoff:")
+    row = json.loads((tmp_path / "traces.jsonl").read_text(encoding="utf-8"))
+    links = {(item["link_type"], item["target_id"]) for item in row["links"]}
+    assert any(link_type == "UNIFIED_AGENT_TRACE" for link_type, _ in links)
+    assert any(link_type == "APPLICATION_GRAPH_ALIAS" for link_type, _ in links)

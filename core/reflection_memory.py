@@ -22,7 +22,7 @@ DEFAULT_SKILL_CANDIDATES_DIR = DEFAULT_MEMORY_DIR / "skill_candidates"
 
 def reflect_agent_run(
     state: Dict[str, Any],
-    trace: TraceContext,
+    trace_id: str | TraceContext,
     *,
     reflection_log: Path = DEFAULT_REFLECTION_LOG,
     memory_db: Path = DEFAULT_MEMORY_DB,
@@ -33,17 +33,20 @@ def reflect_agent_run(
     Reflection writes operational memory only. It cannot promote formal evidence.
     """
 
-    query = str(state.get("user_query") or trace.metadata.get("query") or "")
+    # Compatibility is limited to the legacy CLI smoke producer. Reflection
+    # consumes only its immutable identifier and never trace metadata/stages.
+    resolved_trace_id = trace_id.trace_id if isinstance(trace_id, TraceContext) else trace_id
+    query = str(state.get("user_query") or "")
     constraints = _as_dict(state.get("extracted_constraints"))
     audit = _as_dict(state.get("hallucination_audit"))
     context_pack = _as_dict(state.get("context_pack"))
     missing = _missing_evidence(state, context_pack)
     warnings = _reflection_warnings(state, audit)
-    memory_events = _memory_events_from_state(query, constraints, missing, warnings, trace.trace_id)
-    skill_candidates = _skill_candidates_from_run(query, missing, warnings, trace.trace_id)
+    memory_events = _memory_events_from_state(query, constraints, missing, warnings, resolved_trace_id)
+    skill_candidates = _skill_candidates_from_run(query, missing, warnings, resolved_trace_id)
     event = ReflectionEvent(
         reflection_id=f"reflection_{uuid.uuid4().hex}",
-        trace_id=trace.trace_id,
+        trace_id=resolved_trace_id,
         user_query=query,
         learned_facts=_learned_facts(constraints),
         failure_lessons=warnings,

@@ -59,6 +59,19 @@ from core.research_agent_models import (
     SemanticRouteDecision,
 )
 from core.runtime_build_identity import get_runtime_build_identity
+from core.trace_context import (
+    TraceCollector,
+    TraceContext,
+    TraceCorrelationKind,
+    TraceKind,
+    TraceLinkType,
+    TracePrivacyError,
+    TraceStage,
+    TraceStateError,
+    TraceStatus,
+    TraceValidationError,
+    trace_correlation_id,
+)
 from core.open_world_evaluation_models import (
     ClaimAction,
     ClaimEntailmentStatus,
@@ -81,6 +94,137 @@ class ResearchChatIntent(str, Enum):
     CAVEAT_COMPARISON = "caveat_comparison"
     MIGRATION_EXPLORATION = "migration_exploration"
     EVIDENCE_QA = "evidence_qa"
+
+
+class _ResearchTraceScopes:
+    """Request-local cleanup for safe semantic scopes; owns no trace data."""
+
+    def __init__(self) -> None:
+        self._scopes: list[Any] = []
+
+    def enter(self, scope: Any) -> Any:
+        scope.__enter__()
+        self._scopes.append(scope)
+        return scope
+
+    def fail_open(self, exc: Exception) -> None:
+        for scope in reversed(self._scopes):
+            record = scope.record
+            if record is not None and not record.terminal:
+                scope.__exit__(type(exc), exc, exc.__traceback__)
+
+
+def _finish_research_trace_span(
+    span: Any,
+    status: TraceStatus,
+    *,
+    decision_type: str,
+    outcome: str,
+    reason_code: str,
+    rule_version: str,
+    record_ref: Optional[dict[str, Any]] = None,
+    error_code: Optional[str] = None,
+) -> None:
+    if status is TraceStatus.SUCCESS:
+        span.add_decision(
+            decision_type=decision_type,
+            outcome=outcome,
+            reason_code=reason_code,
+            rule_version=rule_version,
+            record_ref=record_ref,
+        )
+        span.succeed()
+    elif status is TraceStatus.PARTIAL:
+        span.partial(
+            decision_type=decision_type,
+            outcome=outcome,
+            reason_code=reason_code,
+            rule_version=rule_version,
+            record_ref=record_ref,
+        )
+    elif status is TraceStatus.BLOCKED:
+        span.blocked(
+            decision_type=decision_type,
+            outcome=outcome,
+            reason_code=reason_code,
+            rule_version=rule_version,
+            record_ref=record_ref,
+        )
+    elif status is TraceStatus.SKIPPED:
+        span.skipped(
+            decision_type=decision_type,
+            outcome=outcome,
+            reason_code=reason_code,
+            rule_version=rule_version,
+            record_ref=record_ref,
+        )
+    else:
+        span.add_decision(
+            decision_type=decision_type,
+            outcome=outcome,
+            reason_code=reason_code,
+            rule_version=rule_version,
+            record_ref=record_ref,
+        )
+        span.fail(error_code or "research_stage_failed")
+
+
+def _close_research_trace_span(
+    span: Any,
+    status: TraceStatus,
+    *,
+    outcome: str,
+    reason_code: str,
+    decision_type: str = "research_route",
+    rule_version: str = "research_routing_v0",
+    record_ref: Optional[dict[str, Any]] = None,
+) -> None:
+    _finish_research_trace_span(
+        span,
+        status,
+        decision_type=decision_type,
+        outcome=outcome,
+        reason_code=reason_code,
+        rule_version=rule_version,
+        record_ref=record_ref,
+    )
+    span.__exit__(None, None, None)
+
+
+def _set_research_request_outcome(
+    trace: TraceContext,
+    response: ResearchAgentResponse,
+) -> None:
+    instrumentation = trace.instrumentation()
+    if response.status == "FAILED":
+        instrumentation.set_request_outcome(
+            TraceStatus.FAILED,
+            error_code="research_request_failed",
+        )
+        return
+    if response.status == "BLOCKED":
+        instrumentation.set_request_outcome(
+            TraceStatus.BLOCKED,
+            decision_type="research_request_outcome",
+            outcome="blocked",
+            reason_code="research_request_blocked",
+            rule_version="research_outcome_v0",
+        )
+        return
+    if response.status == "WAITING" or response.runtime_mode == "general_local_fallback":
+        instrumentation.set_request_outcome(
+            TraceStatus.PARTIAL,
+            decision_type="research_request_outcome",
+            outcome="partial",
+            reason_code=(
+                "research_request_waiting"
+                if response.status == "WAITING"
+                else "general_answer_degraded"
+            ),
+            rule_version="research_outcome_v0",
+        )
+        return
+    instrumentation.set_request_outcome(TraceStatus.SUCCESS)
 
 
 def _dense_default_enabled(
@@ -196,6 +340,7 @@ class ResearchChatService:
         reasoner: Optional[ExternalResearchReasoner] = None,
         dense_default_enabled: Optional[bool] = None,
         evaluation_retrieval_profile: Optional[str] = None,
+        trace_collector: Optional[TraceCollector] = None,
     ) -> None:
         self.retrieval = retrieval or HybridRetrievalService()
         self._parent_agent = parent_agent
@@ -230,6 +375,7 @@ class ResearchChatService:
                 "kg_hybrid_contract, or None"
             )
         self._evaluation_retrieval_profile = evaluation_retrieval_profile
+        self._trace_collector = trace_collector or TraceCollector()
         if self._dense_default_enabled:
             self.retrieval.start_dense_warmup()
 
@@ -287,54 +433,169 @@ class ResearchChatService:
         uploaded_context: Optional[Dict[str, Any]] = None,
         conversation_context: Optional[list[dict[str, Any]]] = None,
         user_runtime_config: Optional[Dict[str, Any]] = None,
+        trace_context: Optional[TraceContext] = None,
     ) -> ResearchAgentResponse:
+        correlation_degraded = False
+        try:
+            trace_request_id = trace_correlation_id(
+                request.request_id,
+                kind=TraceCorrelationKind.REQUEST,
+            )
+        except TracePrivacyError:
+            trace_request_id = f"request-ref:opaque:{uuid.uuid4().hex}"
+            correlation_degraded = True
+        try:
+            trace_conversation_id = trace_correlation_id(
+                request.conversation_id,
+                kind=TraceCorrelationKind.CONVERSATION,
+            )
+        except TracePrivacyError:
+            trace_conversation_id = None
+            correlation_degraded = True
+
+        if trace_context is not None and not correlation_degraded:
+            if not trace_context.is_v0:
+                raise TraceStateError("injected research trace must be canonical v0")
+            if trace_context.trace_kind is not TraceKind.RESEARCH:
+                raise TraceStateError("injected research trace must have RESEARCH kind")
+            if trace_context.request_id != trace_request_id:
+                raise TraceValidationError("injected trace request correlation mismatch")
+            if (
+                trace_context.conversation_id is not None
+                and trace_context.conversation_id != trace_conversation_id
+            ):
+                raise TraceValidationError(
+                    "injected trace conversation correlation mismatch"
+                )
+            trace = trace_context
+        else:
+            trace = TraceContext.new_request(
+                trace_kind=TraceKind.RESEARCH,
+                request_id=trace_request_id,
+                conversation_id=trace_conversation_id,
+            )
         if self._application_graph is None:
             with self._parent_lock:
                 if self._application_graph is None:
                     self._application_graph = ResearchAgentGraph(self)
-        result = self._application_graph.invoke(
-            {
-                "request": request,
-                "project_memory": dict(project_memory or {}),
-                "uploaded_context": dict(uploaded_context or {}),
-                "conversation_context": list(conversation_context or []),
-                "user_runtime_config": dict(user_runtime_config or {}),
-            }
-        )
-        return result["response"]
+        with self._trace_collector.request_scope(trace):
+            result = self._application_graph.invoke(
+                {
+                    "request": request,
+                    "trace_context": trace,
+                    "trace_correlation_degraded": correlation_degraded,
+                    "project_memory": dict(project_memory or {}),
+                    "uploaded_context": dict(uploaded_context or {}),
+                    "conversation_context": list(conversation_context or []),
+                    "user_runtime_config": dict(user_runtime_config or {}),
+                }
+            )
+            response = result["response"]
+            _set_research_request_outcome(trace, response)
+        return response
 
     def _execute_pipeline(
         self,
         request: ResearchAgentRequest,
         *,
+        trace_context: TraceContext,
+        trace_correlation_degraded: bool = False,
         project_memory: Optional[Dict[str, Any]] = None,
         uploaded_context: Optional[Dict[str, Any]] = None,
         conversation_context: Optional[list[dict[str, Any]]] = None,
         user_runtime_config: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        trace_scopes = _ResearchTraceScopes()
+        try:
+            return self._execute_pipeline_body(
+                request,
+                trace_context=trace_context,
+                trace_correlation_degraded=trace_correlation_degraded,
+                project_memory=project_memory,
+                uploaded_context=uploaded_context,
+                conversation_context=conversation_context,
+                user_runtime_config=user_runtime_config,
+                trace_scopes=trace_scopes,
+            )
+        except Exception as exc:
+            trace_scopes.fail_open(exc)
+            raise
+
+    def _execute_pipeline_body(
+        self,
+        request: ResearchAgentRequest,
+        *,
+        trace_context: TraceContext,
+        trace_correlation_degraded: bool = False,
+        project_memory: Optional[Dict[str, Any]] = None,
+        uploaded_context: Optional[Dict[str, Any]] = None,
+        conversation_context: Optional[list[dict[str, Any]]] = None,
+        user_runtime_config: Optional[Dict[str, Any]] = None,
+        trace_scopes: _ResearchTraceScopes,
     ) -> Dict[str, Any]:
         run_started = time.perf_counter()
         query = request.query
         intent_started = time.perf_counter()
         context = conversation_context or []
         runtime_config = dict(user_runtime_config or {})
+        instrumentation = trace_context.instrumentation()
+        routing_span = instrumentation.span(
+            stage=TraceStage.ROUTING,
+            component="research_chat_service",
+            operation="resolve_research_route",
+            input_refs=[
+                {
+                    "record_type": "research_request",
+                    "record_id": trace_context.request_id,
+                    "relation": "routes",
+                }
+            ],
+            exception_error_code="research_routing_failed",
+        )
+        trace_scopes.enter(routing_span)
+        if trace_correlation_degraded:
+            routing_span.add_decision(
+                decision_type="correlation_adaptation",
+                outcome="opaque_fallback",
+                reason_code="sensitive_source_id_redacted",
+                rule_version="trace_correlation_v0",
+            )
         runtime_build = get_runtime_build_identity().model_dump(mode="json")
         conversation_state = resolve_conversation_task_state(
             context,
             runtime_build_id=str(runtime_build.get("source_fingerprint") or ""),
         )
         if _service_source_is_stale():
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.BLOCKED,
+                outcome="stale_build",
+                reason_code="runtime_source_changed_restart_required",
+            )
             return _stale_build_result(
                 request=request,
                 run_started=run_started,
                 conversation_state=conversation_state,
             )
         if _is_system_info_query(query):
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.SUCCESS,
+                outcome="system_info",
+                reason_code="system_runtime_question",
+            )
             return _system_info_result(
                 request=request,
                 runtime_config=runtime_config,
                 run_started=run_started,
             )
         if _is_product_capability_query(query):
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.SUCCESS,
+                outcome="product_capabilities",
+                reason_code="product_capability_question",
+            )
             return _product_capability_result(
                 request=request,
                 runtime_config=runtime_config,
@@ -365,6 +626,12 @@ class ResearchChatService:
             and action_safety.verdict != "BLOCK"
             and not _requests_incompatible_action(query)
         ):
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.SUCCESS,
+                outcome="general_chat",
+                reason_code="incompatible_topic_ask_only",
+            )
             return _general_chat_result(
                 request=request,
                 runtime_config=runtime_config,
@@ -381,15 +648,22 @@ class ResearchChatService:
                 or _requests_incompatible_action(query)
             )
         ):
+            route_reason = (
+                action_safety.reason_codes[0]
+                if action_safety.reason_codes
+                else "tool_task_or_modality_incompatible"
+            )
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.BLOCKED,
+                outcome="unsupported_action",
+                reason_code=route_reason,
+            )
             return _unsupported_action_result(
                 request=request,
                 mode=preliminary_mode,
                 run_started=run_started,
-                reason=(
-                    action_safety.reason_codes[0]
-                    if action_safety.reason_codes
-                    else "tool_task_or_modality_incompatible"
-                ),
+                reason=route_reason,
                 action_safety=action_safety,
                 conversation_state=conversation_state,
             )
@@ -401,6 +675,12 @@ class ResearchChatService:
             )
         ):
             if preliminary_mode is AgentMode.ASK:
+                _close_research_trace_span(
+                    routing_span,
+                    TraceStatus.SUCCESS,
+                    outcome="general_chat",
+                    reason_code="complete_general_question",
+                )
                 return _general_chat_result(
                     request=request,
                     runtime_config=runtime_config,
@@ -408,6 +688,12 @@ class ResearchChatService:
                     reasoner=reasoner,
                     run_started=run_started,
                 )
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.BLOCKED,
+                outcome="unsupported_action",
+                reason_code="task_outside_qualified_single_cell_action_space",
+            )
             return _unsupported_action_result(
                 request=request,
                 mode=preliminary_mode,
@@ -477,6 +763,12 @@ class ResearchChatService:
             )
         if domain_decision.domain == DomainKind.GENERAL.value:
             if preliminary_mode is AgentMode.ASK:
+                _close_research_trace_span(
+                    routing_span,
+                    TraceStatus.SUCCESS,
+                    outcome="general_chat",
+                    reason_code="semantic_general_route",
+                )
                 return _general_chat_result(
                     request=request,
                     runtime_config=runtime_config,
@@ -485,6 +777,12 @@ class ResearchChatService:
                     run_started=run_started,
                     semantic_parse=semantic_parse,
                 )
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.BLOCKED,
+                outcome="unsupported_action",
+                reason_code="task_outside_qualified_single_cell_action_space",
+            )
             return _unsupported_action_result(
                 request=request,
                 mode=preliminary_mode,
@@ -505,6 +803,12 @@ class ResearchChatService:
                 and governed_task_anchor is None
             )
         ):
+            _close_research_trace_span(
+                routing_span,
+                TraceStatus.PARTIAL,
+                outcome="clarification_required",
+                reason_code=domain_decision.reason,
+            )
             return _clarification_result(
                 request=request,
                 mode=preliminary_mode,
@@ -544,6 +848,21 @@ class ResearchChatService:
                 f"task_source={task_source or 'none'};semantic={semantic_parse.status}"
             ),
         )
+        _close_research_trace_span(
+            routing_span,
+            TraceStatus.SUCCESS,
+            outcome=f"{str(domain_decision.domain).lower()}_{mode.value.lower()}",
+            reason_code=domain_decision.reason,
+            record_ref=(
+                {
+                    "record_type": "canonical_task",
+                    "record_id": task_id,
+                    "relation": "selected",
+                }
+                if task_id
+                else None
+            ),
+        )
         contextual_query = _retrieval_query(
             _contextual_query(
                 query,
@@ -560,6 +879,13 @@ class ResearchChatService:
         )
         explicit_query_tools = _known_tools_in_query(query)
         required_claim_types = _claim_types_for_tool_query(query, intent)
+        retrieval_span = instrumentation.span(
+            stage=TraceStage.RETRIEVAL,
+            component="research_chat_service",
+            operation="retrieve_governed_evidence",
+            exception_error_code="research_retrieval_failed",
+        )
+        trace_scopes.enter(retrieval_span)
         tool_plan = _research_tool_plan(
             semantic_parse=semantic_parse,
             query=contextual_query,
@@ -572,6 +898,12 @@ class ResearchChatService:
                 else []
             ),
         )
+        for call in tool_plan.calls:
+            retrieval_span.add_input_ref(
+                record_type="research_tool_call",
+                record_id=call.call_id,
+                relation="executes",
+            )
         retrieval_decision = _adaptive_retrieval_decision(
             query=query,
             task_id=task_id,
@@ -684,15 +1016,145 @@ class ResearchChatService:
                 and len(requested_answer_tools) <= 1
             ):
                 candidates = candidates[:1]
+        for hit in retrieval.hits[:12]:
+            retrieval_span.add_output_ref(
+                record_type="evidence_chunk",
+                record_id=hit.chunk_id,
+                relation="retrieved",
+            )
+        if retrieval.index_build_id:
+            retrieval_span.add_output_ref(
+                record_type="retrieval_index",
+                record_id=retrieval.index_build_id,
+                relation="queried",
+            )
+        retrieval_span.set_counter("tool_call_count", len(tool_plan.calls))
+        retrieval_span.set_counter(
+            "observation_count",
+            len(tool_execution.observations),
+        )
+        retrieval_span.set_counter("result_count", len(retrieval.hits))
+        retrieval_span.set_counter(
+            "source_bound_count",
+            sum(hit.source_bound for hit in retrieval.hits),
+        )
+        incomplete_observation = any(
+            observation.status in {"blocked", "failed"}
+            for observation in tool_execution.observations
+        )
+        retrieval_status = (
+            TraceStatus.BLOCKED
+            if not retrieval.hits
+            else TraceStatus.PARTIAL
+            if incomplete_observation
+            else TraceStatus.SUCCESS
+        )
+        _close_research_trace_span(
+            retrieval_span,
+            retrieval_status,
+            decision_type="adaptive_retrieval",
+            outcome=retrieval_decision.route,
+            reason_code=(
+                "retrieval_result_missing"
+                if not retrieval.hits
+                else "tool_observation_incomplete"
+                if incomplete_observation
+                else retrieval_decision.reason
+            ),
+            rule_version="adaptive_retrieval_v0",
+        )
         snippets = [_legacy_snippet(hit) for hit in retrieval.hits]
         parent_started = time.perf_counter()
-        parent_result = self._plan_if_requested(
-            contextual_query,
-            task_id,
-            intent=intent,
-            mode=mode,
-            request=request,
-        )
+        if mode in {AgentMode.PLAN, AgentMode.RUN}:
+            planning_span = instrumentation.span(
+                stage=TraceStage.PLANNING,
+                component="research_chat_service",
+                operation="plan_if_requested",
+                exception_error_code="research_planning_failed",
+            )
+            with planning_span:
+                parent_result = self._plan_if_requested(
+                    contextual_query,
+                    task_id,
+                    intent=intent,
+                    mode=mode,
+                    request=request,
+                )
+                profile = parent_result.get("data_profile") or {}
+                if isinstance(profile, dict) and profile.get("profile_id"):
+                    planning_span.add_output_ref(
+                        record_type="data_profile",
+                        record_id=profile["profile_id"],
+                        relation="planning_context",
+                    )
+                for bundle in list(parent_result.get("action_bundles") or [])[:8]:
+                    if not isinstance(bundle, dict):
+                        continue
+                    if bundle.get("bundle_id"):
+                        planning_span.add_input_ref(
+                            record_type="action_bundle",
+                            record_id=bundle["bundle_id"],
+                            relation="planning_context",
+                        )
+                    if bundle.get("contract_id"):
+                        planning_span.add_input_ref(
+                            record_type="tool_contract",
+                            record_id=bundle["contract_id"],
+                            relation="planning_context",
+                        )
+                workflow_plan = parent_result.get("workflow_plan") or {}
+                if isinstance(workflow_plan, dict) and workflow_plan.get("plan_id"):
+                    planning_span.add_output_ref(
+                        record_type="workflow_plan",
+                        record_id=workflow_plan["plan_id"],
+                        relation="planned",
+                    )
+                unified_trace = parent_result.get("_unified_trace") or {}
+                if (
+                    not trace_correlation_degraded
+                    and isinstance(unified_trace, dict)
+                    and unified_trace.get("trace_id")
+                ):
+                    instrumentation.add_link(
+                        link_type=TraceLinkType.UNIFIED_AGENT_TRACE,
+                        target_type="unified_agent_trace",
+                        target_id=unified_trace["trace_id"],
+                    )
+                planning_span.set_counter(
+                    "execution_request_count",
+                    int(parent_result.get("execution_request_count") or 0),
+                )
+                parent_status = str(parent_result.get("status") or "BLOCKED")
+                planning_status = (
+                    TraceStatus.SUCCESS
+                    if parent_status == "READY"
+                    else TraceStatus.PARTIAL
+                    if parent_status == "WAITING"
+                    else TraceStatus.FAILED
+                    if parent_status == "FAILED"
+                    else TraceStatus.BLOCKED
+                )
+                _finish_research_trace_span(
+                    planning_span,
+                    planning_status,
+                    decision_type="planning_result",
+                    outcome=parent_status.lower(),
+                    reason_code=str(parent_result.get("route") or "planning_blocked").lower(),
+                    rule_version="research_planning_v0",
+                    error_code=(
+                        "planner_reported_failure"
+                        if planning_status is TraceStatus.FAILED
+                        else None
+                    ),
+                )
+        else:
+            parent_result = self._plan_if_requested(
+                contextual_query,
+                task_id,
+                intent=intent,
+                mode=mode,
+                request=request,
+            )
         parent_timing = _chat_timing(
             "parent_planning",
             parent_started,
@@ -1026,6 +1488,10 @@ class ResearchChatService:
     def _graph_action_retrieval(self, payload: dict[str, Any]) -> dict[str, Any]:
         legacy_result = self._execute_pipeline(
             payload["request"],
+            trace_context=payload["trace_context"],
+            trace_correlation_degraded=bool(
+                payload.get("trace_correlation_degraded")
+            ),
             project_memory=payload.get("project_memory"),
             uploaded_context=payload.get("uploaded_context"),
             conversation_context=payload.get("conversation_context"),
@@ -1062,6 +1528,10 @@ class ResearchChatService:
         response = self._response_from_legacy(
             payload["request"],
             payload["legacy_result"],
+            trace_context=payload["trace_context"],
+            trace_correlation_degraded=bool(
+                payload.get("trace_correlation_degraded")
+            ),
             visited_nodes=[*payload.get("visited_nodes", []), "answer_or_handoff"],
             graph_runtime=graph_runtime,
         )
@@ -1072,6 +1542,8 @@ class ResearchChatService:
         request: ResearchAgentRequest,
         result: dict[str, Any],
         *,
+        trace_context: TraceContext,
+        trace_correlation_degraded: bool,
         visited_nodes: list[str],
         graph_runtime: str,
     ) -> ResearchAgentResponse:
@@ -1123,11 +1595,17 @@ class ResearchChatService:
         ]
         trace = parent.pop("_unified_trace", None)
         trace_ids = [trace["trace_id"]] if isinstance(trace, dict) else []
-        trace_ids.append(
+        application_graph_id = (
             "application-graph:"
             + hashlib.sha256(
-                f"{request.request_id}:{','.join(visited_nodes)}".encode("utf-8")
+                f"{trace_context.request_id}:{','.join(visited_nodes)}".encode("utf-8")
             ).hexdigest()[:16]
+        )
+        trace_ids.append(application_graph_id)
+        trace_context.instrumentation().add_link(
+            link_type=TraceLinkType.APPLICATION_GRAPH_ALIAS,
+            target_type="application_graph",
+            target_id=application_graph_id,
         )
         context_pack["application_graph"] = {
             "runtime": graph_runtime,
@@ -1220,6 +1698,7 @@ class ResearchChatService:
             blockers=blockers,
             next_actions=next_actions,
             trace_ids=trace_ids,
+            canonical_trace_id=trace_context.trace_id,
             conversation_state=conversation_state,
         )
         build_identity = get_runtime_build_identity().model_dump(mode="json")
@@ -1276,8 +1755,63 @@ class ResearchChatService:
             if workflow_bundle
             else [],
         })
+        if workspace_handoff.get("status") == "available":
+            handoff_id = f"research-handoff:{uuid.uuid4().hex}"
+            original_plan_id = (
+                plan.get("plan_id") if isinstance(plan, dict) else None
+            )
+            workspace_handoff.update(
+                {
+                    "handoff_id": handoff_id,
+                    "origin_trace_id": trace_context.trace_id,
+                    "parent_request_id": trace_context.request_id,
+                    "original_plan_id": original_plan_id,
+                }
+            )
+            instrumentation = trace_context.instrumentation()
+            with instrumentation.span(
+                stage=TraceStage.HANDOFF,
+                component="research_chat_service",
+                operation="create_workspace_handoff",
+                input_refs=(
+                    [
+                        {
+                            "record_type": "workflow_plan",
+                            "record_id": original_plan_id,
+                            "relation": "origin",
+                        }
+                    ]
+                    if original_plan_id
+                    else []
+                ),
+                exception_error_code="research_handoff_failed",
+            ) as handoff_span:
+                handoff_span.add_output_ref(
+                    record_type="research_workspace_handoff",
+                    record_id=handoff_id,
+                    relation="created",
+                )
+                handoff_span.set_counter(
+                    "target_count",
+                    len(workspace_handoff.get("target_representations") or []),
+                )
+                _finish_research_trace_span(
+                    handoff_span,
+                    TraceStatus.SUCCESS,
+                    decision_type="workspace_handoff",
+                    outcome="data_preview",
+                    reason_code="workspace_handoff_available",
+                    rule_version="research_handoff_v0",
+                )
+            if original_plan_id:
+                instrumentation.add_link(
+                    link_type=TraceLinkType.ORIGIN_PLAN,
+                    target_type="workflow_plan",
+                    target_id=original_plan_id,
+                )
         return ResearchAgentResponse(
             state=state,
+            canonical_trace_id=trace_context.trace_id,
             user_query=request.query,
             status=status,
             direct_answer=direct_answer,
@@ -1328,6 +1862,7 @@ class ResearchChatService:
             "domain": state.domain,
             "request_id": state.request_id,
             "conversation_id": state.conversation_id,
+            "canonical_trace_id": response.canonical_trace_id,
             "user_id": state.user_id,
             "response_intent": state.intent,
             "extracted_constraints": {

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Callable, TypedDict
 
 from core.research_agent_models import AgentMode, ResearchAgentResponse
+from core.trace_context import TraceContext
 
 try:
     from langgraph.graph import END, StateGraph
@@ -13,6 +14,8 @@ except ImportError:  # The local control plane must remain useful without LangGr
 
 class ResearchGraphPayload(TypedDict, total=False):
     request: Any
+    trace_context: TraceContext
+    trace_correlation_degraded: bool
     project_memory: dict[str, Any]
     uploaded_context: dict[str, Any]
     conversation_context: list[dict[str, Any]]

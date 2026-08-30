@@ -9,6 +9,7 @@ from core.trace_context import (
     TRACE_SCHEMA_VERSION,
     DecisionEvidence,
     TraceCollector,
+    TraceCorrelationKind,
     TraceContext,
     TraceKind,
     TraceLink,
@@ -21,6 +22,7 @@ from core.trace_context import (
     TraceValidationError,
     _validate_v0,
     load_traces,
+    trace_correlation_id,
 )
 
 
@@ -42,6 +44,47 @@ def _valid_v0_row(request_id="validator-request"):
 def _assert_invalid_v0(row):
     with pytest.raises(TraceValidationError):
         _validate_v0(row)
+
+
+def test_trace_correlation_ids_preserve_safe_sources_and_namespace_surrogates():
+    assert trace_correlation_id(
+        "research-chat-abc123",
+        kind=TraceCorrelationKind.REQUEST,
+    ) == "research-chat-abc123"
+    assert trace_correlation_id(
+        "local-conversation",
+        kind=TraceCorrelationKind.CONVERSATION,
+    ) == "local-conversation"
+
+    source = "r" * 257
+    request_ref = trace_correlation_id(source, kind=TraceCorrelationKind.REQUEST)
+    conversation_ref = trace_correlation_id(
+        source,
+        kind=TraceCorrelationKind.CONVERSATION,
+    )
+    assert request_ref == trace_correlation_id(
+        source,
+        kind=TraceCorrelationKind.REQUEST,
+    )
+    assert request_ref.startswith("request-ref:")
+    assert conversation_ref.startswith("conversation-ref:")
+    assert request_ref != conversation_ref
+    assert request_ref != trace_correlation_id(
+        "r" * 256 + "s",
+        kind=TraceCorrelationKind.REQUEST,
+    )
+    TraceContext.new_request(
+        trace_kind=TraceKind.RESEARCH,
+        request_id=request_ref,
+        conversation_id=conversation_ref,
+    )
+
+
+def test_trace_correlation_adapts_non_secret_leading_punctuation():
+    value = ":business-request"
+    adapted = trace_correlation_id(value, kind=TraceCorrelationKind.REQUEST)
+    assert adapted.startswith("request-ref:")
+    assert value not in adapted
 
 
 def test_trace_context_writes_valid_jsonl(tmp_path):

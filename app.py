@@ -127,7 +127,6 @@ from core.reflection_memory import reflect_agent_run
 from core.privacy_policy import OutboundDisclosureService, PrivacyMode
 from core.settings import get_settings
 from core.tool_contract_registry import ToolContractRegistry
-from core.trace_context import TraceCollector, TraceContext
 from core.user_store import (
     ApiConfigError,
     clear_conversation,
@@ -1552,85 +1551,29 @@ def _run_agent(
         runtime_config.get("privacy_mode") or PrivacyMode.LOCAL_HYBRID.value
     )
     get_settings.cache_clear()
-    trace = TraceContext(
-        trace_type="agent_run",
-        metadata={
-            "query": user_query,
-            "source": "streamlit",
-            "offline_llm": offline_llm,
-            "architecture": "bounded_centralized_parent_agent",
-        },
-    )
     try:
-        with trace.stage_timer(
-            "gateway",
-            method="agent.research_chat_service.ResearchChatService",
-            provider="local_governed_parent_agent",
-            input_summary={"query_chars": len(user_query), "mode": agent_mode or "AUTO"},
-        ) as payload:
-            state = _research_agent_backend().run(
-                user_query,
-                mode=agent_mode,
-                user_id=user_id,
-                conversation_id=conversation_id,
-                artifact_id=artifact_id,
-                requested_tool=requested_tool,
-                project_memory=project_memory,
-                uploaded_context=uploaded_context,
-                conversation_context=conversation_context,
-                user_runtime_config=runtime_config,
-            )
-            payload["output_summary"] = {
-                "runtime_mode": state.get("runtime_mode"),
-                "candidate_count": len(state.get("tool_candidates") or []),
-                "execution_request_count": (
-                    state.get("deterministic_parent_result") or {}
-                ).get("execution_request_count", 0),
-                "application_graph": (
-                    state.get("context_pack", {}).get("application_graph", {})
-                ).get("runtime"),
-            }
-        for timing in (
-            (state.get("context_pack") or {}).get("chat_stage_timings") or []
-        ):
-            stage_name = str(timing.get("stage") or "")
-            if not stage_name:
-                continue
-            trace.record_stage(
-                stage_name,
-                status=str(timing.get("status") or "completed"),
-                method="agent.research_chat_service",
-                provider=str(state.get("runtime_mode") or "degraded_local_fallback"),
-                output_summary={"detail": str(timing.get("detail") or "")},
-                elapsed_ms=float(timing.get("elapsed_ms") or 0.0),
-            )
+        state = _research_agent_backend().run(
+            user_query,
+            mode=agent_mode,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            artifact_id=artifact_id,
+            requested_tool=requested_tool,
+            project_memory=project_memory,
+            uploaded_context=uploaded_context,
+            conversation_context=conversation_context,
+            user_runtime_config=runtime_config,
+        )
         try:
-            with trace.stage_timer(
-                "reflect",
-                method="core.reflection_memory.reflect_agent_run",
-                provider="local_sqlite_jsonl",
-                input_summary={
-                    "has_final_report": bool(state.get("final_report")),
-                    "has_audit": bool(state.get("hallucination_audit")),
-                },
-            ) as payload:
-                reflection = reflect_agent_run(state, trace)
-                state["reflection_event"] = reflection.model_dump(mode="json")
-                payload["output_summary"] = {
-                    "memory_event_count": len(reflection.memory_events),
-                    "skill_candidate_count": len(reflection.skill_candidates),
-                    "missing_evidence_count": len(reflection.missing_evidence),
-                }
-                payload["warnings"] = reflection.warnings
+            reflection = reflect_agent_run(
+                state,
+                str(state.get("canonical_trace_id") or ""),
+            )
+            state["reflection_event"] = reflection.model_dump(mode="json")
         except Exception as exc:
             state["reflection_error"] = f"{type(exc).__name__}: {exc}"
         return dict(state)
-    except Exception as exc:
-        trace.metadata["error"] = f"{type(exc).__name__}: {exc}"
-        raise
     finally:
-        trace.finish()
-        TraceCollector().collect(trace)
         if previous is None:
             os.environ.pop("SCKG_OFFLINE_LLM", None)
         else:
@@ -2377,7 +2320,10 @@ def _workspace_handoff_payload(
         return None
     plan = state.get("workflow_plan") or {}
     return {
-        "handoff_id": f"workspace-{uuid.uuid4().hex}",
+        "handoff_id": governed_handoff.get("handoff_id"),
+        "origin_trace_id": governed_handoff.get("origin_trace_id"),
+        "parent_request_id": governed_handoff.get("parent_request_id"),
+        "original_plan_id": governed_handoff.get("original_plan_id"),
         "conversation_id": st.session_state.session_id,
         "source_query": source_query.strip(),
         "task_family": task,

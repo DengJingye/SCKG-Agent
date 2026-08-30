@@ -20,6 +20,7 @@ def test_ask_mode_answers_without_compiling_or_handoff(tmp_path):
     assert response.execution_handoff.status == "not_requested"
     assert response.execution_handoff.execution_request_count == 0
     assert response.workspace_handoff.status == "not_applicable"
+    assert response.canonical_trace_id == response.state.canonical_trace_id
 
 
 def test_plan_mode_compiles_dry_run_without_execution(tmp_path):
@@ -41,6 +42,8 @@ def test_plan_mode_compiles_dry_run_without_execution(tmp_path):
     assert response.workspace_handoff.tool_name == "Scrublet"
     assert response.workspace_handoff.notebook_strategy == "fixed_shadow"
     assert response.workspace_handoff.stepwise_preview_available is True
+    assert response.workspace_handoff.origin_trace_id == response.canonical_trace_id
+    assert response.workspace_handoff.parent_request_id == response.state.request_id
 
 
 def test_run_mode_without_registered_data_waits_and_never_executes(tmp_path):
