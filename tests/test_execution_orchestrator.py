@@ -5,6 +5,7 @@ import pytest
 
 from core.execution_models import ExecutionBudget, RequirementSpec
 from core.tool_contract_registry import ToolContractRegistry
+from core.trace_context import TraceCollector, TracePersistenceError
 from execution.environment_registry import EnvironmentRegistry
 from execution.execution_orchestrator import ExecutionOrchestrator, OrchestratorState
 from execution.experiment_runner import build_configuration
@@ -114,6 +115,142 @@ def test_non_maintainer_cannot_enter_execution(tmp_path):
         _run(tmp_path, "invalid_n_prin_comps", actor_role="user")
 
 
+def test_canonical_controlled_trace_links_existing_records_and_parent_lineage(tmp_path):
+    parent_trace_id = "trace_11111111111111111111111111111111"
+    result = _run(
+        tmp_path,
+        "invalid_n_prin_comps",
+        lineage={
+            "parent_trace_id": parent_trace_id,
+            "handoff_id": "controlled-handoff:test",
+            "parent_request_id": "stepwise-request:test",
+            "original_plan_id": "cap-plan-origin-test",
+        },
+    )
+    row = json.loads((tmp_path / "canonical-traces.jsonl").read_text())
+
+    assert result.canonical_trace_id == row["trace_id"]
+    assert row["trace_kind"] == "CONTROLLED_EXECUTION"
+    assert row["parent_trace_id"] == parent_trace_id
+    assert row["handoff_id"] == "controlled-handoff:test"
+    assert row["parent_request_id"] == "stepwise-request:test"
+    assert row["original_plan_id"] == "cap-plan-origin-test"
+    assert len([span for span in row["spans"] if span["parent_span_id"] is None]) == 1
+    assert [span["stage"] for span in row["spans"]] == [
+        "REQUEST",
+        "RUNTIME_BIND",
+        "STATE_INSPECTION",
+        "PLANNING",
+        "POLICY",
+        "APPROVAL",
+        "EXECUTION",
+        "VALIDATION",
+        "REPAIR",
+        "APPROVAL",
+        "EXECUTION",
+        "VALIDATION",
+        "DECISION",
+        "PACKAGE",
+    ]
+    refs = [
+        ref
+        for span in row["spans"]
+        for ref in span["input_refs"] + span["output_refs"]
+    ]
+    record_types = {ref["record_type"] for ref in refs}
+    assert {
+        "workflow_plan",
+        "execution_run",
+        "validation_record",
+        "repair_proposal",
+        "repair_action",
+        "decision_record",
+        "orchestration_record",
+        "reproducibility_package",
+    }.issubset(record_types)
+    runtime_trace_ids = {run.trace_id for run in result.execution_runs}
+    assert runtime_trace_ids == {
+        link["target_id"]
+        for link in row["links"]
+        if link["link_type"] == "LEGACY_TRACE"
+    }
+
+
+def test_success_without_repair_emits_no_repair_or_extra_approval_span(tmp_path):
+    result = _run(tmp_path, "success")
+    row = json.loads((tmp_path / "canonical-traces.jsonl").read_text())
+
+    assert result.final_state == OrchestratorState.COMPLETED
+    assert row["status"] == "SUCCESS"
+    assert [span["stage"] for span in row["spans"]] == [
+        "REQUEST",
+        "RUNTIME_BIND",
+        "STATE_INSPECTION",
+        "PLANNING",
+        "POLICY",
+        "APPROVAL",
+        "EXECUTION",
+        "VALIDATION",
+        "DECISION",
+        "PACKAGE",
+    ]
+
+
+def test_non_maintainer_trace_blocks_before_execution_and_preserves_exception(tmp_path):
+    with pytest.raises(PermissionError, match="qualification_requires_maintainer"):
+        _run(tmp_path, "success", actor_role="user")
+
+    row = json.loads((tmp_path / "canonical-traces.jsonl").read_text())
+    assert row["status"] == "FAILED"
+    assert "EXECUTION" not in [span["stage"] for span in row["spans"]]
+    policy = next(span for span in row["spans"] if span["stage"] == "POLICY")
+    assert policy["status"] == "BLOCKED"
+    assert policy["decision_evidence"][0]["reason_code"] == (
+        "qualification_requires_maintainer"
+    )
+
+
+def test_controlled_trace_privacy_and_persistence_failure_isolation(tmp_path, monkeypatch):
+    privacy_root = tmp_path / "privacy"
+    result = _run(
+        privacy_root,
+        "success",
+        request_id="controlled-request:privacy",
+        query="raw prompt must remain in the business requirement only",
+    )
+    persisted = (privacy_root / "canonical-traces.jsonl").read_text()
+    assert "raw prompt must remain" not in persisted
+    assert str(privacy_root) not in persisted
+    assert "stdout.log" not in persisted
+    assert "stderr.log" not in persisted
+    assert "test-only-wrapper" not in persisted
+    assert result.package_result.complete
+
+    failure_root = tmp_path / "persistence-failure"
+    collector = TraceCollector(failure_root / "canonical-traces.jsonl")
+
+    def fail_append(_encoded):
+        raise TracePersistenceError("trace append failed")
+
+    monkeypatch.setattr(collector, "_append_encoded", fail_append)
+    completed = _run(
+        failure_root,
+        "success",
+        trace_collector=collector,
+    )
+    assert completed.final_state == OrchestratorState.COMPLETED
+    assert completed.package_result.complete
+    assert not (failure_root / "canonical-traces.jsonl").exists()
+
+    with pytest.raises(PermissionError, match="qualification_requires_maintainer"):
+        _run(
+            tmp_path / "business-failure",
+            "success",
+            actor_role="user",
+            trace_collector=collector,
+        )
+
+
 def _run(
     tmp_path,
     scenario,
@@ -121,6 +258,10 @@ def _run(
     execution_budget=None,
     two_candidates=False,
     actor_role="maintainer",
+    trace_collector=None,
+    lineage=None,
+    request_id=None,
+    query="qualify bounded Scrublet repair",
 ):
     tmp_path.mkdir(parents=True, exist_ok=True)
     fixtures = write_phase1_fixtures(tmp_path / "fixtures")
@@ -171,10 +312,14 @@ def _run(
         environment_registry=environments,
         contract_registry=registry,
         experiment_runner=runner,
+        trace_collector=(
+            trace_collector
+            or TraceCollector(tmp_path / "canonical-traces.jsonl")
+        ),
     )
     requirement = RequirementSpec(
-        request_id=f"phase4-{scenario}",
-        query="qualify bounded Scrublet repair",
+        request_id=request_id or f"phase4-{scenario}",
+        query=query,
         input_path=str(fixtures["raw_x"]),
         input_object_type="AnnData",
         data_access_authorized=True,
@@ -192,4 +337,5 @@ def _run(
         pairing_strategy="mixed",
         cluster_key="batch",
         actor_role=actor_role,
+        **dict(lineage or {}),
     )
