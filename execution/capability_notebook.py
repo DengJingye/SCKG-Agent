@@ -18,7 +18,13 @@ class NotebookRenderer(Protocol):
 
     def bootstrap(self, context: dict[str, Any]) -> list[dict[str, Any]]: ...
 
-    def render(self, step: StepContract, parameters: dict[str, Any]) -> list[dict[str, Any]]: ...
+    def render(
+        self,
+        step: StepContract,
+        parameters: dict[str, Any],
+        *,
+        parameter_provenance: list[Any] | None = None,
+    ) -> list[dict[str, Any]]: ...
 
 
 class NotebookRendererRegistry:
@@ -87,7 +93,11 @@ class GenericNotebookCompiler:
                 raise KeyError(f"step contract is not registered: {node.operation}")
             renderer = self.renderer_registry.get(step.notebook_renderer_id or "")
             languages.add(getattr(renderer, "language_name", "python"))
-            rendered = renderer.render(step, dict(node.parameters))
+            rendered = renderer.render(
+                step,
+                dict(node.parameters),
+                parameter_provenance=list(node.parameter_provenance),
+            )
             if not rendered:
                 raise ValueError(f"renderer produced no cells: {step.method_id}")
             cells.extend(rendered)
@@ -164,15 +174,27 @@ class MaintainerTemplateRenderer:
     def bootstrap(self, context: dict[str, Any]) -> list[dict[str, Any]]:
         return []
 
-    def render(self, step: StepContract, parameters: dict[str, Any]) -> list[dict[str, Any]]:
+    def render(
+        self,
+        step: StepContract,
+        parameters: dict[str, Any],
+        *,
+        parameter_provenance: list[Any] | None = None,
+    ) -> list[dict[str, Any]]:
         try:
             source = self.templates[step.operation]
         except KeyError as exc:
             raise KeyError(f"reviewed template missing for operation: {step.operation}") from exc
+        provenance_lines = _parameter_provenance_lines(parameter_provenance or [])
         heading = _markdown_cell(
             f"## {step.operation.replace('_', ' ').title()}\n\n"
             f"Consumes: `{', '.join(item.representation_id for item in step.consumes)}`  \n"
-            f"Produces: `{', '.join(item.representation_id for item in step.produces)}`",
+            f"Produces: `{', '.join(item.representation_id for item in step.produces)}`"
+            + (
+                "\n\nResolved parameters and provenance:\n" + "\n".join(provenance_lines)
+                if provenance_lines
+                else ""
+            ),
             _safe_cell_id(f"{step.method_id}-description"),
         )
         code = _code_cell(
@@ -180,6 +202,30 @@ class MaintainerTemplateRenderer:
             _safe_cell_id(f"{step.method_id}-code"),
         )
         return [heading, code]
+
+
+def _parameter_provenance_lines(values: list[Any]) -> list[str]:
+    lines: list[str] = []
+    for value in values:
+        payload = (
+            value.model_dump(mode="json")
+            if hasattr(value, "model_dump")
+            else dict(value)
+            if isinstance(value, dict)
+            else {}
+        )
+        parameter_name = str(payload.get("parameter_name") or "")
+        if not parameter_name:
+            continue
+        rendered_value = json.dumps(payload.get("value_or_range"), sort_keys=True)
+        origin = str(payload.get("origin_type") or "unknown")
+        source_id = str(payload.get("source_id") or "reviewed_contract")
+        policy = str(payload.get("policy_rule_id") or "")
+        explanation = f"`{parameter_name}={rendered_value}` — `{origin}` from `{source_id}`"
+        if policy:
+            explanation += f"; rule `{policy}`"
+        lines.append(f"- {explanation}")
+    return lines
 
 
 def _markdown_cell(source: str, cell_id: str) -> dict[str, Any]:

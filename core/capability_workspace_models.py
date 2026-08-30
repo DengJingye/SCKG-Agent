@@ -23,6 +23,7 @@ class CapabilityWorkspaceRequest(StrictModel):
     requirement_id: str
     target_representations: list[str] = Field(min_length=1)
     preferred_method_ids: list[str] = Field(default_factory=list)
+    parameter_overrides: dict[str, dict[str, Any]] = Field(default_factory=dict)
     batch_key: str | None = None
     enable_doublet_detection: bool = False
     exclude_predicted_doublets: bool = False

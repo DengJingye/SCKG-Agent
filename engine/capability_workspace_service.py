@@ -10,6 +10,7 @@ from core.capability_workspace_models import (
     CapabilityWorkspaceRequest,
     CapabilityWorkspaceResult,
 )
+from core.execution_models import DataProfile
 from core.trace_context import (
     TraceCollector,
     TraceContext,
@@ -125,6 +126,7 @@ class CapabilityWorkspaceService:
                 batch_key=request.batch_key,
             )
             data_profile_payload = _stable_model_payload(data_profile)
+            resolved_data_profile = DataProfile.model_validate(data_profile_payload)
             profile_id = (
                 data_profile_payload.get("profile_id")
                 if isinstance(data_profile_payload, dict)
@@ -164,12 +166,14 @@ class CapabilityWorkspaceService:
                     requirement_id=request.requirement_id,
                     target_representations=request.target_representations,
                     preferred_method_ids=request.preferred_method_ids,
+                    parameter_overrides=request.parameter_overrides,
                     enable_doublet_detection=request.enable_doublet_detection,
                     exclude_predicted_doublets=request.exclude_predicted_doublets,
                     doublet_selection_hash=request.doublet_selection_hash,
                     enable_batch_integration=request.enable_batch_integration,
                 ),
                 ledger=ledger,
+                data_profile=resolved_data_profile,
             )
             planning_span.add_output_ref(
                 record_type="workflow_plan",
@@ -239,7 +243,7 @@ class CapabilityWorkspaceService:
             pack_version=request.pack_version,
             status=status,
             readiness=readiness,
-            data_profile=_stable_model_payload(data_profile),
+            data_profile=resolved_data_profile,
             representation_ledger=_stable_model_payload(ledger),
             workflow_plan=_stable_model_payload(plan),
             composition=_stable_model_payload(composition),

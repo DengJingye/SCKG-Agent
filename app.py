@@ -2611,6 +2611,15 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
                     "method": item.operation,
                     "consumes": ", ".join(item.input_artifacts),
                     "produces": ", ".join(item.output_artifacts),
+                    "parameters": json.dumps(item.parameters, sort_keys=True),
+                    "parameter_source": ", ".join(
+                        sorted(
+                            {
+                                provenance.origin_type
+                                for provenance in item.parameter_provenance
+                            }
+                        )
+                    ),
                 }
                 for index, item in enumerate(plan.steps)
             ],

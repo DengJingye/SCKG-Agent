@@ -140,8 +140,12 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
             },
         ]
 
-    def render(self, step, parameters):
-        cells = super().render(step, parameters)
+    def render(self, step, parameters, *, parameter_provenance=None):
+        cells = super().render(
+            step,
+            parameters,
+            parameter_provenance=parameter_provenance,
+        )
         diagnostic_source = SCANPY_CORE_DIAGNOSTICS.get(step.operation)
         if diagnostic_source is None:
             return cells

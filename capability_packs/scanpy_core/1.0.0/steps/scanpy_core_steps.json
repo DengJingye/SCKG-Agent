@@ -7,8 +7,8 @@
     "capability_id": "scanpy_core.profile",
     "method_id": "scanpy_core.profile_anndata",
     "operation": "profile_anndata",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "registered_anndata",
     "consumes": [
@@ -92,8 +92,8 @@
     "capability_id": "scanpy_core.graph_construction",
     "method_id": "scanpy_core.neighbors_integrated",
     "operation": "neighbors",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "integrated_representation",
     "consumes": [
@@ -130,7 +130,17 @@
     "notebook_renderer_id": "generic_step_renderer",
     "scientific_validator_id": "scanpy_core_scientific_v1",
     "gold_case_ids": ["scanpy-core-08-integrated"],
-    "parameters": {},
+    "parameters": {
+      "n_neighbors": {
+        "parameter_type": "integer",
+        "default": 15,
+        "minimum": 2,
+        "maximum": 100,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html",
+        "contract_parameter": "n_neighbors",
+        "adaptive_rule": "cap_by_cell_count_minus_one"
+      }
+    },
     "input_artifacts": ["integrated_representation"],
     "output_artifacts": ["neighbor_graph"],
     "validators": [
@@ -149,8 +159,8 @@
     "capability_id": "scanpy_core.qc",
     "method_id": "scanpy_core.calculate_qc",
     "operation": "calculate_qc",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "raw_counts",
     "consumes": [
@@ -244,8 +254,8 @@
     "capability_id": "scanpy_core.filter",
     "method_id": "scanpy_core.filter_counts",
     "operation": "filter_counts",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "raw_counts",
     "consumes": [
@@ -315,7 +325,24 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "min_genes": {
+        "parameter_type": "integer",
+        "default": 1,
+        "minimum": 0,
+        "maximum": 5000,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.filter_cells.html",
+        "contract_parameter": "min_genes"
+      },
+      "min_cells": {
+        "parameter_type": "integer",
+        "default": 1,
+        "minimum": 1,
+        "maximum": 1000,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.filter_genes.html",
+        "contract_parameter": "min_cells"
+      }
+    },
     "input_artifacts": [
       "raw_counts",
       "qc_metrics"
@@ -350,8 +377,8 @@
     "capability_id": "scanpy_core.normalize",
     "method_id": "scanpy_core.normalize_total",
     "operation": "normalize_total",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "filtered_counts",
     "consumes": [
@@ -407,7 +434,16 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "target_sum": {
+        "parameter_type": "number",
+        "default": 10000.0,
+        "minimum": 1000,
+        "maximum": 100000,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.normalize_total.html",
+        "contract_parameter": "target_sum"
+      }
+    },
     "input_artifacts": [
       "filtered_counts"
     ],
@@ -441,8 +477,8 @@
     "capability_id": "scanpy_core.normalize",
     "method_id": "scanpy_core.log1p",
     "operation": "log1p",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "library_size_normalized",
     "consumes": [
@@ -532,8 +568,8 @@
     "capability_id": "scanpy_core.feature_selection",
     "method_id": "scanpy_core.highly_variable_genes",
     "operation": "highly_variable_genes",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "log1p_normalized",
     "consumes": [
@@ -591,7 +627,17 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "n_top_genes": {
+        "parameter_type": "integer",
+        "default": 2000,
+        "minimum": 10,
+        "maximum": 10000,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.highly_variable_genes.html",
+        "contract_parameter": "n_top_genes",
+        "adaptive_rule": "cap_by_feature_count"
+      }
+    },
     "input_artifacts": [
       "log1p_normalized"
     ],
@@ -625,8 +671,8 @@
     "capability_id": "scanpy_core.feature_selection",
     "method_id": "scanpy_core.scale_hvg",
     "operation": "scale_hvg",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "log1p_normalized",
     "consumes": [
@@ -696,7 +742,16 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "max_value": {
+        "parameter_type": "number",
+        "default": 10.0,
+        "minimum": 1.0,
+        "maximum": 50.0,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.scale.html",
+        "contract_parameter": "max_scale_value"
+      }
+    },
     "input_artifacts": [
       "log1p_normalized",
       "hvg_selection"
@@ -731,8 +786,8 @@
     "capability_id": "scanpy_core.dimension_reduction",
     "method_id": "scanpy_core.pca_scaled",
     "operation": "pca_scaled",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "scaled_hvg",
     "consumes": [
@@ -790,7 +845,17 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "n_comps": {
+        "parameter_type": "integer",
+        "default": 50,
+        "minimum": 2,
+        "maximum": 200,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.pca.html",
+        "contract_parameter": "n_comps",
+        "adaptive_rule": "cap_by_min_cells_features_minus_one"
+      }
+    },
     "input_artifacts": [
       "scaled_hvg"
     ],
@@ -824,8 +889,8 @@
     "capability_id": "scanpy_core.dimension_reduction",
     "method_id": "scanpy_core.pca_log_hvg",
     "operation": "pca_log_hvg",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "log1p_normalized",
     "consumes": [
@@ -895,7 +960,17 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "n_comps": {
+        "parameter_type": "integer",
+        "default": 50,
+        "minimum": 2,
+        "maximum": 200,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.pca.html",
+        "contract_parameter": "n_comps",
+        "adaptive_rule": "cap_by_min_cells_features_minus_one"
+      }
+    },
     "input_artifacts": [
       "log1p_normalized",
       "hvg_selection"
@@ -930,8 +1005,8 @@
     "capability_id": "scanpy_core.graph_construction",
     "method_id": "scanpy_core.neighbors",
     "operation": "neighbors",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "pca",
     "consumes": [
@@ -987,7 +1062,17 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "n_neighbors": {
+        "parameter_type": "integer",
+        "default": 15,
+        "minimum": 2,
+        "maximum": 100,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html",
+        "contract_parameter": "n_neighbors",
+        "adaptive_rule": "cap_by_cell_count_minus_one"
+      }
+    },
     "input_artifacts": [
       "pca"
     ],
@@ -1021,8 +1106,8 @@
     "capability_id": "scanpy_core.embedding",
     "method_id": "scanpy_core.umap",
     "operation": "umap",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "neighbor_graph",
     "consumes": [
@@ -1078,7 +1163,15 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "random_state": {
+        "parameter_type": "integer",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 2147483647,
+        "provenance": "scanpy_core_reproducibility_policy_v1"
+      }
+    },
     "input_artifacts": [
       "neighbor_graph"
     ],
@@ -1112,8 +1205,8 @@
     "capability_id": "scanpy_core.clustering",
     "method_id": "scanpy_core.leiden",
     "operation": "leiden",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "neighbor_graph",
     "consumes": [
@@ -1169,7 +1262,23 @@
       "scanpy-core-13-invalid_matrix",
       "scanpy-core-14-doublet_exclusion_change"
     ],
-    "parameters": {},
+    "parameters": {
+      "resolution": {
+        "parameter_type": "number",
+        "default": 1.0,
+        "minimum": 0.05,
+        "maximum": 5.0,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.leiden.html",
+        "contract_parameter": "leiden_resolution"
+      },
+      "random_state": {
+        "parameter_type": "integer",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 2147483647,
+        "provenance": "scanpy_core_reproducibility_policy_v1"
+      }
+    },
     "input_artifacts": [
       "neighbor_graph"
     ],
@@ -1203,8 +1312,8 @@
     "capability_id": "scanpy_core.marker",
     "method_id": "scanpy_core.rank_markers",
     "operation": "rank_markers",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "log1p_normalized",
     "consumes": [
@@ -1723,8 +1832,8 @@
     "method_id": "scanpy_core.normalize_after_doublet_exclusion",
     "operation": "normalize_after_doublet_exclusion",
     "implementation_kind": "tool",
-    "tool_contract_id": "Scanpy:1.11.2-draft",
-    "tool_contract_version": "1.11.2-draft",
+    "tool_contract_id": "Scanpy:1.11.2",
+    "tool_contract_version": "1.11.2",
     "requires_object_type": "AnnData",
     "requires_matrix_state": "doublet_filtered_counts",
     "consumes": [{
@@ -1755,7 +1864,16 @@
     "notebook_renderer_id": "generic_step_renderer",
     "scientific_validator_id": "scanpy_core_scientific_v1",
     "gold_case_ids": ["scanpy-core-14-doublet_exclusion_change"],
-    "parameters": {},
+    "parameters": {
+      "target_sum": {
+        "parameter_type": "number",
+        "default": 10000.0,
+        "minimum": 1000,
+        "maximum": 100000,
+        "provenance": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.normalize_total.html",
+        "contract_parameter": "target_sum"
+      }
+    },
     "input_artifacts": ["doublet_filtered_counts"],
     "output_artifacts": ["library_size_normalized"],
     "validators": ["required_artifact", "hash", "schema", "finite", "cell_order", "gene_order", "provenance", "scanpy_core_scientific_v1"],

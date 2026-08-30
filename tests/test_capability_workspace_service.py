@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import anndata as ad
 import numpy as np
 import pandas as pd
@@ -78,6 +80,20 @@ def test_workspace_minimal_scanpy_plan_is_registry_driven_and_never_executes(tmp
     assert result.workflow_plan.execution_eligible is False
     assert result.notebook_artifact["cell_count"] > 4
     assert result.composition.selected_action_bundle_refs == []
+    nodes = {step.operation: step for step in result.workflow_plan.steps}
+    assert nodes["scanpy_core.highly_variable_genes"].parameters == {
+        "n_top_genes": 80
+    }
+    assert nodes["scanpy_core.pca_log_hvg"].parameters == {"n_comps": 50}
+    assert nodes["scanpy_core.neighbors"].parameters == {"n_neighbors": 15}
+    assert nodes["scanpy_core.neighbors"].parameter_provenance[0].source_id.startswith(
+        "https://scanpy.readthedocs.io/"
+    )
+    notebook = json.loads((tmp_path / "minimal.ipynb").read_text(encoding="utf-8"))
+    notebook_source = "\n".join(cell["source"] for cell in notebook["cells"])
+    assert 'STEP_PARAMETERS = {"n_top_genes": 80}' in notebook_source
+    assert 'STEP_PARAMETERS = {"n_neighbors": 15}' in notebook_source
+    assert "Resolved parameters and provenance" in notebook_source
 
 
 def test_workspace_composes_doublet_and_batch_actions_without_direct_imports(tmp_path):

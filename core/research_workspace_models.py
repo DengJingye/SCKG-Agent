@@ -114,6 +114,12 @@ class StepParameterSpec(StrictModel):
     maximum: float | int | None = None
     enum: list[Any] = Field(default_factory=list)
     provenance: str = Field(min_length=1)
+    contract_parameter: str | None = None
+    adaptive_rule: Literal[
+        "cap_by_cell_count_minus_one",
+        "cap_by_feature_count",
+        "cap_by_min_cells_features_minus_one",
+    ] | None = None
     user_confirmation_required: bool = False
 
 

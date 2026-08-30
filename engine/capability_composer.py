@@ -7,6 +7,7 @@ from core.capability_composition_models import (
     CapabilityCompositionResult,
 )
 from core.capability_pack_registry import CapabilityPackRegistry
+from core.execution_models import DataProfile
 from core.representation_models import RepresentationLedger
 from engine.capability_planner import CapabilityPlanCompiler
 
@@ -26,6 +27,7 @@ class CapabilityWorkflowComposer:
         *,
         request: CapabilityCompositionRequest,
         ledger: RepresentationLedger,
+        data_profile: DataProfile | None = None,
     ) -> tuple:
         manifest = self.registry.load(request.pack_id, request.pack_version)
         bindings = {item.binding_id: item for item in manifest.composed_actions}
@@ -113,7 +115,11 @@ class CapabilityWorkflowComposer:
             ledger=effective_ledger,
             target_representations=sorted(set(targets)),
             requirement_id=request.requirement_id,
-            options={"preferred_method_ids": preferred},
+            options={
+                "preferred_method_ids": preferred,
+                **request.parameter_overrides,
+            },
+            data_profile=data_profile,
         )
         blockers.extend(result.blocking_reasons)
         if request.enable_doublet_detection and "scanpy_core.doublet_detection_action" not in result.planned_method_ids:
