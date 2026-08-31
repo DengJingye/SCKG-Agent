@@ -16,9 +16,17 @@ from eval.architecture_ablation import (
     run_ledger_ablation,
     run_research_ablation,
 )
+from eval.citation_adjudication import load_citation_adjudication
 
 
 DEFAULT_GOLD = PROJECT_ROOT / "eval" / "fixtures" / "retrieval_gold_v2.json"
+DEFAULT_ADJUDICATION = (
+    PROJECT_ROOT / "eval" / "fixtures" / "architecture_citation_adjudication_v1.json"
+)
+DEFAULT_EVIDENCE_CHUNKS = PROJECT_ROOT / "data" / "indexes" / "evidence_chunks.jsonl"
+DEFAULT_EVIDENCE_MANIFEST = (
+    PROJECT_ROOT / "data" / "indexes" / "evidence_index_manifest.json"
+)
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / ".sckg_exec" / "evaluations"
 
 
@@ -27,6 +35,9 @@ def main() -> int:
         description="Run fixed, paired scKG architecture ablations."
     )
     parser.add_argument("--gold", type=Path, default=DEFAULT_GOLD)
+    parser.add_argument("--adjudication", type=Path, default=DEFAULT_ADJUDICATION)
+    parser.add_argument("--evidence-chunks", type=Path, default=DEFAULT_EVIDENCE_CHUNKS)
+    parser.add_argument("--evidence-manifest", type=Path, default=DEFAULT_EVIDENCE_MANIFEST)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--limit", type=int)
     args = parser.parse_args()
@@ -37,16 +48,30 @@ def main() -> int:
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     cases, case_digest = load_fixed_research_cases(args.gold, limit=args.limit)
+    citation_contract = load_citation_adjudication(
+        base_gold_path=args.gold,
+        adjudication_path=args.adjudication,
+        evidence_chunks_path=args.evidence_chunks,
+        evidence_manifest_path=args.evidence_manifest,
+    )
     research = run_research_ablation(
         cases=cases,
         output_dir=output / "research",
+        citation_contract=citation_contract,
     )
     ledger = run_ledger_ablation(output_dir=output / "ledger")
     summary = {
-        "schema_version": "sckg-architecture-ablation-run-v1",
+        "schema_version": "sckg-architecture-ablation-run-v2",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "case_digest": case_digest,
         "case_count": len(cases),
+        "citation_evaluation": {
+            "evaluator_schema_version": citation_contract.evaluator_version,
+            "base_case_sha256": citation_contract.base_gold_sha256,
+            "adjudication_overlay_sha256": citation_contract.adjudication_sha256,
+            "evidence_corpus_sha256": citation_contract.evidence_corpus_sha256,
+            "evidence_index_build_id": citation_contract.evidence_index_build_id,
+        },
         "research": research,
         "representation_ledger": ledger,
         "production_ablation_branch_added": False,

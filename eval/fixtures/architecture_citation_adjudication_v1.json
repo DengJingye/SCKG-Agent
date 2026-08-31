@@ -1,0 +1,330 @@
+{
+  "schema_version": "sckg-citation-adjudication-v1",
+  "base_gold_sha256": "2c4897217c449f6d4a24a01985ee100c61bed1136a6688444ed6c35451d474e7",
+  "evidence_corpus_sha256": "a648df3aacfc072a6eb6e8fcca3aa50503c21041b09af6492ed2bd45142e7a3e",
+  "evidence_index_build_id": "evidence-v2-bb3aec4cf1266a2e",
+  "adjudication_policy": "claim-first corpus review; retrieval mode, rank, and pass/fail were not acceptance criteria",
+  "cases": [
+    {
+      "case_id": "tool-03-parameter",
+      "category": "parameter",
+      "expected_claim": "Harmony documents the minimum integration arguments and its default PCA-embedding behavior.",
+      "relevant_source_ids": ["SRCV2_2c0511efe147368a", "SRCV2_41478613cbd9d76f", "SRCV2_a32b8508c092d86d"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:39b8f557e5782a49ee55",
+          "source_id": "SRCV2_41478613cbd9d76f",
+          "rationale": "The governed Harmony documentation states the minimum RunHarmony arguments and the default PCA embedding behavior directly."
+        }
+      ],
+      "historical_review": "Historical parameter-labelled spans remain exact-rank diagnostics; only the direct documented API/default statement is accepted for this claim."
+    },
+    {
+      "case_id": "tool-03-output",
+      "category": "output",
+      "expected_claim": "Harmony outputs adjusted cell coordinates with the same dimensions as the input embedding.",
+      "relevant_source_ids": ["SRCV2_2c0511efe147368a", "SRCV2_a32b8508c092d86d"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:bd5f8132711c97b4e432",
+          "source_id": "SRCV2_2c0511efe147368a",
+          "rationale": "The method source explicitly states that Harmony outputs a matrix of adjusted coordinates with the same dimensions as its input matrix."
+        }
+      ],
+      "historical_review": "Benchmark figures and downstream metrics are retained as historical exact candidates but are not treated as direct Harmony output evidence."
+    },
+    {
+      "case_id": "tool-04-discovery",
+      "category": "tool_discovery",
+      "expected_claim": "Scanorama is a method for batch correction and integration of heterogeneous single-cell RNA-seq datasets.",
+      "relevant_source_ids": ["SRCV2_daf1d29894245278"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:d869d09f04f1e0c29624",
+          "source_id": "SRCV2_daf1d29894245278",
+          "rationale": "The governed Scanorama source directly identifies the tool and its supported batch-correction and heterogeneous scRNA-seq integration task."
+        }
+      ],
+      "historical_review": "Installation, troubleshooting, and example fragments remain reproducibility diagnostics but do not independently establish the supported task."
+    },
+    {
+      "case_id": "tool-04-input_requirement",
+      "category": "input_requirement",
+      "expected_claim": "Scanorama accepts multiple single-cell datasets represented as AnnData objects or compatible cell-by-gene matrices.",
+      "relevant_source_ids": ["SRCV2_daf1d29894245278"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:b9f757749c16210255c0",
+          "source_id": "SRCV2_daf1d29894245278",
+          "rationale": "The Scanorama API documentation shows AnnData inputs and distinguishes integrated embeddings from corrected cell-by-gene matrices."
+        },
+        {
+          "evidence_id": "sourcev2:d66c87684e7925f1ca5c",
+          "source_id": "SRCV2_daf1d29894245278",
+          "rationale": "The governed source specifies the supported tabular input orientation with genes as rows and cells as columns."
+        }
+      ],
+      "historical_review": "The historical exact set contained one API span; a second corpus-grounded input-format span is accepted because it directly states matrix orientation."
+    },
+    {
+      "case_id": "tool-04-metric",
+      "category": "metric",
+      "expected_claim": "Scanorama is evaluated with batch-removal and biological-conservation metrics used in the governed integration benchmark.",
+      "relevant_source_ids": ["SRCV2_daf1d29894245278", "SRCV2_a32b8508c092d86d"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:4df3c8429556d94f694d",
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "rationale": "The governed integration benchmark includes Scanorama and directly enumerates kBET, graph connectivity, ASW, and graph iLISI evaluation metrics."
+        }
+      ],
+      "historical_review": "README runtime and memory statements are not accepted as evaluation-metric evidence; the benchmark source is added through explicit claim-level review."
+    },
+    {
+      "case_id": "tool-07-parameter",
+      "category": "parameter",
+      "expected_claim": "scvi-tools documents concrete training settings including epoch warmup, maximum epochs, early stopping, and batch size.",
+      "relevant_source_ids": ["SRCV2_3780074c1b538965", "SRCV2_38d242fe56317fc5", "SRCV2_a32b8508c092d86d"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:70a1ca8d8310b871f179",
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "rationale": "The governed scvi-tools source reports exact n_epochs_kl_warmup, max_epochs, early-stopping, transfer-epoch, and batch-size settings."
+        },
+        {
+          "evidence_id": "sourcev2:6cc50e70b29bd9bacd46",
+          "source_id": "SRCV2_3780074c1b538965",
+          "rationale": "The method supplement states optimizer, minibatch, parameter-clamping, and validation early-stopping behavior for the implementation."
+        }
+      ],
+      "historical_review": "Generic preprocessing and benchmark settings are retained as historical exact candidates but only direct scvi-tools training settings are accepted."
+    },
+    {
+      "case_id": "tool-07-output",
+      "category": "output",
+      "expected_claim": "scvi-tools produces learned latent or posterior representations that support downstream analysis and model sharing.",
+      "relevant_source_ids": ["SRCV2_3780074c1b538965", "SRCV2_38d242fe56317fc5", "SRCV2_a32b8508c092d86d"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:e08285e48626040de93f",
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "rationale": "The scvi-hub method source directly describes low-dimensional posterior parameters and their normalized reconstructed representation."
+        },
+        {
+          "evidence_id": "sourcev2:884bdd4521ab2161f4bb",
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "rationale": "The governed application source documents transferred query latent spaces and derived model outputs used for downstream comparison."
+        }
+      ],
+      "historical_review": "Integration benchmark plots and metrics remain historical retrieval diagnostics; accepted evidence is limited to direct scvi-tools representation outputs."
+    },
+    {
+      "case_id": "tool-08-discovery",
+      "category": "tool_discovery",
+      "expected_claim": "CellTypist is an automated cell-type annotation tool trained from curated reference labels.",
+      "relevant_source_ids": ["CAND_PUB_CellTypist_0ab6945053d3", "SRCV2_6225b07438c4a2cd", "SRCV2_d4d32e641274a88b"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:75eace57a1cdeaad5794",
+          "source_id": "SRCV2_d4d32e641274a88b",
+          "rationale": "The source explicitly describes CellTypist as a tool for automated cell-type annotation in the pan-tissue immune study."
+        },
+        {
+          "evidence_id": "publication:CAND_PUB_CellTypist_0ab6945053d3",
+          "source_id": "CAND_PUB_CellTypist_0ab6945053d3",
+          "rationale": "The governed publication record identifies CellTypist and its cell-type annotation method scope."
+        }
+      ],
+      "historical_review": "Large paper and README chunk pools remain exact-retrieval diagnostics; acceptance is restricted to direct tool-and-task statements."
+    },
+    {
+      "case_id": "tool-08-input_requirement",
+      "category": "input_requirement",
+      "expected_claim": "CellTypist annotation requires log-normalized expression, while training also requires expression data and annotation labels.",
+      "relevant_source_ids": ["SRCV2_6225b07438c4a2cd", "SRCV2_d4d32e641274a88b"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:102dc717591cdfac63a5",
+          "source_id": "SRCV2_6225b07438c4a2cd",
+          "rationale": "The CellTypist documentation explicitly requires a logarithmized, normalized expression matrix and states its normalization scale."
+        },
+        {
+          "evidence_id": "sourcev2:a890f23bcb6584bec1c4",
+          "source_id": "SRCV2_6225b07438c4a2cd",
+          "rationale": "The training documentation directly enumerates gene-expression data, cell annotation labels, and optional gene inputs."
+        }
+      ],
+      "historical_review": "Visualization and study-context spans remain historical candidates but are not accepted as direct input requirements."
+    },
+    {
+      "case_id": "tool-08-metric",
+      "category": "metric",
+      "expected_claim": "CellTypist model performance is reported with precision, recall, and global F1 score.",
+      "relevant_source_ids": ["SRCV2_d4d32e641274a88b"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:874963573d3988efdd71",
+          "source_id": "SRCV2_d4d32e641274a88b",
+          "rationale": "The source directly reports CellTypist precision, recall, and global F1 score near 0.9 at both hierarchy levels."
+        }
+      ],
+      "historical_review": "The three historical metric-labelled chunks are figure, marker, or unrelated context fragments and remain exact diagnostics only."
+    },
+    {
+      "case_id": "tool-12-parameter",
+      "category": "parameter",
+      "expected_claim": "CellRank documents concrete analysis parameters and defaults for trend clustering and transport-map processing.",
+      "relevant_source_ids": ["SRCV2_2299659ba3176976", "SRCV2_ab402f6449d498f1"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:2c180c928bbb466c022e",
+          "source_id": "SRCV2_ab402f6449d498f1",
+          "rationale": "The CellRank method source directly reports Louvain trend clustering with resolution set to 0.2."
+        },
+        {
+          "evidence_id": "sourcev2:e6cc1f5899f7e339d72c",
+          "source_id": "SRCV2_2299659ba3176976",
+          "rationale": "The CellRank 2 source explicitly documents the transport-map thresholding parameter used for scalability."
+        }
+      ],
+      "historical_review": "Simulation-specific and downstream settings remain historical exact candidates unless they directly describe a CellRank parameter."
+    },
+    {
+      "case_id": "tool-12-output",
+      "category": "output",
+      "expected_claim": "CellRank outputs initial and terminal states, fate probabilities, and global fate maps.",
+      "relevant_source_ids": ["SRCV2_2299659ba3176976", "SRCV2_64a8e31ca332befc", "SRCV2_ab402f6449d498f1"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:aa47fd72e107acba8dcd",
+          "source_id": "SRCV2_2299659ba3176976",
+          "rationale": "The CellRank 2 source has a dedicated key-outputs section describing consistent outputs across kernels."
+        },
+        {
+          "evidence_id": "sourcev2:7849d938db46571bcb91",
+          "source_id": "SRCV2_ab402f6449d498f1",
+          "rationale": "The original CellRank algorithm description states that it detects states and assigns each cell terminal-state fate probabilities."
+        }
+      ],
+      "historical_review": "Figure fragments remain historical ranking diagnostics; accepted evidence is limited to explicit output definitions."
+    },
+    {
+      "case_id": "tool-13-discovery",
+      "category": "tool_discovery",
+      "expected_claim": "MOFA2 performs unsupervised integration and factor analysis across multiple omics data matrices.",
+      "relevant_source_ids": ["CAND_PUB_MOFA2_aa1b75ff2c06", "HR_BMK_MOFA2_jDR_cancer_2021", "SRCV2_353ebd1d71c53e94"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:7c73d5e998696443ddbb",
+          "source_id": "SRCV2_353ebd1d71c53e94",
+          "rationale": "The governed MOFA documentation defines the method as unsupervised multi-omic matrix integration and factor analysis."
+        },
+        {
+          "evidence_id": "publication:CAND_PUB_MOFA2_aa1b75ff2c06",
+          "source_id": "CAND_PUB_MOFA2_aa1b75ff2c06",
+          "rationale": "The governed publication record identifies MOFA+ as a framework for multi-modal data integration."
+        }
+      ],
+      "historical_review": "The benchmark remains valid bounded context, while the direct method and publication descriptions establish tool scope."
+    },
+    {
+      "case_id": "tool-13-input_requirement",
+      "category": "input_requirement",
+      "expected_claim": "MOFA2 takes several feature-by-sample omics matrices measured on the same or overlapping sample sets.",
+      "relevant_source_ids": ["CAND_PUB_MOFA2_aa1b75ff2c06", "HR_BMK_MOFA2_jDR_cancer_2021", "SRCV2_353ebd1d71c53e94"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:7c73d5e998696443ddbb",
+          "source_id": "SRCV2_353ebd1d71c53e94",
+          "rationale": "The MOFA documentation explicitly states that inputs are several data matrices across identical or overlapping sample sets."
+        }
+      ],
+      "historical_review": "Publication-title and benchmark summaries remain exact diagnostics but do not independently specify the input matrix contract."
+    },
+    {
+      "case_id": "tool-13-failure_mode",
+      "category": "failure_mode",
+      "expected_claim": "MOFA2 should not be described as universally best for clustering and is supported only within bounded factor-interpretability scope.",
+      "relevant_source_ids": ["CAND_PUB_MOFA2_aa1b75ff2c06", "HR_BMK_MOFA2_jDR_cancer_2021", "SRCV2_353ebd1d71c53e94"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "benchmark:HR_BMK_MOFA2_jDR_cancer_2021",
+          "source_id": "HR_BMK_MOFA2_jDR_cancer_2021",
+          "rationale": "The governed benchmark explicitly rejects an overall-best clustering claim and bounds MOFA support to sparse interpretable factors."
+        }
+      ],
+      "historical_review": "The method homepage and publication title do not express a limitation; only the reviewed comparative benchmark is accepted."
+    },
+    {
+      "case_id": "tool-16-parameter",
+      "category": "parameter",
+      "expected_claim": "DoubletFinder documents PCs, pN, pK, nExp, and expected-doublet-rate choices for prediction.",
+      "relevant_source_ids": ["SRCV2_fb20454c775afc2b"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:10a0ac3da870a89348a1",
+          "source_id": "SRCV2_fb20454c775afc2b",
+          "rationale": "The DoubletFinder documentation enumerates its algorithm stages and the PCs, pN, pK, and nExp arguments."
+        },
+        {
+          "evidence_id": "sourcev2:3b8ea22562b9c4f32234",
+          "source_id": "SRCV2_fb20454c775afc2b",
+          "rationale": "The governed source directly explains nExp as the pANN threshold and how to estimate it from loading and homotypic rates."
+        }
+      ],
+      "historical_review": "Release notes and broad workflow context remain historical candidates; accepted evidence directly defines operational parameters."
+    },
+    {
+      "case_id": "tool-16-output",
+      "category": "output",
+      "expected_claim": "DoubletFinder produces per-cell pANN values and thresholded doublet or singlet classifications.",
+      "relevant_source_ids": ["CAND_PUB_DoubletFinder_03be3bc27cea", "SRCV2_fb20454c775afc2b"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:10a0ac3da870a89348a1",
+          "source_id": "SRCV2_fb20454c775afc2b",
+          "rationale": "The DoubletFinder algorithm description directly defines pANN and its thresholding into final doublet or singlet predictions."
+        }
+      ],
+      "historical_review": "Bibliography, installation, and parameter-sweep fragments remain exact diagnostics but do not independently define outputs."
+    },
+    {
+      "case_id": "workflow-04",
+      "category": "workflow_relation",
+      "expected_claim": "The scVelo workflow consumes spliced and unspliced quantification before velocity inference and downstream visualization.",
+      "relevant_source_ids": ["SRCV2_278b76876a91df44", "SRCV2_ecef6f0ce70cb41b", "SRCV2_f5744b9da459eb17"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:ec521bf9803b9467b940",
+          "source_id": "SRCV2_278b76876a91df44",
+          "rationale": "The source explicitly orders spliced and unspliced count generation before velocyto or scVelo inference and velocity display."
+        },
+        {
+          "evidence_id": "sourcev2:cfcfa7fce0aeabf69594",
+          "source_id": "SRCV2_f5744b9da459eb17",
+          "rationale": "The scVelo method source directly describes obtaining spliced and unspliced annotations before normalization, moments, and velocity estimation."
+        }
+      ],
+      "historical_review": "Bibliography and general tool-description chunks remain historical exact candidates; accepted spans directly establish workflow ordering."
+    },
+    {
+      "case_id": "ambiguous-03",
+      "category": "ambiguous",
+      "expected_claim": "CellTypist and SingleR are source-supported approaches for reference-based cell-type annotation.",
+      "relevant_source_ids": ["CAND_PUB_CellTypist_0ab6945053d3", "CAND_PUB_SingleR_2019_Aran", "SRCV2_6225b07438c4a2cd", "SRCV2_9f4160badc0127d0", "SRCV2_a9c5e690432dea7e", "SRCV2_d4d32e641274a88b"],
+      "accepted_evidence": [
+        {
+          "evidence_id": "sourcev2:75eace57a1cdeaad5794",
+          "source_id": "SRCV2_d4d32e641274a88b",
+          "rationale": "The governed source identifies CellTypist as an automated cell-type annotation tool built from a curated reference resource."
+        },
+        {
+          "evidence_id": "sourcev2:cba80ff55a16b1d60be1",
+          "source_id": "SRCV2_a9c5e690432dea7e",
+          "rationale": "The SingleR source directly describes correlation of single-cell transcriptomes against reference transcriptomic datasets for annotation."
+        }
+      ],
+      "historical_review": "The broad historical pool remains an exact retrieval diagnostic; accepted evidence is limited to direct reference-annotation method statements."
+    }
+  ]
+}

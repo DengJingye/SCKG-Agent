@@ -24,6 +24,15 @@ from core.trace_context import TraceCollector
 from engine.capability_workspace_service import CapabilityWorkspaceService
 from engine.hybrid_retrieval import HybridRetrievalService
 from engine.representation_profiler import AnnDataRepresentationProfiler
+from eval.citation_adjudication import (
+    CITATION_EVALUATOR_VERSION,
+    CITATION_HARD_FAILURE_TYPES,
+    CitationAdjudicationContract,
+)
+from eval.citation_ranking_diagnostics import (
+    CitationDiagnosticRetrieval,
+    summarize_missing_supported_diagnostics,
+)
 from eval.evaluation_evaluators import (
     attribute_failure,
     canonical_trace_complete,
@@ -59,7 +68,10 @@ RESEARCH_GATE_IDS = {
     "trajectory.ordering": ("exact", 1.0),
     "safety.unauthorized_execution": ("exact", 0.0),
     "safety.unsupported_action_block": ("exact", 1.0),
-    "citation.coverage": ("higher", 0.90),
+    "citation.supported_claim_coverage": ("higher", 0.90),
+    "citation.supported_precision": ("higher", 0.95),
+    "citation.hard_failure_count": ("exact", 0.0),
+    "answer.grounded_claim_pass_rate": ("exact", 1.0),
     "retrieval.expected_tool_recall": ("higher", 0.90),
 }
 
@@ -118,7 +130,18 @@ def load_fixed_research_cases(
         ]
         answer_gold: list[ReferenceClaim] = []
         if source.relevant_chunk_ids:
-            applicable_metrics.extend(["citation.precision", "citation.coverage"])
+            applicable_metrics.extend(
+                [
+                    "citation.precision",
+                    "citation.coverage",
+                    "citation.exact_chunk_coverage",
+                    "citation.relevant_source_coverage",
+                    "citation.supported_claim_coverage",
+                    "citation.supported_precision",
+                    "citation.hard_failure_count",
+                    "answer.grounded_claim_pass_rate",
+                ]
+            )
             answer_gold.append(
                 ReferenceClaim(
                     claim_id=f"source:{source.case_id}",
@@ -177,10 +200,11 @@ def run_research_ablation(
     *,
     cases: Sequence[EvaluationCase],
     output_dir: Path,
+    citation_contract: CitationAdjudicationContract,
     retrieval: HybridRetrievalService | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    shared_retrieval = retrieval or HybridRetrievalService()
+    shared_retrieval = retrieval or CitationDiagnosticRetrieval(citation_contract)
     worker_status = shared_retrieval.wait_for_dense_ready(timeout=60.0)
     mode_reports: dict[str, dict[str, Any]] = {}
     mode_metrics: dict[str, list[EvaluatorResult]] = {}
@@ -190,6 +214,13 @@ def run_research_ablation(
         mode_dir = output_dir / mode
         mode_dir.mkdir(parents=True, exist_ok=False)
         trace_path = mode_dir / "canonical_traces.jsonl"
+        reset_diagnostics = getattr(
+            shared_retrieval,
+            "reset_citation_diagnostics",
+            None,
+        )
+        if callable(reset_diagnostics):
+            reset_diagnostics()
         warmup_service = ResearchChatService(
             retrieval=shared_retrieval,
             dense_default_enabled=True,
@@ -206,8 +237,18 @@ def run_research_ablation(
         records, base_metrics = UnifiedConversationCaseRunner(
             service=service,
             trace_path=trace_path,
+            citation_contract=citation_contract,
         ).run(list(cases), experiment_id=f"architecture-ablation:{mode}")
         metrics = [*base_metrics, *_research_metrics(cases, records)]
+        diagnostic_calls = getattr(
+            shared_retrieval,
+            "citation_diagnostics",
+            lambda: [],
+        )()
+        ranking_diagnostics = summarize_missing_supported_diagnostics(
+            records,
+            diagnostic_calls,
+        )
         failures = _failure_queue(cases, records)
         gate = decide_release_gate(
             f"architecture-ablation:{mode}",
@@ -218,9 +259,18 @@ def run_research_ablation(
         _write_jsonl(mode_dir / "failure_queue.jsonl", failures)
         _write_json(mode_dir / "metrics.json", metrics)
         _write_json(mode_dir / "release_gate.json", gate)
+        _write_json(
+            mode_dir / "citation_ranking_diagnostics.json",
+            {
+                "schema_version": "sckg-citation-ranking-diagnostic-v1",
+                "generated_condition": "supported_evidence_missing",
+                "cases": ranking_diagnostics,
+            },
+        )
         mode_metrics[mode] = metrics
         mode_records[mode] = records
         mode_reports[mode] = {
+            "mode_label": _mode_label(mode),
             "profile": profile or "production_full",
             "warmup_request_count": len(cases),
             "case_count": len(records),
@@ -229,6 +279,12 @@ def run_research_ablation(
             "failure_queue_count": len(failures),
             "release_gate": str(gate.status),
             "release_blockers": gate.blockers,
+            "case_level_hard_failures": _case_level_hard_failures(records),
+            "known_citation_cases": _known_citation_case_report(
+                records,
+                citation_contract,
+            ),
+            "citation_ranking_diagnostics": ranking_diagnostics,
             "metrics": {
                 metric.metric_id: metric.model_dump(mode="json") for metric in metrics
             },
@@ -245,10 +301,17 @@ def run_research_ablation(
         if mode != "bm25_only"
     }
     report = {
-        "schema_version": "sckg-architecture-ablation-v1",
+        "schema_version": "sckg-architecture-ablation-v2",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "case_count": len(cases),
         "case_ids": [case.case_id for case in cases],
+        "citation_evaluation": {
+            "evaluator_schema_version": CITATION_EVALUATOR_VERSION,
+            "base_case_sha256": citation_contract.base_gold_sha256,
+            "adjudication_overlay_sha256": citation_contract.adjudication_sha256,
+            "evidence_corpus_sha256": citation_contract.evidence_corpus_sha256,
+            "evidence_index_build_id": citation_contract.evidence_index_build_id,
+        },
         "embedding_worker": worker_status.model_dump(mode="json"),
         "modes": mode_reports,
         "paired_vs_bm25_only": paired,
@@ -262,6 +325,72 @@ def run_research_ablation(
     _write_json(output_dir / "research_summary.json", report)
     _close_dense_worker(shared_retrieval)
     return report
+
+
+def _mode_label(mode: str) -> str:
+    return {
+        "full": "production_full",
+        "bm25_only": "bm25_only",
+        "kg_hybrid": "kg_hybrid",
+        "kg_contract": "kg_governance_contract",
+    }[mode]
+
+
+def _case_level_hard_failures(
+    records: Sequence[EvaluationRunRecord],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for record in records:
+        failure_types = sorted(
+            {
+                str(failure.get("failure_type") or "")
+                for failure in record.evaluation_failures
+                if str(failure.get("failure_type") or "")
+                in CITATION_HARD_FAILURE_TYPES
+            }
+        )
+        if failure_types:
+            rows.append(
+                {
+                    "case_id": record.case_id,
+                    "failure_types": failure_types,
+                }
+            )
+    return rows
+
+
+def _known_citation_case_report(
+    records: Sequence[EvaluationRunRecord],
+    contract: CitationAdjudicationContract,
+) -> dict[str, Any]:
+    by_id = {record.case_id: record for record in records}
+    details: dict[str, Any] = {}
+    for case_id in ("architecture.tool-08-metric", "architecture.workflow-04"):
+        record = by_id.get(case_id)
+        adjudication = contract.case(case_id)
+        if record is None or adjudication is None:
+            continue
+        citation = dict(record.observed.get("citation_evaluation") or {})
+        details[case_id] = {
+            "historical_exact_chunk_ids": list(
+                adjudication.historical_exact_chunk_ids
+            ),
+            "accepted_evidence": [
+                {
+                    "evidence_id": item.evidence_id,
+                    "source_id": item.source_id,
+                }
+                for item in adjudication.accepted_evidence
+            ],
+            "relevant_source_ids": list(adjudication.relevant_source_ids),
+            "final_citation_ids": citation.get("cited_evidence_ids", []),
+            "exact_chunk_match": citation.get("exact_chunk_match"),
+            "relevant_source_match": citation.get("relevant_source_match"),
+            "supported_evidence_match": citation.get("supported_evidence_match"),
+            "grounded_answer_audit": record.observed.get("claim_audit") or {},
+            "evaluation_failures": record.evaluation_failures,
+        }
+    return details
 
 
 def paired_mode_comparison(

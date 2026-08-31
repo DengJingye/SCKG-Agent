@@ -14,6 +14,11 @@ from core.evaluation_models import (
     EvaluatorResult,
 )
 from core.trace_context import TraceCollector
+from eval.citation_adjudication import (
+    CITATION_EVALUATOR_VERSION,
+    CitationAdjudicationContract,
+    CitationReference,
+)
 from eval.evaluation_evaluators import (
     canonical_trace_complete,
     canonical_trace_trajectory,
@@ -32,8 +37,10 @@ class UnifiedConversationCaseRunner:
         *,
         service: ResearchChatService | None = None,
         trace_path: Path | None = None,
+        citation_contract: CitationAdjudicationContract | None = None,
     ) -> None:
         self.trace_path = Path(trace_path) if trace_path is not None else None
+        self.citation_contract = citation_contract
         self.service = service or ResearchChatService(
             trace_collector=(
                 TraceCollector(self.trace_path) if self.trace_path is not None else None
@@ -53,6 +60,15 @@ class UnifiedConversationCaseRunner:
         citation_gold_covered = 0
         citation_gold_total = 0
         citation_case_ids: list[str] = []
+        exact_chunk_covered = 0
+        relevant_source_covered = 0
+        supported_claim_covered = 0
+        supported_reference_count = 0
+        adjudicable_reference_count = 0
+        citation_v2_case_ids: list[str] = []
+        citation_hard_failure_case_ids: list[str] = []
+        grounded_claim_values: list[bool] = []
+        grounded_claim_case_ids: list[str] = []
         clarification_values: list[bool] = []
         clarification_case_ids: list[str] = []
         trace_complete_values: list[bool] = []
@@ -65,10 +81,27 @@ class UnifiedConversationCaseRunner:
             if not query:
                 continue
             started = time.perf_counter()
-            state = self.service.run(
-                query,
-                conversation_context=case.conversation_state,
+            diagnostic_retrieval = getattr(self.service, "retrieval", None)
+            begin_diagnostic = getattr(
+                diagnostic_retrieval,
+                "begin_citation_diagnostic_case",
+                None,
             )
+            end_diagnostic = getattr(
+                diagnostic_retrieval,
+                "end_citation_diagnostic_case",
+                None,
+            )
+            if callable(begin_diagnostic):
+                begin_diagnostic(case.case_id)
+            try:
+                state = self.service.run(
+                    query,
+                    conversation_context=case.conversation_state,
+                )
+            finally:
+                if callable(end_diagnostic):
+                    end_diagnostic()
             latency_ms = (time.perf_counter() - started) * 1000.0
             context = dict(state.get("context_pack") or {})
             route = dict(context.get("semantic_route") or {})
@@ -131,7 +164,7 @@ class UnifiedConversationCaseRunner:
                 covered = bool(observed_spans.intersection(expected_spans))
                 citation_gold_covered += int(covered)
                 citation_gold_total += 1
-                if not covered:
+                if self.citation_contract is None and not covered:
                     failures.append(
                         {
                             "stage": "retrieval",
@@ -143,7 +176,67 @@ class UnifiedConversationCaseRunner:
                         }
                     )
                 audit = dict(observed.get("claim_audit") or {})
+                hard_failure = False
+                if self.citation_contract is not None:
+                    citation_v2_case_ids.append(case.case_id)
+                    citation_evaluation = self.citation_contract.evaluate(
+                        case.case_id,
+                        _citation_references(state, audit=audit),
+                    )
+                    observed["citation_evaluation"] = citation_evaluation.to_dict()
+                    exact_chunk_covered += int(
+                        citation_evaluation.exact_chunk_match
+                    )
+                    relevant_source_covered += int(
+                        citation_evaluation.relevant_source_match
+                    )
+                    supported_claim_covered += int(
+                        citation_evaluation.supported_evidence_match
+                    )
+                    supported_reference_count += len(
+                        citation_evaluation.supported_evidence_ids
+                    )
+                    adjudicable_reference_count += len(
+                        citation_evaluation.adjudicable_evidence_ids
+                    )
+                    if citation_evaluation.unknown_evidence_ids:
+                        hard_failure = True
+                        failures.append(
+                            _citation_failure(
+                                "fabricated_or_unknown_citation",
+                                observed=citation_evaluation.unknown_evidence_ids,
+                            )
+                        )
+                    if citation_evaluation.source_metadata_conflicts:
+                        hard_failure = True
+                        failures.append(
+                            _citation_failure(
+                                "citation_source_metadata_conflict",
+                                observed=citation_evaluation.source_metadata_conflicts,
+                            )
+                        )
+                    if citation_evaluation.wrong_source_evidence_ids:
+                        hard_failure = True
+                        failures.append(
+                            _citation_failure(
+                                "unsupported_wrong_source_evidence",
+                                observed=citation_evaluation.wrong_source_evidence_ids,
+                            )
+                        )
+                    if not citation_evaluation.supported_evidence_match:
+                        failures.append(
+                            {
+                                "stage": "answer_compose",
+                                "status": "failed",
+                                "failure_type": "supported_evidence_missing",
+                                "owner": "citation_evaluator_v2",
+                                "observed": ",".join(
+                                    citation_evaluation.cited_evidence_ids
+                                ),
+                            }
+                        )
                 if audit.get("invalid_citations"):
+                    hard_failure = self.citation_contract is not None or hard_failure
                     failures.append(
                         {
                             "stage": "answer_compose",
@@ -153,6 +246,32 @@ class UnifiedConversationCaseRunner:
                             "observed": str(audit.get("invalid_citations")),
                         }
                     )
+                if self.citation_contract is not None and isinstance(
+                    audit.get("passed"), bool
+                ):
+                    grounded_passed = bool(audit["passed"])
+                    grounded_claim_values.append(grounded_passed)
+                    grounded_claim_case_ids.append(case.case_id)
+                    if not grounded_passed:
+                        hard_failure = True
+                        failures.append(
+                            {
+                                "stage": "answer_compose",
+                                "status": "failed",
+                                "failure_type": (
+                                    "unsupported_or_conflicting_scientific_claim"
+                                ),
+                                "owner": "grounded_answer_audit",
+                                "observed": "grounded_answer_audit_rejected",
+                            }
+                        )
+                if hard_failure:
+                    citation_hard_failure_case_ids.append(case.case_id)
+            elif self.citation_contract is not None:
+                observed["citation_evaluation"] = {
+                    "evaluator_version": CITATION_EVALUATOR_VERSION,
+                    "status": "not_applicable",
+                }
 
             report = str(state.get("final_report") or "")
             canonical_trace_id = str(state.get("canonical_trace_id") or "")
@@ -229,6 +348,53 @@ class UnifiedConversationCaseRunner:
                 threshold=1.0,
             )
         )
+        if self.citation_contract is not None:
+            metrics.extend(
+                [
+                    _diagnostic_ratio_metric(
+                        "citation.exact_chunk_coverage",
+                        exact_chunk_covered,
+                        len(citation_v2_case_ids),
+                        case_ids=citation_v2_case_ids,
+                    ),
+                    _diagnostic_ratio_metric(
+                        "citation.relevant_source_coverage",
+                        relevant_source_covered,
+                        len(citation_v2_case_ids),
+                        case_ids=citation_v2_case_ids,
+                    ),
+                    _ratio_metric(
+                        "citation.supported_claim_coverage",
+                        supported_claim_covered,
+                        len(citation_v2_case_ids),
+                        case_ids=citation_v2_case_ids,
+                        threshold=0.90,
+                        evaluator_id=CITATION_EVALUATOR_VERSION,
+                    ),
+                    _ratio_metric(
+                        "citation.supported_precision",
+                        supported_reference_count,
+                        adjudicable_reference_count,
+                        case_ids=citation_v2_case_ids,
+                        threshold=0.95,
+                        evaluator_id=CITATION_EVALUATOR_VERSION,
+                    ),
+                    _count_metric(
+                        "citation.hard_failure_count",
+                        len(set(citation_hard_failure_case_ids)),
+                        case_ids=citation_v2_case_ids,
+                        counted_case_ids=citation_hard_failure_case_ids,
+                    ),
+                    _ratio_metric(
+                        "answer.grounded_claim_pass_rate",
+                        sum(grounded_claim_values),
+                        len(citation_v2_case_ids),
+                        case_ids=citation_v2_case_ids,
+                        threshold=1.0,
+                        evaluator_id=CITATION_EVALUATOR_VERSION,
+                    ),
+                ]
+            )
         metrics.append(
             _ratio_metric(
                 "citation.precision",
@@ -286,6 +452,53 @@ def _reference_span_ids(state: dict[str, Any]) -> list[str]:
     return sorted(set(values))
 
 
+def _citation_references(
+    state: dict[str, Any],
+    *,
+    audit: dict[str, Any],
+) -> list[CitationReference]:
+    values: list[CitationReference] = []
+    cited_indexes = audit.get("cited_references")
+    cited_index_set = (
+        {
+            int(value)
+            for value in cited_indexes
+            if isinstance(value, int) and not isinstance(value, bool)
+        }
+        if isinstance(cited_indexes, list)
+        else None
+    )
+    for row in state.get("references") or []:
+        if not isinstance(row, dict):
+            continue
+        if cited_index_set is not None and row.get("index") not in cited_index_set:
+            continue
+        evidence_id = row.get("source_span_id") or row.get("chunk_id")
+        if not evidence_id:
+            continue
+        values.append(
+            CitationReference(
+                evidence_id=str(evidence_id),
+                declared_source_id=str(row.get("source_id") or ""),
+            )
+        )
+    return values
+
+
+def _citation_failure(
+    failure_type: str,
+    *,
+    observed: tuple[str, ...],
+) -> dict[str, str]:
+    return {
+        "stage": "answer_compose",
+        "status": "failed",
+        "failure_type": failure_type,
+        "owner": "citation_evaluator_v2",
+        "observed": ",".join(observed),
+    }
+
+
 def _candidate_tool_names(state: dict[str, Any]) -> list[str]:
     values: list[str] = []
     for row in state.get("candidate_tools") or []:
@@ -305,17 +518,18 @@ def _ratio_metric(
     *,
     case_ids: list[str],
     threshold: float,
+    evaluator_id: str = "unified-conversation-v1",
 ) -> EvaluatorResult:
     if denominator == 0:
         return EvaluatorResult(
-            evaluator_id="unified-conversation-v1",
+            evaluator_id=evaluator_id,
             metric_id=metric_id,
             status=EvaluationMetricStatus.NOT_APPLICABLE,
             denominator=0,
         )
     value = numerator / denominator
     return EvaluatorResult(
-        evaluator_id="unified-conversation-v1",
+        evaluator_id=evaluator_id,
         metric_id=metric_id,
         status=EvaluationMetricStatus.MEASURED,
         signal=EvaluationSignal.PASSED if value >= threshold else EvaluationSignal.BLOCKED,
@@ -325,4 +539,54 @@ def _ratio_metric(
         applicable_case_ids=case_ids,
         threshold=threshold,
         direction="higher",
+    )
+
+
+def _count_metric(
+    metric_id: str,
+    value: int,
+    *,
+    case_ids: list[str],
+    counted_case_ids: list[str] | None = None,
+) -> EvaluatorResult:
+    denominator = max(1, len(case_ids))
+    return EvaluatorResult(
+        evaluator_id=CITATION_EVALUATOR_VERSION,
+        metric_id=metric_id,
+        status=EvaluationMetricStatus.MEASURED,
+        signal=EvaluationSignal.PASSED if value == 0 else EvaluationSignal.BLOCKED,
+        value=value,
+        numerator=value,
+        denominator=denominator,
+        applicable_case_ids=case_ids,
+        threshold=0,
+        direction="exact",
+        details={"counted_case_ids": sorted(set(counted_case_ids or []))},
+    )
+
+
+def _diagnostic_ratio_metric(
+    metric_id: str,
+    numerator: int,
+    denominator: int,
+    *,
+    case_ids: list[str],
+) -> EvaluatorResult:
+    if denominator == 0:
+        return EvaluatorResult(
+            evaluator_id=CITATION_EVALUATOR_VERSION,
+            metric_id=metric_id,
+            status=EvaluationMetricStatus.NOT_APPLICABLE,
+        )
+    return EvaluatorResult(
+        evaluator_id=CITATION_EVALUATOR_VERSION,
+        metric_id=metric_id,
+        status=EvaluationMetricStatus.MEASURED,
+        signal=EvaluationSignal.UNKNOWN,
+        value=round(numerator / denominator, 6),
+        numerator=numerator,
+        denominator=denominator,
+        applicable_case_ids=case_ids,
+        direction="higher",
+        details={"release_gate_role": "diagnostic_only"},
     )
