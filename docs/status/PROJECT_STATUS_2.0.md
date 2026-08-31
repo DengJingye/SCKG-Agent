@@ -1,14 +1,50 @@
 # scKG-Agent 2.0 项目状态
 
-更新时间：2026-08-27
+更新时间：2026-08-30
 当前正式 Phase：Phase 5（`completed`）；Phase 6 保持 `PHASE6_TRIAL_READY`
 主规约：`docs/DEV_SPEC_2.0.md`
 主规约版本：2.10.2-dev
-作品集状态：`EVALUATION_PIPELINE_IMPLEMENTED / RESEARCH_CHAT_RELEASE_GATE_BLOCKED`
+作品集状态：`NOT_READY_FOR_RC / ARCHITECTURE_RELEASE_GATE_BLOCKED`
 全局执行策略：`disabled`（默认）
 科学验证：`scientific_pilot`
 
-### 2026-08-27 Scanpy Product Integration Baseline Freeze
+### 2026-08-30 scKG-Agent 2.0 Final Release Audit
+
+- Repository：branch=`phase5a-checkpoint`，HEAD=`4fb55456759be5dc8fac8cbfbd0b531024a97f06`；该 HEAD 已推送到 `origin/phase5a-checkpoint`。Final Release Audit 的证据采集基于 clean worktree，且 `git diff --check=passed`；本次文档同步发生在该基线之后。
+- Release decision：**`NOT READY FOR RC`**。本节是当前 release-facing 事实源；下方 2026-08-27 与 2026-08-24 内容保留为历史快照，不能覆盖本节结论。
+
+#### Implemented
+
+- Canonical Trace v0：Trace Core、Research canonical owner、真实 `ROUTING / RETRIEVAL / PLANNING / HANDOFF`、Stepwise `STATE_INSPECTION / PLANNING / NOTEBOOK_COMPILE`、Jupyter child request `RUNTIME_BIND`，以及 Controlled Execution 的 `POLICY / APPROVAL / EXECUTION / VALIDATION / REPAIR / PACKAGE` instrumentation 已实现。Trace 是 correlation/observability layer，不替代现有 approval、execution、validation、repair、package 或 runtime provenance records。
+- Adaptive Notebook vertical slice：仅对 reviewed Scanpy Core，根据用户意图、DataProfile、RepresentationLedger、Method Graph 与 ToolContract 解析受约束的方法和参数；不生成或执行任意 LLM 代码，不把 editable Notebook 晋升为 trusted artifact。
+- Formal Scoped Authorization v0：在既有 Policy、ApprovalService 与 scoped approval binding 上实现 Principal / Operation / Resource / Scope 绑定及 replay/scope/resource checks；不代表 OAuth、RBAC 或 enterprise IAM。
+- Trace-driven EDD：现有 EvaluationPipeline 已能消费 canonical Trace trajectory，校验 ExpectedTrajectory 的 required/forbidden stages、ordering、stop correctness 与 first failure attribution；固定 architecture ablation runner 已实现，未在 production path 增加 ablation branch。
+
+#### Verified
+
+- Regression：当前 committed code content 的 closure full regression=`680 passed, 8 warnings in 1164.13s`；本次仅同步文档，不重新运行 full suite或实验。
+- Raw PBMC3k browser UAT：artifact=`data-89a96f1beaa2-9c733491`，input=`2700 x 32738`，SHA256=`89a96f1b...7ea653a1` 前后不变；Notebook=`scanpy_core-557701951329.ipynb`，真实 Jupyter kernel 中 `18/18` code cells executed、error output=`0`、inline PNG=`5`。QC、Filter、Normalize、Log1p、HVG、Scale、PCA、Neighbors、Leiden、Markers、annotation candidates 与 UMAP 均由系统生成并执行。
+- Processed PBMC3k browser UAT：artifact=`data-0db367b991dd-533debd3`，input=`2638 x 1838`，SHA256=`0db367b9...0025fe38` 前后不变；合法 log1p/PCA/neighbor graph/UMAP/cluster/marker representations 被复用或跳过，rebuild=`none`、planning blocker=`none`，计划仅包含 `scanpy_core.marker_evidence_annotation`。Notebook=`scanpy_core-77ace316e3ce.ipynb`，`2/2` code cells executed、error output=`0`。
+- Trace topology/privacy：fresh processed journey 形成 `RESEARCH -> STEPWISE -> JUPYTER launch` canonical parent/child topology；每条 request 恰有一个 REQUEST root、sequence 连续，Jupyter session trace ID 与持久化 row 一致。审计 rows 不含 raw prompt/query、token、launch URL、Notebook source/output、stdout/stderr、argv 或 absolute local path。
+- Existing controlled pilot：`scanpy-pbmc3k-20260824T150133Z` succeeded，output=`2643 x 13697`、9 Leiden clusters、9 annotation candidates；Validation passed，Level 2 package complete，15/15 recorded hashes 重验有效，输入矩阵未复制，source hash unchanged。该 pilot 的 trace 是 T2 之前的 runtime execution record，不能冒充 canonical Controlled Trace UAT。
+- EDD/ablation：固定 23 cases 已实际运行。BM25-only ReleaseGate=`passed`；expected tool recall=`1.0`，Trace completeness、required/forbidden/order/stop checks=`1.0`，unauthorized execution=`0`。RepresentationLedger 对照记录 source hash unchanged，并在 evaluation projection 中避免 9 个不必要 preprocessing steps。
+
+#### Blocked
+
+- Production/full architecture profile：citation coverage=`0.842105 < 0.9`，ReleaseGate=`blocked`。
+- KG-hybrid profile：citation coverage=`0.894737 < 0.9`，ReleaseGate=`blocked`。
+- KG+governance-contract profile：citation coverage=`0.842105 < 0.9`，ReleaseGate=`blocked`。
+- Paired result 未证明 KG 在当前固定 cases 上优于 BM25-only：KG-hybrid citation coverage delta=`-0.052631`，full/KG+contract delta=`-0.105263`；实际 regression cases 已写入 failure queue，不能用平均值或叙事覆盖硬 gate。
+- `ExecutionPolicy=disabled` 保持不变；Research 的 execution eligibility blocker 属于预期治理结果，不能通过降低 ToolContract、Approval、Validation、Evidence 或 qualification gate 解除。
+
+#### Not run
+
+- T2 之后的 fresh real-data Controlled Execution canonical Trace UAT；现有真实 controlled pilot 只提供 execution/validation/package evidence。
+- isolated ToolContract causal effect；当前 KG+contract profile 同时改变 governance rerank，结果明确为 `not_comparable/not_run`。
+- broad biological/scientific qualification、跨数据集 external qualification、RAGAS、external stability repetitions、真实用户试用与 ordinary trusted-user execution。
+- MCP、Docker/OCI sandbox、KG maintenance、Graph Delta、Method Path Search、Runtime Registry redesign、Seurat/Squidpy、CellTypist/SingleR qualification；这些仍是未开始或未完成的后续范围，不属于当前实现。
+
+### 2026-08-27 Scanpy Product Integration Baseline Freeze（历史快照）
 
 - Closure marker：`SCANPY_PRODUCT_INTEGRATION_CLOSURE_VERIFIED`。
 - Repository baseline：branch=`phase5a-checkpoint`，HEAD=`d4143a5444983fadcf97cf751933bbf0c96e846f`；没有发现 closure report 之外的新代码改动。
@@ -19,7 +55,7 @@
 - 已验证 processed resume/reuse UAT：`pbmc3k.h5ad`=`2638 x 1838`，SHA256=`0db367b9...0025fe38` 且未变化；合法已有 log1p/PCA/neighbor graph/UMAP/cluster/marker 状态被复用或跳过，无 rebuild、无 planning blocker，最终只规划 `scanpy_core.marker_evidence_annotation`。Notebook=`scanpy_core-9f477bc69a9b.ipynb`，2/2 code cells 执行、error=0；唯一执行 blocker 仍为 `capability_pack_execution_not_eligible`。
 - 已验证 dirty scope：20 tracked modified + 44 untracked status entries（展开为 47 files）；共 37 个 product integration、26 个 regression/tests、4 个 documentation 文件，0 个 non-ignored runtime/generated 文件，0 个 unrelated 文件。Baseline freeze 前 tracked diff=`1784 insertions / 43 deletions`；本节只增加 closure 文档。
 - Non-blocking known issues：Research Chat 正文与 capability handoff 状态文案仍有表达割裂；复用 kernel 的 display name 仍为 `scKG Doublet Python`；Scanpy/Matplotlib FutureWarning 仍存在。本次 freeze 不修复这些项目。
-- Deferred / roadmap：独立 scientific qualification、Adaptive Parameter Resolver、Adaptive Scientific Notebook、统一 end-to-end Agent Trace v0、formal Scoped Authorization v0、KG/Evidence maintenance、Graph Delta、Method Path Search、Runtime Registry redesign、MCP、Sandbox 及其他工具 onboarding 均未在本轮实现，不能表述为已交付。现有 Policy、ApprovalService 与 scoped approval binding 已实现且保持不变；统一 Principal / Operation / Resource / Scope authorization model 仍属后续工作，不代表 OAuth、RBAC 或 enterprise IAM 已交付。
+- Historical scope boundary：本快照当时尚未实现的 canonical Trace v0、Scanpy Core adaptive Notebook vertical slice、formal Scoped Authorization v0 与 Trace-driven EDD，现已由上方 2026-08-30 状态和 commits `8a85f31..4fb5545` 取代。独立 scientific qualification、KG/Evidence maintenance、Graph Delta、Method Path Search、Runtime Registry redesign、MCP、Sandbox 及其他工具 onboarding 仍未完成。
 - Governance boundary：全局 `ExecutionPolicy=disabled`，普通用户 trusted execution 保持关闭；editable Notebook 仍是 exploratory/untrusted execution，不能替代 ToolContract、Approval、Validation、Evidence 或 qualification gate。
 
 ### 2026-08-24 Scanpy Core Product Integration 现场交接（历史快照）
@@ -46,7 +82,7 @@
 - Jupyter kernel display name 仍为 `scKG Doublet Python`，虽然实际环境包含并运行 Scanpy 1.11.2；这是环境复用后的命名/产品体验缺口，不是缺包或运行错误。
 - 旧 Notebook 是不可变历史 artifact，不会自动获得新的 inline/sc.pl 模板；用户必须重新生成 Notebook 才能得到当前 renderer。
 - Research Chat 的能力状态文案与 capability handoff 仍可能出现“正文强调未资格化、下方却可进入 planning-ready Workspace”的表达割裂，需要在不放宽 gate 的前提下统一呈现。
-- 聊天参数提取、Adaptive Parameter Resolution、Adaptive Scientific Notebook 尚未实现；当前 notebook 参数来自维护者 StepContract/default 与显式 Scale 偏好，不是任意上下文驱动代码生成。
+- 本历史快照中的聊天参数提取/Adaptive Notebook 缺口已由 2026-08-30 的 reviewed Scanpy Core vertical slice 取代；当前实现仍只允许受约束的 StepContract/Representation/Method Graph/ToolContract 参数来源，不是任意上下文驱动代码生成。
 - 031-033 后的 fresh full pytest 尚未运行；在下一 RC 或提交前必须补跑。
 
 ### NEXT ITERATION HANDOFF
@@ -103,26 +139,23 @@
 - Candidate/RAG/LLM output 不得直接写 trusted KG 或 formal evidence。
 - Knowledge maintenance 必须保持：`discovery -> candidate knowledge/evidence -> validation/review -> governed promotion -> canonical snapshot -> rebuild projections/indexes`。
 
-**Recommended next task**
+**Historical recommended next task（已完成并被当前审计取代）**
 
 1. 先运行 fresh full pytest 与 `git diff --check`，建立 031-033 后的真实 baseline。
 2. 用现有 PBMC3k raw/processed 输入各生成一次当前 renderer Notebook，真实浏览器检查 profile/reuse、五类 inline diagnostics、warning/error 与 source hash。
 3. 只修复该链路实际发现的 blocking product gap；通过后再整理 commit，不提前进入 adaptive 或 onboarding 支线。
 
-**Deferred roadmap**
+**Remaining deferred scope（当前未开始）**
 
-1. finish Scanpy Product Integration（当前下一任务）
-2. Adaptive Parameter Resolution
-3. Adaptive Scientific Notebook
-4. Evidence-aware scientific recommendation
-5. KG / Evidence maintenance pipeline
-6. Graph Delta / governance visibility
-7. Method Path Search
-8. Runtime Registry / Resolver
-9. GitHub Tool Onboarding
-10. Container Sandbox for untrusted code
-11. long-read Capability Pack migration
-12. MCP later
+1. broad scientific qualification and external dataset validation
+2. KG / Evidence maintenance pipeline
+3. Graph Delta / governance visibility
+4. Method Path Search
+5. Runtime Registry redesign
+6. GitHub Tool Onboarding
+7. Container Sandbox for untrusted code
+8. long-read Capability Pack migration
+9. MCP later
 
 ### 2026-08-24 Scanpy Core S0-S6 工程实现检查点
 
@@ -407,7 +440,7 @@ Phase 6 作品集产物：
 
 Portfolio v2 的 48/48 模型调用均保存 provider/model/token/latency、raw response、admitted response 和字段级 governance intervention；因进程重启，48 条均记录为同 protocol 的 recovered new calls，而不是旧结果 replay。未提供冻结单价，因此 estimated cost 保持 `null`。最新 Interview bundle 从 `ResearchChatService.run_request` 统一入口生成 Doublet、Batch、bounded repair 和 correctly blocked 四类案例，trace completeness=1.0、blocked ExecutionRequest=0、全部 package integrity 有效、legacy workflow runtime 未使用；默认 policy=`disabled`，外部用户数据记录为 0，真实组内参与人数为 0。
 
-Portfolio Acceptance v1 将全量 pytest、Mainline、96-case Retrieval、240-run Agent Quality、30-case Memory、Interview Demo、Git 完整性和 release/privacy scan 串成单一入口。最新 bundle 状态为 `RC_READY_FOR_USER_REVIEW`；具体时间戳、worktree digest 与 dirty-worktree 计数以包内 `portfolio_acceptance.json` 为准，避免文档回写导致 digest 自引用变化。Mainline `6/6`、Interview `4/4`、trace completeness=1.0、两个黄金 package integrity=1.0、release/portfolio privacy issue=0。外部 LLM 稳定性、RAGAS 与真实用户试用继续明确记录为 `not_run`。
+Portfolio Acceptance v1 将全量 pytest、Mainline、96-case Retrieval、240-run Agent Quality、30-case Memory、Interview Demo、Git 完整性和 release/privacy scan 串成单一入口。历史 bundle 曾记录 `RC_READY_FOR_USER_REVIEW`，但该状态已被 2026-08-30 architecture ReleaseGate 的 `NOT READY FOR RC` 取代；不得用旧 bundle 覆盖当前 citation coverage blocker。Mainline `6/6`、Interview `4/4`、trace completeness=1.0、两个黄金 package integrity=1.0、release/portfolio privacy issue=0。外部 LLM 稳定性、RAGAS 与真实用户试用继续明确记录为 `not_run`。
 
 仓库恢复阶段发现 517 个 tracked 文件曾被 macOS 标记为 dataless；当时已从本地 Git blob 恢复并逐项核对大小。2026-07-31 FileProvider 又将 `.git` pack、85 个 tracked 文件和 `.env` 回收为 dataless placeholder，导致 Git 对 pack 的 mmap 触发 `SIGBUS`。本轮已按 Git index OID 和 GitHub exact blob SHA 恢复当前 HEAD/index 所需的 91 个 blob，当前 `git status`、`git diff --check` 和 current-index object check 可用且 index missing=0；但旧提交历史仍缺被回收 pack 中的 parent/history objects，所以当前不能再声称 `git fsck --full` 通过。RC Gate 必须分别报告“当前工作树可验证”和“完整历史对象可验证”，不得把二者混为一项。
 
@@ -439,4 +472,4 @@ Portfolio Acceptance v1 将全量 pytest、Mainline、96-case Retrieval、240-ru
 
 ## 6. 当前收口动作
 
-本轮不进入 Annotation、MCP、Container、WSL2 或更多工具。确定性执行后端保持可用，但 Research Chat 的下一合法动作是：在显式解锁加密配置后运行同一 32-case A/C/D/E 消融，先修复 evaluation split 失败，再冻结最佳路线并只运行一次 hidden。完成前不得恢复 `RC_READY_FOR_USER_REVIEW`。真实参与人数仍为 0，所以 Phase 6 不得标记 complete。
+Feature development 当前关闭。本轮不进入 Annotation、MCP、Container、WSL2、KG maintenance 或更多工具，也不重跑实验、调整 threshold/gold cases、tag 或 release。当前 HEAD 保持 `NOT READY FOR RC`；后续只有在独立任务中解释并关闭 citation coverage ReleaseGate、完成 fresh controlled canonical Trace UAT，并明确处理关键 `not_run` 项后，才可重新进行 RC 审计。真实参与人数仍为 0，所以 Phase 6 不得标记 complete。

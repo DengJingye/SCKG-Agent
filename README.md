@@ -9,11 +9,24 @@ scKG-Agent is not a general biomedical chatbot and not a catalog that installs e
 - **Scientific pilots:** GSE108313 and scIB pancreas;
 - **Default policy:** `ExecutionPolicy=disabled`.
 
+## Current Release Posture
+
+Repository baseline: `phase5a-checkpoint` at `4fb5545` (2026-08-30). The current release decision is **`NOT READY FOR RC`**.
+
+| Status | Current evidence |
+| --- | --- |
+| **Implemented** | Canonical Trace v0 across Research, Stepwise/Jupyter and Controlled Execution boundaries; a constrained Scanpy Core adaptive Notebook vertical slice; formal Scoped Authorization v0 on top of Policy and ApprovalService; and a Trace-driven EDD/architecture-ablation bridge. |
+| **Verified** | Full regression `680 passed, 8 warnings`; raw PBMC3k Notebook `18/18` cells, zero errors and five figures; processed PBMC3k Notebook `2/2` cells, zero errors and reuse/skip with no unjustified preprocessing; fresh Research -> Stepwise -> Jupyter canonical parent/child topology and privacy checks; Level 2 package integrity `15/15` hashes. |
+| **Blocked** | The production/full, KG-hybrid and KG+governance-contract architecture profiles fail the current citation-coverage release gate (`0.842105`, `0.894737`, and `0.842105`, requirement `>=0.9`). |
+| **Not run** | A fresh real-data Controlled Execution canonical Trace, isolated ToolContract causal effect, broad biological/scientific qualification, RAGAS, external stability repetitions, and ordinary trusted-user execution. |
+
+“Adaptive Notebook” here means reviewed Scanpy Core steps and bounded parameters resolved from user intent, DataProfile, RepresentationLedger, Method Graph and ToolContract. It does not mean arbitrary LLM-generated code. Scoped Authorization v0 is the repository's Principal/Operation/Resource/Scope binding; it is not OAuth, RBAC or enterprise IAM. `ExecutionPolicy=disabled` remains unchanged.
+
 ## One Product Loop
 
 ![scKG-Agent governed local research loop](docs/figures/scKG_product_mainline_v2_7_2.png)
 
-The figure above is the authoritative product architecture for the 2.7.2 release candidate. Older orchestration and target-architecture figures are retained only as historical design records.
+The figure above remains the governed product mainline. It is an architecture view, not a claim that the current HEAD has passed its RC release gates. Older orchestration and target-architecture figures are retained only as historical design records.
 
 ```mermaid
 flowchart LR
@@ -108,17 +121,18 @@ python scripts/run_portfolio_acceptance.py
 
 The acceptance command runs the full test suite, mainline, retrieval, Agent Quality, Memory, Interview Demo, package-integrity, Git-integrity, and release-privacy gates. It writes a traceable worktree digest without pretending the current uncommitted worktree is a Git tag.
 
-Latest local RC acceptance (2026-07-28):
+The following is the current closure evidence at HEAD `4fb5545`; it supersedes the older local RC-ready wording:
 
 | Gate | Result |
 | --- | ---: |
-| full pytest | 363 passed |
-| Mainline Quality Gate | 6 / 6 |
-| governed Retrieval Recall@10 / Precision@10 / MRR | 0.971591 / 0.912256 / 0.991477 |
-| Agent Quality | 240 / 240 deterministic runs passed |
-| Memory Quality | 30 / 30 passed |
-| Interview Demo | 4 / 4 cases, trace completeness 1.0 |
-| unauthorized execution / governance leakage / privacy issues | 0 / 0 / 0 |
+| full pytest | 680 passed, 8 warnings |
+| raw / processed PBMC3k browser UAT | passed / passed |
+| canonical Research -> Stepwise -> Jupyter topology | passed |
+| trajectory completeness / ordering / forbidden-stage checks | 1.0 / 1.0 / 1.0 |
+| unauthorized execution | 0 |
+| BM25-only architecture gate | passed |
+| production/full, KG-hybrid, KG+contract gates | blocked by citation coverage |
+| overall RC decision | NOT READY FOR RC |
 
 The generated bundle is local and Git-ignored; exact metrics, scope, and limitations are recorded in [`docs/status/PROJECT_STATUS_2.0.md`](docs/status/PROJECT_STATUS_2.0.md). External-model stability, RAGAS, and independent user trials remain `not_run`.
 
@@ -129,15 +143,21 @@ agent/research_chat_service.py       sole application entry
 agent/research_agent_graph.py        ASK/PLAN/RUN high-level graph
 agent/bounded_parent_agent.py        bounded Parent Agent and tool calls
 core/research_agent_models.py        public request/state/response/handoff
+core/trace_context.py                canonical Trace v0 schema and collector
 engine/hybrid_retrieval.py           KG + BM25 + optional local dense retrieval
 engine/execution_planner.py          dry-run WorkflowPlan compiler
+engine/capability_workspace_service.py
+                                     Representation-aware Scanpy workspace/plan boundary
 execution/execution_orchestrator.py  deterministic profile/plan/run state machine
 execution/local_user_service.py      exact approved local execution
 execution/local_controlled_executor.py
+execution/approval_service.py        scoped approval and authorization binding
 execution/validators/                task-specific output validation
 execution/repair_policy.py           bounded deterministic repair
 engine/pareto_decision.py            configuration/tool decision
 execution/reproducibility_packager.py
+eval/evaluation_pipeline.py          canonical-Trace trajectory evaluation
+eval/architecture_ablation.py        fixed paired architecture comparison
 ```
 
 The old `agent/workflow.py` is retained only as a historical Track-A baseline. The main UI does not import or dispatch to it.
@@ -148,7 +168,9 @@ Implemented today:
 
 - 2 qualified task families and 4 qualified tools;
 - local KG/BM25 and optional local bge-m3 retrieval;
-- data registration, grants, exact approvals, ownership, cancellation, trace, validation, repair, Pareto, and Level 2 packages;
+- data registration, grants, formal scoped authorization, exact approvals, ownership, cancellation, canonical Trace v0, validation, repair, Pareto, and Level 2 packages;
+- reviewed Scanpy Core adaptive parameter/method resolution with RepresentationLedger reuse/skip behavior;
+- Trace-driven ExpectedTrajectory evaluation and fixed architecture ablation;
 - Streamlit local workbench and CLI diagnostics;
 - dataset-scoped scientific pilots and deterministic engineering evaluations.
 
@@ -159,7 +181,7 @@ Not current product capability:
 - MCP, FastAPI, Docker/OCI sandbox, WSL2, cloud deployment, or remote multi-user service;
 - execution of all 1,847 catalog tools;
 - universal claims that one tool is scientifically best;
-- completed RAGAS or independent real-user trial evidence.
+- completed RAGAS, broad scientific qualification, independent real-user trial evidence, or ordinary trusted-user execution.
 
 `LocalControlledExecutor` is application-level process control, not an OS sandbox. Input matrices and full paths remain local by default, but stronger isolation claims require a future isolated runner.
 
