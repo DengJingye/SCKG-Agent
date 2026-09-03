@@ -365,7 +365,7 @@ def test_evaluation_only_ranking_diagnostic_captures_real_stage_ranks(
     )
 
 
-def test_ranking_diagnostic_classifies_selected_but_not_cited():
+def test_ranking_diagnostic_classifies_wrong_selected_evidence():
     record = EvaluationRunRecord(
         run_id="diagnostic-run",
         experiment_id="diagnostic",
@@ -392,7 +392,69 @@ def test_ranking_diagnostic_classifies_selected_but_not_cited():
 
     summary = summarize_missing_supported_diagnostics([record], [call])
 
+    assert summary[0]["disposition"] == "wrong_evidence_selected"
+
+
+def test_ranking_diagnostic_requires_selected_reference_for_assembly_failure():
+    record = EvaluationRunRecord(
+        run_id="diagnostic-run",
+        experiment_id="diagnostic",
+        case_id="architecture.tool-08-metric",
+        status="failed",
+        observed={
+            "citation_evaluation": {
+                "supported_evidence_match": False,
+                "cited_evidence_ids": [],
+            },
+            "reference_span_ids": [TOOL_08_ACCEPTED],
+        },
+    )
+    call = {
+        "case_id": record.case_id,
+        "accepted_evidence_ids": [TOOL_08_ACCEPTED],
+        "stages": {
+            "initial_bm25": {TOOL_08_ACCEPTED: 1},
+            "filtered_bm25": {TOOL_08_ACCEPTED: 1},
+            "fusion": {TOOL_08_ACCEPTED: 1},
+            "governance_rerank": None,
+            "final_top_k": {TOOL_08_ACCEPTED: 1},
+        },
+    }
+
+    summary = summarize_missing_supported_diagnostics([record], [call])
+
     assert summary[0]["disposition"] == "selected_but_not_cited"
+
+
+def test_ranking_diagnostic_does_not_call_deliberate_abstention_assembly_bug():
+    record = EvaluationRunRecord(
+        run_id="diagnostic-run",
+        experiment_id="diagnostic",
+        case_id="architecture.tool-08-metric",
+        status="failed",
+        observed={
+            "citation_evaluation": {
+                "supported_evidence_match": False,
+                "cited_evidence_ids": [],
+            },
+            "reference_span_ids": [],
+        },
+    )
+    call = {
+        "case_id": record.case_id,
+        "accepted_evidence_ids": [TOOL_08_ACCEPTED],
+        "stages": {
+            "initial_bm25": {TOOL_08_ACCEPTED: 1},
+            "filtered_bm25": {TOOL_08_ACCEPTED: 1},
+            "fusion": {TOOL_08_ACCEPTED: 1},
+            "governance_rerank": None,
+            "final_top_k": {TOOL_08_ACCEPTED: 1},
+        },
+    }
+
+    summary = summarize_missing_supported_diagnostics([record], [call])
+
+    assert summary[0]["disposition"] == "evidence_available_but_unbound"
 
 
 class _CitationService:

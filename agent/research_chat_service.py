@@ -7,6 +7,7 @@ import re
 import threading
 import time
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 from functools import lru_cache
 from pathlib import Path
@@ -94,6 +95,44 @@ class ResearchChatIntent(str, Enum):
     CAVEAT_COMPARISON = "caveat_comparison"
     MIGRATION_EXPLORATION = "migration_exploration"
     EVIDENCE_QA = "evidence_qa"
+
+
+@dataclass(frozen=True)
+class _ClaimTarget:
+    """One conservatively parsed entity/predicate request."""
+
+    entity: str
+    predicate: str
+    legacy_claim_type: str
+    ambiguous: bool = False
+
+
+@dataclass(frozen=True)
+class _BoundEvidenceRef:
+    """Immutable source-bound evidence needed by one atomic claim."""
+
+    evidence_span_id: str
+    source_id: str
+    source_span: str
+    title: str
+    bounded_excerpt: str
+    metadata_claim_type: str
+
+
+@dataclass(frozen=True)
+class _ClaimEvidenceBinding:
+    """One atomic scientific claim and its explicit evidence provenance."""
+
+    entity: str
+    predicate: str
+    legacy_claim_type: str
+    claim_text: str
+    evidence_refs: tuple[_BoundEvidenceRef, ...]
+    source_refs: tuple[str, ...]
+    support_status: str
+    support_type: str
+    support_quality: int
+    abstain_reason: Optional[str] = None
 
 
 class _ResearchTraceScopes:
@@ -1197,12 +1236,35 @@ class ResearchChatService:
             if mode in {AgentMode.PLAN, AgentMode.RUN}
             else intent
         )
+        reference_tools = requested_answer_tools or explicit_query_tools
+        if response_intent is ResearchChatIntent.EVIDENCE_QA:
+            evidence_claim_targets = (
+                _requested_claim_targets(query, reference_tools)
+                if reference_tools
+                else _entityless_claim_targets(query, snippets)
+            )
+            evidence_entities = list(
+                dict.fromkeys(target.entity for target in evidence_claim_targets)
+            )
+        else:
+            evidence_claim_targets = []
+            evidence_entities = reference_tools
+        evidence_bindings = (
+            _select_claim_evidence_bindings(
+                snippets,
+                targets=evidence_claim_targets,
+                query=query,
+            )
+            if response_intent is ResearchChatIntent.EVIDENCE_QA
+            else []
+        )
         references = _references(
             snippets,
             reference_candidates,
             query=query,
             intent=response_intent,
-            requested_tools=requested_answer_tools or explicit_query_tools,
+            requested_tools=evidence_entities,
+            claim_bindings=evidence_bindings,
         )
         workflow_code_bundle = (
             tool_execution.workflow_bundles[0]
@@ -1232,6 +1294,7 @@ class ResearchChatService:
             retrieval_snippets=snippets,
             workflow_code_bundle=workflow_code_bundle,
             requested_tools=requested_answer_tools,
+            claim_bindings=evidence_bindings,
         )
         external_reasoning = ExternalReasoningResult(status="not_requested")
         grounded_answer_audit = _audit_grounded_answer_v3(
@@ -4115,6 +4178,7 @@ def _legacy_snippet(hit: Any) -> Dict[str, Any]:
         "claim_type": hit.claim_type,
         "claim_span": hit.text,
         "relevance_score": hit.score,
+        "source_bound": bool(hit.source_bound),
         "recommendation_eligible": hit.recommendation_eligible,
         "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
     }
@@ -4127,6 +4191,7 @@ def _references(
     query: str = "",
     intent: ResearchChatIntent = ResearchChatIntent.EVIDENCE_QA,
     requested_tools: Optional[list[str]] = None,
+    claim_bindings: Optional[list[_ClaimEvidenceBinding]] = None,
 ) -> list[dict[str, Any]]:
     requested_tools = list(requested_tools or [])
     default_tool_limit = 3 if intent in {
@@ -4140,8 +4205,13 @@ def _references(
     preferred_tools = set(preferred_order)
     refs: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
+    source_bound_snippets = [
+        row
+        for row in snippets
+        if bool(row.get("source_bound")) and bool(row.get("source_span"))
+    ]
     ordered_snippets = sorted(
-        snippets,
+        source_bound_snippets,
         key=lambda row: (
             preferred_order.index(str(row.get("tool_name") or "").casefold())
             if str(row.get("tool_name") or "").casefold() in preferred_tools
@@ -4150,32 +4220,14 @@ def _references(
         ),
     )
     if intent is ResearchChatIntent.EVIDENCE_QA:
-        # Direct questions should cite the smallest sufficient source set instead
-        # of dumping every retrieved span into the answer.
-        selected: list[dict[str, Any]] = []
-        requested_claim_types = _claim_types_for_tool_query(query, intent)
-        for tool in preferred_order:
-            rows = [
-                row
-                for row in ordered_snippets
-                if str(row.get("tool_name") or "").casefold() == tool
-            ]
-            if rows:
-                selected.append(
-                    max(
-                        rows,
-                        key=lambda row: sum(
-                            _reference_claim_score(
-                                row,
-                                claim_type=claim_type,
-                                query=query,
-                                intent=intent,
-                            )
-                            for claim_type in requested_claim_types
-                        ),
-                    )
-                )
-        ordered_snippets = selected or ordered_snippets[:1]
+        bindings = claim_bindings
+        if bindings is None:
+            bindings = _select_claim_evidence_bindings(
+                ordered_snippets,
+                targets=_requested_claim_targets(query, preferred_names),
+                query=query,
+            )
+        return _references_from_claim_bindings(bindings)
     elif intent is ResearchChatIntent.CAVEAT_COMPARISON:
         selected = []
         for tool in preferred_order[:5]:
@@ -4294,9 +4346,7 @@ def _references(
                 remaining.append(snippet)
         ordered_snippets = [*first_per_tool, *remaining]
 
-    if intent is ResearchChatIntent.EVIDENCE_QA and len(preferred_order) <= 1:
-        limit = 1
-    elif intent is ResearchChatIntent.TOOL_RECOMMENDATION:
+    if intent is ResearchChatIntent.TOOL_RECOMMENDATION:
         limit = 8
     else:
         limit = 6
@@ -4321,13 +4371,11 @@ def _references(
                 "claim_text": snippet.get("claim_span") or "",
                 "claim_type": snippet.get("claim_type") or "general",
                 "support_claim_types": _supported_claim_types_for_snippet(snippet),
-                "selected_for_claim_types": list(
-                    dict.fromkeys(snippet.get("_selected_for_claim_types") or [])
-                ),
-                "source_bound": bool(snippet.get("source_bound", True)),
+                "selected_for_claim_types": [],
+                "source_bound": bool(snippet.get("source_bound")),
                 "authority": (
                     "source_bound"
-                    if bool(snippet.get("source_bound", True))
+                    if bool(snippet.get("source_bound"))
                     else "catalog_only"
                 ),
             }
@@ -4335,6 +4383,631 @@ def _references(
         if len(refs) >= limit:
             break
     return refs
+
+
+def _claim_types_for_evidence_query(
+    query: str,
+    tool_names: Iterable[str],
+) -> list[str]:
+    claim_query = _mask_claim_entities(_latest_followup_text(query), tool_names)
+    return list(
+        dict.fromkeys(
+            _legacy_claim_type_for_predicate(value)
+            for value in _semantic_predicates_for_text(claim_query)
+        )
+    )
+
+
+def _requested_claim_targets(
+    query: str,
+    entities: Iterable[str],
+) -> list[_ClaimTarget]:
+    ordered_entities = list(
+        dict.fromkeys(str(value).strip() for value in entities if str(value).strip())
+    )
+    if not ordered_entities:
+        return []
+    text = _latest_followup_text(query)
+    clauses = _claim_scope_clauses(text, ordered_entities)
+    targets: list[_ClaimTarget] = []
+    locally_scoped_entities: set[str] = set()
+    for clause in clauses:
+        clause_entities = [
+            entity
+            for entity in ordered_entities
+            if re.search(re.escape(entity), clause, flags=re.IGNORECASE)
+        ]
+        if not clause_entities:
+            continue
+        predicates = _semantic_predicates_for_text(
+            _mask_claim_entities(clause, ordered_entities)
+        )
+        if len(clause_entities) > 1 and not _has_shared_predicate_scope(clause):
+            targets.extend(
+                _ClaimTarget(
+                    entity=entity,
+                    predicate=(predicates[0] if len(predicates) == 1 else "unspecified"),
+                    legacy_claim_type=(
+                        _legacy_claim_type_for_predicate(predicates[0])
+                        if len(predicates) == 1
+                        else "general"
+                    ),
+                    ambiguous=True,
+                )
+                for entity in clause_entities
+            )
+        else:
+            targets.extend(
+                _ClaimTarget(
+                    entity=entity,
+                    predicate=predicate,
+                    legacy_claim_type=_legacy_claim_type_for_predicate(predicate),
+                )
+                for entity in clause_entities
+                for predicate in predicates
+            )
+        locally_scoped_entities.update(entity.casefold() for entity in clause_entities)
+
+    if not targets:
+        predicates = _semantic_predicates_for_text(
+            _mask_claim_entities(text, ordered_entities)
+        )
+        if len(ordered_entities) == 1 or _has_shared_predicate_scope(text):
+            targets.extend(
+                _ClaimTarget(
+                    entity=entity,
+                    predicate=predicate,
+                    legacy_claim_type=_legacy_claim_type_for_predicate(predicate),
+                )
+                for entity in ordered_entities
+                for predicate in predicates
+            )
+        else:
+            targets.extend(
+                _ClaimTarget(
+                    entity=entity,
+                    predicate=(predicates[0] if len(predicates) == 1 else "unspecified"),
+                    legacy_claim_type=(
+                        _legacy_claim_type_for_predicate(predicates[0])
+                        if len(predicates) == 1
+                        else "general"
+                    ),
+                    ambiguous=True,
+                )
+                for entity in ordered_entities
+            )
+    elif locally_scoped_entities:
+        targets.extend(
+            _ClaimTarget(
+                entity=entity,
+                predicate="unspecified",
+                legacy_claim_type="general",
+                ambiguous=True,
+            )
+            for entity in ordered_entities
+            if entity.casefold() not in locally_scoped_entities
+        )
+
+    deduplicated: list[_ClaimTarget] = []
+    seen: set[tuple[str, str, bool]] = set()
+    for target in targets:
+        key = (target.entity.casefold(), target.predicate, target.ambiguous)
+        if key in seen:
+            continue
+        seen.add(key)
+        deduplicated.append(target)
+    return deduplicated
+
+
+def _entityless_claim_targets(
+    query: str,
+    snippets: Iterable[dict[str, Any]],
+    *,
+    limit: int = 5,
+) -> list[_ClaimTarget]:
+    """Derive bounded targets only from source text supporting the query predicate."""
+
+    predicates = _semantic_predicates_for_text(_latest_followup_text(query))
+    targets: list[_ClaimTarget] = []
+    seen: set[tuple[str, str]] = set()
+    for snippet in snippets:
+        entity = str(snippet.get("tool_name") or "").strip()
+        if (
+            not entity
+            or not bool(snippet.get("source_bound"))
+            or not str(snippet.get("source_span") or "").strip()
+        ):
+            continue
+        for predicate in predicates:
+            if not _claim_supporting_excerpt(snippet, predicate)[1]:
+                continue
+            key = (entity.casefold(), predicate)
+            if key in seen:
+                continue
+            seen.add(key)
+            targets.append(
+                _ClaimTarget(
+                    entity=entity,
+                    predicate=predicate,
+                    legacy_claim_type=_legacy_claim_type_for_predicate(predicate),
+                )
+            )
+            if len(targets) >= max(1, int(limit)):
+                return targets
+    return targets
+
+
+def _mask_claim_entities(text: str, entities: Iterable[str]) -> str:
+    masked = str(text)
+    for entity in entities:
+        if entity:
+            masked = re.sub(
+                re.escape(str(entity)),
+                " ",
+                masked,
+                flags=re.IGNORECASE,
+            )
+    return masked
+
+
+def _claim_scope_clauses(text: str, entities: Iterable[str]) -> list[str]:
+    ordered_entities = list(entities)
+    clauses: list[str] = []
+    for coarse_clause in re.split(r"[;；。!?！？]+", str(text)):
+        coarse_clause = coarse_clause.strip()
+        if not coarse_clause:
+            continue
+        parts = [
+            value.strip()
+            for value in re.split(r"\s+(?:and|versus|vs)\s+|[，,]|以及|和|与", coarse_clause, flags=re.IGNORECASE)
+            if value.strip()
+        ]
+        independently_scoped = len(parts) > 1 and all(
+            any(
+                re.search(re.escape(entity), part, flags=re.IGNORECASE)
+                for entity in ordered_entities
+            )
+            and bool(
+                _explicit_semantic_predicates_for_text(
+                    _mask_claim_entities(part, ordered_entities)
+                )
+            )
+            for part in parts
+        )
+        clauses.extend(parts if independently_scoped else [coarse_clause])
+    return clauses
+
+
+def _has_shared_predicate_scope(text: str) -> bool:
+    lowered = str(text).casefold()
+    return any(
+        marker in lowered
+        for marker in (
+            " and ",
+            " both ",
+            " each ",
+            " respectively",
+            "分别",
+            "各自",
+            "两者",
+            "以及",
+            "和",
+            "与",
+            "都",
+        )
+    )
+
+
+def _semantic_predicates_for_text(text: str) -> list[str]:
+    return _explicit_semantic_predicates_for_text(text) or ["method_type"]
+
+
+def _explicit_semantic_predicates_for_text(text: str) -> list[str]:
+    lowered = str(text).casefold()
+    predicate_markers = (
+        (
+            "limitation",
+            ("caveat", "limitation", "failure mode", "限制", "局限", "失败模式", "注意事项"),
+        ),
+        ("parameter", ("parameter", "threshold", "default", "参数", "阈值", "默认值")),
+        (
+            "input_requirement",
+            (
+                "input",
+                "raw count",
+                "raw umi",
+                "输入",
+                "矩阵",
+                "需要什么数据",
+                "归一化矩阵",
+            ),
+        ),
+        (
+            "output",
+            (
+                "output",
+                "artifact",
+                "return",
+                "输出",
+                "返回",
+                "结果字段",
+                "放在哪里",
+                "存在哪里",
+                "obsm",
+            ),
+        ),
+        ("metric", ("metric", "precision", "recall", "f1", "指标", "评估指标")),
+        ("benchmark_result", ("benchmark", "ranked", "ranking", "排名", "基准评测")),
+        (
+            "mechanism",
+            ("mechanism", "principle", "how does", "how it works", "原理", "机制", "为什么"),
+        ),
+        (
+            "method_type",
+            (
+                "method type",
+                "type of method",
+                "supported task",
+                "designed for",
+                "方法类型",
+                "是什么方法",
+                "支持的任务",
+                "适用任务",
+                "用于什么",
+            ),
+        ),
+    )
+    located: list[tuple[int, int, str]] = []
+    for order, (predicate, markers) in enumerate(predicate_markers):
+        positions = [lowered.find(marker) for marker in markers if marker in lowered]
+        if positions:
+            located.append((min(positions), order, predicate))
+    return [value for _, _, value in sorted(located)]
+
+
+def _legacy_claim_type_for_predicate(predicate: str) -> str:
+    return {
+        "limitation": "failure_mode",
+        "benchmark_result": "benchmark",
+        "method_type": "general",
+        "mechanism": "general",
+        "unspecified": "general",
+    }.get(predicate, predicate)
+
+
+def _select_claim_evidence_bindings(
+    snippets: list[dict[str, Any]],
+    *,
+    targets: Iterable[_ClaimTarget],
+    query: str,
+) -> list[_ClaimEvidenceBinding]:
+    bindings: list[_ClaimEvidenceBinding] = []
+    for target in targets:
+        if target.ambiguous:
+            bindings.append(_abstained_claim_binding(target, "ambiguous_target"))
+            continue
+        rows = [
+            row
+            for row in snippets
+            if bool(row.get("source_bound"))
+            and bool(row.get("source_span"))
+            and str(row.get("tool_name") or "").casefold()
+            == target.entity.casefold()
+        ]
+        if not rows:
+            bindings.append(_abstained_claim_binding(target, "no_candidate"))
+            continue
+        supported: list[tuple[dict[str, Any], str, str, int]] = []
+        for row in rows:
+            bounded_excerpt, claim_text, support_quality = _claim_supporting_excerpt(
+                row,
+                target.predicate,
+            )
+            if claim_text:
+                supported.append((row, bounded_excerpt, claim_text, support_quality))
+        if not supported:
+            bindings.append(_abstained_claim_binding(target, "no_direct_support"))
+            continue
+        if _claim_support_candidates_conflict(supported, target.predicate):
+            bindings.append(_abstained_claim_binding(target, "conflicting_support"))
+            continue
+        row, bounded_excerpt, claim_text, support_quality = max(
+            supported,
+            key=lambda item: _evidence_binding_rank(
+                item[0],
+                target=target,
+                support_quality=item[3],
+                claim_text=item[2],
+                query=query,
+            ),
+        )
+        source_id = str(row.get("source_id") or "")
+        metadata_claim_type = str(row.get("claim_type") or "general")
+        evidence_ref = _BoundEvidenceRef(
+            evidence_span_id=str(
+                row.get("chunk_id")
+                or f"{source_id or 'source'}:{row.get('source_span')}"
+            ),
+            source_id=source_id,
+            source_span=str(row.get("source_span") or ""),
+            title=str(row.get("title") or source_id or "Source"),
+            bounded_excerpt=bounded_excerpt,
+            metadata_claim_type=metadata_claim_type,
+        )
+        metadata_confirmed = _claim_metadata_compatible(
+            metadata_claim_type,
+            target,
+        )
+        bindings.append(
+            _ClaimEvidenceBinding(
+                entity=target.entity,
+                predicate=target.predicate,
+                legacy_claim_type=target.legacy_claim_type,
+                claim_text=claim_text,
+                evidence_refs=(evidence_ref,),
+                source_refs=(source_id,),
+                support_status="supported",
+                support_type=(
+                    "direct_excerpt_metadata_confirmed"
+                    if metadata_confirmed
+                    else "direct_excerpt"
+                ),
+                support_quality=support_quality,
+            )
+        )
+    return bindings
+
+
+def _abstained_claim_binding(
+    target: _ClaimTarget,
+    reason: str,
+) -> _ClaimEvidenceBinding:
+    return _ClaimEvidenceBinding(
+        entity=target.entity,
+        predicate=target.predicate,
+        legacy_claim_type=target.legacy_claim_type,
+        claim_text=(
+            f"缺少 source-bound 证据，无法核验 {target.entity} 的"
+            f"{_claim_predicate_label(target.predicate)}。"
+        ),
+        evidence_refs=(),
+        source_refs=(),
+        support_status="abstained",
+        support_type="none",
+        support_quality=0,
+        abstain_reason=reason,
+    )
+
+
+def _references_from_claim_bindings(
+    bindings: Iterable[_ClaimEvidenceBinding],
+) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    by_evidence_id: dict[str, dict[str, Any]] = {}
+    for binding in bindings:
+        if binding.support_status != "supported":
+            continue
+        for evidence in binding.evidence_refs:
+            row = by_evidence_id.get(evidence.evidence_span_id)
+            if row is None:
+                row = {
+                    "index": len(rows) + 1,
+                    "tool_name": binding.entity,
+                    "title": evidence.title,
+                    "source_id": evidence.source_id,
+                    "source_span": evidence.source_span,
+                    "source_span_id": evidence.evidence_span_id,
+                    "claim_text": evidence.bounded_excerpt,
+                    "claim_type": evidence.metadata_claim_type,
+                    "support_claim_types": [],
+                    "selected_for_claim_types": [],
+                    "source_bound": True,
+                    "authority": "source_bound",
+                }
+                rows.append(row)
+                by_evidence_id[evidence.evidence_span_id] = row
+            if binding.legacy_claim_type not in row["support_claim_types"]:
+                row["support_claim_types"].append(binding.legacy_claim_type)
+            if binding.legacy_claim_type not in row["selected_for_claim_types"]:
+                row["selected_for_claim_types"].append(binding.legacy_claim_type)
+    return rows
+
+
+def _evidence_binding_rank(
+    snippet: dict[str, Any],
+    *,
+    target: _ClaimTarget,
+    support_quality: int,
+    claim_text: str,
+    query: str,
+) -> tuple[int, int, int, int, int, float]:
+    metadata_compatible = int(
+        _claim_metadata_compatible(
+            str(snippet.get("claim_type") or ""),
+            target,
+        )
+    )
+    noise = _reference_noise_penalty(
+        " ".join(
+            (
+                str(snippet.get("title") or ""),
+                claim_text,
+                str(snippet.get("source_span") or ""),
+            )
+        ).casefold(),
+        query=query,
+        intent=ResearchChatIntent.EVIDENCE_QA,
+    )
+    query_support = _reference_query_support_score(claim_text.casefold(), query=query)
+    return (
+        1,
+        metadata_compatible,
+        support_quality,
+        -noise,
+        query_support,
+        min(float(snippet.get("relevance_score") or 0.0), 3.0),
+    )
+
+
+def _claim_metadata_compatible(
+    metadata_type: str,
+    target: _ClaimTarget,
+) -> bool:
+    if metadata_type == target.legacy_claim_type:
+        return True
+    return target.predicate in {"method_type", "mechanism"} and metadata_type in {
+        "general",
+        "mechanism",
+        "workflow",
+    }
+
+
+def _claim_supporting_excerpt(
+    snippet: dict[str, Any],
+    predicate: str,
+) -> tuple[str, str, int]:
+    evidence_excerpt = _bounded_claim_text(
+        str(snippet.get("claim_span") or ""),
+        limit=900,
+    )
+    if not evidence_excerpt:
+        return "", "", 0
+    text = evidence_excerpt.casefold()
+    patterns = {
+        "input_requirement": (
+            r"\binputs?\b.{0,100}\b(?:comprise|include|consist|accept|require)",
+            r"\b(?:accepts?|requires?)\b.{0,120}\b(?:input|data|matrix|counts?|expression|anndata|file)",
+            r"\b(?:takes?|uses?|consumes?|expects?)\b.{0,120}\b(?:input|data|matrices|matrix|counts?|expression|anndata|files?)\b",
+            r"\b(?:input|data|matrix|counts?|expression|anndata|file)\b.{0,120}\b(?:is|are)\s+required\b",
+            r"\bgiven\b.{0,160}\b(?:data|matrices|matrix|counts?|expression|anndata|files?)\b",
+            r"\bstarting with\b.{0,100}\b(?:counts?|matrix|expression|anndata|data)\b",
+            r"\bfile formats?\b.{0,160}\b(?:rows?|columns?|cells?|genes?|matrix)\b",
+            r"\b(?:cells?|genes?)\b.{0,40}\b(?:rows?|columns?)\b",
+            r"\b(?:log1p|logarithmi[sz]ed|normali[sz]ed|raw counts?|raw umi)\b.{0,120}\b(?:matrix|expression|anndata|input)\b",
+        ),
+        "output": (
+            r"\b(?:will\s+)?output\b.{0,120}\b(?:matrix|coordinates?|embedding|labels?|scores?|artifact|entry)\b",
+            r"\boutputs?\b.{0,80}\b(?:are|include|comprise|consist(?:s)?\s+of)\b.{0,180}\b(?:states?|probabilities|maps?|trends?|genes?|matrix|coordinates?|embedding|labels?|scores?|artifacts?|results?)\b",
+            r"\b(?:returns?|returned|produces?)\b.{0,120}\b(?:matrix|coordinates?|embedding|labels?|scores?|artifact|result)\b",
+            r"\b(?:provides?|generates?|creates?|yields?)\b.{0,120}\b(?:representation|coordinates?|matrix|embedding|labels?|scores?|artifact|data)\b",
+            r"\b(?:stored in|adds? an entry)\b.{0,120}\b(?:obsm|matrix|coordinates?|embedding|labels?|scores?)\b",
+            r"\b(?:aims?|objective|goal)\b.{0,100}\b(?:detect|define|assign|infer|identify|estimate|compute)\w*\b.{0,180}\b(?:states?|probabilities|maps?|trajectories|coordinates?|embedding|labels?|artifacts?|results?)\b",
+            r"\b(?:detects?|defines?|assigns?|infers?|identifies?|estimates?|computes?)\b.{0,140}\b(?:states?|probabilities|maps?|trajectories|coordinates?|embedding|labels?|artifacts?|results?)\b",
+        ),
+        "parameter": (
+            r"\bparameters?\b.{0,120}\b(?:optimized|clamped|set to|value|default|threshold|\d)",
+            r"\b(?:resolution|max_epochs|epochs?|warmup|early_stopping|early stopping|batch size|minibatch|threshold)\b.{0,100}\b(?:set to|increased|decreased|enabled|disabled|default|\d)",
+            r"\b(?:by default|default value)\b.{0,100}\b(?:true|false|enabled|disabled|\d)",
+        ),
+        "limitation": (
+            r"\b(?:limitation|caveat|warning|failure mode)\b",
+            r"\b(?:may perform poorly|not universally|should not|only within|overcorrect|over-correct)\b",
+        ),
+        "benchmark_result": (
+            r"\b(?:benchmark|evaluated|performance|ranked)\b.{0,120}\b(?:dataset|method|tool|metric|result)\b",
+        ),
+        "metric": (
+            r"\b(?:precision|recall|f1|auprc|auroc|silhouette|ilisi|clisi|kbet)\b",
+        ),
+        "mechanism": (
+            r"\b(?:method|algorithm|framework|model)\b.{0,120}\b(?:for|performs?|integrat|correct|classif|infer|simulate)\b",
+        ),
+        "method_type": (
+            r"\b(?:method|algorithm|framework|model)\b.{0,120}\b(?:for|performs?|integrat|correct|classif|infer|simulate)\b",
+            r"\b(?:tool|method|algorithm|framework|model)\b.{0,120}\b(?:for|to|that|which)\b.{0,140}\b(?:annotat|classif|correlat|integrat|correct|infer|detect|predict|map|deconvol)\w*\b",
+            r"\b(?:developed|introduced|presented)\b.{0,100}\b(?:tool|method|algorithm|framework|model)\b.{0,180}\b(?:annotat|classif|correlat|integrat|correct|infer|detect|predict|map|deconvol)\w*\b",
+            r"\b(?:designed|developed)\b.{0,120}\b(?:for|to)\b",
+            r"\b(?:enables?|supports?)\b.{0,140}\b(?:annotat|classif|integrat|correct|infer|detect|predict|map|deconvol)\w*\b",
+            r"\b(?:requires?|accepts?|returns?|produces?)\b.{0,160}\b(?:matrix|counts?|scores?|labels?|embedding|coordinates?|data)\b",
+        ),
+    }
+    matched = [
+        match
+        for pattern in patterns.get(predicate, ())
+        if (match := re.search(pattern, text, flags=re.IGNORECASE)) is not None
+    ]
+    if not matched:
+        return "", "", 0
+    first = min(matched, key=lambda match: match.start())
+    bounded_excerpt = _bounded_support_window(evidence_excerpt, first.start())
+    claim_text = _bounded_support_proposition(
+        evidence_excerpt,
+        support_start=first.start(),
+    )
+    return bounded_excerpt, claim_text, len(matched)
+
+
+def _bounded_support_window(value: str, support_start: int) -> str:
+    sentence_start = _bounded_support_start(value, support_start)
+    return _bounded_claim_text(value[sentence_start:].lstrip(), limit=260)
+
+
+def _bounded_support_proposition(
+    value: str,
+    *,
+    support_start: int,
+) -> str:
+    sentence_start = _bounded_support_start(value, support_start)
+    endings = [
+        position + len(marker)
+        for marker in (". ", "? ", "! ", "。", "\n")
+        if (position := value.find(marker, support_start)) >= 0
+    ]
+    sentence_end = min(endings) if endings else len(value)
+    proposition = value[sentence_start:sentence_end].strip(" -*#>\t")
+    return _bounded_claim_text(proposition, limit=220)
+
+
+def _bounded_support_start(value: str, support_start: int) -> int:
+    sentence_start = max(
+        value.rfind(marker, 0, support_start)
+        for marker in (". ", "? ", "! ", "。", "\n")
+    )
+    sentence_start = 0 if sentence_start < 0 else sentence_start + 1
+    if support_start - sentence_start <= 160:
+        return sentence_start
+    bounded_start = max(sentence_start, support_start - 120)
+    next_space = value.find(" ", bounded_start)
+    return next_space + 1 if 0 <= next_space < support_start else bounded_start
+
+
+def _claim_support_candidates_conflict(
+    candidates: list[tuple[dict[str, Any], str, str, int]],
+    predicate: str,
+) -> bool:
+    if predicate != "input_requirement" or len(candidates) < 2:
+        return False
+    values = [item[2].casefold() for item in candidates]
+    raw_only = any(
+        any(marker in value for marker in ("requires raw", "raw counts only", "must be raw"))
+        for value in values
+    )
+    processed_allowed = any(
+        any(
+            marker in value
+            for marker in (
+                "accepts normalized",
+                "accepts log-normalized",
+                "accepts scaled",
+            )
+        )
+        for value in values
+    )
+    return raw_only and processed_allowed
+
+
+def _claim_predicate_label(predicate: str) -> str:
+    return {
+        "input_requirement": "输入要求",
+        "output": "输出",
+        "limitation": "主要限制",
+        "parameter": "参数依据",
+        "metric": "评估指标依据",
+        "benchmark_result": "评测结果",
+        "mechanism": "核心原理",
+        "method_type": "方法类型",
+        "unspecified": "请求范围",
+    }.get(predicate, "科学结论")
 
 
 def _reference_claim_score(
@@ -4348,8 +5021,6 @@ def _reference_claim_score(
         str(snippet.get(field) or "")
         for field in ("title", "claim_span", "source_span")
     ).casefold()
-    # Retrieval score selects candidates; it must not overwhelm direct
-    # claim-type support when choosing the citation for a concrete statement.
     score = min(float(snippet.get("relevance_score") or 0.0), 3.0)
     title = str(snippet.get("title") or "").casefold()
     tool_name = str(snippet.get("tool_name") or "").casefold()
@@ -4377,6 +5048,61 @@ def _reference_claim_score(
     ):
         score += 3.0
     return score
+
+
+def _reference_query_support_score(text: str, *, query: str) -> int:
+    query_text = _latest_followup_text(query).casefold()
+    query_tokens = {
+        token
+        for token in _claim_tokens(query_text)
+        if token
+        not in {
+            "about",
+            "artifacts",
+            "documented",
+            "does",
+            "find",
+            "information",
+            "outputs",
+            "produce",
+            "source-bound",
+            "supported",
+            "task",
+            "what",
+            "which",
+        }
+    }
+    text_tokens = _claim_tokens(text)
+    score = min(len(query_tokens & text_tokens), 6)
+    if any(marker in query_text for marker in ("放在哪里", "存在哪里", "obsm")):
+        if any(marker in text for marker in ("obsm", "add an entry")):
+            score += 6
+    return score
+
+
+def _reference_noise_penalty(
+    text: str,
+    *,
+    query: str,
+    intent: ResearchChatIntent,
+) -> int:
+    markers = (
+        "supplementary figure",
+        "extended data fig",
+        "figure ",
+        "[![",
+        "shields.io",
+        "<img",
+    )
+    penalty = min(sum(marker in text for marker in markers), 2)
+    query_text = _latest_followup_text(query).casefold()
+    if (
+        intent is ResearchChatIntent.EVIDENCE_QA
+        and "benchmark" not in query_text
+        and "benchmark" in text
+    ):
+        penalty += 3
+    return penalty
 
 
 def _supported_claim_types_for_snippet(snippet: dict[str, Any]) -> list[str]:
@@ -4547,6 +5273,7 @@ def _report(
     retrieval_snippets: list[dict[str, Any]],
     workflow_code_bundle: Optional[dict[str, Any]],
     requested_tools: list[str],
+    claim_bindings: Optional[list[_ClaimEvidenceBinding]] = None,
 ) -> str:
     if intent is ResearchChatIntent.CAVEAT_COMPARISON:
         count = _requested_top_k(query, default=3)
@@ -4577,6 +5304,7 @@ def _report(
         blockers,
         retrieval_snippets,
         requested_tools,
+        claim_bindings,
     )
 
 
@@ -4896,140 +5624,72 @@ def _evidence_qa_report(
     blockers: list[str],
     retrieval_snippets: list[dict[str, Any]],
     requested_tools: list[str],
+    claim_bindings: Optional[list[_ClaimEvidenceBinding]] = None,
 ) -> str:
-    if not cards:
+    bindings = list(claim_bindings) if claim_bindings is not None else []
+    if claim_bindings is None:
+        fallback_entities = requested_tools or [
+            str(card.get("tool_name") or "")
+            for card in cards[:1]
+            if card.get("tool_name")
+        ]
+        bindings = _select_claim_evidence_bindings(
+            retrieval_snippets,
+            targets=_requested_claim_targets(query, fallback_entities),
+            query=query,
+        )
+    if not bindings:
         return (
             f"我识别到任务为 **{task_label}**，但没有找到足以支持回答的 source-bound 内容。"
             "我不会用目录元数据补造结论。"
         )
-    claim_types = _claim_types_for_tool_query(query, ResearchChatIntent.EVIDENCE_QA)
-    claim_types = [
-        value for value in claim_types if value not in {"mechanism", "benchmark"}
-    ] or ["general"]
-    selected_cards = _cards_for_requested_tools(cards, requested_tools)
-    if (
-        _is_multi_tool_followup(query) and len(selected_cards) >= 2
-    ) or len(claim_types) > 1:
-        lines = [f"**{task_label}：直接回答**"]
-        for card in selected_cards:
-            for claim_type in claim_types:
-                matching = _matching_claim_snippets(
-                    card,
-                    claim_type=claim_type,
-                    retrieval_snippets=retrieval_snippets,
-                )
-                label, direct = _direct_card_claim(card, claim_type, matching)
-                citation = _citation_for_tool(
-                    card["tool_name"],
-                    references,
-                    claim_type=claim_type,
-                )
-                boundary = (
-                    citation
-                    or "（当前缺少可映射的 source span，此项不能视为已核验证据。）"
-                )
-                lines.append(
-                    f"- **{card['tool_name']} · {label}**：{direct}{boundary}"
-                )
-        return _append_references(lines, references)
+    reference_by_evidence_id = {
+        str(ref.get("source_span_id") or ""): ref
+        for ref in references
+        if ref.get("source_span_id")
+    }
+    rendered: list[tuple[_ClaimEvidenceBinding, str]] = []
+    for binding in bindings:
+        citations = "".join(
+            f"[{reference_by_evidence_id[evidence.evidence_span_id]['index']}]"
+            for evidence in binding.evidence_refs
+            if evidence.evidence_span_id in reference_by_evidence_id
+        )
+        rendered.append((binding, citations))
 
-    card = selected_cards[0] if selected_cards else cards[0]
-    claim_type = claim_types[0]
-    matching = _matching_claim_snippets(
-        card,
-        claim_type=claim_type,
-        retrieval_snippets=retrieval_snippets,
-    )
-    label, direct = _direct_card_claim(card, claim_type, matching)
-    citation = _citation_for_tool(card["tool_name"], references, claim_type=claim_type)
-    lines = [f"**直接结论：{card['tool_name']} 的{label}是：** {direct}{citation}"]
-    if matching:
+    if len(rendered) == 1:
+        binding, citations = rendered[0]
+        if binding.support_status == "supported" and citations:
+            lines = [
+                f"**直接结论：{binding.entity} 的"
+                f"{_claim_predicate_label(binding.predicate)}是：** "
+                f"{binding.claim_text}{citations}"
+            ]
+        else:
+            lines = [binding.claim_text]
+    else:
+        lines = [f"**{task_label}：直接回答**"]
+        for binding, citations in rendered:
+            label = _claim_predicate_label(binding.predicate)
+            if binding.support_status == "supported" and citations:
+                lines.append(
+                    f"- **{binding.entity} · {label}**："
+                    f"{binding.claim_text}{citations}"
+                )
+            else:
+                lines.append(f"- **{binding.entity} · {label}**：{binding.claim_text}")
+
+    if references:
         lines.extend(
             [
                 "",
-                f"检索到 {len(matching)} 条与本问题直接匹配的 source-bound 片段；来源位置见下方参考资料。",
+                f"检索到 {len(references)} 条与本问题直接匹配的 source-bound 片段；来源位置见下方参考资料。",
             ]
         )
     material_blockers = [item for item in blockers if item != "dense_model_pack_not_installed_using_kg_bm25"]
     if material_blockers:
         lines.append(f"- **证据边界：** `{', '.join(material_blockers[:3])}`。")
     return _append_references(lines, references)
-
-
-def _matching_claim_snippets(
-    card: dict[str, Any],
-    *,
-    claim_type: str,
-    retrieval_snippets: list[dict[str, Any]],
-) -> list[dict[str, Any]]:
-    exact = [
-        item
-        for item in retrieval_snippets
-        if str(item.get("tool_name") or "").casefold()
-        == str(card["tool_name"]).casefold()
-        and (claim_type == "general" or item.get("claim_type") == claim_type)
-    ]
-    if exact or claim_type == "general":
-        return exact
-    # Source extraction labels are candidates. Content cues can recover a
-    # misclassified span, but authority still comes from the source itself.
-    return [
-        item
-        for item in retrieval_snippets
-        if str(item.get("tool_name") or "").casefold()
-        == str(card["tool_name"]).casefold()
-        and _text_supports_claim_type(
-            " ".join(
-                str(item.get(field) or "")
-                for field in ("claim_span", "title", "source_span")
-            ).casefold(),
-            claim_type,
-        )
-    ]
-
-
-def _direct_card_claim(
-    card: dict[str, Any],
-    claim_type: str,
-    matching: list[dict[str, Any]],
-) -> tuple[str, str]:
-    direct_values = {
-        "input_requirement": ("输入要求", card["input"]),
-        "output": ("输出", card["output"]),
-        "failure_mode": ("主要限制", "；".join(card["caveats"][:2])),
-        "parameter": (
-            "参数依据",
-            _bounded_claim_text(str(matching[0].get("claim_span") or ""))
-            if matching
-            else "当前上下文不足，不能安全给出具体参数结论。",
-        ),
-        "metric": (
-            "评估指标依据",
-            _bounded_claim_text(str(matching[0].get("claim_span") or ""))
-            if matching
-            else "当前上下文不足，不能安全给出具体指标结论。",
-        ),
-        "general": ("核心原理", card["mechanism"]),
-    }
-    return direct_values.get(claim_type, direct_values["general"])
-
-
-def _cards_for_requested_tools(
-    cards: list[dict[str, Any]],
-    requested_tools: list[str],
-) -> list[dict[str, Any]]:
-    if not requested_tools:
-        return cards
-    by_name = {
-        str(card.get("tool_name") or "").casefold(): card
-        for card in cards
-    }
-    selected = [
-        by_name[name.casefold()]
-        for name in requested_tools
-        if name.casefold() in by_name
-    ]
-    return selected or cards
 
 
 def _claim_type_for_query(query: str) -> str:

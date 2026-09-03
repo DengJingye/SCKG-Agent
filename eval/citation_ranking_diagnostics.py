@@ -245,6 +245,11 @@ def summarize_missing_supported_diagnostics(
             for evidence_id in call.get("accepted_evidence_ids") or []
         }
         cited_ids = set(citation.get("cited_evidence_ids") or [])
+        selected_reference_ids = {
+            str(value)
+            for value in record.observed.get("reference_span_ids") or []
+            if str(value)
+        }
         present = {
             stage: {
                 evidence_id
@@ -265,8 +270,12 @@ def summarize_missing_supported_diagnostics(
         filtered = present["filtered_bm25"] | present["filtered_dense"]
         if accepted_ids.intersection(cited_ids):
             disposition = "cited_but_mapping_or_evaluator_rejected"
-        elif accepted_ids.intersection(present["final_top_k"]):
+        elif cited_ids:
+            disposition = "wrong_evidence_selected"
+        elif selected_reference_ids:
             disposition = "selected_but_not_cited"
+        elif accepted_ids.intersection(present["final_top_k"]):
+            disposition = "evidence_available_but_unbound"
         elif accepted_ids.intersection(filtered):
             disposition = "retrieved_then_ranked_out"
         elif accepted_ids.intersection(initial):

@@ -325,6 +325,81 @@ def test_named_tool_in_query_is_used_as_a_hard_source_constraint(tmp_path):
     assert "unsupported_operation_scope:genome_assembly" in blocked.warnings
 
 
+def test_span_content_adds_multi_tool_association_without_rewriting_provenance(
+    tmp_path,
+):
+    index_dir = tmp_path / "indexes"
+    chunks = [
+        EvidenceChunk(
+            chunk_id="source:shared-benchmark",
+            evidence_id="shared-benchmark",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="shared-benchmark",
+            source_id="shared-benchmark",
+            tool_name="Harmony",
+            tool_names=["Harmony"],
+            canonical_task="batch_integration",
+            task_tags=["batch_integration"],
+            claim_type="metric",
+            chunk_text=(
+                "The governed benchmark evaluates Harmony and Scanorama using "
+                "kBET, graph connectivity, ASW, and graph iLISI metrics."
+            ),
+            source_span="Benchmark metrics paragraph",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+        EvidenceChunk(
+            chunk_id="source:scanorama-inventory",
+            evidence_id="scanorama-inventory",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="scanorama-inventory",
+            source_id="scanorama-inventory",
+            tool_name="Scanorama",
+            tool_names=["Scanorama"],
+            canonical_task="batch_integration",
+            task_tags=["batch_integration"],
+            claim_type="general",
+            chunk_text="Scanorama integrates heterogeneous single-cell datasets.",
+            source_span="Scanorama overview",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+    ]
+    _write_jsonl(index_dir / "evidence.jsonl", [chunk_to_dict(row) for row in chunks])
+    _write_jsonl(index_dir / "catalog.jsonl", [])
+    (index_dir / "manifest.json").write_text(
+        json.dumps({"build_id": "multi-tool-span"}), encoding="utf-8"
+    )
+    service = HybridRetrievalService(
+        evidence_chunks_path=index_dir / "evidence.jsonl",
+        catalog_chunks_path=index_dir / "catalog.jsonl",
+        fts_index_path=index_dir / "fts.sqlite",
+        index_manifest_path=index_dir / "manifest.json",
+        coverage_path=index_dir / "coverage.json",
+        graph_dir=tmp_path / "missing",
+    )
+
+    result = service.search(
+        HybridRetrievalRequest(
+            query="Which metrics are reported for Scanorama?",
+            tool_names=["Scanorama"],
+            canonical_tasks=["batch_integration"],
+            claim_types=["metric"],
+            include_catalog=False,
+            enable_dense=False,
+            use_kg=False,
+            use_governance_rerank=False,
+        )
+    )
+
+    shared = next(hit for hit in result.hits if hit.chunk_id == "source:shared-benchmark")
+    assert shared.tool_name == "Scanorama"
+    assert shared.tool_names == ["Harmony", "Scanorama"]
+
+
 def test_broad_task_search_preserves_tool_diversity(tmp_path):
     index_dir = tmp_path / "indexes"
     chunks = []

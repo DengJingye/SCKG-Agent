@@ -17,6 +17,7 @@ from typing import Any, Dict, Iterable, List, Optional, Protocol, Sequence
 import numpy as np
 
 from core.canonical_task_ontology import (
+    CANONICAL_TASKS,
     canonical_task,
     canonical_task_for_text,
     canonical_task_ids_for_tool,
@@ -94,6 +95,7 @@ class HybridRetrievalService:
         self.graph_dir = Path(graph_dir or PROJECT_ROOT / "data" / "knowledge_graph_v2")
         self._lock = threading.RLock()
         self._chunks_by_id: Dict[str, EvidenceChunk] = {}
+        self._tool_inventory: tuple[str, ...] = ()
         self._dense_matrix: Optional[np.ndarray] = None
         self._dense_chunk_ids: List[str] = []
         self._dense_source_digest = ""
@@ -242,6 +244,7 @@ class HybridRetrievalService:
             reranked = _diversify_ranked_by_tool(
                 reranked,
                 chunks_by_id=self._chunks_by_id,
+                known_tools=self._tool_inventory,
                 top_k=request.top_k,
             )
         if operation_scope_blocker:
@@ -256,7 +259,10 @@ class HybridRetrievalService:
         hits = []
         for chunk_id, score, sparse_rank, dense_rank in reranked[: request.top_k]:
             chunk = self._chunks_by_id[chunk_id]
-            mentioned_tools = _chunk_mentioned_tools(chunk)
+            mentioned_tools = _chunk_mentioned_tools(
+                chunk,
+                known_tools=self._tool_inventory,
+            )
             matched_explicit = next(
                 (
                     tool
@@ -613,6 +619,7 @@ class HybridRetrievalService:
         self._chunks_by_id = {
             str(chunk_id): EvidenceChunk(**json.loads(payload)) for chunk_id, payload in rows
         }
+        self._tool_inventory = _tool_inventory(self._chunks_by_id.values())
 
     def _load_dense_index(self) -> None:
         self._dense_matrix = None
@@ -793,20 +800,20 @@ class HybridRetrievalService:
             chunk = self._chunks_by_id.get(chunk_id)
             if chunk is None:
                 continue
-            chunk_tools = {
-                _tool_key(value)
-                for value in (chunk.tool_names or [chunk.tool_name])
-                if value
-            }
+            span_tools = _chunk_mentioned_tools(
+                chunk,
+                known_tools=self._tool_inventory,
+            )
+            chunk_tools = {_tool_key(value) for value in span_tools if value}
             mentioned_tools = {
-                _tool_key(value) for value in _chunk_mentioned_tools(chunk)
+                _tool_key(value) for value in span_tools
             }
             if explicit_tools and not (explicit_tools & mentioned_tools):
                 continue
             if task_ids and not explicit_tools:
                 governed_tool_tasks = {
                     task_id
-                    for tool in _chunk_mentioned_tools(chunk)
+                    for tool in span_tools
                     for task_id in canonical_task_ids_for_tool(tool)
                 }
                 if governed_tool_tasks and not (task_ids & governed_tool_tasks):
@@ -833,13 +840,13 @@ class HybridRetrievalService:
         reranked = []
         for chunk_id, score, sparse_rank, dense_rank in fused:
             chunk = self._chunks_by_id[chunk_id]
-            chunk_tools = {
-                _tool_key(value)
-                for value in (chunk.tool_names or [chunk.tool_name])
-                if value
-            }
+            span_tools = _chunk_mentioned_tools(
+                chunk,
+                known_tools=self._tool_inventory,
+            )
+            chunk_tools = {_tool_key(value) for value in span_tools if value}
             mentioned_tools = {
-                _tool_key(value) for value in _chunk_mentioned_tools(chunk)
+                _tool_key(value) for value in span_tools
             }
             chunk_tasks = set(chunk.task_tags or ([chunk.canonical_task or chunk.task] if (chunk.canonical_task or chunk.task) else []))
             adjusted = score
@@ -1002,25 +1009,72 @@ def _query_content_relevance(
     return min(score, 0.14)
 
 
-def _chunk_mentioned_tools(chunk: EvidenceChunk) -> list[str]:
+def _tool_inventory(chunks: Iterable[EvidenceChunk]) -> tuple[str, ...]:
+    by_key: dict[str, str] = {}
+    generic_keys = {
+        "scrna",
+        "scrnaseq",
+        "singlecell",
+        "singlerna",
+        "rnaseq",
+        *(
+            _tool_key(value)
+            for task in CANONICAL_TASKS
+            for value in (task.task_id, task.label)
+        ),
+    }
+    for chunk in chunks:
+        for tool in chunk.tool_names or ([chunk.tool_name] if chunk.tool_name else []):
+            key = _tool_key(tool)
+            if not key or key in generic_keys or len(key) < 4:
+                continue
+            current = by_key.get(key, "")
+            if not current or (current.islower() and not str(tool).islower()):
+                by_key[key] = str(tool)
+    return tuple(
+        tool
+        for _, tool in sorted(
+            by_key.items(),
+            key=lambda item: (-len(item[0]), item[0]),
+        )
+    )
+
+
+def _chunk_mentioned_tools(
+    chunk: EvidenceChunk,
+    *,
+    known_tools: Iterable[str] = (),
+) -> list[str]:
     """Return tools named by this span, not merely linked at document level."""
 
-    candidates = chunk.tool_names or ([chunk.tool_name] if chunk.tool_name else [])
+    declared = chunk.tool_names or ([chunk.tool_name] if chunk.tool_name else [])
+    candidates = list(dict.fromkeys([*declared, *known_tools]))
     content = " ".join(
         value
         for value in (chunk.title, chunk.chunk_text, chunk.source_span)
         if value
     ).casefold()
     compact_content = _tool_key(content)
+    association_content = re.sub(
+        r"\[[^\]]+\]\([^)]*\)",
+        " ",
+        " ".join(value for value in (chunk.title, chunk.chunk_text) if value),
+    ).casefold()
+    compact_association_content = _tool_key(association_content)
+    declared_keys = {_tool_key(value) for value in declared if value}
     mentioned: list[str] = []
     for tool in candidates:
         key = _tool_key(tool)
         if not key:
             continue
-        if str(tool).casefold() in content or key in compact_content:
+        search_text = content if key in declared_keys else association_content
+        compact_search_text = (
+            compact_content if key in declared_keys else compact_association_content
+        )
+        if str(tool).casefold() in search_text or key in compact_search_text:
             mentioned.append(str(tool))
-    if not mentioned and len(candidates) == 1:
-        mentioned = [str(candidates[0])]
+    if not mentioned and len(declared) == 1:
+        mentioned = [str(declared[0])]
     return list(dict.fromkeys(mentioned))
 
 
@@ -1079,6 +1133,7 @@ def _diversify_ranked_by_tool(
     ranked: Sequence[tuple[str, float, Optional[int], Optional[int]]],
     *,
     chunks_by_id: Dict[str, EvidenceChunk],
+    known_tools: Iterable[str] = (),
     top_k: int,
     max_per_tool: int = 3,
 ) -> List[tuple[str, float, Optional[int], Optional[int]]]:
@@ -1090,7 +1145,7 @@ def _diversify_ranked_by_tool(
         chunk = chunks_by_id.get(item[0])
         if chunk is None:
             continue
-        tools = _chunk_mentioned_tools(chunk)
+        tools = _chunk_mentioned_tools(chunk, known_tools=known_tools)
         group = _tool_key(tools[0] if tools else chunk.tool_name) or item[0]
         if counts.get(group, 0) < max_per_tool and len(selected) < top_k:
             selected.append(item)

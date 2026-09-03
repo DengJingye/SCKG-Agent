@@ -1,12 +1,25 @@
 import json
 
+import pytest
+
 from agent.research_chat_reasoner import (
     ExternalReasoningResult,
     ExternalResearchReasoner,
     SemanticParseResult,
     _semantic_parse_confidence,
 )
-from agent.research_chat_service import ResearchChatService, _audit_grounded_answer_v2
+from agent.research_chat_service import (
+    ResearchChatIntent,
+    ResearchChatService,
+    _audit_grounded_answer_v2,
+    _claim_types_for_evidence_query,
+    _entityless_claim_targets,
+    _evidence_qa_report,
+    _references,
+    _references_from_claim_bindings,
+    _requested_claim_targets,
+    _select_claim_evidence_bindings,
+)
 from core.research_agent_models import ResearchToolCall
 from engine.evidence_discovery_index import EvidenceChunk, chunk_to_dict
 from engine.hybrid_retrieval import HybridRetrievalService
@@ -103,6 +116,80 @@ def _default_service(tmp_path):
     )
 
 
+def _assert_scientific_claim_uses_cited_evidence(state):
+    references = {
+        row["source_span_id"]: row for row in state["references"]
+    }
+    assert references
+    for reference in references.values():
+        assert f"[{reference['index']}]" in state["final_report"]
+    scientific_claims = [
+        row
+        for row in state["context_pack"]["grounded_answer_audit"]["claims"]
+        if row["claim_type"] != "non_scientific"
+    ]
+    for claim in scientific_claims:
+        assert claim["source_span_ids"]
+        assert set(claim["source_span_ids"]) <= set(references)
+
+
+def _source_bound_snippet(
+    *,
+    entity,
+    evidence_id,
+    claim_type,
+    claim_text,
+    score=1.0,
+):
+    return {
+        "chunk_id": evidence_id,
+        "source_id": f"source:{entity.casefold()}",
+        "source_span": f"methods:{evidence_id}",
+        "tool_name": entity,
+        "title": f"{entity} documentation",
+        "claim_type": claim_type,
+        "claim_span": claim_text,
+        "relevance_score": score,
+        "source_bound": True,
+    }
+
+
+def _atomic_grounding(query, entities, snippets):
+    targets = _requested_claim_targets(query, entities)
+    bindings = _select_claim_evidence_bindings(
+        snippets,
+        targets=targets,
+        query=query,
+    )
+    references = _references_from_claim_bindings(bindings)
+    report = _evidence_qa_report(
+        query,
+        "Focused grounding",
+        [{"tool_name": entity} for entity in entities],
+        references,
+        [],
+        snippets,
+        list(entities),
+        bindings,
+    )
+    return targets, bindings, references, report
+
+
+def _assert_binding_citations_are_local(bindings, references, report):
+    by_evidence_id = {
+        reference["source_span_id"]: reference for reference in references
+    }
+    for binding in bindings:
+        if binding.support_status == "abstained":
+            assert not binding.evidence_refs
+            continue
+        citations = "".join(
+            f"[{by_evidence_id[evidence.evidence_span_id]['index']}]"
+            for evidence in binding.evidence_refs
+        )
+        assert f"{binding.claim_text}{citations}" in report
+
+
 def test_research_chat_answers_without_langgraph_dense_or_neo4j(tmp_path):
     state = _service(tmp_path).run("What raw count input does Scrublet require?")
 
@@ -122,7 +209,8 @@ def test_named_tool_overrides_competing_task_keyword_and_locks_evidence(tmp_path
     assert state["extracted_constraints"]["canonical_task"] == "doublet_detection"
     assert state["references"][0]["source_span_id"] == "sourcev2:c9b0d3b1e0f6a7048a22"
     assert {row["tool_name"] for row in state["retrieval_results"]} == {"Scrublet"}
-    assert "raw UMI count matrix" in state["final_report"]
+    assert "Starting with a raw counts matrix" in state["final_report"]
+    _assert_scientific_claim_uses_cited_evidence(state)
 
 
 def test_evidence_question_covers_input_and_output_with_minimal_reference_set(tmp_path):
@@ -135,6 +223,526 @@ def test_evidence_question_covers_input_and_output_with_minimal_reference_set(tm
     assert state["references"][0]["source_span_id"] == "sourcev2:bd5f8132711c97b4e432"
     assert "输入要求" in state["final_report"]
     assert "输出" in state["final_report"]
+
+
+def test_reference_selection_prefers_direct_claim_support_over_rank_and_metadata():
+    references = _references(
+        [
+            {
+                "chunk_id": "source:figure-caption",
+                "source_id": "source:paper",
+                "source_span": "figure:2",
+                "tool_name": "ExampleTool",
+                "title": "Supplementary Figure 2",
+                "claim_type": "output",
+                "claim_span": "Figure 2 shows an embedding colored by batch.",
+                "relevance_score": 100.0,
+                "source_bound": True,
+            },
+            {
+                "chunk_id": "source:direct-output",
+                "source_id": "source:paper",
+                "source_span": "methods:4",
+                "tool_name": "ExampleTool",
+                "title": "ExampleTool method documentation",
+                "claim_type": "input_requirement",
+                "claim_span": (
+                    "ExampleTool will output adjusted coordinates with the same "
+                    "dimensions as the input matrix."
+                ),
+                "relevance_score": 0.01,
+                "source_bound": True,
+            },
+        ],
+        [{"tool_name": "ExampleTool"}],
+        query="What outputs and artifacts does ExampleTool produce?",
+        intent=ResearchChatIntent.EVIDENCE_QA,
+        requested_tools=["ExampleTool"],
+    )
+
+    assert [row["source_span_id"] for row in references] == [
+        "source:direct-output"
+    ]
+
+
+def test_reference_selection_requires_source_bound_evidence():
+    references = _references(
+        [
+            {
+                "chunk_id": "catalog:unbound",
+                "source_id": "catalog:tool",
+                "source_span": "catalog row",
+                "tool_name": "ExampleTool",
+                "title": "ExampleTool catalog",
+                "claim_type": "output",
+                "claim_span": "ExampleTool returns definitive labels.",
+                "relevance_score": 100.0,
+                "source_bound": False,
+            },
+            {
+                "chunk_id": "source:bound",
+                "source_id": "source:paper",
+                "source_span": "methods:5",
+                "tool_name": "ExampleTool",
+                "title": "ExampleTool documentation",
+                "claim_type": "output",
+                "claim_span": "ExampleTool returns bounded labels.",
+                "relevance_score": 0.01,
+                "source_bound": True,
+            },
+        ],
+        [{"tool_name": "ExampleTool"}],
+        query="What output does ExampleTool return?",
+        intent=ResearchChatIntent.EVIDENCE_QA,
+        requested_tools=["ExampleTool"],
+    )
+
+    assert [row["source_span_id"] for row in references] == ["source:bound"]
+
+
+@pytest.mark.parametrize(
+    ("profile", "query", "accepted_ids"),
+    [
+        (
+            "bm25",
+            "What outputs and artifacts does Harmony produce?",
+            {"sourcev2:bd5f8132711c97b4e432"},
+        ),
+        (
+            "bm25",
+            "What outputs and artifacts does scvi-tools produce?",
+            {
+                "sourcev2:e08285e48626040de93f",
+                "sourcev2:884bdd4521ab2161f4bb",
+            },
+        ),
+        (
+            "bm25",
+            "Which parameters and defaults are documented for CellRank?",
+            {
+                "sourcev2:2c180c928bbb466c022e",
+                "sourcev2:e6cc1f5899f7e339d72c",
+            },
+        ),
+        (
+            "bm25",
+            "Which parameters and defaults are documented for scvi-tools?",
+            {
+                "sourcev2:6cc50e70b29bd9bacd46",
+                "sourcev2:70a1ca8d8310b871f179",
+            },
+        ),
+        (
+            "bm25",
+            "Find source-bound information about MOFA2 and its supported task.",
+            {"sourcev2:7c73d5e998696443ddbb"},
+        ),
+    ],
+)
+def test_fixed_corpus_reference_selection_prefers_direct_support(
+    tmp_path,
+    profile,
+    query,
+    accepted_ids,
+):
+    state = ResearchChatService(
+        dense_default_enabled=False,
+        evaluation_retrieval_profile=profile,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
+    ).run(query)
+
+    assert {row["source_span_id"] for row in state["references"]} & accepted_ids
+    _assert_scientific_claim_uses_cited_evidence(state)
+
+
+@pytest.mark.parametrize("profile", ["bm25", "kg_hybrid"])
+@pytest.mark.parametrize(
+    ("query", "accepted_ids"),
+    [
+        (
+            "What input matrix and data state does Scanorama require?",
+            {
+                "sourcev2:b9f757749c16210255c0",
+                "sourcev2:d66c87684e7925f1ca5c",
+            },
+        ),
+        (
+            "What input matrix and data state does CellTypist require?",
+            {
+                "sourcev2:a890f23bcb6584bec1c4",
+                "sourcev2:102dc717591cdfac63a5",
+            },
+        ),
+    ],
+)
+def test_input_requirement_claim_and_citation_share_selected_evidence(
+    tmp_path,
+    profile,
+    query,
+    accepted_ids,
+):
+    state = ResearchChatService(
+        dense_default_enabled=False,
+        evaluation_retrieval_profile=profile,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
+    ).run(query)
+
+    assert {row["source_span_id"] for row in state["references"]} <= accepted_ids
+    assert state["context_pack"]["grounded_answer_audit"]["passed"] is True
+    _assert_scientific_claim_uses_cited_evidence(state)
+
+
+def test_tool_name_is_removed_before_evidence_claim_category_detection():
+    assert _claim_types_for_evidence_query(
+        "Which parameters and defaults are documented for CellRank?",
+        ["CellRank"],
+    ) == ["parameter"]
+
+
+def test_atomic_binding_one_entity_one_claim_keeps_proposition_and_excerpt_distinct():
+    snippets = [
+        _source_bound_snippet(
+            entity="ExampleTool",
+            evidence_id="source:example-input",
+            claim_type="input_requirement",
+            claim_text=(
+                "ExampleTool accepts a raw count matrix as input. "
+                "The matrix should retain stable cell identifiers."
+            ),
+        )
+    ]
+
+    targets, bindings, references, report = _atomic_grounding(
+        "What input does ExampleTool require?",
+        ["ExampleTool"],
+        snippets,
+    )
+
+    assert [(target.entity, target.predicate) for target in targets] == [
+        ("ExampleTool", "input_requirement")
+    ]
+    assert len(bindings) == 1
+    binding = bindings[0]
+    assert binding.support_status == "supported"
+    assert binding.legacy_claim_type == "input_requirement"
+    assert binding.claim_text != binding.evidence_refs[0].bounded_excerpt
+    assert binding.claim_text in binding.evidence_refs[0].bounded_excerpt
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_entityless_method_query_derives_only_source_supported_method_targets():
+    snippets = [
+        _source_bound_snippet(
+            entity="CellTypist",
+            evidence_id="source:celltypist-method",
+            claim_type="general",
+            claim_text="CellTypist is a tool for automated cell type annotation.",
+        ),
+        _source_bound_snippet(
+            entity="SingleR",
+            evidence_id="source:singler-method",
+            claim_type="general",
+            claim_text=(
+                "We developed a computational method called SingleR, which "
+                "correlates single-cell transcriptomes with reference data for annotation."
+            ),
+        ),
+        {
+            **_source_bound_snippet(
+                entity="CatalogOnly",
+                evidence_id="catalog:method",
+                claim_type="general",
+                claim_text="CatalogOnly is a method for cell type annotation.",
+            ),
+            "source_bound": False,
+        },
+    ]
+
+    targets = _entityless_claim_targets(
+        "reference-based cell type annotation",
+        snippets,
+    )
+    bindings = _select_claim_evidence_bindings(
+        snippets,
+        targets=targets,
+        query="reference-based cell type annotation",
+    )
+    references = _references_from_claim_bindings(bindings)
+    report = _evidence_qa_report(
+        "reference-based cell type annotation",
+        "Cell type annotation",
+        [],
+        references,
+        [],
+        snippets,
+        [],
+        bindings,
+    )
+
+    assert [(target.entity, target.predicate) for target in targets] == [
+        ("CellTypist", "method_type"),
+        ("SingleR", "method_type"),
+    ]
+    assert all(binding.support_status == "supported" for binding in bindings)
+    assert "CatalogOnly" not in report
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_entityless_method_query_uses_real_supported_entities_not_first_candidate(
+    tmp_path,
+):
+    state = _default_service(tmp_path).run("reference-based cell type annotation")
+
+    references = state["references"]
+    assert [row["tool_name"] for row in references] == ["SingleR", "CellTypist"]
+    assert "cell2location" not in state["final_report"].casefold()
+    assert "<p align=" not in state["final_report"]
+    assert state["context_pack"]["grounded_answer_audit"]["passed"] is True
+    _assert_scientific_claim_uses_cited_evidence(state)
+
+
+def test_generic_input_proposition_recognizes_given_data_matrices():
+    snippets = [
+        _source_bound_snippet(
+            entity="MOFA2",
+            evidence_id="source:mofa-input",
+            claim_type="workflow",
+            claim_text=(
+                "Given several data matrices with measurements of multiple omics "
+                "data types on the same or overlapping sets of samples, MOFA2 "
+                "infers an interpretable low-dimensional representation."
+            ),
+        )
+    ]
+
+    _, bindings, references, report = _atomic_grounding(
+        "What input matrix and data state does MOFA2 require?",
+        ["MOFA2"],
+        snippets,
+    )
+
+    assert bindings[0].support_status == "supported"
+    assert bindings[0].predicate == "input_requirement"
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+@pytest.mark.parametrize(
+    "claim_text",
+    [
+        (
+            "Key outputs of CellRank are initial and terminal states, fate "
+            "probabilities, and global fate maps."
+        ),
+        (
+            "The CellRank algorithm aims to detect initial and terminal states, "
+            "define a global fate map, and assign fate probabilities to each cell."
+        ),
+    ],
+)
+def test_generic_output_propositions_recognize_lists_and_scientific_actions(
+    claim_text,
+):
+    snippets = [
+        _source_bound_snippet(
+            entity="CellRank",
+            evidence_id="source:cellrank-output",
+            claim_type="input_requirement",
+            claim_text=claim_text,
+        )
+    ]
+
+    _, bindings, references, report = _atomic_grounding(
+        "What outputs and artifacts does CellRank produce?",
+        ["CellRank"],
+        snippets,
+    )
+
+    assert bindings[0].support_status == "supported"
+    assert bindings[0].predicate == "output"
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_atomic_bindings_one_entity_multiple_claims_keep_independent_evidence():
+    snippets = [
+        _source_bound_snippet(
+            entity="ExampleTool",
+            evidence_id="source:example-input",
+            claim_type="input_requirement",
+            claim_text="ExampleTool accepts a raw count matrix as input.",
+        ),
+        _source_bound_snippet(
+            entity="ExampleTool",
+            evidence_id="source:example-output",
+            claim_type="output",
+            claim_text="ExampleTool returns an embedding matrix as its output.",
+        ),
+        _source_bound_snippet(
+            entity="ExampleTool",
+            evidence_id="source:example-limitation",
+            claim_type="failure_mode",
+            claim_text="A limitation is that ExampleTool may perform poorly on rare populations.",
+        ),
+    ]
+
+    _, bindings, references, report = _atomic_grounding(
+        "Describe ExampleTool input, output, and limitations.",
+        ["ExampleTool"],
+        snippets,
+    )
+
+    assert [binding.predicate for binding in bindings] == [
+        "input_requirement",
+        "output",
+        "limitation",
+    ]
+    assert [binding.legacy_claim_type for binding in bindings] == [
+        "input_requirement",
+        "output",
+        "failure_mode",
+    ]
+    assert len(references) == 3
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_atomic_bindings_multiple_entities_same_predicate_do_not_share_citations():
+    snippets = [
+        _source_bound_snippet(
+            entity="CellTypist",
+            evidence_id="source:celltypist-method",
+            claim_type="general",
+            claim_text="CellTypist is a framework for automated cell type classification.",
+        ),
+        _source_bound_snippet(
+            entity="SingleR",
+            evidence_id="source:singler-method",
+            claim_type="mechanism",
+            claim_text="SingleR is a method for reference-based cell type annotation.",
+        ),
+    ]
+
+    targets, bindings, references, report = _atomic_grounding(
+        "Describe both CellTypist and SingleR method types.",
+        ["CellTypist", "SingleR"],
+        snippets,
+    )
+
+    assert [(target.entity, target.predicate) for target in targets] == [
+        ("CellTypist", "method_type"),
+        ("SingleR", "method_type"),
+    ]
+    assert [binding.evidence_refs[0].evidence_span_id for binding in bindings] == [
+        "source:celltypist-method",
+        "source:singler-method",
+    ]
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_atomic_bindings_multiple_entities_multiple_claims_preserve_clause_scope():
+    snippets = [
+        _source_bound_snippet(
+            entity="CellTypist",
+            evidence_id="source:celltypist-input",
+            claim_type="input_requirement",
+            claim_text="CellTypist accepts normalized expression data as input.",
+        ),
+        _source_bound_snippet(
+            entity="SingleR",
+            evidence_id="source:singler-limitation",
+            claim_type="failure_mode",
+            claim_text="A limitation is that SingleR may perform poorly without a suitable reference.",
+        ),
+    ]
+
+    targets, bindings, references, report = _atomic_grounding(
+        "CellTypist input requirements; SingleR limitations.",
+        ["CellTypist", "SingleR"],
+        snippets,
+    )
+
+    assert [(target.entity, target.predicate) for target in targets] == [
+        ("CellTypist", "input_requirement"),
+        ("SingleR", "limitation"),
+    ]
+    assert all(binding.support_status == "supported" for binding in bindings)
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_ambiguous_multi_entity_scope_abstains_instead_of_cross_product():
+    targets, bindings, references, report = _atomic_grounding(
+        "CellTypist input requirements SingleR limitations",
+        ["CellTypist", "SingleR"],
+        [],
+    )
+
+    assert len(targets) == 2
+    assert all(target.ambiguous for target in targets)
+    assert all(binding.support_status == "abstained" for binding in bindings)
+    assert {binding.abstain_reason for binding in bindings} == {"ambiguous_target"}
+    assert references == []
+    assert "[1]" not in report
+
+
+def test_unsupported_atomic_claim_abstains_without_borrowing_sibling_citation():
+    snippets = [
+        _source_bound_snippet(
+            entity="ExampleTool",
+            evidence_id="source:example-input",
+            claim_type="input_requirement",
+            claim_text="ExampleTool accepts a raw count matrix as input.",
+        )
+    ]
+
+    _, bindings, references, report = _atomic_grounding(
+        "Describe ExampleTool input and limitations.",
+        ["ExampleTool"],
+        snippets,
+    )
+
+    supported, abstained = bindings
+    assert supported.support_status == "supported"
+    assert abstained.support_status == "abstained"
+    assert abstained.predicate == "limitation"
+    assert abstained.abstain_reason == "no_direct_support"
+    assert len(references) == 1
+    limitation_line = next(
+        line for line in report.splitlines() if "主要限制" in line
+    )
+    assert "[1]" not in limitation_line
+    _assert_binding_citations_are_local(bindings, references, report)
+
+
+def test_static_scientific_fallback_does_not_receive_unrelated_citation():
+    report = _evidence_qa_report(
+        "What input does ExampleTool require?",
+        "Example task",
+        [
+            {
+                "tool_name": "ExampleTool",
+                "input": "a static catalog input description",
+                "output": "a static catalog output description",
+                "mechanism": "a static catalog mechanism",
+                "caveats": [],
+            }
+        ],
+        [],
+        [],
+        [
+            {
+                "chunk_id": "source:unrelated",
+                "source_id": "source:paper",
+                "source_span": "figure:2",
+                "tool_name": "ExampleTool",
+                "claim_type": "input_requirement",
+                "claim_span": "Figure 2 shows cells colored by cluster.",
+                "source_bound": True,
+            }
+        ],
+        ["ExampleTool"],
+    )
+
+    assert "a static catalog input description" not in report
+    assert "缺少 source-bound 证据" in report
+    assert "[1]" not in report
 
 
 def test_output_location_question_uses_scanorama_scanpy_span(tmp_path):
