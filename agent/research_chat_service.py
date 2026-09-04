@@ -29,6 +29,16 @@ from agent.conversation_state import (
     next_conversation_task_state,
     resolve_conversation_task_state,
 )
+from agent.claim_grounding import (
+    ClaimEvidenceBinding,
+    bind_claim_evidence,
+    claim_requests_for_query,
+    external_answer_preserves_bindings,
+    legacy_claim_type,
+    reasoner_binding_projection,
+    references_from_bindings,
+    render_grounded_answer,
+)
 from agent.grounded_answer_audit import audit_grounded_answer_v3
 from agent.research_tool_registry import ResearchToolRegistry
 from core.canonical_task_ontology import (
@@ -1197,13 +1207,28 @@ class ResearchChatService:
             if mode in {AgentMode.PLAN, AgentMode.RUN}
             else intent
         )
-        references = _references(
-            snippets,
-            reference_candidates,
-            query=query,
-            intent=response_intent,
-            requested_tools=requested_answer_tools or explicit_query_tools,
-        )
+        reference_tools = requested_answer_tools or explicit_query_tools
+        claim_bindings: list[ClaimEvidenceBinding] = []
+        if response_intent is ResearchChatIntent.EVIDENCE_QA:
+            claim_requests = claim_requests_for_query(
+                query,
+                subjects=reference_tools,
+                snippets=snippets,
+            )
+            claim_bindings = bind_claim_evidence(
+                claim_requests,
+                snippets,
+                query=query,
+            )
+            references = references_from_bindings(claim_bindings)
+        else:
+            references = _references(
+                snippets,
+                reference_candidates,
+                query=query,
+                intent=response_intent,
+                requested_tools=reference_tools,
+            )
         workflow_code_bundle = (
             tool_execution.workflow_bundles[0]
             if tool_execution.workflow_bundles
@@ -1232,6 +1257,7 @@ class ResearchChatService:
             retrieval_snippets=snippets,
             workflow_code_bundle=workflow_code_bundle,
             requested_tools=requested_answer_tools,
+            claim_bindings=claim_bindings,
         )
         external_reasoning = ExternalReasoningResult(status="not_requested")
         grounded_answer_audit = _audit_grounded_answer_v3(
@@ -1250,22 +1276,52 @@ class ResearchChatService:
             and bool(task_id)
             and hasattr(reasoner, "synthesize")
         ):
+            evidence_qa_reasoning = intent is ResearchChatIntent.EVIDENCE_QA
             external_reasoning = reasoner.synthesize(
                 query=_latest_followup_text(query),
                 intent=intent.value,
                 task_label=task.label if task else "Unresolved task",
-                algorithm_cards=algorithm_cards,
-                retrieval_snippets=_synthesis_snippets(snippets, references),
+                algorithm_cards=[] if evidence_qa_reasoning else algorithm_cards,
+                retrieval_snippets=(
+                    reasoner_binding_projection(claim_bindings, references)
+                    if evidence_qa_reasoning
+                    else _synthesis_snippets(snippets, references)
+                ),
                 references=references,
                 blockers=blockers,
-                tool_observations=[
-                    item.model_dump(mode="json")
-                    for item in tool_execution.observations
-                ],
-                contract_context=tool_execution.contract_context,
-                requested_tools=requested_answer_tools or explicit_query_tools,
-                required_claim_types=required_claim_types,
-                allow_unverified_model_knowledge=True,
+                tool_observations=(
+                    []
+                    if evidence_qa_reasoning
+                    else [
+                        item.model_dump(mode="json")
+                        for item in tool_execution.observations
+                    ]
+                ),
+                contract_context=(
+                    [] if evidence_qa_reasoning else tool_execution.contract_context
+                ),
+                requested_tools=(
+                    list(
+                        dict.fromkeys(
+                            binding.request.subject
+                            for binding in claim_bindings
+                            if binding.request.subject
+                        )
+                    )
+                    if evidence_qa_reasoning
+                    else requested_answer_tools or explicit_query_tools
+                ),
+                required_claim_types=(
+                    list(
+                        dict.fromkeys(
+                            legacy_claim_type(binding.request.predicate)
+                            for binding in claim_bindings
+                        )
+                    )
+                    if evidence_qa_reasoning
+                    else required_claim_types
+                ),
+                allow_unverified_model_knowledge=not evidence_qa_reasoning,
                 runtime_config=runtime_config,
             )
             if external_reasoning.status == "ready":
@@ -1294,6 +1350,22 @@ class ResearchChatService:
                         else "requested_top_k_format_mismatch"
                     )
                     external_answer_audit.setdefault("reasons", []).append(reason)
+                    external_answer_audit["governance_violation_count"] = int(
+                        external_answer_audit.get("governance_violation_count") or 0
+                    ) + 1
+                binding_shape_valid = (
+                    not evidence_qa_reasoning
+                    or external_answer_preserves_bindings(
+                        external_reasoning.content,
+                        claim_bindings,
+                        references,
+                    )
+                )
+                if not binding_shape_valid:
+                    external_answer_audit["passed"] = False
+                    external_answer_audit.setdefault("reasons", []).append(
+                        "claim_evidence_binding_mismatch"
+                    )
                     external_answer_audit["governance_violation_count"] = int(
                         external_answer_audit.get("governance_violation_count") or 0
                     ) + 1
@@ -4115,6 +4187,7 @@ def _legacy_snippet(hit: Any) -> Dict[str, Any]:
         "claim_type": hit.claim_type,
         "claim_span": hit.text,
         "relevance_score": hit.score,
+        "source_bound": bool(hit.source_bound),
         "recommendation_eligible": hit.recommendation_eligible,
         "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
     }
@@ -4547,6 +4620,7 @@ def _report(
     retrieval_snippets: list[dict[str, Any]],
     workflow_code_bundle: Optional[dict[str, Any]],
     requested_tools: list[str],
+    claim_bindings: Optional[list[ClaimEvidenceBinding]] = None,
 ) -> str:
     if intent is ResearchChatIntent.CAVEAT_COMPARISON:
         count = _requested_top_k(query, default=3)
@@ -4577,6 +4651,7 @@ def _report(
         blockers,
         retrieval_snippets,
         requested_tools,
+        claim_bindings=claim_bindings,
     )
 
 
@@ -4896,7 +4971,15 @@ def _evidence_qa_report(
     blockers: list[str],
     retrieval_snippets: list[dict[str, Any]],
     requested_tools: list[str],
+    claim_bindings: Optional[list[ClaimEvidenceBinding]] = None,
 ) -> str:
+    if claim_bindings is not None:
+        return render_grounded_answer(
+            claim_bindings,
+            references,
+            task_label=task_label,
+            blockers=blockers,
+        )
     if not cards:
         return (
             f"我识别到任务为 **{task_label}**，但没有找到足以支持回答的 source-bound 内容。"

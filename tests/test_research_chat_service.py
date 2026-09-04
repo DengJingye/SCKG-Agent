@@ -122,7 +122,8 @@ def test_named_tool_overrides_competing_task_keyword_and_locks_evidence(tmp_path
     assert state["extracted_constraints"]["canonical_task"] == "doublet_detection"
     assert state["references"][0]["source_span_id"] == "sourcev2:c9b0d3b1e0f6a7048a22"
     assert {row["tool_name"] for row in state["retrieval_results"]} == {"Scrublet"}
-    assert "raw UMI count matrix" in state["final_report"]
+    assert "Starting with a raw counts matrix" in state["final_report"]
+    assert state["references"][0]["claim_text"] in state["final_report"]
 
 
 def test_evidence_question_covers_input_and_output_with_minimal_reference_set(tmp_path):
@@ -131,8 +132,11 @@ def test_evidence_question_covers_input_and_output_with_minimal_reference_set(tm
     )
 
     assert state["extracted_constraints"]["canonical_task"] == "batch_integration"
-    assert len(state["references"]) == 1
-    assert state["references"][0]["source_span_id"] == "sourcev2:bd5f8132711c97b4e432"
+    assert len(state["references"]) == 2
+    assert all(
+        reference["claim_text"] in state["final_report"]
+        for reference in state["references"]
+    )
     assert "输入要求" in state["final_report"]
     assert "输出" in state["final_report"]
 
@@ -1017,8 +1021,10 @@ def test_uncertain_biomedical_question_uses_semantic_parse_then_grounded_rag(tmp
     assert state["extracted_constraints"]["canonical_task"] == "doublet_detection"
     assert state["context_pack"]["semantic_parse"]["domain"] == "SINGLE_CELL"
     assert state["context_pack"]["retrieval_context"]["pipeline"]
-    assert state["runtime_mode"] == "external_reasoning_with_deterministic_governance"
+    assert state["runtime_mode"] == "external_semantic_with_deterministic_governance"
     assert state["context_pack"]["external_provider_call_count"] == 2
+    rejected = state["context_pack"]["rejected_external_answer_audit"]
+    assert "claim_evidence_binding_mismatch" in rejected["reasons"]
 
 
 def test_uncertain_question_without_llm_requests_clarification(tmp_path):
