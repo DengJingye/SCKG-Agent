@@ -1052,8 +1052,17 @@ class ResearchChatService:
             observation.status in {"blocked", "failed"}
             for observation in tool_execution.observations
         )
+        optional_planning_context_available = mode in {
+            AgentMode.PLAN,
+            AgentMode.RUN,
+        } and bool(
+            tool_execution.workflow_bundles
+            or tool_execution.capability_context
+        )
         retrieval_status = (
-            TraceStatus.BLOCKED
+            TraceStatus.PARTIAL
+            if not retrieval.hits and optional_planning_context_available
+            else TraceStatus.BLOCKED
             if not retrieval.hits
             else TraceStatus.PARTIAL
             if incomplete_observation
@@ -1065,7 +1074,9 @@ class ResearchChatService:
             decision_type="adaptive_retrieval",
             outcome=retrieval_decision.route,
             reason_code=(
-                "retrieval_result_missing"
+                "optional_evidence_context_missing"
+                if not retrieval.hits and optional_planning_context_available
+                else "retrieval_result_missing"
                 if not retrieval.hits
                 else "tool_observation_incomplete"
                 if incomplete_observation
@@ -1827,6 +1838,41 @@ class ResearchChatService:
             if workflow_bundle
             else [],
         })
+        if (
+            capability_handoff is not None
+            and capability_handoff.get("status") == "available"
+            and mode is AgentMode.PLAN
+        ):
+            status = "READY"
+            handoff_status = "not_requested"
+            capability_blockers = list(capability_handoff.get("blockers") or [])
+            next_actions = [
+                "Open Stepwise Analysis and select a registered AnnData artifact.",
+                "Inspect DataProfile and RepresentationLedger before compiling the dataset-aware WorkflowPlan.",
+            ]
+            state = state.model_copy(
+                update={
+                    "blockers": capability_blockers,
+                    "next_actions": next_actions,
+                    "approval_status": "not_requested",
+                }
+            )
+            limitations = [
+                "The dataset-aware WorkflowPlan is compiled only after DataProfile and RepresentationLedger inspection.",
+                "Controlled execution was not requested and remains governed by the existing execution policy.",
+                *capability_blockers,
+            ]
+            direct_answer = _capability_workspace_report(
+                capability_handoff,
+                execution_request_count=int(
+                    parent.get("execution_request_count") or 0
+                ),
+            )
+            answerability = AnswerabilityDecision(
+                verdict="ANSWER_VERIFIED",
+                reason_codes=["capability_workspace_handoff_available"],
+                verified_context_available=True,
+            )
         if workspace_handoff.get("status") == "available":
             handoff_id = f"research-handoff:{uuid.uuid4().hex}"
             original_plan_id = (
@@ -1931,6 +1977,7 @@ class ResearchChatService:
         return {
             "user_query": response.user_query,
             "agent_mode": state.mode,
+            "status": response.status,
             "domain": state.domain,
             "request_id": state.request_id,
             "conversation_id": state.conversation_id,
@@ -4928,6 +4975,29 @@ def _workflow_report(
             ]
         )
     return _append_references(lines, references)
+
+
+def _capability_workspace_report(
+    handoff: dict[str, Any],
+    *,
+    execution_request_count: int,
+) -> str:
+    pack_id = str(handoff.get("pack_id") or "registered capability pack")
+    pack_version = str(handoff.get("pack_version") or "")
+    pack_label = f"{pack_id}:{pack_version}" if pack_version else pack_id
+    targets = ", ".join(
+        str(value) for value in handoff.get("target_representations") or []
+    ) or "requested representations"
+    return (
+        f"**{pack_label} Capability Workspace 已准备好。** Research 阶段不会在缺少真实数据状态时伪造 WorkflowPlan。\n\n"
+        "进入 Stepwise Analysis 并选择已登记的 AnnData 后，系统会先读取 "
+        "DataProfile 与 RepresentationLedger，再生成 dataset-aware WorkflowPlan "
+        "和 reviewed Notebook。\n\n"
+        f"- 目标表示：`{targets}`\n"
+        "- 当前状态：`WORKSPACE HANDOFF READY`\n"
+        f"- Controlled execution：未请求（ExecutionRequest `{execution_request_count}`）；"
+        "现有执行策略与审批 gate 保持不变。"
+    )
 
 
 def _migration_report(

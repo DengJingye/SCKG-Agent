@@ -2839,9 +2839,42 @@ def _render_response_runtime(state: Dict[str, Any]) -> None:
         )
     )
     build = state.get("runtime_build") or context.get("runtime_build") or {}
+    response_intent = str(state.get("response_intent") or "")
+    workflow_bundle = state.get("workflow_code_bundle") or {}
+    workspace_handoff = state.get("workspace_handoff") or {}
+    execution_handoff = state.get("execution_handoff") or {}
     source_fingerprint = str(build.get("source_fingerprint") or "")
     if source_fingerprint:
         _render_chip(f"BUILD · {source_fingerprint[:10]}", "good")
+    if (
+        response_intent == "workflow"
+        and workflow_bundle.get("smoke_tested")
+        and state.get("workflow_plan")
+    ):
+        _render_chip("LOCAL DETERMINISTIC WORKFLOW", "good")
+        _render_chip("WORKFLOW READY", "good")
+        _render_chip("RECIPE SMOKE VERIFIED", "good")
+        if not state.get("references") or (audit and not audit.get("passed", True)):
+            _render_chip("SCIENTIFIC EVIDENCE PARTIAL", "warn")
+            st.caption(
+                "The fixed recipe and dry-run plan are available, but this response "
+                "does not have complete source-bound scientific evidence."
+            )
+        if str(execution_handoff.get("status") or "") == "not_requested":
+            _render_chip("EXECUTION NOT REQUESTED", "good")
+        return
+    if (
+        response_intent == "workflow"
+        and workspace_handoff.get("status") == "available"
+        and workspace_handoff.get("notebook_strategy") == "capability_renderer"
+    ):
+        _render_chip("CAPABILITY WORKSPACE READY", "good")
+        _render_chip("DATA STATE INSPECTION REQUIRED", "warn")
+        if not state.get("references"):
+            _render_chip("SCIENTIFIC EVIDENCE PARTIAL", "warn")
+        if str(execution_handoff.get("status") or "") == "not_requested":
+            _render_chip("EXECUTION NOT REQUESTED", "good")
+        return
     if mode == "system_info_local":
         _render_chip("SYSTEM INFO · local deterministic answer", "good")
         return

@@ -8,6 +8,8 @@ import pytest
 import agent.research_chat_service as research_module
 from agent.audited_parent_agent import AuditedParentAgent
 from agent.bounded_parent_agent import BoundedParentAgent
+from agent.research_tool_registry import ResearchToolExecution
+from core.knowledge_intelligence_models import HybridRetrievalResult
 from core.research_agent_models import AgentMode, ResearchAgentRequest
 from core.trace_context import (
     TraceCollector,
@@ -75,6 +77,60 @@ def test_plan_trace_records_planning_and_service_owned_handoff(tmp_path):
     assert handoff.handoff_id
     handoff_span = next(span for span in row["spans"] if span["stage"] == "HANDOFF")
     assert handoff_span["output_refs"][0]["record_id"] == handoff.handoff_id
+
+
+def test_plan_with_optional_evidence_miss_records_partial_retrieval(tmp_path):
+    service = _default_service(tmp_path)
+    response = service.run_request(
+        ResearchAgentRequest(
+            request_id="trace-plan-optional-evidence",
+            query=(
+                "请为 10x PBMC 生成一个经过 smoke 测试、可复制运行的 "
+                "doublet detection workflow。\n\n"
+                "本轮只生成 dry-run workflow，不执行数据。"
+            ),
+            mode=AgentMode.PLAN,
+        )
+    )
+
+    row = _row(tmp_path / "traces.jsonl")
+    assert response.workflow_plan["plan_status"] == "dry_run"
+    assert response.workflow_code_bundle["smoke_tested"] is True
+    assert response.execution_handoff.status == "not_requested"
+    retrieval_span = next(span for span in row["spans"] if span["stage"] == "RETRIEVAL")
+    assert retrieval_span["status"] == "PARTIAL"
+    assert retrieval_span["decision_evidence"][-1]["reason_code"] == (
+        "optional_evidence_context_missing"
+    )
+
+
+def test_evidence_question_with_no_hits_remains_blocked_retrieval(tmp_path):
+    service = _service(tmp_path)
+    service._research_tools.execute = lambda *_args, **_kwargs: ResearchToolExecution(
+        retrieval_results=[
+            HybridRetrievalResult(
+                query="What raw count input does Scrublet require?",
+                mode="kg_bm25",
+                hits=[],
+                latency_ms=0.0,
+                index_build_id="empty-test-index",
+            )
+        ]
+    )
+    service.run_request(
+        ResearchAgentRequest(
+            request_id="trace-evidence-miss",
+            query="What raw count input does Scrublet require?",
+            mode=AgentMode.ASK,
+        )
+    )
+
+    row = _row(tmp_path / "traces.jsonl")
+    retrieval_span = next(span for span in row["spans"] if span["stage"] == "RETRIEVAL")
+    assert retrieval_span["status"] == "BLOCKED"
+    assert retrieval_span["decision_evidence"][-1]["reason_code"] == (
+        "retrieval_result_missing"
+    )
 
 
 def test_non_retrieval_and_clarification_routes_do_not_emit_fake_spans(tmp_path):

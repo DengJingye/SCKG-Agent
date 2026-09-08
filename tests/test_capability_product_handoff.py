@@ -217,7 +217,25 @@ def test_real_scanpy_workflow_question_reaches_capability_stepwise_handoff(tmp_p
     assert handoff["origin_trace_id"] == result["canonical_trace_id"]
     assert handoff["parent_request_id"] == result["request_id"]
     assert handoff["handoff_id"].startswith("research-handoff:")
+    assert result["status"] == "READY"
+    assert result["execution_handoff"]["status"] == "not_requested"
+    assert result["execution_handoff"]["execution_request_count"] == 0
+    assert "暂不能生成受控 workflow" not in result["final_report"]
+    assert "DataProfile 与 RepresentationLedger" in result["final_report"]
+    assert "ExecutionRequest `0`" in result["final_report"]
     row = json.loads((tmp_path / "traces.jsonl").read_text(encoding="utf-8"))
     links = {(item["link_type"], item["target_id"]) for item in row["links"]}
     assert any(link_type == "UNIFIED_AGENT_TRACE" for link_type, _ in links)
     assert any(link_type == "APPLICATION_GRAPH_ALIAS" for link_type, _ in links)
+
+
+def test_research_ui_distinguishes_workflow_evidence_and_execution_states():
+    source = (Path(__file__).resolve().parents[1] / "app.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "LOCAL DETERMINISTIC WORKFLOW" in source
+    assert "WORKFLOW READY" in source
+    assert "SCIENTIFIC EVIDENCE PARTIAL" in source
+    assert "EXECUTION NOT REQUESTED" in source
+    assert "CAPABILITY WORKSPACE READY" in source
