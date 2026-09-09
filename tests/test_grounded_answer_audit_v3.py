@@ -96,3 +96,34 @@ def test_v3_does_not_treat_numbered_list_marker_as_claim_number() -> None:
 
     assert audit.passed is True
     assert audit.claims[0].numeric_scope_match == "not_applicable"
+
+
+def test_v3_prefers_explicit_mechanism_over_incidental_score_word() -> None:
+    reference = _reference(
+        claim_text="Scrublet simulates doublets and computes a doublet score."
+    )
+    reference["support_claim_types"] = ["mechanism"]
+    audit = audit_grounded_answer_v3(
+        "- **机制：** Scrublet simulates doublets and computes a doublet score.[1]",
+        references=[reference],
+        execution_request_count=0,
+    )
+
+    assert audit.passed is True
+    assert audit.claims[0].claim_type == "mechanism"
+
+
+def test_v3_prefers_explicit_limitation_over_incidental_score_word() -> None:
+    reference = _reference(
+        claim_text="The expected doublet rate strongly affects the classification threshold."
+    )
+    reference["tool_name"] = "scDblFinder"
+    reference["support_claim_types"] = ["failure_mode", "parameter"]
+    audit = audit_grounded_answer_v3(
+        "- **scDblFinder · 主要限制：** expected doublet rate affects the score threshold.[1]",
+        references=[reference],
+        execution_request_count=0,
+    )
+
+    assert audit.passed is True
+    assert audit.claims[0].claim_type == "failure_mode"

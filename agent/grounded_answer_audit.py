@@ -173,7 +173,13 @@ def _extract_claims(
                 typed_bound
                 if typed_metadata_present
                 and claim_kind
-                in {"input_requirement", "output", "failure_mode", "benchmark"}
+                in {
+                    "input_requirement",
+                    "output",
+                    "failure_mode",
+                    "benchmark",
+                    "mechanism",
+                }
                 else bound
             )
             lexical = max(
@@ -262,14 +268,20 @@ def _tool_tokens(value: str) -> set[str]:
 
 def _claim_type(value: str) -> str:
     text = value.casefold()
+    # Prefer explicit predicate labels over incidental vocabulary in the
+    # proposition.  A mechanism may produce a score and a limitation may
+    # discuss one; neither becomes an output claim merely because "score"
+    # appears in the sentence.
+    if any(token in text for token in ("mechanism", "principle", "机制", "原理")):
+        return "mechanism"
+    if any(token in text for token in ("limit", "caveat", "限制", "失败")):
+        return "failure_mode"
     if any(token in text for token in ("auprc", "auroc", "f1", "rank", "benchmark", "排名")):
         return "benchmark"
     if any(token in text for token in ("input", "raw count", "输入", "matrix")):
         return "input_requirement"
     if any(token in text for token in ("output", "输出", "embedding", "score")):
         return "output"
-    if any(token in text for token in ("limit", "caveat", "限制", "失败")):
-        return "failure_mode"
     return "scientific"
 
 

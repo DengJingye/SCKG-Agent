@@ -363,7 +363,7 @@ def test_recommendation_query_does_not_compile_workflow(tmp_path):
     assert state["response_intent"] == "tool_recommendation"
     assert state["workflow_plan"] is None
     assert state["candidate_tools"][:3] == ["Scrublet", "scDblFinder", "DoubletFinder"]
-    assert "我会优先用 **Scrublet**" in state["final_report"]
+    assert "当前建议：优先使用 Scrublet" in state["final_report"]
     assert "关键限制" in state["final_report"]
 
 
@@ -392,6 +392,22 @@ def test_top_three_caveat_query_stays_concise(tmp_path):
     assert "scDblFinder" in report
     assert "DoubletFinder" in report
     assert "执行步骤" not in report
+
+
+def test_live_smoke_recommendation_fallback_is_grounded(tmp_path):
+    state = _default_service(tmp_path).run(
+        "我有一批 10x PBMC scRNA-seq 数据，应该用什么方法检测 doublet？请说明证据和限制。"
+    )
+
+    assert state["context_pack"]["grounded_answer_audit"]["passed"] is True
+
+
+def test_live_smoke_caveat_fallback_is_grounded(tmp_path):
+    state = _default_service(tmp_path).run(
+        "doublet detection 里 top-3 工具的 caveat 分别是什么？只要简短对照。"
+    )
+
+    assert state["context_pack"]["grounded_answer_audit"]["passed"] is True
 
 
 def test_requested_top_two_caveats_returns_exactly_two_items(tmp_path):
@@ -1009,7 +1025,7 @@ class _AmbiguousSingleCellReasoner:
         )
 
 
-def test_uncertain_biomedical_question_uses_semantic_parse_then_grounded_rag(tmp_path):
+def test_scientific_domain_enrichment_does_not_clear_task_clarification(tmp_path):
     service = _service(tmp_path)
     service._reasoner = _AmbiguousSingleCellReasoner()
     state = service.run(
@@ -1018,13 +1034,13 @@ def test_uncertain_biomedical_question_uses_semantic_parse_then_grounded_rag(tmp
     )
 
     assert state["domain"] == "SINGLE_CELL"
-    assert state["extracted_constraints"]["canonical_task"] == "doublet_detection"
+    assert state["response_intent"] == "clarification"
+    assert state["extracted_constraints"]["canonical_task"] == "Unknown"
     assert state["context_pack"]["semantic_parse"]["domain"] == "SINGLE_CELL"
-    assert state["context_pack"]["retrieval_context"]["pipeline"]
-    assert state["runtime_mode"] == "external_semantic_with_deterministic_governance"
-    assert state["context_pack"]["external_provider_call_count"] == 2
-    rejected = state["context_pack"]["rejected_external_answer_audit"]
-    assert "claim_evidence_binding_mismatch" in rejected["reasons"]
+    assert state["context_pack"]["semantic_route"]["needs_clarification"] is True
+    assert state["context_pack"]["retrieval_context"]["pipeline"] == []
+    assert state["runtime_mode"] == "clarification_required"
+    assert state["context_pack"]["external_provider_call_count"] == 1
 
 
 def test_uncertain_question_without_llm_requests_clarification(tmp_path):

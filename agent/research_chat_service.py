@@ -7,6 +7,7 @@ import re
 import threading
 import time
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 from functools import lru_cache
 from pathlib import Path
@@ -104,6 +105,28 @@ class ResearchChatIntent(str, Enum):
     CAVEAT_COMPARISON = "caveat_comparison"
     MIGRATION_EXPLORATION = "migration_exploration"
     EVIDENCE_QA = "evidence_qa"
+
+
+@dataclass(frozen=True)
+class _RouteFusionDecision:
+    """One request-local decision joining deterministic and semantic proposals."""
+
+    domain_decision: DomainDecision
+    intent: ResearchChatIntent
+    mode: AgentMode
+    local_intent_reason: str
+    semantic_intent_reason: str
+    semantic_intent_accepted: bool
+    clarification_reason: str
+    fusion_reason: str
+
+
+@dataclass(frozen=True)
+class _QueryLocalScientificProposition:
+    """Bounded query evidence for domain and answer-context decisions."""
+
+    domain_anchor: str = ""
+    answer_context_complete: bool = False
 
 
 class _ResearchTraceScopes:
@@ -616,12 +639,10 @@ class ResearchChatService:
         inheritable_task = (
             _task_from_context(context) if _can_inherit_task(query) else None
         )
-        governed_task_anchor = explicit_task or inheritable_task
-        intent = _classify_intent(query)
-        governed_intent_anchor = _has_explicit_intent_signal(query, intent)
+        local_intent = _classify_intent(query)
         preliminary_mode = _resolve_mode(
             query,
-            intent=intent,
+            intent=local_intent,
             requested_mode=request.mode,
         )
         action_safety = _action_safety_decision(query, mode=preliminary_mode)
@@ -677,46 +698,15 @@ class ResearchChatService:
                 action_safety=action_safety,
                 conversation_state=conversation_state,
             )
+        semantic_parse = SemanticParseResult(status="not_requested")
         if (
-            domain_decision.domain == DomainKind.GENERAL.value
-            and (
-                not runtime_config.get("privacy_authorized")
-                or domain_decision.confidence >= 0.9
+            runtime_config.get("privacy_authorized")
+            and hasattr(reasoner, "parse")
+            and not (
+                domain_decision.domain == DomainKind.GENERAL.value
+                and domain_decision.confidence >= 0.9
             )
         ):
-            if preliminary_mode is AgentMode.ASK:
-                _close_research_trace_span(
-                    routing_span,
-                    TraceStatus.SUCCESS,
-                    outcome="general_chat",
-                    reason_code="complete_general_question",
-                )
-                return _general_chat_result(
-                    request=request,
-                    runtime_config=runtime_config,
-                    conversation_context=context,
-                    reasoner=reasoner,
-                    run_started=run_started,
-                )
-            _close_research_trace_span(
-                routing_span,
-                TraceStatus.BLOCKED,
-                outcome="unsupported_action",
-                reason_code="task_outside_qualified_single_cell_action_space",
-            )
-            return _unsupported_action_result(
-                request=request,
-                mode=preliminary_mode,
-                run_started=run_started,
-                reason="task_outside_qualified_single_cell_action_space",
-                action_safety=ActionSafetyDecision(
-                    verdict="BLOCK",
-                    reason_codes=["task_outside_qualified_single_cell_action_space"],
-                ),
-                conversation_state=conversation_state,
-            )
-        semantic_parse = SemanticParseResult(status="not_requested")
-        if runtime_config.get("privacy_authorized") and hasattr(reasoner, "parse"):
             semantic_parse = reasoner.parse(
                 query=_latest_followup_text(query),
                 conversation_context=context,
@@ -734,50 +724,34 @@ class ResearchChatService:
             and semantic_task.task_id == conversation_state.confirmed_task
             else None
         )
-        governed_task_anchor = (
-            governed_task_anchor or semantic_context_task
+        route_fusion = _fuse_research_route(
+            query=query,
+            local_domain=domain_decision,
+            local_intent=local_intent,
+            semantic_parse=semantic_parse,
+            requested_mode=request.mode,
+            explicit_task=explicit_task,
+            inheritable_task=inheritable_task,
+            semantic_context_task=semantic_context_task,
         )
-        if semantic_parse.status == "ready":
-            parsed_domain = (
-                DomainKind.SINGLE_CELL
-                if governed_task_anchor is not None
-                else DomainKind(semantic_parse.domain)
-            )
-            domain_decision = DomainDecision(
-                domain=parsed_domain,
-                confidence=(
-                    max(domain_decision.confidence, semantic_parse.confidence)
-                    if governed_task_anchor is not None
-                    else semantic_parse.confidence
-                ),
-                source=(
-                    "conversation_context"
-                    if (
-                        (inheritable_task is not None or semantic_context_task is not None)
-                        and explicit_task is None
-                    )
-                    else "local_rule"
-                    if explicit_task is not None
-                    else "semantic_parser"
-                ),
-                reason=(
-                    "governed_single_cell_task_anchor_vetoed_llm_downgrade"
-                    if governed_task_anchor is not None
-                    else "domain_resolved_by_structured_llm"
-                ),
-                needs_clarification=(
-                    False
-                    if governed_task_anchor is not None
-                    else semantic_parse.needs_clarification
-                ),
-            )
+        _record_route_fusion_trace(
+            routing_span,
+            local_domain=domain_decision,
+            local_intent=local_intent,
+            local_mode=preliminary_mode,
+            semantic_parse=semantic_parse,
+            fusion=route_fusion,
+        )
+        domain_decision = route_fusion.domain_decision
+        intent = route_fusion.intent
+        mode = route_fusion.mode
         if domain_decision.domain == DomainKind.GENERAL.value:
-            if preliminary_mode is AgentMode.ASK:
+            if mode is AgentMode.ASK:
                 _close_research_trace_span(
                     routing_span,
                     TraceStatus.SUCCESS,
                     outcome="general_chat",
-                    reason_code="semantic_general_route",
+                    reason_code=route_fusion.fusion_reason,
                 )
                 return _general_chat_result(
                     request=request,
@@ -795,7 +769,7 @@ class ResearchChatService:
             )
             return _unsupported_action_result(
                 request=request,
-                mode=preliminary_mode,
+                mode=mode,
                 run_started=run_started,
                 reason="task_outside_qualified_single_cell_action_space",
                 action_safety=ActionSafetyDecision(
@@ -807,21 +781,16 @@ class ResearchChatService:
         if (
             domain_decision.domain == DomainKind.UNCERTAIN.value
             or domain_decision.needs_clarification
-            or (
-                semantic_parse.status == "ready"
-                and semantic_parse.confidence < 0.6
-                and governed_task_anchor is None
-            )
         ):
             _close_research_trace_span(
                 routing_span,
                 TraceStatus.PARTIAL,
                 outcome="clarification_required",
-                reason_code=domain_decision.reason,
+                reason_code=route_fusion.fusion_reason,
             )
             return _clarification_result(
                 request=request,
-                mode=preliminary_mode,
+                mode=mode,
                 domain_decision=domain_decision,
                 semantic_parse=semantic_parse,
                 conversation_context=context,
@@ -840,16 +809,6 @@ class ResearchChatService:
             else ""
         )
         task_id = task.task_id if task else ""
-        if semantic_parse.status == "ready":
-            semantic_intent = _semantic_intent(semantic_parse.intent)
-            if semantic_intent is not None and not governed_intent_anchor:
-                intent = semantic_intent
-        mode = _resolve_mode(
-            query,
-            intent=intent,
-            requested_mode=request.mode,
-            semantic=None if governed_intent_anchor else semantic_parse,
-        )
         intent_timing = _chat_timing(
             "intent",
             intent_started,
@@ -862,7 +821,7 @@ class ResearchChatService:
             routing_span,
             TraceStatus.SUCCESS,
             outcome=f"{str(domain_decision.domain).lower()}_{mode.value.lower()}",
-            reason_code=domain_decision.reason,
+            reason_code=route_fusion.fusion_reason,
             record_ref=(
                 {
                     "record_type": "canonical_task",
@@ -2548,35 +2507,22 @@ def _classify_intent(query: str) -> ResearchChatIntent:
         )
     ):
         return ResearchChatIntent.MIGRATION_EXPLORATION
-    if any(
-        marker in text
-        for marker in (
-            "caveat",
-            "限制分别",
-            "各自限制",
-            "top-",
-            "top ",
-            "前三",
-            "前两个",
-            "主要限制",
-            "限制有哪些",
-            "局限",
-            "注意事项",
-            "简要说说",
-        )
-    ):
+    if _is_comparative_caveat_query(query):
         return ResearchChatIntent.CAVEAT_COMPARISON
     if any(
         marker in text
         for marker in (
             "应该用什么",
             "应该如何",
+            "应该怎样",
             "用什么方法",
             "如何检测",
             "怎么检测",
             "推荐",
             "怎么选择",
             "怎么选",
+            "下一步该怎么办",
+            "下一步怎么办",
             "which method",
             "recommend",
         )
@@ -2591,6 +2537,15 @@ def _has_explicit_intent_signal(
 ) -> bool:
     """Prevent the semantic parser from changing an explicit answer shape."""
 
+    return bool(_query_local_intent_reason(query, intent))
+
+
+def _query_local_intent_reason(
+    query: str,
+    intent: ResearchChatIntent,
+) -> str:
+    """Return a bounded reason only when the query supports this answer shape."""
+
     text = _intent_classification_text(query)
     markers = {
         ResearchChatIntent.WORKFLOW: (
@@ -2603,23 +2558,21 @@ def _has_explicit_intent_signal(
             "整理成",
         ),
         ResearchChatIntent.CAVEAT_COMPARISON: (
-            "caveat",
-            "top-",
-            "top ",
-            "前三",
-            "限制",
-            "局限",
-            "注意事项",
+            "限制分别",
+            "各自限制",
         ),
         ResearchChatIntent.TOOL_RECOMMENDATION: (
             "应该用什么",
             "应该如何",
+            "应该怎样",
             "用什么方法",
             "如何检测",
             "怎么检测",
             "推荐",
             "怎么选择",
             "怎么选",
+            "下一步该怎么办",
+            "下一步怎么办",
             "which method",
             "recommend",
         ),
@@ -2636,7 +2589,73 @@ def _has_explicit_intent_signal(
             "输出是什么",
         ),
     }
-    return any(marker in text for marker in markers.get(intent, ()))
+    if intent is ResearchChatIntent.CAVEAT_COMPARISON:
+        return "explicit_comparative_caveat" if _is_comparative_caveat_query(query) else ""
+    if any(marker in text for marker in markers.get(intent, ())):
+        return f"explicit_{intent.value}_signal"
+    if intent is ResearchChatIntent.EVIDENCE_QA and (
+        _is_dotted_scanpy_api_query(query)
+        or _is_single_tool_limitation_query(query)
+        or bool(_known_tools_in_query(query))
+    ):
+        return "query_local_scientific_information_request"
+    return ""
+
+
+def _is_top_k_request(text: str) -> bool:
+    return bool(
+        re.search(
+            r"(?<![a-z0-9_])top(?:\s*[-:]?\s*\d+|\s+(?:two|three|five))(?![a-z0-9_])",
+            text.casefold(),
+        )
+    ) or any(marker in text.casefold() for marker in ("前三", "前两个"))
+
+
+def _is_comparative_caveat_query(query: str) -> bool:
+    text = _intent_classification_text(query)
+    if _is_top_k_request(text):
+        return True
+    if any(marker in text for marker in ("限制分别", "各自限制")):
+        return True
+    limitation = any(
+        marker in text
+        for marker in ("caveat", "limitation", "limitations", "限制", "局限", "注意事项")
+    )
+    return limitation and len(_known_tools_in_query(query)) >= 2
+
+
+def _is_single_tool_limitation_query(query: str) -> bool:
+    text = _intent_classification_text(query)
+    return (
+        len(_known_tools_in_query(query)) == 1
+        and any(
+            marker in text
+            for marker in ("caveat", "limitation", "limitations", "限制", "局限", "注意事项")
+        )
+        and not _is_comparative_caveat_query(query)
+    )
+
+
+def _is_dotted_scanpy_api_query(query: str) -> bool:
+    return bool(
+        re.search(
+            r"(?<![a-z0-9_])sc\.(?:pp|tl|pl|get|external)(?:\.[a-z_][a-z0-9_]*)+",
+            _latest_followup_text(query).casefold(),
+        )
+    )
+
+
+def _has_query_local_batch_pattern(query: str) -> bool:
+    text = _latest_followup_text(query).casefold()
+    sample_scope = any(
+        marker in text
+        for marker in ("几个样本", "多个样本", "不同样本", "samples", "patients", "患者")
+    )
+    separation = any(
+        marker in text
+        for marker in ("各自聚", "分开", "聚在一起", "cluster", "group", "separat")
+    )
+    return sample_scope and separation
 
 
 def _intent_classification_text(query: str) -> str:
@@ -3036,6 +3055,8 @@ def _query_domain(
         or inherited_task
         or any(marker in text for marker in single_cell_markers)
         or _contains_catalog_tool(text)
+        or _is_dotted_scanpy_api_query(query)
+        or _has_query_local_batch_pattern(query)
     )
     if mentions_single_cell:
         return DomainDecision(
@@ -3076,6 +3097,43 @@ def _query_domain(
             confidence=0.45,
             source="local_rule",
             reason="biomedical_language_without_explicit_single_cell_anchor",
+            needs_clarification=True,
+        )
+    technical_objects = (
+        "activity",
+        "algorithm",
+        "data",
+        "docker",
+        "framework",
+        "graph",
+        "matrix",
+        "model",
+        "result",
+        "score",
+    )
+    underspecified_relations = (
+        "accelerat",
+        "choice",
+        "depending",
+        "different",
+        "investigat",
+        "negative",
+        "obtain",
+        "output",
+        "outpout",
+        "positive",
+        "shape",
+        "warning",
+    )
+    if any(marker in text for marker in technical_objects) and (
+        any(marker in text for marker in underspecified_relations)
+        or len(text.split()) <= 4
+    ):
+        return DomainDecision(
+            domain=DomainKind.UNCERTAIN,
+            confidence=0.4,
+            source="local_rule",
+            reason="technical_language_without_explicit_domain_anchor",
             needs_clarification=True,
         )
     explicit_general_markers = (
@@ -3152,12 +3210,12 @@ def _clarification_result(
         external=ExternalReasoningResult(status="not_requested"),
         call_count=int(semantic_parse.provider_call_attempted),
         run_started=run_started,
-        domain=DomainKind.UNCERTAIN,
+        domain=DomainKind(domain_decision.domain),
         conversation_turns_used=len(conversation_context),
     )
     context_pack["semantic_parse"] = semantic_parse.model_dump(mode="json")
     context_pack["semantic_route"] = {
-        "domain": DomainKind.UNCERTAIN.value,
+        "domain": domain_decision.domain,
         "confidence": domain_decision.confidence,
         "source": domain_decision.source,
         "reason": domain_decision.reason,
@@ -3457,6 +3515,416 @@ def _semantic_intent(value: str) -> Optional[ResearchChatIntent]:
         return ResearchChatIntent(value)
     except ValueError:
         return None
+
+
+def _fuse_research_route(
+    *,
+    query: str,
+    local_domain: DomainDecision,
+    local_intent: ResearchChatIntent,
+    semantic_parse: SemanticParseResult,
+    requested_mode: Optional[AgentMode],
+    explicit_task: Any,
+    inheritable_task: Any,
+    semantic_context_task: Any,
+) -> _RouteFusionDecision:
+    """Fuse local and LLM proposals without allowing unsupported certainty."""
+
+    governed_task_anchor = explicit_task or inheritable_task or semantic_context_task
+    scientific_proposition = _query_local_scientific_proposition(query)
+    query_domain_anchor = _query_local_domain_anchor(
+        query,
+        explicit_task=explicit_task,
+        inheritable_task=inheritable_task,
+        scientific_proposition=scientific_proposition,
+    )
+    semantic_ready = semantic_parse.status == "ready"
+    semantic_intent = (
+        _semantic_intent(semantic_parse.intent) if semantic_ready else None
+    )
+    local_intent_reason = _query_local_intent_reason(query, local_intent)
+    semantic_intent_reason = (
+        _query_local_intent_reason(query, semantic_intent)
+        if semantic_intent is not None
+        else ""
+    )
+
+    if local_intent_reason:
+        fused_intent = local_intent
+        semantic_intent_accepted = False
+        intent_reason = "explicit_local_answer_shape_preserved"
+    elif semantic_intent is not None and semantic_intent_reason:
+        fused_intent = semantic_intent
+        semantic_intent_accepted = True
+        intent_reason = "semantic_answer_shape_query_supported"
+    else:
+        fused_intent = local_intent
+        semantic_intent_accepted = False
+        intent_reason = (
+            "semantic_answer_shape_unjustified"
+            if semantic_intent is not None and semantic_intent is not local_intent
+            else "local_answer_shape_preserved"
+        )
+
+    if governed_task_anchor is not None:
+        fused_domain = DomainDecision(
+            domain=DomainKind.SINGLE_CELL,
+            confidence=max(
+                local_domain.confidence,
+                semantic_parse.confidence if semantic_ready else 0.0,
+            ),
+            source=(
+                "conversation_context"
+                if explicit_task is None
+                and (inheritable_task is not None or semantic_context_task is not None)
+                else "local_rule"
+            ),
+            reason="query_or_context_task_anchor_preserved",
+            needs_clarification=False,
+        )
+        clarification_reason = "query_or_context_task_anchor"
+        domain_reason = "governed_task_anchor"
+    elif local_domain.domain == DomainKind.SINGLE_CELL:
+        fused_domain = local_domain.model_copy(
+            update={
+                "needs_clarification": False,
+                "reason": "query_local_single_cell_anchor_preserved",
+            }
+        )
+        clarification_reason = "query_local_single_cell_anchor"
+        domain_reason = "local_single_cell_anchor"
+    elif local_domain.domain == DomainKind.UNCERTAIN:
+        if query_domain_anchor:
+            clarification_required = not scientific_proposition.answer_context_complete
+            fused_domain = DomainDecision(
+                domain=DomainKind.SINGLE_CELL,
+                confidence=max(
+                    local_domain.confidence,
+                    semantic_parse.confidence if semantic_ready else 0.0,
+                    0.75,
+                ),
+                source=(
+                    "semantic_parser"
+                    if semantic_ready
+                    and semantic_parse.domain == DomainKind.SINGLE_CELL.value
+                    else "local_rule"
+                ),
+                reason="query_local_scientific_domain_supported",
+                needs_clarification=clarification_required,
+            )
+            clarification_reason = (
+                "query_local_answer_context_incomplete"
+                if clarification_required
+                else "query_local_answer_context_complete"
+            )
+            domain_reason = "query_local_scientific_domain_supported"
+        else:
+            fused_domain = local_domain.model_copy(
+                update={
+                    "needs_clarification": True,
+                    "reason": "query_ambiguity_monotonic_guard",
+                }
+            )
+            clarification_reason = "query_ambiguity_requires_clarification"
+            domain_reason = "ambiguity_guard"
+    elif semantic_ready and semantic_parse.domain == DomainKind.GENERAL.value:
+        fused_domain = DomainDecision(
+            domain=DomainKind.GENERAL,
+            confidence=max(local_domain.confidence, semantic_parse.confidence),
+            source="semantic_parser",
+            reason="local_and_semantic_general_agreement",
+            needs_clarification=False,
+        )
+        clarification_reason = "general_domain_agreement"
+        domain_reason = "general_agreement"
+    elif semantic_ready and semantic_parse.domain == DomainKind.SINGLE_CELL.value:
+        if query_domain_anchor:
+            fused_domain = DomainDecision(
+                domain=DomainKind.SINGLE_CELL,
+                confidence=max(local_domain.confidence, semantic_parse.confidence),
+                source="semantic_parser",
+                reason="semantic_domain_query_supported",
+                needs_clarification=False,
+            )
+            clarification_reason = "query_local_domain_anchor"
+            domain_reason = "semantic_domain_query_supported"
+        else:
+            fused_domain = DomainDecision(
+                domain=DomainKind.UNCERTAIN,
+                confidence=min(semantic_parse.confidence, 0.59),
+                source="local_rule",
+                reason="semantic_single_cell_upgrade_lacks_query_anchor",
+                needs_clarification=True,
+            )
+            clarification_reason = "semantic_upgrade_lacks_query_anchor"
+            domain_reason = "unsupported_semantic_domain_upgrade"
+    elif semantic_ready and semantic_parse.domain == DomainKind.UNCERTAIN.value:
+        fused_domain = DomainDecision(
+            domain=DomainKind.UNCERTAIN,
+            confidence=min(semantic_parse.confidence, 0.59),
+            source="semantic_parser",
+            reason="semantic_domain_uncertain",
+            needs_clarification=True,
+        )
+        clarification_reason = "semantic_domain_uncertain"
+        domain_reason = "semantic_uncertain"
+    else:
+        fused_domain = local_domain
+        clarification_reason = (
+            "local_clarification_required"
+            if local_domain.needs_clarification
+            else "local_domain_complete"
+        )
+        domain_reason = "local_domain_preserved"
+
+    accepted_semantic_mode = (
+        semantic_parse
+        if semantic_intent_accepted and semantic_parse.intent == "execution"
+        else None
+    )
+    mode = _resolve_mode(
+        query,
+        intent=fused_intent,
+        requested_mode=requested_mode,
+        semantic=accepted_semantic_mode,
+    )
+    return _RouteFusionDecision(
+        domain_decision=fused_domain,
+        intent=fused_intent,
+        mode=mode,
+        local_intent_reason=local_intent_reason or "default_local_answer_shape",
+        semantic_intent_reason=(
+            (
+                semantic_intent_reason
+                or "semantic_answer_shape_without_query_justification"
+            )
+            if semantic_intent is not None
+            else "semantic_proposal_not_available"
+        ),
+        semantic_intent_accepted=semantic_intent_accepted,
+        clarification_reason=clarification_reason,
+        fusion_reason=f"{domain_reason}_{intent_reason}",
+    )
+
+
+def _query_local_domain_anchor(
+    query: str,
+    *,
+    explicit_task: Any,
+    inheritable_task: Any,
+    scientific_proposition: Optional[_QueryLocalScientificProposition] = None,
+) -> str:
+    if explicit_task is not None:
+        return "explicit_canonical_task"
+    if inheritable_task is not None:
+        return "conversation_task_context"
+    if _known_tools_in_query(query):
+        return "known_tool_entity"
+    if _is_dotted_scanpy_api_query(query):
+        return "dotted_scanpy_api"
+    if _has_query_local_batch_pattern(query):
+        return "multi_sample_separation_pattern"
+    proposition = scientific_proposition or _query_local_scientific_proposition(query)
+    if proposition.domain_anchor:
+        return proposition.domain_anchor
+    text = _latest_followup_text(query).casefold()
+    if (
+        any(marker in text for marker in ("cell", "cells", "细胞"))
+        and any(marker in text for marker in ("marker", "lineage", "谱系"))
+    ):
+        return "cell_marker_context"
+    if any(
+        marker in text
+        for marker in (
+            "single-cell",
+            "single cell",
+            "scrna",
+            "sc-rna",
+            "单细胞",
+            "10x",
+            "anndata",
+            "h5ad",
+            "scanpy",
+            "seurat",
+            "umap",
+            "leiden",
+            "raw counts",
+            "原始计数",
+        )
+    ):
+        return "single_cell_vocabulary"
+    return ""
+
+
+def _query_local_scientific_proposition(
+    query: str,
+) -> _QueryLocalScientificProposition:
+    """Detect a query-local scientific relation without resolving its ambiguity.
+
+    Domain support and answer-context completeness are deliberately separate:
+    a bounded scientific proposition can establish the domain while deictic or
+    missing context still requires clarification.
+    """
+
+    text = _latest_followup_text(query).casefold()
+    scientific_entity = bool(
+        re.search(
+            r"\b(?:cell|cells|gene|genes|expression|transcript|transcripts|rna|"
+            r"protein|proteins|cluster|clusters|marker|markers|lineage|"
+            r"trajectory|pseudotime)\b",
+            text,
+        )
+        or any(
+            marker in text
+            for marker in (
+                "细胞",
+                "基因",
+                "表达",
+                "转录本",
+                "蛋白",
+                "聚类",
+                "标记物",
+                "谱系",
+                "轨迹",
+            )
+        )
+    )
+    scientific_operation = bool(
+        re.search(
+            r"\b(?:interpret\w*|analy[sz]\w*|compar\w*|explain\w*|"
+            r"visuali[sz]\w*|detect\w*|identif\w*|quantif\w*|"
+            r"measur\w*|estimat\w*)\b",
+            text,
+        )
+        or any(
+            marker in text
+            for marker in (
+                "解释",
+                "分析",
+                "比较",
+                "可视化",
+                "检测",
+                "识别",
+                "定量",
+                "估计",
+            )
+        )
+    )
+    scientific_object = bool(
+        re.search(
+            r"\b(?:\w*plots?|graph|graphs|figure|figures|matrix|matrices|"
+            r"embedding|embeddings|score|scores|distribution|distributions|"
+            r"result|results|value|values)\b",
+            text,
+        )
+        or any(
+            marker in text
+            for marker in (
+                "图",
+                "矩阵",
+                "嵌入",
+                "分数",
+                "分布",
+                "结果",
+                "数值",
+            )
+        )
+    )
+    if not (scientific_entity and scientific_operation and scientific_object):
+        return _QueryLocalScientificProposition()
+
+    deictic_or_missing_context = bool(
+        re.search(r"\b(?:this|that|these|those|it|my|our)\b", text)
+        or any(
+            marker in text
+            for marker in (
+                "这个",
+                "那个",
+                "这些",
+                "那些",
+                "我的",
+                "我们的",
+            )
+        )
+    )
+    return _QueryLocalScientificProposition(
+        domain_anchor="query_local_scientific_proposition",
+        answer_context_complete=not deictic_or_missing_context,
+    )
+
+
+def _record_route_fusion_trace(
+    span: Any,
+    *,
+    local_domain: DomainDecision,
+    local_intent: ResearchChatIntent,
+    local_mode: AgentMode,
+    semantic_parse: SemanticParseResult,
+    fusion: _RouteFusionDecision,
+) -> None:
+    """Emit bounded route evidence; never record query or model prose."""
+
+    span.add_decision(
+        decision_type="route_local_decision",
+        outcome=_route_decision_code(
+            local_domain.domain,
+            local_intent,
+            local_mode,
+        ),
+        reason_code=local_domain.reason,
+        rule_version="research_route_fusion_v1",
+    )
+    if semantic_parse.status == "ready":
+        semantic_outcome = "_".join(
+            (
+                semantic_parse.domain.casefold(),
+                semantic_parse.intent,
+                "clarify" if semantic_parse.needs_clarification else "resolved",
+            )
+        )
+        semantic_reason = fusion.semantic_intent_reason
+    else:
+        semantic_outcome = (
+            semantic_parse.status
+            if semantic_parse.status
+            in {"not_requested", "not_authorized", "failed"}
+            else "unavailable"
+        )
+        semantic_reason = "semantic_proposal_not_available"
+    span.add_decision(
+        decision_type="route_llm_proposal",
+        outcome=semantic_outcome,
+        reason_code=semantic_reason,
+        rule_version="research_route_fusion_v1",
+    )
+    span.add_decision(
+        decision_type="route_clarification_signal",
+        outcome=(
+            "required"
+            if fusion.domain_decision.needs_clarification
+            else "not_required"
+        ),
+        reason_code=fusion.clarification_reason,
+        rule_version="research_route_fusion_v1",
+    )
+    span.add_decision(
+        decision_type="route_fusion_decision",
+        outcome=_route_decision_code(
+            fusion.domain_decision.domain,
+            fusion.intent,
+            fusion.mode,
+        ),
+        reason_code=fusion.fusion_reason,
+        rule_version="research_route_fusion_v1",
+    )
+
+
+def _route_decision_code(
+    domain: DomainKind,
+    intent: ResearchChatIntent,
+    mode: AgentMode,
+) -> str:
+    return f"{DomainKind(domain).value.casefold()}_{intent.value}_{mode.value.casefold()}"
 
 
 def _mode_for_intent(intent: ResearchChatIntent) -> AgentMode:
@@ -4736,9 +5204,11 @@ def _recommendation_report(
     if task_id == "doublet_detection":
         subject = "这批 10x PBMC 数据" if "pbmc" in query.casefold() else "这批 scRNA-seq 数据"
         opening = (
-            f"对于{subject}，我会优先用 **{primary['tool_name']}**，"
-            f"因为它匹配 raw-count 输入且已有受控执行合同；"
-            f"多样本应按独立 capture/sample 运行。{caveat_citation}"
+            f"### 当前建议：优先使用 {primary['tool_name']}\n\n"
+            f"- **输入依据：** 对于{subject}，{primary['tool_name']} 要求"
+            f"{primary['input']}。{input_citation}\n"
+            f"- **样本边界：** 多样本应按独立 capture/sample 运行。"
+            f"{caveat_citation}"
         )
         input_detail = (
             "先用 DataProfile 确认 `.h5ad` 中真正的 raw count source；"
@@ -4783,13 +5253,16 @@ def _recommendation_report(
                 continue
             lines.append(f"- **{card['tool_name']}**（{boundary}）：{card['best_for']}{citation}")
     lines.extend(["", "### 关键限制"])
-    lines.extend(f"- {item}{caveat_citation}" for item in primary["caveats"][:3])
+    lines.extend(
+        f"- **主要限制：** {item}{caveat_citation}"
+        for item in primary["caveats"][:3]
+    )
     if task_id == "doublet_detection":
         lines.extend(
             [
                 "",
                 "### 实际下一步",
-                "1. 对 `.h5ad` 做 DataProfile，确认 `layers['counts']`、`X` 或 `raw.X` 中哪一个是 raw counts。",
+                f"1. 对 `.h5ad` 做 DataProfile，确认 `layers['counts']`、`X` 或 `raw.X` 中哪一个是 raw counts。{input_citation}",
                 f"2. 按 capture/sample 拆分后运行，并检查 simulated doublet score 分布与阈值。{caveat_citation}",
                 "3. 将预测标签与 QC、cluster marker 和样本信息联合复核，再决定是否过滤。",
             ]
@@ -4812,7 +5285,7 @@ def _caveat_report(
     cards: list[dict[str, Any]],
     references: list[dict[str, Any]],
 ) -> str:
-    lines = [f"**{task_label} Top-{len(cards)} caveat：**"]
+    lines = [f"### {task_label} Top-{len(cards)} caveat"]
     for card in cards:
         caveat = "；".join(
             item.rstrip("。；") for item in card["caveats"][:2]
@@ -4820,7 +5293,9 @@ def _caveat_report(
         citation = _citations_for_tool(
             card["tool_name"], references, claim_type="failure_mode", limit=2
         )
-        lines.append(f"- **{card['tool_name']}**：{caveat}。{citation}")
+        lines.append(
+            f"- **{card['tool_name']} · 主要限制：** {caveat}。{citation}"
+        )
     return _append_references(lines, references[:6], heading="参考")
 
 
