@@ -166,12 +166,17 @@ def test_recommendation_completes_source_bound_evidence_for_top_tools(tmp_path):
     )
 
     tools = {row["tool_name"] for row in state["references"]}
-    assert {"Scrublet", "scDblFinder", "DoubletFinder"} <= tools
+    assert tools == {"Scrublet"}
     assert "per_tool_evidence_completion" in (
         state["context_pack"]["retrieval_context"]["pipeline"]
     )
-    assert "raw UMI count matrix" in state["final_report"]
-    assert "按独立 capture/sample" in state["final_report"]
+    assert "输入要求" in state["final_report"]
+    assert any(
+        reference["claim_type"] == "input_requirement"
+        for reference in state["references"]
+    )
+    assert all(row["source_bound"] for row in state["references"])
+    assert state["context_pack"]["grounded_answer_audit"]["unsupported_claim_count"] == 0
 
 
 def test_top_three_caveats_use_tool_specific_source_spans(tmp_path):
@@ -363,8 +368,8 @@ def test_recommendation_query_does_not_compile_workflow(tmp_path):
     assert state["response_intent"] == "tool_recommendation"
     assert state["workflow_plan"] is None
     assert state["candidate_tools"][:3] == ["Scrublet", "scDblFinder", "DoubletFinder"]
-    assert "当前建议：优先使用 Scrublet" in state["final_report"]
-    assert "关键限制" in state["final_report"]
+    assert "项目治理建议：优先评估 Scrublet" in state["final_report"]
+    assert "已核验科学依据" in state["final_report"]
 
 
 def test_batch_recommendation_uses_batch_specific_language(tmp_path):
@@ -372,11 +377,32 @@ def test_batch_recommendation_uses_batch_specific_language(tmp_path):
     report = state["final_report"]
 
     assert state["extracted_constraints"]["canonical_task"] == "batch_integration"
-    assert "batch 标签" in report
-    assert "batch mixing" in report
-    assert "cell-type conservation" in report
+    assert "项目治理建议：优先评估 Harmony" in report
+    assert "没有足够的 source-bound 直接依据" in report
     assert "raw count source" not in report
     assert "按独立 capture/sample 运行" not in report
+
+
+def test_history_batch_recommendation_emits_only_bound_scientific_claims(tmp_path):
+    state = _default_service(tmp_path).run(
+        "多个患者的 PBMC 合并后 UMAP 按患者分开，应该怎样做 batch integration？"
+    )
+
+    report = state["final_report"]
+    audit = state["context_pack"]["grounded_answer_audit"]
+    assert state["response_intent"] == "tool_recommendation"
+    assert "项目治理建议：优先评估 Harmony" in report
+    assert "已核验科学依据" in report
+    assert audit["unsupported_claim_count"] == 0
+    assert audit["structurally_supported_claim_rate"] == 1.0
+    assert "corrected embedding not count matrix" not in report
+    assert "overcorrection may erase biology" not in report
+    assert "frozen scIB pancreas" not in report
+    assert "internal score" not in report
+    assert "Algorithm 3 GMM Correct" not in report
+    assert "Harmony · 主要限制" in report
+    assert all(reference["tool_name"] == "Harmony" for reference in state["references"])
+    assert all(reference["source_bound"] for reference in state["references"])
 
 
 def test_top_three_caveat_query_stays_concise(tmp_path):
@@ -776,10 +802,13 @@ def test_explicit_external_reasoning_keeps_deterministic_governance(tmp_path):
         user_runtime_config={"privacy_authorized": True},
     )
 
-    assert state["final_report"] == "这是受控上下文上的 DeepSeek 测试回答。[1]"
-    assert state["runtime_mode"] == "external_reasoning_with_deterministic_governance"
+    assert "项目治理建议：优先评估 Scrublet" in state["final_report"]
+    assert state["runtime_mode"] == "degraded_local_fallback"
     assert state["deterministic_parent_result"]["execution_request_count"] == 0
     assert state["context_pack"]["external_reasoning"]["status"] == "ready"
+    assert "claim_evidence_binding_mismatch" in state["context_pack"][
+        "rejected_external_answer_audit"
+    ]["reasons"]
 
 
 class _UngroundedReasoner:

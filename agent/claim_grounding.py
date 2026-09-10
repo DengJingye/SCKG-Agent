@@ -137,6 +137,7 @@ _PREDICATE_PATTERNS: dict[str, tuple[str, ...]] = {
     "limitation": (
         r"\b(?:limitation|caveat|warning|failure mode|drawback)\b",
         r"\b(?:may perform poorly|not universally|should not|only within|overcorrect|over-correct|fails? when|sensitive to)\b",
+        r"\b(?:assumes?|not true|difficult problem|cannot|does not)\b",
     ),
     "benchmark_result": (
         r"\b(?:benchmark|evaluated|performance|ranked)\b.{0,140}\b(?:dataset|method|tool|metric|result|performance|rank)\b",
@@ -322,6 +323,34 @@ def claim_requests_for_query(
     return _deduplicate_requests(requests)
 
 
+def recommendation_claim_requests(
+    query: str,
+    *,
+    subject: Optional[str],
+) -> list[ClaimRequest]:
+    """Build the bounded scientific support requested by a recommendation.
+
+    Recommendation rank and project qualification are governance decisions, not
+    literature claims.  Only the primary candidate's scientific purpose, input
+    contract, and limitations are projected into atomic evidence requests.
+    """
+
+    normalized_subject = str(subject or "").strip()
+    if not normalized_subject:
+        return []
+    query_span = _bounded_text(_latest_query(query), 300)
+    return [
+        ClaimRequest(
+            subject=normalized_subject,
+            predicate=predicate,
+            object_constraint=None,
+            query_span=query_span,
+            mode="recommendation_support",
+        )
+        for predicate in ("method_type", "input_requirement", "limitation")
+    ]
+
+
 def bind_claim_evidence(
     requests: Iterable[ClaimRequest],
     snippets: Sequence[dict[str, Any]],
@@ -489,6 +518,90 @@ def render_grounded_answer(
     return "\n".join(lines)
 
 
+def render_grounded_recommendation(
+    bindings: Sequence[ClaimEvidenceBinding],
+    references: Sequence[dict[str, Any]],
+    *,
+    primary_subject: str,
+    qualification: str,
+) -> str:
+    """Render recommendation facts only from their own supported bindings.
+
+    Candidate order, project qualification, and procedural next steps remain
+    explicitly separate from scientific evidence.  Abstained bindings are not
+    converted into static facts and never borrow another binding's citation.
+    """
+
+    reference_by_id = {
+        str(row.get("source_span_id") or ""): row
+        for row in references
+        if row.get("source_span_id")
+    }
+    supported = [
+        binding
+        for binding in bindings
+        if binding.support_status == "supported" and binding.evidence_refs
+    ]
+    lines = [f"### 项目治理建议：优先评估 {primary_subject}"]
+    if supported:
+        lines.extend(["", "### 已核验科学依据"])
+        emitted: set[tuple[str, tuple[str, ...]]] = set()
+        for binding in supported:
+            evidence_ids = tuple(
+                evidence.evidence_span_id for evidence in binding.evidence_refs
+            )
+            key = (binding.claim_text, evidence_ids)
+            if key in emitted:
+                continue
+            emitted.add(key)
+            citations = "".join(
+                f"[{reference_by_id[evidence_id]['index']}]"
+                for evidence_id in evidence_ids
+                if evidence_id in reference_by_id
+            )
+            if not citations:
+                continue
+            lines.append(
+                f"- **{binding.request.subject} · "
+                f"{predicate_label(binding.request.predicate)}：** "
+                f"{binding.claim_text}{citations}"
+            )
+    else:
+        lines.extend(
+            [
+                "",
+                "当前没有足够的 source-bound 直接依据，因此不输出事实性科学说明。",
+            ]
+        )
+
+    abstained_count = sum(
+        binding.support_status != "supported" for binding in bindings
+    )
+    if abstained_count:
+        lines.append(
+            f"证据缺口：{abstained_count} 项候选事实缺少 direct support，已从回答中省略。"
+        )
+
+    lines.extend(
+        [
+            "",
+            "### 项目治理资格",
+            f"- 状态：{qualification}。这是项目内资格边界，不代表跨数据集科学优越性。",
+            "",
+            "### 建议步骤",
+            "1. 先完成 DataProfile 与合同核对。",
+            "2. 在同一条件下做小规模对照，并由人工复核后再确定方案。",
+        ]
+    )
+    if references:
+        lines.extend(["", "### 参考资料"])
+        for row in references:
+            lines.append(
+                f"[{row['index']}] {row['tool_name']} · {row['title']} · {row['source_span']}"
+            )
+    return "\n".join(lines)
+
+
 def reasoner_binding_projection(
     bindings: Sequence[ClaimEvidenceBinding],
     references: Sequence[dict[str, Any]],
@@ -621,12 +734,31 @@ def _supporting_proposition(
     secondary_entity = bool(
         request.subject and request.subject.casefold() != primary_entity
     )
-    for sentence in sentences:
-        lowered = sentence.casefold()
+    for index, sentence in enumerate(sentences):
+        proposition = sentence
+        lowered = proposition.casefold()
+        if request.predicate == "limitation":
+            if (
+                re.search(r"\bassumes?\b", lowered)
+                and index + 1 < len(sentences)
+                and re.match(
+                    r"^(?:this|that|these|those)\b",
+                    sentences[index + 1].casefold(),
+                )
+            ):
+                proposition = f"{proposition} {sentences[index + 1]}"
+                lowered = proposition.casefold()
+            elif (
+                re.match(r"^(?:this|that|these|those)\b", lowered)
+                and index > 0
+                and re.search(r"\bassumes?\b", sentences[index - 1].casefold())
+            ):
+                proposition = f"{sentences[index - 1]} {proposition}"
+                lowered = proposition.casefold()
         matches = (
             ["method_type_relation"]
             if request.predicate == "method_type"
-            and _supports_method_type(sentence, request.subject)
+            and _supports_method_type(proposition, request.subject)
             else [pattern for pattern in patterns if re.search(pattern, lowered)]
             if request.predicate != "method_type"
             else []
@@ -635,16 +767,16 @@ def _supporting_proposition(
             continue
         if (
             request.predicate == "method_type"
-            and not _mentions(sentence, request.subject or "")
+            and not _mentions(proposition, request.subject or "")
         ):
             continue
-        if secondary_entity and not _mentions(sentence, request.subject or ""):
+        if secondary_entity and not _mentions(proposition, request.subject or ""):
             continue
         if request.object_constraint and not _satisfies_object_constraint(
-            sentence, request.object_constraint
+            proposition, request.object_constraint
         ):
             continue
-        candidates.append((sentence, len(matches)))
+        candidates.append((proposition, len(matches)))
     if not candidates:
         return "", "", 0
     proposition, quality = max(candidates, key=lambda item: (item[1], -len(item[0])))

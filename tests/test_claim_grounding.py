@@ -4,9 +4,11 @@ from agent.claim_grounding import (
     bind_claim_evidence,
     claim_requests_for_query,
     external_answer_preserves_bindings,
+    recommendation_claim_requests,
     reasoner_binding_projection,
     references_from_bindings,
     render_grounded_answer,
+    render_grounded_recommendation,
 )
 from agent.research_chat_reasoner import ExternalReasoningResult
 from agent.research_chat_service import ResearchChatService
@@ -54,6 +56,84 @@ def _assert_local_bindings(bindings, references, report):
             for evidence in binding.evidence_refs
         )
         assert f"{binding.claim_text}{citations}" in report
+
+
+def test_recommendation_scientific_claims_use_atomic_bindings_only():
+    snippets = [
+        _snippet(
+            "Harmony",
+            "source:harmony-method",
+            "general",
+            "Harmony is a method for integrating single-cell datasets across batches.",
+        ),
+        _snippet(
+            "Harmony",
+            "source:harmony-input",
+            "input_requirement",
+            "Harmony accepts a cell embedding matrix and batch covariate labels as input.",
+        ),
+        _snippet(
+            "Harmony",
+            "source:harmony-limit",
+            "failure_mode",
+            "A limitation is that Harmony may over-correct when biological groups are confounded with batches.",
+        ),
+    ]
+    requests = recommendation_claim_requests(
+        "Which method should I use for batch integration?",
+        subject="Harmony",
+    )
+    bindings = bind_claim_evidence(requests, snippets, query="batch integration")
+    references = references_from_bindings(bindings)
+    report = render_grounded_recommendation(
+        bindings,
+        references,
+        primary_subject="Harmony",
+        qualification="qualified",
+    )
+
+    assert [request.predicate for request in requests] == [
+        "method_type",
+        "input_requirement",
+        "limitation",
+    ]
+    assert all(binding.support_status == "supported" for binding in bindings)
+    assert len(references) == 3
+    _assert_local_bindings(bindings, references, report)
+
+
+def test_recommendation_omits_abstained_claim_instead_of_borrowing_citation():
+    snippets = [
+        _snippet(
+            "Harmony",
+            "source:harmony-method",
+            "general",
+            "Harmony is a method for integrating single-cell datasets across batches.",
+        )
+    ]
+    requests = recommendation_claim_requests(
+        "Which method should I use for batch integration?",
+        subject="Harmony",
+    )
+    bindings = bind_claim_evidence(requests, snippets, query="batch integration")
+    references = references_from_bindings(bindings)
+    report = render_grounded_recommendation(
+        bindings,
+        references,
+        primary_subject="Harmony",
+        qualification="planning only",
+    )
+
+    assert bindings[0].support_status == "supported"
+    assert [binding.abstain_reason for binding in bindings[1:]] == [
+        "no_direct_support",
+        "no_direct_support",
+    ]
+    assert "输入要求" not in report
+    assert "主要限制" not in report
+    assert report.count("[1]") == 2
+    assert "项目治理资格" in report
+    assert "建议步骤" in report
 
 
 def test_one_entity_one_claim_is_atomic_and_source_bound():

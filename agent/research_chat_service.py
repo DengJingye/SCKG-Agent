@@ -36,9 +36,11 @@ from agent.claim_grounding import (
     claim_requests_for_query,
     external_answer_preserves_bindings,
     legacy_claim_type,
+    recommendation_claim_requests,
     reasoner_binding_projection,
     references_from_bindings,
     render_grounded_answer,
+    render_grounded_recommendation,
 )
 from agent.grounded_answer_audit import audit_grounded_answer_v3
 from agent.research_tool_registry import ResearchToolRegistry
@@ -1191,6 +1193,21 @@ class ResearchChatService:
                 query=query,
             )
             references = references_from_bindings(claim_bindings)
+        elif response_intent is ResearchChatIntent.TOOL_RECOMMENDATION:
+            primary_subject = (
+                str(reference_candidates[0].get("tool_name") or "")
+                if reference_candidates
+                else ""
+            )
+            claim_bindings = bind_claim_evidence(
+                recommendation_claim_requests(
+                    query,
+                    subject=primary_subject,
+                ),
+                snippets,
+                query=query,
+            )
+            references = references_from_bindings(claim_bindings)
         else:
             references = _references(
                 snippets,
@@ -1246,29 +1263,38 @@ class ResearchChatService:
             and bool(task_id)
             and hasattr(reasoner, "synthesize")
         ):
-            evidence_qa_reasoning = intent is ResearchChatIntent.EVIDENCE_QA
+            binding_grounded_reasoning = intent in {
+                ResearchChatIntent.EVIDENCE_QA,
+                ResearchChatIntent.TOOL_RECOMMENDATION,
+            }
             external_reasoning = reasoner.synthesize(
                 query=_latest_followup_text(query),
                 intent=intent.value,
                 task_label=task.label if task else "Unresolved task",
-                algorithm_cards=[] if evidence_qa_reasoning else algorithm_cards,
+                algorithm_cards=(
+                    [] if binding_grounded_reasoning else algorithm_cards
+                ),
                 retrieval_snippets=(
                     reasoner_binding_projection(claim_bindings, references)
-                    if evidence_qa_reasoning
+                    if binding_grounded_reasoning
                     else _synthesis_snippets(snippets, references)
                 ),
                 references=references,
                 blockers=blockers,
                 tool_observations=(
                     []
-                    if evidence_qa_reasoning
+                    if binding_grounded_reasoning
                     else [
                         item.model_dump(mode="json")
                         for item in tool_execution.observations
                     ]
                 ),
                 contract_context=(
-                    [] if evidence_qa_reasoning else tool_execution.contract_context
+                    (
+                        []
+                        if binding_grounded_reasoning
+                        else tool_execution.contract_context
+                    )
                 ),
                 requested_tools=(
                     list(
@@ -1278,7 +1304,7 @@ class ResearchChatService:
                             if binding.request.subject
                         )
                     )
-                    if evidence_qa_reasoning
+                    if binding_grounded_reasoning
                     else requested_answer_tools or explicit_query_tools
                 ),
                 required_claim_types=(
@@ -1288,10 +1314,10 @@ class ResearchChatService:
                             for binding in claim_bindings
                         )
                     )
-                    if evidence_qa_reasoning
+                    if binding_grounded_reasoning
                     else required_claim_types
                 ),
-                allow_unverified_model_knowledge=not evidence_qa_reasoning,
+                allow_unverified_model_knowledge=not binding_grounded_reasoning,
                 runtime_config=runtime_config,
             )
             if external_reasoning.status == "ready":
@@ -1324,7 +1350,7 @@ class ResearchChatService:
                         external_answer_audit.get("governance_violation_count") or 0
                     ) + 1
                 binding_shape_valid = (
-                    not evidence_qa_reasoning
+                    not binding_grounded_reasoning
                     or external_answer_preserves_bindings(
                         external_reasoning.content,
                         claim_bindings,
@@ -5152,11 +5178,9 @@ def _report(
         return _migration_report(task_label, migration_paths, references)
     if intent is ResearchChatIntent.TOOL_RECOMMENDATION:
         return _recommendation_report(
-            query,
-            task_id,
-            task_label,
             algorithm_cards,
             references,
+            claim_bindings=claim_bindings or [],
         )
     return _evidence_qa_report(
         query,
@@ -5171,113 +5195,25 @@ def _report(
 
 
 def _recommendation_report(
-    query: str,
-    task_id: str,
-    task_label: str,
     cards: list[dict[str, Any]],
     references: list[dict[str, Any]],
+    *,
+    claim_bindings: list[ClaimEvidenceBinding],
 ) -> str:
     if not cards:
-        return f"我识别到任务是 **{task_label}**，但目前没有足够的 source-bound 候选可以安全推荐。"
+        return "目前没有足够的 source-bound 候选可以安全推荐。"
     primary = cards[0]
-    primary_citation = _citation_for_tool(primary["tool_name"], references)
-    mechanism_citation = (
-        _citation_for_tool(primary["tool_name"], references, claim_type="mechanism")
-        or primary_citation
+    qualification = (
+        "已资格化"
+        if primary.get("readiness") == "decision_ready"
+        else "仅规划候选"
     )
-    input_citation = (
-        _citation_for_tool(
-            primary["tool_name"], references, claim_type="input_requirement"
-        )
-        or primary_citation
-    )
-    output_citation = (
-        _citation_for_tool(primary["tool_name"], references, claim_type="output")
-        or primary_citation
-    )
-    caveat_citation = _citations_for_tool(
-        primary["tool_name"],
+    return render_grounded_recommendation(
+        claim_bindings,
         references,
-        claim_type="failure_mode",
-        limit=2,
-    ) or primary_citation
-    if task_id == "doublet_detection":
-        subject = "这批 10x PBMC 数据" if "pbmc" in query.casefold() else "这批 scRNA-seq 数据"
-        opening = (
-            f"### 当前建议：优先使用 {primary['tool_name']}\n\n"
-            f"- **输入依据：** 对于{subject}，{primary['tool_name']} 要求"
-            f"{primary['input']}。{input_citation}\n"
-            f"- **样本边界：** 多样本应按独立 capture/sample 运行。"
-            f"{caveat_citation}"
-        )
-        input_detail = (
-            "先用 DataProfile 确认 `.h5ad` 中真正的 raw count source；"
-            "scaled matrix 不能直接进入 doublet caller"
-        )
-        output_detail = "把预测作为 QC 标记，并结合 marker、cluster 和样本信息复核"
-    elif task_id == "batch_integration":
-        opening = (
-            f"针对多批次 scRNA-seq 整合，我会优先比较并使用 **{primary['tool_name']}**；"
-            f"前提是 batch 标签可靠，并同时检查批次混合与生物学结构保留。{primary_citation}"
-        )
-        input_detail = (
-            "确认预处理/PCA 状态、稳定 cell ID 和真实技术 batch 列；"
-            "不要把 cell type 当成 batch 标签"
-        )
-        output_detail = (
-            "将 integrated embedding 用于邻域、UMAP 和聚类，并同时检查 batch mixing "
-            "与 cell-type conservation"
-        )
-    else:
-        opening = (
-            f"针对 **{task_label}**，当前 source-bound 候选中我会优先考虑 "
-            f"**{primary['tool_name']}**。{primary_citation}"
-        )
-        input_detail = "先核对当前数据对象与该工具输入合同是否匹配"
-        output_detail = "先验证产物 schema 和适用范围，再解释科学结果"
-    lines = [
-        opening,
-        "",
-        "### 为什么这样选",
-        f"- **机制：** {primary['mechanism']}{mechanism_citation}",
-        f"- **输入匹配：** {primary['input']}。{input_detail}。{input_citation}",
-        f"- **输出：** {primary['output']}。{output_detail}。{output_citation}",
-    ]
-    alternatives = [card for card in cards[1:3] if card["tool_name"] != primary["tool_name"]]
-    if alternatives:
-        lines.extend(["", "### 可替代选择"])
-        for card in alternatives:
-            boundary = "已资格化" if card["readiness"] == "decision_ready" else "仅规划候选"
-            citation = _citation_for_tool(card["tool_name"], references)
-            if not citation:
-                continue
-            lines.append(f"- **{card['tool_name']}**（{boundary}）：{card['best_for']}{citation}")
-    lines.extend(["", "### 关键限制"])
-    lines.extend(
-        f"- **主要限制：** {item}{caveat_citation}"
-        for item in primary["caveats"][:3]
+        primary_subject=str(primary["tool_name"]),
+        qualification=qualification,
     )
-    if task_id == "doublet_detection":
-        lines.extend(
-            [
-                "",
-                "### 实际下一步",
-                f"1. 对 `.h5ad` 做 DataProfile，确认 `layers['counts']`、`X` 或 `raw.X` 中哪一个是 raw counts。{input_citation}",
-                f"2. 按 capture/sample 拆分后运行，并检查 simulated doublet score 分布与阈值。{caveat_citation}",
-                "3. 将预测标签与 QC、cluster marker 和样本信息联合复核，再决定是否过滤。",
-            ]
-        )
-    elif task_id == "batch_integration":
-        lines.extend(
-            [
-                "",
-                "### 实际下一步",
-                f"1. 确认 `adata.obs` 中的技术 batch 列、细胞类型标签和当前 PCA/表达矩阵状态。{primary_citation}",
-                f"2. 在相同细胞与预处理上比较 Harmony/Scanorama，不直接比较两个工具的原始内部 score。{primary_citation}",
-                f"3. 联合检查 batch mixing、cell-type conservation、运行时间和内存，再选择配置。{primary_citation}",
-            ]
-        )
-    return _append_references(lines, references)
 
 
 def _caveat_report(
