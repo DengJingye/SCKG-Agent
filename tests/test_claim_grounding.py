@@ -159,6 +159,31 @@ def test_one_entity_one_claim_is_atomic_and_source_bound():
     _assert_local_bindings(bindings, references, report)
 
 
+def test_input_selection_questions_do_not_fall_back_to_method_type():
+    queries = (
+        "处理后的视图有小数，而原始视图是整数，ExampleTool 应该读取哪一个？",
+        "ExampleTool 应该使用哪个 layer？",
+        "ExampleTool 应采用哪种 representation？",
+        "ExampleTool 用哪个输入？",
+        "Which matrix should ExampleTool read?",
+        "Should ExampleTool use which representation?",
+    )
+
+    for query in queries:
+        requests = claim_requests_for_query(query, subjects=["ExampleTool"], snippets=[])
+        assert [request.predicate for request in requests] == ["input_requirement"]
+
+
+def test_output_selection_question_is_not_misclassified_as_input():
+    requests = claim_requests_for_query(
+        "ExampleTool 会输出哪个 representation？",
+        subjects=["ExampleTool"],
+        snippets=[],
+    )
+
+    assert [request.predicate for request in requests] == ["output"]
+
+
 def test_definitional_method_type_proposition_passes():
     snippets = [
         _snippet(

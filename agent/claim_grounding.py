@@ -108,6 +108,15 @@ _PREDICATE_MARKERS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ),
 )
 
+_PREDICATE_QUERY_PATTERNS: dict[str, tuple[str, ...]] = {
+    "input_requirement": (
+        r"(?:应该|应当|应|需要|要|该)?\s*(?:读取|读入|使用|采用|选择|传入|提供)\s*(?:哪一个|哪个|哪种|什么)",
+        r"(?:哪一个|哪个|哪种|什么)\s*(?:输入|矩阵|层|layer|representation|表示).{0,40}(?:读取|读入|使用|采用|选择|传入|提供)",
+        r"\b(?:which|what)\s+(?:input|matrix|layer|representation)\b.{0,60}\b(?:use|read|consume|accept|require|provide)\b",
+        r"\b(?:use|read|consume|accept|require|provide)\b.{0,60}\b(?:which|what)\s+(?:input|matrix|layer|representation)\b",
+    ),
+}
+
 _PREDICATE_PATTERNS: dict[str, tuple[str, ...]] = {
     "input_requirement": (
         r"\binputs?\b.{0,100}\b(?:comprise|include|consist|accept|require)",
@@ -921,6 +930,11 @@ def _explicit_semantic_predicates(text: str) -> list[str]:
     located: list[tuple[int, int, str]] = []
     for order, (predicate, markers) in enumerate(_PREDICATE_MARKERS):
         positions = [lowered.find(marker) for marker in markers if marker in lowered]
+        positions.extend(
+            match.start()
+            for pattern in _PREDICATE_QUERY_PATTERNS.get(predicate, ())
+            if (match := re.search(pattern, lowered, flags=re.IGNORECASE))
+        )
         if positions:
             located.append((min(positions), order, predicate))
     return [value for _, _, value in sorted(located)]
