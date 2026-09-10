@@ -397,3 +397,183 @@ def test_broad_task_search_preserves_tool_diversity(tmp_path):
         "Scanorama",
         "Seurat",
     }
+
+
+def test_coarse_claim_labels_do_not_displace_high_ranked_source_evidence(tmp_path):
+    index_dir = tmp_path / "indexes"
+    chunks = [
+        EvidenceChunk(
+            chunk_id="source:overview-0",
+            evidence_id="overview-0",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="overview-0",
+            source_id="overview-0",
+            tool_name="ExampleTool",
+            tool_names=["ExampleTool"],
+            task="doublet_detection",
+            canonical_task="doublet_detection",
+            task_tags=["doublet_detection"],
+            claim_type="general",
+            chunk_text="ExampleTool overview documentation.",
+            source_span="Overview 0",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+        EvidenceChunk(
+            chunk_id="source:direct-input",
+            evidence_id="direct-input",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="direct-input",
+            source_id="direct-input",
+            tool_name="ExampleTool",
+            tool_names=["ExampleTool"],
+            task="doublet_detection",
+            canonical_task="doublet_detection",
+            task_tags=["doublet_detection"],
+            claim_type="parameter",
+            chunk_text="Given a raw UMI counts matrix, ExampleTool calculates a score for each cell.",
+            source_span="Input example",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+        *[
+            EvidenceChunk(
+                chunk_id=f"source:overview-{index}",
+                evidence_id=f"overview-{index}",
+                source_kind="source_document",
+                source_table="source.jsonl",
+                source_record_id=f"overview-{index}",
+                source_id=f"overview-{index}",
+                tool_name="ExampleTool",
+                tool_names=["ExampleTool"],
+                task="doublet_detection",
+                canonical_task="doublet_detection",
+                task_tags=["doublet_detection"],
+                claim_type="general",
+                chunk_text=f"ExampleTool governed overview section {index}.",
+                source_span=f"Overview {index}",
+                source_bound=True,
+                retrieval_status="retrieval_only",
+            )
+            for index in range(1, 13)
+        ],
+    ]
+    _write_jsonl(index_dir / "evidence.jsonl", [chunk_to_dict(row) for row in chunks])
+    _write_jsonl(index_dir / "catalog.jsonl", [])
+    (index_dir / "manifest.json").write_text(
+        json.dumps({"build_id": "coarse-claim-compatibility"}), encoding="utf-8"
+    )
+    service = HybridRetrievalService(
+        evidence_chunks_path=index_dir / "evidence.jsonl",
+        catalog_chunks_path=index_dir / "catalog.jsonl",
+        fts_index_path=index_dir / "fts.sqlite",
+        index_manifest_path=index_dir / "manifest.json",
+        coverage_path=index_dir / "coverage.json",
+        graph_dir=tmp_path / "missing",
+    )
+    request = HybridRetrievalRequest(
+        query="Which stored representation should ExampleTool read?",
+        tool_names=["ExampleTool"],
+        canonical_tasks=["doublet_detection"],
+        claim_types=["mechanism", "general"],
+        top_k=12,
+        use_governance_rerank=True,
+    )
+    fused = [
+        (chunk.chunk_id, 1.0 / (60 + rank), rank, None)
+        for rank, chunk in enumerate(chunks, start=1)
+    ]
+    before = list(fused)
+
+    reranked = service._governance_rerank(
+        fused,
+        request=request,
+        task_ids={"doublet_detection"},
+        claim_types={"mechanism", "general"},
+        candidate_tools={"exampletool"},
+    )
+
+    assert fused == before
+    assert next(
+        rank
+        for rank, (chunk_id, *_rest) in enumerate(reranked, start=1)
+        if chunk_id == "source:direct-input"
+    ) <= request.top_k
+
+
+def test_precise_supported_claim_label_keeps_positive_governance_boost(tmp_path):
+    index_dir = tmp_path / "indexes"
+    chunks = [
+        EvidenceChunk(
+            chunk_id="source:direct-input",
+            evidence_id="direct-input",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="direct-input",
+            source_id="direct-input",
+            tool_name="ExampleTool",
+            tool_names=["ExampleTool"],
+            task="doublet_detection",
+            canonical_task="doublet_detection",
+            task_tags=["doublet_detection"],
+            claim_type="input_requirement",
+            chunk_text="ExampleTool requires a raw count matrix as input.",
+            source_span="Input requirements",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+        EvidenceChunk(
+            chunk_id="source:parameter",
+            evidence_id="parameter",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="parameter",
+            source_id="parameter",
+            tool_name="ExampleTool",
+            tool_names=["ExampleTool"],
+            task="doublet_detection",
+            canonical_task="doublet_detection",
+            task_tags=["doublet_detection"],
+            claim_type="parameter",
+            chunk_text="ExampleTool has a configurable threshold parameter.",
+            source_span="Parameters",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+    ]
+    _write_jsonl(index_dir / "evidence.jsonl", [chunk_to_dict(row) for row in chunks])
+    _write_jsonl(index_dir / "catalog.jsonl", [])
+    (index_dir / "manifest.json").write_text(
+        json.dumps({"build_id": "precise-claim-compatibility"}), encoding="utf-8"
+    )
+    service = HybridRetrievalService(
+        evidence_chunks_path=index_dir / "evidence.jsonl",
+        catalog_chunks_path=index_dir / "catalog.jsonl",
+        fts_index_path=index_dir / "fts.sqlite",
+        index_manifest_path=index_dir / "manifest.json",
+        coverage_path=index_dir / "coverage.json",
+        graph_dir=tmp_path / "missing",
+    )
+    request = HybridRetrievalRequest(
+        query="What input does ExampleTool require?",
+        tool_names=["ExampleTool"],
+        canonical_tasks=["doublet_detection"],
+        claim_types=["input_requirement"],
+        use_governance_rerank=True,
+    )
+
+    reranked = service._governance_rerank(
+        [
+            ("source:parameter", 0.02, 1, None),
+            ("source:direct-input", 0.02, 2, None),
+        ],
+        request=request,
+        task_ids={"doublet_detection"},
+        claim_types={"input_requirement"},
+        candidate_tools={"exampletool"},
+    )
+
+    assert reranked[0][0] == "source:direct-input"
+    assert reranked[0][1] - reranked[1][1] >= 0.05

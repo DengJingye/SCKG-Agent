@@ -45,6 +45,18 @@ DEFAULT_MODEL_PACK_MANIFEST = (
 )
 LOCAL_EMBEDDING_MODEL = "BAAI/bge-m3"
 
+_GOVERNANCE_BOOSTABLE_CLAIM_TYPES = frozenset(
+    {
+        "input_requirement",
+        "output",
+        "parameter",
+        "failure_mode",
+        "metric",
+        "benchmark",
+        "workflow",
+    }
+)
+
 
 class DenseEncoder(Protocol):
     model_name: str
@@ -849,8 +861,14 @@ class HybridRetrievalService:
                 adjusted += 0.035
             if task_ids & chunk_tasks:
                 adjusted += 0.06
-            if claim_types and chunk.claim_type in claim_types:
-                adjusted += 0.05 if _chunk_supports_claim_type(chunk, claim_types) else -0.04
+            boostable_claim_types = (
+                claim_types & _GOVERNANCE_BOOSTABLE_CLAIM_TYPES
+            )
+            if (
+                chunk.claim_type in boostable_claim_types
+                and _chunk_supports_claim_type(chunk, boostable_claim_types)
+            ):
+                adjusted += 0.05
             adjusted += _query_content_relevance(
                 request.query,
                 chunk,
