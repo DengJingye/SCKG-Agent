@@ -11,6 +11,7 @@ from agent.research_chat_service import (
     _classify_intent,
     _fuse_research_route,
     _query_domain,
+    _query_local_intent_reason,
     _task_for_query,
 )
 from core.research_agent_models import AgentMode, DomainKind, ResearchAgentRequest
@@ -272,6 +273,37 @@ def test_deterministic_intent_gaps_are_disjoint():
     assert _classify_intent(
         "Harmony 和 Scanorama 的限制分别是什么？"
     ) is ResearchChatIntent.CAVEAT_COMPARISON
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "请为 PBMC3k 生成一份 Scanpy 分析计划。",
+        "请为 PBMC3k 生成 Notebook。",
+        "请把 Scanpy 分析交接到 Stepwise。",
+        "Plan a Scanpy analysis for this PBMC3k dataset.",
+        "Generate a Scanpy notebook for this PBMC3k dataset.",
+    ],
+)
+def test_explicit_planning_deliverables_route_to_workflow(query):
+    assert _classify_intent(query) is ResearchChatIntent.WORKFLOW
+    decision = _fuse(query, _failed_semantic())
+    assert decision.intent is ResearchChatIntent.WORKFLOW
+    assert decision.mode is AgentMode.PLAN
+    assert (
+        _query_local_intent_reason(query, ResearchChatIntent.WORKFLOW)
+        == "explicit_workflow_signal"
+    )
+    assert decision.fusion_reason.endswith("explicit_local_answer_shape_preserved")
+
+
+def test_ordinary_evidence_question_remains_evidence_qa():
+    query = "What evidence supports the input requirements for Scanpy PCA?"
+
+    assert _classify_intent(query) is ResearchChatIntent.EVIDENCE_QA
+    decision = _fuse(query, _failed_semantic())
+    assert decision.intent is ResearchChatIntent.EVIDENCE_QA
+    assert decision.mode is AgentMode.ASK
 
 
 class _OverconfidentWorkflowReasoner:

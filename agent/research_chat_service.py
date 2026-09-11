@@ -2508,18 +2508,7 @@ def _classify_intent(query: str) -> ResearchChatIntent:
         )
     ):
         return ResearchChatIntent.EVIDENCE_QA
-    if any(
-        marker in text
-        for marker in (
-            "workflow",
-            "工作流",
-            "可执行",
-            "代码",
-            "脚本",
-            "pipeline",
-            "整理成",
-        )
-    ):
+    if _has_workflow_intent_signal(text):
         return ResearchChatIntent.WORKFLOW
     if any(
         marker in text
@@ -2573,16 +2562,13 @@ def _query_local_intent_reason(
     """Return a bounded reason only when the query supports this answer shape."""
 
     text = _intent_classification_text(query)
+    if intent is ResearchChatIntent.WORKFLOW:
+        return (
+            "explicit_workflow_signal"
+            if _has_workflow_intent_signal(text)
+            else ""
+        )
     markers = {
-        ResearchChatIntent.WORKFLOW: (
-            "workflow",
-            "工作流",
-            "可执行",
-            "代码",
-            "脚本",
-            "pipeline",
-            "整理成",
-        ),
         ResearchChatIntent.CAVEAT_COMPARISON: (
             "限制分别",
             "各自限制",
@@ -2626,6 +2612,28 @@ def _query_local_intent_reason(
     ):
         return "query_local_scientific_information_request"
     return ""
+
+
+def _has_workflow_intent_signal(text: str) -> bool:
+    """Recognize explicit workflow deliverables without inferring task semantics."""
+
+    if any(
+        marker in text
+        for marker in (
+            "workflow",
+            "工作流",
+            "分析计划",
+            "可执行",
+            "代码",
+            "脚本",
+            "pipeline",
+            "整理成",
+        )
+    ):
+        return True
+    return bool(
+        re.search(r"(?<![a-z0-9_])(?:plan|notebook|stepwise)(?![a-z0-9_])", text)
+    )
 
 
 def _is_top_k_request(text: str) -> bool:
@@ -2691,10 +2699,14 @@ def _intent_classification_text(query: str) -> str:
     workflow_terms = (
         "workflow",
         "工作流",
+        "分析计划",
         "可执行代码",
         "代码",
         "脚本",
         "pipeline",
+        "plan",
+        "notebook",
+        "stepwise",
     )
     negation_prefixes = (
         "不要再输出",
