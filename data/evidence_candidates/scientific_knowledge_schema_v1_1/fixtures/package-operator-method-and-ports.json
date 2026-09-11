@@ -1,0 +1,262 @@
+{
+  "atomic_claims": [],
+  "benchmark_studies": [],
+  "derived_relations": [
+    {
+      "derivation_rule_id": "rule:input-port-consumes:v1.1",
+      "derivation_type": "port_projection",
+      "derived_from_claim_revision_ids": [],
+      "input_port_id": "input-port:scanpy_pca.expression",
+      "output_port_id": null,
+      "premise_relation_ids": [],
+      "relation": "CONSUMES",
+      "relation_id": "derived-relation:scanpy_pca_consumes",
+      "requirement_id": null,
+      "review_decision_ids": [],
+      "review_status": "candidate_pending_review",
+      "schema_version": "sckg-derived-relation-v1.1",
+      "scope_id": "scope:scanpy-pca-1.11",
+      "source_id": "operator-revision:scanpy.pp.pca:1.11.2",
+      "target_id": "representation-type:log_expression"
+    },
+    {
+      "derivation_rule_id": "rule:output-port-produces:v1.1",
+      "derivation_type": "port_projection",
+      "derived_from_claim_revision_ids": [],
+      "input_port_id": null,
+      "output_port_id": "output-port:scanpy_pca.coordinates",
+      "premise_relation_ids": [],
+      "relation": "PRODUCES",
+      "relation_id": "derived-relation:scanpy_pca_produces",
+      "requirement_id": null,
+      "review_decision_ids": [],
+      "review_status": "candidate_pending_review",
+      "schema_version": "sckg-derived-relation-v1.1",
+      "scope_id": "scope:scanpy-pca-1.11",
+      "source_id": "operator-revision:scanpy.pp.pca:1.11.2",
+      "target_id": "representation-type:pca_coordinates"
+    }
+  ],
+  "description": "Scanpy remains a package, scanpy.pp.pca an operator, and PCA a method; consumes/produces are port projections.",
+  "empirical_results": [],
+  "entities": [
+    {
+      "entity_id": "task:dimensionality_reduction",
+      "label": "dimensionality reduction",
+      "record_type": "ScientificTask",
+      "schema_version": "sckg-scientific-task-v1.1"
+    },
+    {
+      "entity_id": "method:pca",
+      "label": "principal component analysis",
+      "record_type": "Method",
+      "schema_version": "sckg-method-v1.1"
+    },
+    {
+      "entity_id": "software-project:scanpy",
+      "label": "Scanpy",
+      "record_type": "SoftwareProject",
+      "schema_version": "sckg-software-project-v1.1"
+    },
+    {
+      "distribution_name": "scanpy",
+      "ecosystem": "python",
+      "entity_id": "package:scanpy",
+      "project_id": "software-project:scanpy",
+      "record_type": "Package",
+      "schema_version": "sckg-package-v1.1"
+    },
+    {
+      "entity_id": "package-release:scanpy:1.11.2",
+      "immutable_release_ref": "pypi:scanpy:1.11.2",
+      "package_id": "package:scanpy",
+      "record_type": "PackageRelease",
+      "schema_version": "sckg-package-release-v1.1",
+      "version": "1.11.2"
+    },
+    {
+      "entity_id": "operator:scanpy.pp.pca",
+      "package_id": "package:scanpy",
+      "qualified_name": "scanpy.pp.pca",
+      "record_type": "Operator",
+      "schema_version": "sckg-operator-v1.1"
+    },
+    {
+      "contract_refs": [
+        "scanpy:1.11.2@1.1.0-post-s6"
+      ],
+      "entity_id": "operator-revision:scanpy.pp.pca:1.11.2",
+      "implements_method_ids": [
+        "method:pca"
+      ],
+      "implements_method_variant_ids": [],
+      "input_ports": [
+        {
+          "cross_port_alignment_constraints": [],
+          "input_port_id": "input-port:scanpy_pca.expression",
+          "max_cardinality": 1,
+          "min_cardinality": 1,
+          "requirement_combination": "all_of",
+          "requirements": [
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:pca_input_log_expression"
+              ],
+              "requirement_id": "requirement:scanpy_pca.log_expression",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:scanpy-pca-1.11",
+              "when": []
+            }
+          ],
+          "role": "expression",
+          "schema_version": "sckg-input-port-v1.1",
+          "scope_id": "scope:scanpy-pca-1.11"
+        }
+      ],
+      "operator_id": "operator:scanpy.pp.pca",
+      "output_ports": [
+        {
+          "invalidates": [],
+          "irreversible": false,
+          "lineage_input_port_ids": [
+            "input-port:scanpy_pca.expression"
+          ],
+          "output_port_id": "output-port:scanpy_pca.coordinates",
+          "preserves": [
+            "observation_identity"
+          ],
+          "production_conditions": [],
+          "representation_type_id": "representation-type:pca_coordinates",
+          "role": "coordinates",
+          "schema_version": "sckg-output-port-v1.1",
+          "scope_id": "scope:scanpy-pca-1.11",
+          "transforms": [
+            "feature_axis_to_component_axis"
+          ]
+        }
+      ],
+      "package_release_id": "package-release:scanpy:1.11.2",
+      "record_type": "OperatorRevision",
+      "schema_version": "sckg-operator-revision-v1.1",
+      "scope_id": "scope:scanpy-pca-1.11"
+    }
+  ],
+  "evaluation_datasets": [],
+  "evidence_assessments": [],
+  "expected_semantics": [
+    "package_operator_method_are_distinct",
+    "input_output_ports_are_canonical",
+    "consumes_produces_are_port_projections"
+  ],
+  "fixture_id": "conformance-fixture:package-operator-method-and-ports",
+  "instance_bindings": [],
+  "metrics": [],
+  "representation_constraints": [
+    {
+      "allow_missing_modalities": false,
+      "constraint_id": "representation-constraint:pca_input_log_expression",
+      "feature_alignment": "not_applicable",
+      "forbidden_transformations": [],
+      "observation_alignment": "same_observations",
+      "representation_type_id": "representation-type:log_expression",
+      "required_component_roles": [],
+      "required_metadata": [],
+      "required_modalities": [
+        "rna"
+      ],
+      "required_provenance_method_ids": [],
+      "required_transformations": [
+        "log_transformed"
+      ],
+      "required_value_states": [
+        "real_continuous"
+      ],
+      "schema_version": "sckg-representation-constraint-v1.1",
+      "scope_id": "scope:scanpy-pca-1.11"
+    }
+  ],
+  "representation_types": [
+    {
+      "axes": [
+        "cell",
+        "gene"
+      ],
+      "components": [],
+      "feature_identity": "gene identifiers with stable ordering",
+      "label": "log-transformed RNA expression",
+      "missingness_semantics": "missing entries are not equivalent to measured zero",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:log_expression",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [
+        "normalized",
+        "log_transformed"
+      ],
+      "value_semantics": "real-valued transformed abundance"
+    },
+    {
+      "axes": [
+        "cell",
+        "component"
+      ],
+      "components": [],
+      "feature_identity": "ordered principal components",
+      "label": "PCA coordinates",
+      "missingness_semantics": "complete rows required",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:pca_coordinates",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [
+        "dimensionality_reduced"
+      ],
+      "value_semantics": "real-valued principal-component scores"
+    }
+  ],
+  "review_decisions": [],
+  "schema_version": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+  "scopes": [
+    {
+      "assay_technology_ids": [],
+      "biological_context_ids": [],
+      "combination": "all_of",
+      "evaluation_context_ids": [],
+      "modalities": [
+        "rna"
+      ],
+      "observation_units": [
+        "cell"
+      ],
+      "organism_taxa": [],
+      "parameter_conditions": [],
+      "representation_constraint_ids": [],
+      "resource_constraints": [],
+      "schema_version": "sckg-applicability-scope-v1.1",
+      "scope_id": "scope:scanpy-pca-1.11",
+      "scope_status": "explicit",
+      "study_design_constraints": [],
+      "task_ids": [
+        "task:dimensionality_reduction"
+      ],
+      "valid_from": null,
+      "valid_to": null,
+      "version_constraints": [
+        {
+          "expression": ">=1.11,<2",
+          "status": "range",
+          "subject_id": "package:scanpy"
+        }
+      ]
+    }
+  ],
+  "supersessions": []
+}

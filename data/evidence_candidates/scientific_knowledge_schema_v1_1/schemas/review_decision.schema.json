@@ -1,0 +1,103 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "decided_at": {
+      "format": "date-time",
+      "title": "Decided At",
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "accepted",
+        "rejected",
+        "needs_revision"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "independent_second_review_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 4,
+      "title": "Independent Second Review Ids",
+      "type": "array"
+    },
+    "policy_version": {
+      "minLength": 1,
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "rationale": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "review_decision_id": {
+      "pattern": "^review:",
+      "title": "Review Decision Id",
+      "type": "string"
+    },
+    "reviewed_artifact_hashes": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "title": "Reviewed Artifact Hashes",
+      "type": "array"
+    },
+    "reviewed_record_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "title": "Reviewed Record Ids",
+      "type": "array"
+    },
+    "reviewer_type": {
+      "enum": [
+        "automated_validator",
+        "qualified_human",
+        "designated_owner"
+      ],
+      "title": "Reviewer Type",
+      "type": "string"
+    },
+    "risk_class": {
+      "enum": [
+        "R0",
+        "R1",
+        "R2",
+        "R3",
+        "R4"
+      ],
+      "title": "Risk Class",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-review-decision-v1.1",
+      "default": "sckg-review-decision-v1.1",
+      "enum": [
+        "sckg-review-decision-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "review_decision_id",
+    "risk_class",
+    "reviewer_type",
+    "decision",
+    "reviewed_record_ids",
+    "rationale",
+    "reviewed_artifact_hashes",
+    "policy_version",
+    "decided_at"
+  ],
+  "title": "ReviewDecision",
+  "type": "object"
+}

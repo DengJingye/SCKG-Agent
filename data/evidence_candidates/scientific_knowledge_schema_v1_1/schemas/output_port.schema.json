@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "invalidates": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Invalidates",
+      "type": "array"
+    },
+    "irreversible": {
+      "default": false,
+      "title": "Irreversible",
+      "type": "boolean"
+    },
+    "lineage_input_port_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Lineage Input Port Ids",
+      "type": "array"
+    },
+    "output_port_id": {
+      "pattern": "^output-port:",
+      "title": "Output Port Id",
+      "type": "string"
+    },
+    "preserves": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Preserves",
+      "type": "array"
+    },
+    "production_conditions": {
+      "items": {
+        "$ref": "#/$defs/ParameterCondition"
+      },
+      "maxItems": 8,
+      "title": "Production Conditions",
+      "type": "array"
+    },
+    "representation_type_id": {
+      "pattern": "^representation-type:",
+      "title": "Representation Type Id",
+      "type": "string"
+    },
+    "role": {
+      "minLength": 1,
+      "title": "Role",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-output-port-v1.1",
+      "default": "sckg-output-port-v1.1",
+      "enum": [
+        "sckg-output-port-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "transforms": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Transforms",
+      "type": "array"
+    }
+  },
+  "required": [
+    "output_port_id",
+    "role",
+    "representation_type_id",
+    "scope_id"
+  ],
+  "title": "OutputPort",
+  "type": "object"
+}

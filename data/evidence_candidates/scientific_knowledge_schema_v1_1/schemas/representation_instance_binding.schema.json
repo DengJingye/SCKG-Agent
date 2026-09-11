@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "binding_id": {
+      "pattern": "^representation-instance-binding:",
+      "title": "Binding Id",
+      "type": "string"
+    },
+    "constraint_id": {
+      "pattern": "^representation-constraint:",
+      "title": "Constraint Id",
+      "type": "string"
+    },
+    "ledger_id": {
+      "minLength": 1,
+      "title": "Ledger Id",
+      "type": "string"
+    },
+    "owner": {
+      "const": "RepresentationLedger",
+      "default": "RepresentationLedger",
+      "enum": [
+        "RepresentationLedger"
+      ],
+      "title": "Owner",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "representation_record_id": {
+      "minLength": 1,
+      "title": "Representation Record Id",
+      "type": "string"
+    },
+    "representation_type_id": {
+      "pattern": "^representation-type:",
+      "title": "Representation Type Id",
+      "type": "string"
+    },
+    "satisfaction": {
+      "enum": [
+        "satisfied",
+        "unsatisfied",
+        "unknown",
+        "conflicting"
+      ],
+      "title": "Satisfaction",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-representation-instance-binding-v1.1",
+      "default": "sckg-representation-instance-binding-v1.1",
+      "enum": [
+        "sckg-representation-instance-binding-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "binding_id",
+    "ledger_id",
+    "representation_record_id",
+    "representation_type_id",
+    "constraint_id",
+    "satisfaction"
+  ],
+  "title": "RepresentationInstanceBinding",
+  "type": "object"
+}

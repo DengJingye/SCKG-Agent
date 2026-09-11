@@ -1,0 +1,2422 @@
+{
+  "$defs": {
+    "ApplicabilityScope": {
+      "additionalProperties": false,
+      "properties": {
+        "assay_technology_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Assay Technology Ids",
+          "type": "array"
+        },
+        "biological_context_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Biological Context Ids",
+          "type": "array"
+        },
+        "combination": {
+          "default": "all_of",
+          "enum": [
+            "all_of",
+            "any_of"
+          ],
+          "title": "Combination",
+          "type": "string"
+        },
+        "evaluation_context_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Evaluation Context Ids",
+          "type": "array"
+        },
+        "modalities": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Modalities",
+          "type": "array"
+        },
+        "observation_units": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Observation Units",
+          "type": "array"
+        },
+        "organism_taxa": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Organism Taxa",
+          "type": "array"
+        },
+        "parameter_conditions": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 16,
+          "title": "Parameter Conditions",
+          "type": "array"
+        },
+        "representation_constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Representation Constraint Ids",
+          "type": "array"
+        },
+        "resource_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Resource Constraints",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "sckg-applicability-scope-v1.1",
+          "default": "sckg-applicability-scope-v1.1",
+          "enum": [
+            "sckg-applicability-scope-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:[a-z0-9][a-z0-9_.:-]{0,126}$",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "scope_status": {
+          "enum": [
+            "explicit",
+            "partially_known",
+            "unknown",
+            "not_applicable"
+          ],
+          "title": "Scope Status",
+          "type": "string"
+        },
+        "study_design_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Study Design Constraints",
+          "type": "array"
+        },
+        "task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Task Ids",
+          "type": "array"
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid From"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid To"
+        },
+        "version_constraints": {
+          "items": {
+            "$ref": "#/$defs/VersionConstraint"
+          },
+          "maxItems": 16,
+          "title": "Version Constraints",
+          "type": "array"
+        }
+      },
+      "required": [
+        "scope_id",
+        "scope_status"
+      ],
+      "title": "ApplicabilityScope",
+      "type": "object"
+    },
+    "AtomicClaimRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "assertion_kind": {
+          "enum": [
+            "definition",
+            "capability",
+            "requirement",
+            "recommendation",
+            "empirical_observation",
+            "limitation"
+          ],
+          "title": "Assertion Kind",
+          "type": "string"
+        },
+        "claim_id": {
+          "pattern": "^claim:",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "claim_revision_id": {
+          "pattern": "^claim-revision:",
+          "title": "Claim Revision Id",
+          "type": "string"
+        },
+        "claim_text": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Claim Text",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "created_by_activity_id": {
+          "minLength": 1,
+          "title": "Created By Activity Id",
+          "type": "string"
+        },
+        "object_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Id"
+        },
+        "object_value": {
+          "anyOf": [
+            {
+              "maxLength": 320,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Value"
+        },
+        "polarity": {
+          "enum": [
+            "positive",
+            "negative"
+          ],
+          "title": "Polarity",
+          "type": "string"
+        },
+        "predicate": {
+          "minLength": 1,
+          "title": "Predicate",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-atomic-claim-revision-v1.1",
+          "default": "sckg-atomic-claim-revision-v1.1",
+          "enum": [
+            "sckg-atomic-claim-revision-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "semantic_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Semantic Fingerprint",
+          "type": "string"
+        },
+        "subject_id": {
+          "minLength": 1,
+          "title": "Subject Id",
+          "type": "string"
+        },
+        "supersedes_revision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Supersedes Revision Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "claim_revision_id",
+        "subject_id",
+        "predicate",
+        "scope_id",
+        "claim_text",
+        "polarity",
+        "assertion_kind",
+        "semantic_fingerprint",
+        "content_hash",
+        "created_by_activity_id"
+      ],
+      "title": "AtomicClaimRevision",
+      "type": "object"
+    },
+    "BenchmarkStudy": {
+      "additionalProperties": false,
+      "properties": {
+        "benchmark_id": {
+          "pattern": "^benchmark-study:",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "comparison_protocol": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Comparison Protocol",
+          "type": "string"
+        },
+        "dataset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Dataset Ids",
+          "type": "array"
+        },
+        "evaluated_subject_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evaluated Subject Ids",
+          "type": "array"
+        },
+        "evidence_span_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Span Ids",
+          "type": "array"
+        },
+        "metric_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Metric Ids",
+          "type": "array"
+        },
+        "revision": {
+          "minLength": 1,
+          "title": "Revision",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-benchmark-study-v1.1",
+          "default": "sckg-benchmark-study-v1.1",
+          "enum": [
+            "sckg-benchmark-study-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "task_id": {
+          "pattern": "^task:",
+          "title": "Task Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "benchmark_id",
+        "revision",
+        "task_id",
+        "scope_id",
+        "evaluated_subject_ids",
+        "dataset_ids",
+        "metric_ids",
+        "comparison_protocol",
+        "evidence_span_ids"
+      ],
+      "title": "BenchmarkStudy",
+      "type": "object"
+    },
+    "DerivedRelation": {
+      "additionalProperties": false,
+      "properties": {
+        "derivation_rule_id": {
+          "minLength": 1,
+          "title": "Derivation Rule Id",
+          "type": "string"
+        },
+        "derivation_type": {
+          "enum": [
+            "port_projection",
+            "reviewed_rule"
+          ],
+          "title": "Derivation Type",
+          "type": "string"
+        },
+        "derived_from_claim_revision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Derived From Claim Revision Ids",
+          "type": "array"
+        },
+        "input_port_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Port Id"
+        },
+        "output_port_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Port Id"
+        },
+        "premise_relation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Premise Relation Ids",
+          "type": "array"
+        },
+        "relation": {
+          "enum": [
+            "CONSUMES",
+            "PRODUCES",
+            "CAN_FEED",
+            "REQUIRES_BEFORE"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "relation_id": {
+          "pattern": "^derived-relation:",
+          "title": "Relation Id",
+          "type": "string"
+        },
+        "requirement_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requirement Id"
+        },
+        "review_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Review Decision Ids",
+          "type": "array"
+        },
+        "review_status": {
+          "enum": [
+            "candidate_pending_review",
+            "accepted",
+            "rejected"
+          ],
+          "title": "Review Status",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-derived-relation-v1.1",
+          "default": "sckg-derived-relation-v1.1",
+          "enum": [
+            "sckg-derived-relation-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "source_id": {
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "target_id": {
+          "minLength": 1,
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "relation_id",
+        "relation",
+        "source_id",
+        "target_id",
+        "scope_id",
+        "derivation_type",
+        "derivation_rule_id",
+        "review_status"
+      ],
+      "title": "DerivedRelation",
+      "type": "object"
+    },
+    "EmpiricalResult": {
+      "additionalProperties": false,
+      "properties": {
+        "aggregation_unit": {
+          "minLength": 1,
+          "title": "Aggregation Unit",
+          "type": "string"
+        },
+        "benchmark_id": {
+          "pattern": "^benchmark-study:",
+          "title": "Benchmark Id",
+          "type": "string"
+        },
+        "dataset_id": {
+          "pattern": "^evaluation-dataset:",
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "evidence_span_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Span Ids",
+          "type": "array"
+        },
+        "metric_id": {
+          "pattern": "^metric:",
+          "title": "Metric Id",
+          "type": "string"
+        },
+        "result_id": {
+          "pattern": "^empirical-result:",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-empirical-result-v1.1",
+          "default": "sckg-empirical-result-v1.1",
+          "enum": [
+            "sckg-empirical-result-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "reported",
+            "verified_local",
+            "not_comparable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject_id": {
+          "minLength": 1,
+          "title": "Subject Id",
+          "type": "string"
+        },
+        "uncertainty": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Uncertainty"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "result_id",
+        "benchmark_id",
+        "dataset_id",
+        "subject_id",
+        "metric_id",
+        "value",
+        "aggregation_unit",
+        "scope_id",
+        "evidence_span_ids",
+        "status"
+      ],
+      "title": "EmpiricalResult",
+      "type": "object"
+    },
+    "EvaluationDataset": {
+      "additionalProperties": false,
+      "properties": {
+        "content_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Fingerprint",
+          "type": "string"
+        },
+        "dataset_id": {
+          "pattern": "^evaluation-dataset:",
+          "title": "Dataset Id",
+          "type": "string"
+        },
+        "leakage_controls": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Leakage Controls",
+          "type": "array"
+        },
+        "modalities": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Modalities",
+          "type": "array"
+        },
+        "observation_unit": {
+          "minLength": 1,
+          "title": "Observation Unit",
+          "type": "string"
+        },
+        "organism_taxa": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Organism Taxa",
+          "type": "array"
+        },
+        "revision": {
+          "minLength": 1,
+          "title": "Revision",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-evaluation-dataset-v1.1",
+          "default": "sckg-evaluation-dataset-v1.1",
+          "enum": [
+            "sckg-evaluation-dataset-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "split_definition": {
+          "minLength": 1,
+          "title": "Split Definition",
+          "type": "string"
+        },
+        "study_design": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Study Design",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "revision",
+        "modalities",
+        "observation_unit",
+        "study_design",
+        "split_definition",
+        "leakage_controls",
+        "content_fingerprint",
+        "scope_id"
+      ],
+      "title": "EvaluationDataset",
+      "type": "object"
+    },
+    "EvidenceAssessment": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment_id": {
+          "pattern": "^evidence-assessment:",
+          "title": "Assessment Id",
+          "type": "string"
+        },
+        "claim_revision_id": {
+          "pattern": "^claim-revision:",
+          "title": "Claim Revision Id",
+          "type": "string"
+        },
+        "evidence_span_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Evidence Span Ids",
+          "type": "array"
+        },
+        "object_aligned": {
+          "title": "Object Aligned",
+          "type": "boolean"
+        },
+        "predicate_aligned": {
+          "title": "Predicate Aligned",
+          "type": "boolean"
+        },
+        "rationale": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "review_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Review Decision Ids",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "sckg-evidence-assessment-v1.1",
+          "default": "sckg-evidence-assessment-v1.1",
+          "enum": [
+            "sckg-evidence-assessment-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_alignment": {
+          "enum": [
+            "aligned",
+            "narrower",
+            "partial",
+            "unknown",
+            "conflicting"
+          ],
+          "title": "Scope Alignment",
+          "type": "string"
+        },
+        "stance": {
+          "enum": [
+            "supports",
+            "refutes",
+            "partial_support",
+            "mentions_only",
+            "not_supporting"
+          ],
+          "title": "Stance",
+          "type": "string"
+        },
+        "subject_aligned": {
+          "title": "Subject Aligned",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "assessment_id",
+        "claim_revision_id",
+        "evidence_span_ids",
+        "stance",
+        "subject_aligned",
+        "predicate_aligned",
+        "object_aligned",
+        "scope_alignment",
+        "rationale"
+      ],
+      "title": "EvidenceAssessment",
+      "type": "object"
+    },
+    "InputPort": {
+      "additionalProperties": false,
+      "properties": {
+        "cross_port_alignment_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Cross Port Alignment Constraints",
+          "type": "array"
+        },
+        "input_port_id": {
+          "pattern": "^input-port:",
+          "title": "Input Port Id",
+          "type": "string"
+        },
+        "max_cardinality": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cardinality"
+        },
+        "min_cardinality": {
+          "minimum": 0,
+          "title": "Min Cardinality",
+          "type": "integer"
+        },
+        "requirement_combination": {
+          "default": "all_of",
+          "enum": [
+            "all_of",
+            "any_of"
+          ],
+          "title": "Requirement Combination",
+          "type": "string"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Requirements",
+          "type": "array"
+        },
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-input-port-v1.1",
+          "default": "sckg-input-port-v1.1",
+          "enum": [
+            "sckg-input-port-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_port_id",
+        "role",
+        "min_cardinality",
+        "requirements",
+        "scope_id"
+      ],
+      "title": "InputPort",
+      "type": "object"
+    },
+    "Method": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^method:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "Method",
+          "default": "Method",
+          "enum": [
+            "Method"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-method-v1.1",
+          "default": "sckg-method-v1.1",
+          "enum": [
+            "sckg-method-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "label"
+      ],
+      "title": "Method",
+      "type": "object"
+    },
+    "MethodVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "defining_parameter_conditions": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 16,
+          "title": "Defining Parameter Conditions",
+          "type": "array"
+        },
+        "entity_id": {
+          "pattern": "^method-variant:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "method_id": {
+          "pattern": "^method:",
+          "title": "Method Id",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "MethodVariant",
+          "default": "MethodVariant",
+          "enum": [
+            "MethodVariant"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-method-variant-v1.1",
+          "default": "sckg-method-variant-v1.1",
+          "enum": [
+            "sckg-method-variant-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "method_id",
+        "label"
+      ],
+      "title": "MethodVariant",
+      "type": "object"
+    },
+    "MetricDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "enum": [
+            "higher_is_better",
+            "lower_is_better",
+            "target_value",
+            "descriptive"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "metric_id": {
+          "pattern": "^metric:",
+          "title": "Metric Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-metric-definition-v1.1",
+          "default": "sckg-metric-definition-v1.1",
+          "enum": [
+            "sckg-metric-definition-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "metric_id",
+        "label",
+        "direction"
+      ],
+      "title": "MetricDefinition",
+      "type": "object"
+    },
+    "Operator": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^operator:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "package_id": {
+          "pattern": "^package:",
+          "title": "Package Id",
+          "type": "string"
+        },
+        "qualified_name": {
+          "minLength": 1,
+          "title": "Qualified Name",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "Operator",
+          "default": "Operator",
+          "enum": [
+            "Operator"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-operator-v1.1",
+          "default": "sckg-operator-v1.1",
+          "enum": [
+            "sckg-operator-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "package_id",
+        "qualified_name"
+      ],
+      "title": "Operator",
+      "type": "object"
+    },
+    "OperatorRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_refs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Contract Refs",
+          "type": "array"
+        },
+        "entity_id": {
+          "pattern": "^operator-revision:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "implements_method_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Implements Method Ids",
+          "type": "array"
+        },
+        "implements_method_variant_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Implements Method Variant Ids",
+          "type": "array"
+        },
+        "input_ports": {
+          "items": {
+            "$ref": "#/$defs/InputPort"
+          },
+          "maxItems": 16,
+          "title": "Input Ports",
+          "type": "array"
+        },
+        "operator_id": {
+          "pattern": "^operator:",
+          "title": "Operator Id",
+          "type": "string"
+        },
+        "output_ports": {
+          "items": {
+            "$ref": "#/$defs/OutputPort"
+          },
+          "maxItems": 16,
+          "title": "Output Ports",
+          "type": "array"
+        },
+        "package_release_id": {
+          "pattern": "^package-release:",
+          "title": "Package Release Id",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "OperatorRevision",
+          "default": "OperatorRevision",
+          "enum": [
+            "OperatorRevision"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-operator-revision-v1.1",
+          "default": "sckg-operator-revision-v1.1",
+          "enum": [
+            "sckg-operator-revision-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "operator_id",
+        "package_release_id",
+        "implements_method_ids",
+        "scope_id"
+      ],
+      "title": "OperatorRevision",
+      "type": "object"
+    },
+    "OutputPort": {
+      "additionalProperties": false,
+      "properties": {
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "irreversible": {
+          "default": false,
+          "title": "Irreversible",
+          "type": "boolean"
+        },
+        "lineage_input_port_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Lineage Input Port Ids",
+          "type": "array"
+        },
+        "output_port_id": {
+          "pattern": "^output-port:",
+          "title": "Output Port Id",
+          "type": "string"
+        },
+        "preserves": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Preserves",
+          "type": "array"
+        },
+        "production_conditions": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 8,
+          "title": "Production Conditions",
+          "type": "array"
+        },
+        "representation_type_id": {
+          "pattern": "^representation-type:",
+          "title": "Representation Type Id",
+          "type": "string"
+        },
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-output-port-v1.1",
+          "default": "sckg-output-port-v1.1",
+          "enum": [
+            "sckg-output-port-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "transforms": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Transforms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "output_port_id",
+        "role",
+        "representation_type_id",
+        "scope_id"
+      ],
+      "title": "OutputPort",
+      "type": "object"
+    },
+    "Package": {
+      "additionalProperties": false,
+      "properties": {
+        "distribution_name": {
+          "minLength": 1,
+          "title": "Distribution Name",
+          "type": "string"
+        },
+        "ecosystem": {
+          "minLength": 1,
+          "title": "Ecosystem",
+          "type": "string"
+        },
+        "entity_id": {
+          "pattern": "^package:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "project_id": {
+          "pattern": "^software-project:",
+          "title": "Project Id",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "Package",
+          "default": "Package",
+          "enum": [
+            "Package"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-package-v1.1",
+          "default": "sckg-package-v1.1",
+          "enum": [
+            "sckg-package-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "project_id",
+        "ecosystem",
+        "distribution_name"
+      ],
+      "title": "Package",
+      "type": "object"
+    },
+    "PackageRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^package-release:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "immutable_release_ref": {
+          "minLength": 1,
+          "title": "Immutable Release Ref",
+          "type": "string"
+        },
+        "package_id": {
+          "pattern": "^package:",
+          "title": "Package Id",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "PackageRelease",
+          "default": "PackageRelease",
+          "enum": [
+            "PackageRelease"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-package-release-v1.1",
+          "default": "sckg-package-release-v1.1",
+          "enum": [
+            "sckg-package-release-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "package_id",
+        "version",
+        "immutable_release_ref"
+      ],
+      "title": "PackageRelease",
+      "type": "object"
+    },
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    },
+    "ReferenceArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_kind": {
+          "enum": [
+            "atlas",
+            "label_mapping",
+            "pretrained_model",
+            "feature_mapping"
+          ],
+          "title": "Artifact Kind",
+          "type": "string"
+        },
+        "entity_id": {
+          "pattern": "^reference-artifact:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "ReferenceArtifact",
+          "default": "ReferenceArtifact",
+          "enum": [
+            "ReferenceArtifact"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-reference-artifact-v1.1",
+          "default": "sckg-reference-artifact-v1.1",
+          "enum": [
+            "sckg-reference-artifact-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "label",
+        "artifact_kind"
+      ],
+      "title": "ReferenceArtifact",
+      "type": "object"
+    },
+    "ReferenceArtifactRevision": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "pattern": "^reference-artifact:",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "content_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Digest",
+          "type": "string"
+        },
+        "entity_id": {
+          "pattern": "^reference-artifact-revision:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "feature_namespace": {
+          "minLength": 1,
+          "title": "Feature Namespace",
+          "type": "string"
+        },
+        "label_ontology_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label Ontology Id"
+        },
+        "record_type": {
+          "const": "ReferenceArtifactRevision",
+          "default": "ReferenceArtifactRevision",
+          "enum": [
+            "ReferenceArtifactRevision"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-reference-artifact-revision-v1.1",
+          "default": "sckg-reference-artifact-revision-v1.1",
+          "enum": [
+            "sckg-reference-artifact-revision-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "species_taxa": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Species Taxa",
+          "type": "array"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "artifact_id",
+        "version",
+        "content_digest",
+        "feature_namespace",
+        "scope_id"
+      ],
+      "title": "ReferenceArtifactRevision",
+      "type": "object"
+    },
+    "RepresentationComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "axes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Axes",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "matrix",
+            "vector",
+            "mapping",
+            "metadata"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "role": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "storage_semantics": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Storage Semantics",
+          "type": "string"
+        },
+        "value_semantics": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Value Semantics",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "kind",
+        "value_semantics",
+        "storage_semantics"
+      ],
+      "title": "RepresentationComponent",
+      "type": "object"
+    },
+    "RepresentationConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_missing_modalities": {
+          "default": false,
+          "title": "Allow Missing Modalities",
+          "type": "boolean"
+        },
+        "constraint_id": {
+          "pattern": "^representation-constraint:[a-z0-9][a-z0-9_.:-]{0,126}$",
+          "title": "Constraint Id",
+          "type": "string"
+        },
+        "feature_alignment": {
+          "default": "not_applicable",
+          "enum": [
+            "not_applicable",
+            "same_features",
+            "intersection",
+            "explicit_mapping"
+          ],
+          "title": "Feature Alignment",
+          "type": "string"
+        },
+        "forbidden_transformations": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Forbidden Transformations",
+          "type": "array"
+        },
+        "observation_alignment": {
+          "default": "not_applicable",
+          "enum": [
+            "not_applicable",
+            "same_observations",
+            "explicit_mapping",
+            "paired",
+            "partially_paired"
+          ],
+          "title": "Observation Alignment",
+          "type": "string"
+        },
+        "representation_type_id": {
+          "pattern": "^representation-type:",
+          "title": "Representation Type Id",
+          "type": "string"
+        },
+        "required_component_roles": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Required Component Roles",
+          "type": "array"
+        },
+        "required_metadata": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Required Metadata",
+          "type": "array"
+        },
+        "required_modalities": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Required Modalities",
+          "type": "array"
+        },
+        "required_provenance_method_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Required Provenance Method Ids",
+          "type": "array"
+        },
+        "required_transformations": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Required Transformations",
+          "type": "array"
+        },
+        "required_value_states": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Required Value States",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "sckg-representation-constraint-v1.1",
+          "default": "sckg-representation-constraint-v1.1",
+          "enum": [
+            "sckg-representation-constraint-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "constraint_id",
+        "representation_type_id",
+        "scope_id"
+      ],
+      "title": "RepresentationConstraint",
+      "type": "object"
+    },
+    "RepresentationInstanceBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "binding_id": {
+          "pattern": "^representation-instance-binding:",
+          "title": "Binding Id",
+          "type": "string"
+        },
+        "constraint_id": {
+          "pattern": "^representation-constraint:",
+          "title": "Constraint Id",
+          "type": "string"
+        },
+        "ledger_id": {
+          "minLength": 1,
+          "title": "Ledger Id",
+          "type": "string"
+        },
+        "owner": {
+          "const": "RepresentationLedger",
+          "default": "RepresentationLedger",
+          "enum": [
+            "RepresentationLedger"
+          ],
+          "title": "Owner",
+          "type": "string"
+        },
+        "reason_codes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "representation_record_id": {
+          "minLength": 1,
+          "title": "Representation Record Id",
+          "type": "string"
+        },
+        "representation_type_id": {
+          "pattern": "^representation-type:",
+          "title": "Representation Type Id",
+          "type": "string"
+        },
+        "satisfaction": {
+          "enum": [
+            "satisfied",
+            "unsatisfied",
+            "unknown",
+            "conflicting"
+          ],
+          "title": "Satisfaction",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-representation-instance-binding-v1.1",
+          "default": "sckg-representation-instance-binding-v1.1",
+          "enum": [
+            "sckg-representation-instance-binding-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "binding_id",
+        "ledger_id",
+        "representation_record_id",
+        "representation_type_id",
+        "constraint_id",
+        "satisfaction"
+      ],
+      "title": "RepresentationInstanceBinding",
+      "type": "object"
+    },
+    "RepresentationType": {
+      "additionalProperties": false,
+      "properties": {
+        "axes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Axes",
+          "type": "array"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/RepresentationComponent"
+          },
+          "maxItems": 16,
+          "title": "Components",
+          "type": "array"
+        },
+        "feature_identity": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Feature Identity",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "missingness_semantics": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Missingness Semantics",
+          "type": "string"
+        },
+        "modalities": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Modalities",
+          "type": "array"
+        },
+        "observation_unit": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Observation Unit",
+          "type": "string"
+        },
+        "representation_type_id": {
+          "pattern": "^representation-type:[a-z0-9][a-z0-9_.:-]{0,126}$",
+          "title": "Representation Type Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-representation-type-v1.1",
+          "default": "sckg-representation-type-v1.1",
+          "enum": [
+            "sckg-representation-type-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "structural_properties": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Structural Properties",
+          "type": "array"
+        },
+        "transformation_state": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Transformation State",
+          "type": "array"
+        },
+        "value_semantics": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Value Semantics",
+          "type": "string"
+        }
+      },
+      "required": [
+        "representation_type_id",
+        "label",
+        "observation_unit",
+        "axes",
+        "modalities",
+        "value_semantics",
+        "feature_identity",
+        "missingness_semantics"
+      ],
+      "title": "RepresentationType",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "enum": [
+            "mandatory",
+            "conditional",
+            "optional",
+            "recommended"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "reference_artifact_revision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Reference Artifact Revision Ids",
+          "type": "array"
+        },
+        "representation_constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Representation Constraint Ids",
+          "type": "array"
+        },
+        "requirement_id": {
+          "pattern": "^requirement:",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-requirement-v1.1",
+          "default": "sckg-requirement-v1.1",
+          "enum": [
+            "sckg-requirement-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "when": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 8,
+          "title": "When",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "level",
+        "scope_id"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "ReviewDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "needs_revision"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "independent_second_review_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 4,
+          "title": "Independent Second Review Ids",
+          "type": "array"
+        },
+        "policy_version": {
+          "minLength": 1,
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "rationale": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "review_decision_id": {
+          "pattern": "^review:",
+          "title": "Review Decision Id",
+          "type": "string"
+        },
+        "reviewed_artifact_hashes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Reviewed Artifact Hashes",
+          "type": "array"
+        },
+        "reviewed_record_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Reviewed Record Ids",
+          "type": "array"
+        },
+        "reviewer_type": {
+          "enum": [
+            "automated_validator",
+            "qualified_human",
+            "designated_owner"
+          ],
+          "title": "Reviewer Type",
+          "type": "string"
+        },
+        "risk_class": {
+          "enum": [
+            "R0",
+            "R1",
+            "R2",
+            "R3",
+            "R4"
+          ],
+          "title": "Risk Class",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-review-decision-v1.1",
+          "default": "sckg-review-decision-v1.1",
+          "enum": [
+            "sckg-review-decision-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_decision_id",
+        "risk_class",
+        "reviewer_type",
+        "decision",
+        "reviewed_record_ids",
+        "rationale",
+        "reviewed_artifact_hashes",
+        "policy_version",
+        "decided_at"
+      ],
+      "title": "ReviewDecision",
+      "type": "object"
+    },
+    "ScientificTask": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^task:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "ScientificTask",
+          "default": "ScientificTask",
+          "enum": [
+            "ScientificTask"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-scientific-task-v1.1",
+          "default": "sckg-scientific-task-v1.1",
+          "enum": [
+            "sckg-scientific-task-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "label"
+      ],
+      "title": "ScientificTask",
+      "type": "object"
+    },
+    "SoftwareProject": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "pattern": "^software-project:",
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "record_type": {
+          "const": "SoftwareProject",
+          "default": "SoftwareProject",
+          "enum": [
+            "SoftwareProject"
+          ],
+          "title": "Record Type",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-software-project-v1.1",
+          "default": "sckg-software-project-v1.1",
+          "enum": [
+            "sckg-software-project-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity_id",
+        "label"
+      ],
+      "title": "SoftwareProject",
+      "type": "object"
+    },
+    "SupersessionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "derived_from_claim_revision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Derived From Claim Revision Ids",
+          "type": "array"
+        },
+        "effective_at": {
+          "format": "date-time",
+          "title": "Effective At",
+          "type": "string"
+        },
+        "new_revision_id": {
+          "minLength": 1,
+          "title": "New Revision Id",
+          "type": "string"
+        },
+        "old_revision_id": {
+          "minLength": 1,
+          "title": "Old Revision Id",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "SUPERSEDES",
+            "DEPRECATED_BY"
+          ],
+          "title": "Relation",
+          "type": "string"
+        },
+        "review_decision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Review Decision Ids",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "sckg-supersession-v1.1",
+          "default": "sckg-supersession-v1.1",
+          "enum": [
+            "sckg-supersession-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "supersession_id": {
+          "pattern": "^supersession:",
+          "title": "Supersession Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "supersession_id",
+        "old_revision_id",
+        "new_revision_id",
+        "relation",
+        "scope_id",
+        "reason",
+        "effective_at",
+        "derived_from_claim_revision_ids",
+        "review_decision_ids"
+      ],
+      "title": "SupersessionRecord",
+      "type": "object"
+    },
+    "VersionConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "expression": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expression"
+        },
+        "status": {
+          "enum": [
+            "exact",
+            "range",
+            "unknown",
+            "version_independent",
+            "not_applicable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject_id": {
+          "minLength": 1,
+          "title": "Subject Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_id",
+        "status"
+      ],
+      "title": "VersionConstraint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "atomic_claims": {
+      "items": {
+        "$ref": "#/$defs/AtomicClaimRevision"
+      },
+      "title": "Atomic Claims",
+      "type": "array"
+    },
+    "benchmark_studies": {
+      "items": {
+        "$ref": "#/$defs/BenchmarkStudy"
+      },
+      "title": "Benchmark Studies",
+      "type": "array"
+    },
+    "derived_relations": {
+      "items": {
+        "$ref": "#/$defs/DerivedRelation"
+      },
+      "title": "Derived Relations",
+      "type": "array"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "empirical_results": {
+      "items": {
+        "$ref": "#/$defs/EmpiricalResult"
+      },
+      "title": "Empirical Results",
+      "type": "array"
+    },
+    "entities": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "Method": "#/$defs/Method",
+            "MethodVariant": "#/$defs/MethodVariant",
+            "Operator": "#/$defs/Operator",
+            "OperatorRevision": "#/$defs/OperatorRevision",
+            "Package": "#/$defs/Package",
+            "PackageRelease": "#/$defs/PackageRelease",
+            "ReferenceArtifact": "#/$defs/ReferenceArtifact",
+            "ReferenceArtifactRevision": "#/$defs/ReferenceArtifactRevision",
+            "ScientificTask": "#/$defs/ScientificTask",
+            "SoftwareProject": "#/$defs/SoftwareProject"
+          },
+          "propertyName": "record_type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ScientificTask"
+          },
+          {
+            "$ref": "#/$defs/Method"
+          },
+          {
+            "$ref": "#/$defs/MethodVariant"
+          },
+          {
+            "$ref": "#/$defs/SoftwareProject"
+          },
+          {
+            "$ref": "#/$defs/Package"
+          },
+          {
+            "$ref": "#/$defs/PackageRelease"
+          },
+          {
+            "$ref": "#/$defs/Operator"
+          },
+          {
+            "$ref": "#/$defs/OperatorRevision"
+          },
+          {
+            "$ref": "#/$defs/ReferenceArtifact"
+          },
+          {
+            "$ref": "#/$defs/ReferenceArtifactRevision"
+          }
+        ]
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "evaluation_datasets": {
+      "items": {
+        "$ref": "#/$defs/EvaluationDataset"
+      },
+      "title": "Evaluation Datasets",
+      "type": "array"
+    },
+    "evidence_assessments": {
+      "items": {
+        "$ref": "#/$defs/EvidenceAssessment"
+      },
+      "title": "Evidence Assessments",
+      "type": "array"
+    },
+    "expected_semantics": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Expected Semantics",
+      "type": "array"
+    },
+    "fixture_id": {
+      "pattern": "^conformance-fixture:",
+      "title": "Fixture Id",
+      "type": "string"
+    },
+    "instance_bindings": {
+      "items": {
+        "$ref": "#/$defs/RepresentationInstanceBinding"
+      },
+      "title": "Instance Bindings",
+      "type": "array"
+    },
+    "metrics": {
+      "items": {
+        "$ref": "#/$defs/MetricDefinition"
+      },
+      "title": "Metrics",
+      "type": "array"
+    },
+    "representation_constraints": {
+      "items": {
+        "$ref": "#/$defs/RepresentationConstraint"
+      },
+      "title": "Representation Constraints",
+      "type": "array"
+    },
+    "representation_types": {
+      "items": {
+        "$ref": "#/$defs/RepresentationType"
+      },
+      "title": "Representation Types",
+      "type": "array"
+    },
+    "review_decisions": {
+      "items": {
+        "$ref": "#/$defs/ReviewDecision"
+      },
+      "title": "Review Decisions",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+      "default": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+      "enum": [
+        "sckg-scientific-knowledge-conformance-bundle-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scopes": {
+      "items": {
+        "$ref": "#/$defs/ApplicabilityScope"
+      },
+      "title": "Scopes",
+      "type": "array"
+    },
+    "supersessions": {
+      "items": {
+        "$ref": "#/$defs/SupersessionRecord"
+      },
+      "title": "Supersessions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "fixture_id",
+    "description",
+    "expected_semantics"
+  ],
+  "title": "ConformanceBundle",
+  "type": "object"
+}

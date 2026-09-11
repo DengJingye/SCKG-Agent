@@ -1,0 +1,343 @@
+{
+  "atomic_claims": [],
+  "benchmark_studies": [],
+  "derived_relations": [
+    {
+      "derivation_rule_id": "rule:output-port-produces:v1.1",
+      "derivation_type": "port_projection",
+      "derived_from_claim_revision_ids": [],
+      "input_port_id": null,
+      "output_port_id": "output-port:pca.coordinates",
+      "premise_relation_ids": [],
+      "relation": "PRODUCES",
+      "relation_id": "derived-relation:pca_produces",
+      "requirement_id": null,
+      "review_decision_ids": [],
+      "review_status": "candidate_pending_review",
+      "schema_version": "sckg-derived-relation-v1.1",
+      "scope_id": "scope:neighbor-construction",
+      "source_id": "operator-revision:fixture.pca:1",
+      "target_id": "representation-type:pca_coordinates"
+    },
+    {
+      "derivation_rule_id": "rule:input-port-consumes:v1.1",
+      "derivation_type": "port_projection",
+      "derived_from_claim_revision_ids": [],
+      "input_port_id": "input-port:neighbors.embedding",
+      "output_port_id": null,
+      "premise_relation_ids": [],
+      "relation": "CONSUMES",
+      "relation_id": "derived-relation:neighbors_consumes",
+      "requirement_id": null,
+      "review_decision_ids": [],
+      "review_status": "candidate_pending_review",
+      "schema_version": "sckg-derived-relation-v1.1",
+      "scope_id": "scope:neighbor-construction",
+      "source_id": "operator-revision:fixture.neighbors:1",
+      "target_id": "representation-type:pca_coordinates"
+    },
+    {
+      "derivation_rule_id": "rule:port-compatibility:v1.1",
+      "derivation_type": "reviewed_rule",
+      "derived_from_claim_revision_ids": [],
+      "input_port_id": "input-port:neighbors.embedding",
+      "output_port_id": "output-port:pca.coordinates",
+      "premise_relation_ids": [
+        "derived-relation:pca_produces",
+        "derived-relation:neighbors_consumes"
+      ],
+      "relation": "CAN_FEED",
+      "relation_id": "derived-relation:pca_can_feed_neighbors",
+      "requirement_id": null,
+      "review_decision_ids": [
+        "review:can-feed-fixture"
+      ],
+      "review_status": "accepted",
+      "schema_version": "sckg-derived-relation-v1.1",
+      "scope_id": "scope:neighbor-construction",
+      "source_id": "operator-revision:fixture.pca:1",
+      "target_id": "operator-revision:fixture.neighbors:1"
+    }
+  ],
+  "description": "A ledger-owned PCA instance satisfies the neighbors port; PCA can feed neighbors but is not a mandatory predecessor.",
+  "empirical_results": [],
+  "entities": [
+    {
+      "entity_id": "task:neighborhood_graph_construction",
+      "label": "neighborhood graph construction",
+      "record_type": "ScientificTask",
+      "schema_version": "sckg-scientific-task-v1.1"
+    },
+    {
+      "entity_id": "method:pca",
+      "label": "PCA",
+      "record_type": "Method",
+      "schema_version": "sckg-method-v1.1"
+    },
+    {
+      "entity_id": "method:neighbor_graph",
+      "label": "neighborhood graph construction",
+      "record_type": "Method",
+      "schema_version": "sckg-method-v1.1"
+    },
+    {
+      "entity_id": "software-project:conformance",
+      "label": "Conformance operators",
+      "record_type": "SoftwareProject",
+      "schema_version": "sckg-software-project-v1.1"
+    },
+    {
+      "distribution_name": "conformance",
+      "ecosystem": "fixture",
+      "entity_id": "package:conformance",
+      "project_id": "software-project:conformance",
+      "record_type": "Package",
+      "schema_version": "sckg-package-v1.1"
+    },
+    {
+      "entity_id": "package-release:conformance:1",
+      "immutable_release_ref": "fixture:conformance:1",
+      "package_id": "package:conformance",
+      "record_type": "PackageRelease",
+      "schema_version": "sckg-package-release-v1.1",
+      "version": "1"
+    },
+    {
+      "entity_id": "operator:fixture.pca",
+      "package_id": "package:conformance",
+      "qualified_name": "fixture.pca",
+      "record_type": "Operator",
+      "schema_version": "sckg-operator-v1.1"
+    },
+    {
+      "entity_id": "operator:fixture.neighbors",
+      "package_id": "package:conformance",
+      "qualified_name": "fixture.neighbors",
+      "record_type": "Operator",
+      "schema_version": "sckg-operator-v1.1"
+    },
+    {
+      "contract_refs": [],
+      "entity_id": "operator-revision:fixture.pca:1",
+      "implements_method_ids": [
+        "method:pca"
+      ],
+      "implements_method_variant_ids": [],
+      "input_ports": [],
+      "operator_id": "operator:fixture.pca",
+      "output_ports": [
+        {
+          "invalidates": [],
+          "irreversible": false,
+          "lineage_input_port_ids": [],
+          "output_port_id": "output-port:pca.coordinates",
+          "preserves": [],
+          "production_conditions": [],
+          "representation_type_id": "representation-type:pca_coordinates",
+          "role": "coordinates",
+          "schema_version": "sckg-output-port-v1.1",
+          "scope_id": "scope:neighbor-construction",
+          "transforms": []
+        }
+      ],
+      "package_release_id": "package-release:conformance:1",
+      "record_type": "OperatorRevision",
+      "schema_version": "sckg-operator-revision-v1.1",
+      "scope_id": "scope:neighbor-construction"
+    },
+    {
+      "contract_refs": [],
+      "entity_id": "operator-revision:fixture.neighbors:1",
+      "implements_method_ids": [
+        "method:neighbor_graph"
+      ],
+      "implements_method_variant_ids": [],
+      "input_ports": [
+        {
+          "cross_port_alignment_constraints": [],
+          "input_port_id": "input-port:neighbors.embedding",
+          "max_cardinality": 1,
+          "min_cardinality": 1,
+          "requirement_combination": "all_of",
+          "requirements": [
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:neighbors_pca_input"
+              ],
+              "requirement_id": "requirement:neighbors_compatible_embedding",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:neighbor-construction",
+              "when": []
+            }
+          ],
+          "role": "embedding",
+          "schema_version": "sckg-input-port-v1.1",
+          "scope_id": "scope:neighbor-construction"
+        }
+      ],
+      "operator_id": "operator:fixture.neighbors",
+      "output_ports": [
+        {
+          "invalidates": [],
+          "irreversible": false,
+          "lineage_input_port_ids": [
+            "input-port:neighbors.embedding"
+          ],
+          "output_port_id": "output-port:neighbors.graph",
+          "preserves": [],
+          "production_conditions": [],
+          "representation_type_id": "representation-type:neighbor_graph",
+          "role": "graph",
+          "schema_version": "sckg-output-port-v1.1",
+          "scope_id": "scope:neighbor-construction",
+          "transforms": []
+        }
+      ],
+      "package_release_id": "package-release:conformance:1",
+      "record_type": "OperatorRevision",
+      "schema_version": "sckg-operator-revision-v1.1",
+      "scope_id": "scope:neighbor-construction"
+    }
+  ],
+  "evaluation_datasets": [],
+  "evidence_assessments": [],
+  "expected_semantics": [
+    "representation_instance_is_ledger_owned_not_canonical_entity",
+    "existing_representation_allows_optional_upstream_reuse",
+    "can_feed_does_not_imply_requires_before"
+  ],
+  "fixture_id": "conformance-fixture:optional-upstream-reuse",
+  "instance_bindings": [
+    {
+      "binding_id": "representation-instance-binding:ledger-pca-to-neighbors",
+      "constraint_id": "representation-constraint:neighbors_pca_input",
+      "ledger_id": "ledger:fixture",
+      "owner": "RepresentationLedger",
+      "reason_codes": [
+        "validated_existing_representation_reusable"
+      ],
+      "representation_record_id": "representation-record:pca-existing",
+      "representation_type_id": "representation-type:pca_coordinates",
+      "satisfaction": "satisfied",
+      "schema_version": "sckg-representation-instance-binding-v1.1"
+    }
+  ],
+  "metrics": [],
+  "representation_constraints": [
+    {
+      "allow_missing_modalities": false,
+      "constraint_id": "representation-constraint:neighbors_pca_input",
+      "feature_alignment": "not_applicable",
+      "forbidden_transformations": [],
+      "observation_alignment": "same_observations",
+      "representation_type_id": "representation-type:pca_coordinates",
+      "required_component_roles": [],
+      "required_metadata": [],
+      "required_modalities": [],
+      "required_provenance_method_ids": [],
+      "required_transformations": [],
+      "required_value_states": [
+        "real_continuous"
+      ],
+      "schema_version": "sckg-representation-constraint-v1.1",
+      "scope_id": "scope:neighbor-construction"
+    }
+  ],
+  "representation_types": [
+    {
+      "axes": [
+        "cell",
+        "component"
+      ],
+      "components": [],
+      "feature_identity": "ordered components",
+      "label": "PCA coordinates",
+      "missingness_semantics": "complete rows required",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:pca_coordinates",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [
+        "dimensionality_reduced"
+      ],
+      "value_semantics": "real-valued principal-component scores"
+    },
+    {
+      "axes": [
+        "cell",
+        "cell"
+      ],
+      "components": [],
+      "feature_identity": "cell identity on both axes",
+      "label": "cell neighborhood graph",
+      "missingness_semantics": "absent edge is not a missing observation",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:neighbor_graph",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [
+        "weighted_graph"
+      ],
+      "transformation_state": [
+        "neighborhood_constructed"
+      ],
+      "value_semantics": "distances and connectivities"
+    }
+  ],
+  "review_decisions": [
+    {
+      "decided_at": "2026-09-10T00:00:00Z",
+      "decision": "accepted",
+      "independent_second_review_ids": [],
+      "policy_version": "risk-review-v1.1",
+      "rationale": "Conformance-only review proves the output/input port derivation, not a universal prerequisite.",
+      "review_decision_id": "review:can-feed-fixture",
+      "reviewed_artifact_hashes": [
+        "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      ],
+      "reviewed_record_ids": [
+        "derived-relation:pca_can_feed_neighbors"
+      ],
+      "reviewer_type": "qualified_human",
+      "risk_class": "R3",
+      "schema_version": "sckg-review-decision-v1.1"
+    }
+  ],
+  "schema_version": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+  "scopes": [
+    {
+      "assay_technology_ids": [],
+      "biological_context_ids": [],
+      "combination": "all_of",
+      "evaluation_context_ids": [],
+      "modalities": [
+        "rna"
+      ],
+      "observation_units": [
+        "cell"
+      ],
+      "organism_taxa": [],
+      "parameter_conditions": [],
+      "representation_constraint_ids": [],
+      "resource_constraints": [],
+      "schema_version": "sckg-applicability-scope-v1.1",
+      "scope_id": "scope:neighbor-construction",
+      "scope_status": "explicit",
+      "study_design_constraints": [],
+      "task_ids": [
+        "task:neighborhood_graph_construction"
+      ],
+      "valid_from": null,
+      "valid_to": null,
+      "version_constraints": []
+    }
+  ],
+  "supersessions": []
+}

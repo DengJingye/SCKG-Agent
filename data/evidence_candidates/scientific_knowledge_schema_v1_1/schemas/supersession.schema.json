@@ -1,0 +1,82 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "derived_from_claim_revision_ids": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Derived From Claim Revision Ids",
+      "type": "array"
+    },
+    "effective_at": {
+      "format": "date-time",
+      "title": "Effective At",
+      "type": "string"
+    },
+    "new_revision_id": {
+      "minLength": 1,
+      "title": "New Revision Id",
+      "type": "string"
+    },
+    "old_revision_id": {
+      "minLength": 1,
+      "title": "Old Revision Id",
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Reason",
+      "type": "string"
+    },
+    "relation": {
+      "enum": [
+        "SUPERSEDES",
+        "DEPRECATED_BY"
+      ],
+      "title": "Relation",
+      "type": "string"
+    },
+    "review_decision_ids": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Review Decision Ids",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "sckg-supersession-v1.1",
+      "default": "sckg-supersession-v1.1",
+      "enum": [
+        "sckg-supersession-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "supersession_id": {
+      "pattern": "^supersession:",
+      "title": "Supersession Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "supersession_id",
+    "old_revision_id",
+    "new_revision_id",
+    "relation",
+    "scope_id",
+    "reason",
+    "effective_at",
+    "derived_from_claim_revision_ids",
+    "review_decision_ids"
+  ],
+  "title": "SupersessionRecord",
+  "type": "object"
+}

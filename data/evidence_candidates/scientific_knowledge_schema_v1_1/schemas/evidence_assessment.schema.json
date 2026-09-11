@@ -1,0 +1,94 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "assessment_id": {
+      "pattern": "^evidence-assessment:",
+      "title": "Assessment Id",
+      "type": "string"
+    },
+    "claim_revision_id": {
+      "pattern": "^claim-revision:",
+      "title": "Claim Revision Id",
+      "type": "string"
+    },
+    "evidence_span_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Evidence Span Ids",
+      "type": "array"
+    },
+    "object_aligned": {
+      "title": "Object Aligned",
+      "type": "boolean"
+    },
+    "predicate_aligned": {
+      "title": "Predicate Aligned",
+      "type": "boolean"
+    },
+    "rationale": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "review_decision_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Review Decision Ids",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "sckg-evidence-assessment-v1.1",
+      "default": "sckg-evidence-assessment-v1.1",
+      "enum": [
+        "sckg-evidence-assessment-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_alignment": {
+      "enum": [
+        "aligned",
+        "narrower",
+        "partial",
+        "unknown",
+        "conflicting"
+      ],
+      "title": "Scope Alignment",
+      "type": "string"
+    },
+    "stance": {
+      "enum": [
+        "supports",
+        "refutes",
+        "partial_support",
+        "mentions_only",
+        "not_supporting"
+      ],
+      "title": "Stance",
+      "type": "string"
+    },
+    "subject_aligned": {
+      "title": "Subject Aligned",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "assessment_id",
+    "claim_revision_id",
+    "evidence_span_ids",
+    "stance",
+    "subject_aligned",
+    "predicate_aligned",
+    "object_aligned",
+    "scope_alignment",
+    "rationale"
+  ],
+  "title": "EvidenceAssessment",
+  "type": "object"
+}

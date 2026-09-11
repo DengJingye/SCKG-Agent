@@ -1,0 +1,128 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "assertion_kind": {
+      "enum": [
+        "definition",
+        "capability",
+        "requirement",
+        "recommendation",
+        "empirical_observation",
+        "limitation"
+      ],
+      "title": "Assertion Kind",
+      "type": "string"
+    },
+    "claim_id": {
+      "pattern": "^claim:",
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "claim_revision_id": {
+      "pattern": "^claim-revision:",
+      "title": "Claim Revision Id",
+      "type": "string"
+    },
+    "claim_text": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Claim Text",
+      "type": "string"
+    },
+    "content_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "created_by_activity_id": {
+      "minLength": 1,
+      "title": "Created By Activity Id",
+      "type": "string"
+    },
+    "object_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Object Id"
+    },
+    "object_value": {
+      "anyOf": [
+        {
+          "maxLength": 320,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Object Value"
+    },
+    "polarity": {
+      "enum": [
+        "positive",
+        "negative"
+      ],
+      "title": "Polarity",
+      "type": "string"
+    },
+    "predicate": {
+      "minLength": 1,
+      "title": "Predicate",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-atomic-claim-revision-v1.1",
+      "default": "sckg-atomic-claim-revision-v1.1",
+      "enum": [
+        "sckg-atomic-claim-revision-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "semantic_fingerprint": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Semantic Fingerprint",
+      "type": "string"
+    },
+    "subject_id": {
+      "minLength": 1,
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "supersedes_revision_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Supersedes Revision Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "claim_id",
+    "claim_revision_id",
+    "subject_id",
+    "predicate",
+    "scope_id",
+    "claim_text",
+    "polarity",
+    "assertion_kind",
+    "semantic_fingerprint",
+    "content_hash",
+    "created_by_activity_id"
+  ],
+  "title": "AtomicClaimRevision",
+  "type": "object"
+}

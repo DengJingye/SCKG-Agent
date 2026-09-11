@@ -1,0 +1,82 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "artifact_id": {
+      "pattern": "^reference-artifact:",
+      "title": "Artifact Id",
+      "type": "string"
+    },
+    "content_digest": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Digest",
+      "type": "string"
+    },
+    "entity_id": {
+      "pattern": "^reference-artifact-revision:",
+      "title": "Entity Id",
+      "type": "string"
+    },
+    "feature_namespace": {
+      "minLength": 1,
+      "title": "Feature Namespace",
+      "type": "string"
+    },
+    "label_ontology_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Label Ontology Id"
+    },
+    "record_type": {
+      "const": "ReferenceArtifactRevision",
+      "default": "ReferenceArtifactRevision",
+      "enum": [
+        "ReferenceArtifactRevision"
+      ],
+      "title": "Record Type",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-reference-artifact-revision-v1.1",
+      "default": "sckg-reference-artifact-revision-v1.1",
+      "enum": [
+        "sckg-reference-artifact-revision-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "species_taxa": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Species Taxa",
+      "type": "array"
+    },
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_id",
+    "artifact_id",
+    "version",
+    "content_digest",
+    "feature_namespace",
+    "scope_id"
+  ],
+  "title": "ReferenceArtifactRevision",
+  "type": "object"
+}

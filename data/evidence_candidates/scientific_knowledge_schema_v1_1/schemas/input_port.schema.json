@@ -1,0 +1,183 @@
+{
+  "$defs": {
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "enum": [
+            "mandatory",
+            "conditional",
+            "optional",
+            "recommended"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "reference_artifact_revision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Reference Artifact Revision Ids",
+          "type": "array"
+        },
+        "representation_constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Representation Constraint Ids",
+          "type": "array"
+        },
+        "requirement_id": {
+          "pattern": "^requirement:",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-requirement-v1.1",
+          "default": "sckg-requirement-v1.1",
+          "enum": [
+            "sckg-requirement-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "when": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 8,
+          "title": "When",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "level",
+        "scope_id"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cross_port_alignment_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Cross Port Alignment Constraints",
+      "type": "array"
+    },
+    "input_port_id": {
+      "pattern": "^input-port:",
+      "title": "Input Port Id",
+      "type": "string"
+    },
+    "max_cardinality": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max Cardinality"
+    },
+    "min_cardinality": {
+      "minimum": 0,
+      "title": "Min Cardinality",
+      "type": "integer"
+    },
+    "requirement_combination": {
+      "default": "all_of",
+      "enum": [
+        "all_of",
+        "any_of"
+      ],
+      "title": "Requirement Combination",
+      "type": "string"
+    },
+    "requirements": {
+      "items": {
+        "$ref": "#/$defs/Requirement"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "title": "Requirements",
+      "type": "array"
+    },
+    "role": {
+      "minLength": 1,
+      "title": "Role",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-input-port-v1.1",
+      "default": "sckg-input-port-v1.1",
+      "enum": [
+        "sckg-input-port-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "input_port_id",
+    "role",
+    "min_cardinality",
+    "requirements",
+    "scope_id"
+  ],
+  "title": "InputPort",
+  "type": "object"
+}

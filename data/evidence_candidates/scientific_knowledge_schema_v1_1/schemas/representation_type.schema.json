@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "RepresentationComponent": {
+      "additionalProperties": false,
+      "properties": {
+        "axes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Axes",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "matrix",
+            "vector",
+            "mapping",
+            "metadata"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "role": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "storage_semantics": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Storage Semantics",
+          "type": "string"
+        },
+        "value_semantics": {
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Value Semantics",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "kind",
+        "value_semantics",
+        "storage_semantics"
+      ],
+      "title": "RepresentationComponent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "axes": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Axes",
+      "type": "array"
+    },
+    "components": {
+      "items": {
+        "$ref": "#/$defs/RepresentationComponent"
+      },
+      "maxItems": 16,
+      "title": "Components",
+      "type": "array"
+    },
+    "feature_identity": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Feature Identity",
+      "type": "string"
+    },
+    "label": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "missingness_semantics": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Missingness Semantics",
+      "type": "string"
+    },
+    "modalities": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Modalities",
+      "type": "array"
+    },
+    "observation_unit": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Observation Unit",
+      "type": "string"
+    },
+    "representation_type_id": {
+      "pattern": "^representation-type:[a-z0-9][a-z0-9_.:-]{0,126}$",
+      "title": "Representation Type Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-representation-type-v1.1",
+      "default": "sckg-representation-type-v1.1",
+      "enum": [
+        "sckg-representation-type-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "structural_properties": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Structural Properties",
+      "type": "array"
+    },
+    "transformation_state": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Transformation State",
+      "type": "array"
+    },
+    "value_semantics": {
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Value Semantics",
+      "type": "string"
+    }
+  },
+  "required": [
+    "representation_type_id",
+    "label",
+    "observation_unit",
+    "axes",
+    "modalities",
+    "value_semantics",
+    "feature_identity",
+    "missingness_semantics"
+  ],
+  "title": "RepresentationType",
+  "type": "object"
+}

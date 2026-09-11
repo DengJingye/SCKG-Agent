@@ -1,0 +1,156 @@
+{
+  "automatic_migration_allowed": false,
+  "canonical_modified": false,
+  "legacy_surfaces": [
+    {
+      "incompatibilities": [
+        "no Package/PackageRelease/Operator/OperatorRevision identity layers",
+        "Method IDs may encode implementation or configured variants",
+        "CONSUMES and PRODUCES are stored as primary edges rather than port projections",
+        "no first-class ApplicabilityScope",
+        "no claim-revision or evidence-assessment proof chain"
+      ],
+      "mapping": {
+        "CONSUMES/PRODUCES": "derived port projections only after InputPort/OutputPort migration",
+        "Capability": "ScientificTask/Capability discovery view; requires explicit task resolution",
+        "Method": "Method, MethodVariant, OperatorRevision, or composed action; record-by-record split required",
+        "PRECEDES": "candidate derivation; must be reclassified as CAN_FEED, REQUIRES_BEFORE, UI order, or rejected",
+        "Representation": "RepresentationType plus one or more RepresentationConstraints",
+        "SUPPORTED_BY": "requires AtomicClaimRevision and EvidenceAssessment backfill",
+        "Tool": "SoftwareProject, Package, Operator, or ReferenceArtifact; no identity-preserving automatic mapping"
+      },
+      "source": "core/method_graph_models.py + engine/method_graph.py",
+      "surface": "MethodGraph v0"
+    },
+    {
+      "incompatibilities": [
+        "artifact nodes do not distinguish representation type, constraint, and runtime instance",
+        "ACCEPTS_INPUT and PRODUCES_OUTPUT lack canonical port ownership",
+        "relation strings/properties do not enforce scope-preserving derivation",
+        "governance projection contains known source_bound mismatches"
+      ],
+      "mapping": {
+        "Action": "OperatorRevision or governed action bundle, determined from contract binding",
+        "DataAssumption": "Requirement, ScientificConstraint, or ApplicabilityScope qualifier",
+        "FailureMode": "Limitation or runtime failure policy; scientific and operational meanings must be split",
+        "InputArtifact/OutputArtifact": "RepresentationType plus port-specific RepresentationConstraint",
+        "Parameter": "ParameterDefinition; reported/default values become separate scoped claims",
+        "Tool": "unresolved software identity requiring project/package/operator resolution",
+        "ToolContract": "external contract revision reference; not duplicated into canonical science records"
+      },
+      "record_counts": {
+        "edges": 1318,
+        "nodes": 1058
+      },
+      "source": "core/decision_graph_models.py + data/decision_graph_v3",
+      "surface": "DecisionGraph v3"
+    },
+    {
+      "incompatibilities": [
+        "catalog relationships dominate and are not decision-bearing scientific claims",
+        "no AtomicClaimRevision or claim-local multi-entity evidence association",
+        "no Package/Operator/Method separation",
+        "no typed scope or port semantics"
+      ],
+      "mapping": {
+        "Benchmark/Evaluation/Dataset": "BenchmarkStudy/EmpiricalResult/EvaluationDataset after scoped protocol resolution",
+        "Publication/Source/SourceChunk": "SourceWork/SourceRevision/EvidenceSpan crosswalk",
+        "Task": "ScientificTask after canonical ontology validation",
+        "Tool": "catalog discovery identity only until resolved into typed software/method identities"
+      },
+      "record_counts": {
+        "edges": 17667,
+        "nodes": 7537
+      },
+      "source": "core/knowledge_graph_models.py + data/knowledge_graph_v2",
+      "surface": "KnowledgeGraph v2"
+    },
+    {
+      "incompatibilities": [
+        "subject_type is limited to Method/Tool and Tool is semantically ambiguous",
+        "scope is a coarse enum; modality and version are not structured scope dimensions",
+        "conditional is encoded as polarity",
+        "one EvidenceSpan is embedded in claim identity, preventing many-to-many support without changing proposition identity",
+        "review status is mutable state rather than an auditable decision record",
+        "CONSUMES/PRODUCES have no canonical ports",
+        "PREREQUISITE validation requires two claims but does not prove necessity or scope compatibility"
+      ],
+      "mapping": {
+        "predicate/object": "registered predicate and typed object",
+        "projected relation": "port projection or reviewed derivation with proof premises",
+        "review_status": "ReviewDecision-derived materialized state",
+        "scope/modality/version": "structured ApplicabilityScope",
+        "source_span_id": "EvidenceAssessment separate from proposition identity",
+        "subject_id": "typed entity after Method/Tool disambiguation"
+      },
+      "record_counts": {
+        "claims": 48
+      },
+      "source": "core/method_kg_claim_models.py + data/evidence_candidates/method_kg_atomic_claim_v1",
+      "surface": "AtomicClaim candidate v1"
+    },
+    {
+      "incompatibilities": [
+        "representation_id is not currently a governed RepresentationType reference",
+        "free-form metadata cannot by itself satisfy typed constraints",
+        "ledger records must never be migrated into canonical KG entities"
+      ],
+      "mapping": {
+        "RepresentationRecord": "runtime RepresentationInstance; remains ledger-owned",
+        "metadata/provenance": "evaluated against RepresentationConstraints at request time",
+        "representation_id": "requires crosswalk to canonical RepresentationType"
+      },
+      "source": "core/representation_models.py",
+      "surface": "RepresentationLedger v1"
+    }
+  ],
+  "migration_blockers": [
+    {
+      "id": "source_bound_projection_mismatch",
+      "reason": "10 source-unbound evidence rows are projected as bound in the current Decision Graph; provenance cannot be preserved by direct migration.",
+      "severity": "blocking"
+    },
+    {
+      "id": "graph_input_fingerprint_drift",
+      "reason": "Current canonical graph manifests do not match all present catalog/contract inputs.",
+      "severity": "blocking"
+    },
+    {
+      "id": "scanpy_contract_snapshot_missing",
+      "reason": "A Scanpy contract file exists but the Decision Graph snapshot lacks the corresponding contract node.",
+      "severity": "blocking_for_scanpy_implementation_binding"
+    },
+    {
+      "id": "celltypist_singler_contract_version_drift",
+      "reason": "Snapshot contract revisions differ from current contract files.",
+      "severity": "blocking_for_affected_bindings"
+    },
+    {
+      "id": "scvi_scvi_tools_identity_unresolved",
+      "reason": "Method/model and package identities have no governed crosswalk.",
+      "severity": "blocking_for_affected_identity"
+    },
+    {
+      "id": "monocle_monocle3_identity_unresolved",
+      "reason": "Successor/version identities are unresolved.",
+      "severity": "blocking_for_affected_identity"
+    },
+    {
+      "id": "method_binding_semantic_split_required",
+      "reason": "Existing MethodBinding records mix scientific methods, configured variants, composed actions and implementations.",
+      "severity": "blocking_for_bulk_migration"
+    },
+    {
+      "id": "ports_and_scopes_missing",
+      "reason": "Legacy input/output and workflow relations cannot be promoted until ports, requirements and ApplicabilityScopes are reconstructed.",
+      "severity": "blocking_for_decision_edges"
+    },
+    {
+      "id": "candidate_claim_review_pending",
+      "reason": "Existing 48 candidates remain pending review and are not eligible for promotion.",
+      "severity": "blocking_for_candidate_claims"
+    }
+  ],
+  "schema_version": "sckg-scientific-knowledge-legacy-crosswalk-v1.1",
+  "status": "analysis_only_not_migrated"
+}

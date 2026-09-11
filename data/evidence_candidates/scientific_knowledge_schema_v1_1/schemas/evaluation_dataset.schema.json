@@ -1,0 +1,88 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "content_fingerprint": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Content Fingerprint",
+      "type": "string"
+    },
+    "dataset_id": {
+      "pattern": "^evaluation-dataset:",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "leakage_controls": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Leakage Controls",
+      "type": "array"
+    },
+    "modalities": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Modalities",
+      "type": "array"
+    },
+    "observation_unit": {
+      "minLength": 1,
+      "title": "Observation Unit",
+      "type": "string"
+    },
+    "organism_taxa": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Organism Taxa",
+      "type": "array"
+    },
+    "revision": {
+      "minLength": 1,
+      "title": "Revision",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-evaluation-dataset-v1.1",
+      "default": "sckg-evaluation-dataset-v1.1",
+      "enum": [
+        "sckg-evaluation-dataset-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "split_definition": {
+      "minLength": 1,
+      "title": "Split Definition",
+      "type": "string"
+    },
+    "study_design": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Study Design",
+      "type": "array"
+    }
+  },
+  "required": [
+    "dataset_id",
+    "revision",
+    "modalities",
+    "observation_unit",
+    "study_design",
+    "split_definition",
+    "leakage_controls",
+    "content_fingerprint",
+    "scope_id"
+  ],
+  "title": "EvaluationDataset",
+  "type": "object"
+}

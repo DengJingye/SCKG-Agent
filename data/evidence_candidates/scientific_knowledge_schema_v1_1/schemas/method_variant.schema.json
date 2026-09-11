@@ -1,0 +1,89 @@
+{
+  "$defs": {
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "defining_parameter_conditions": {
+      "items": {
+        "$ref": "#/$defs/ParameterCondition"
+      },
+      "maxItems": 16,
+      "title": "Defining Parameter Conditions",
+      "type": "array"
+    },
+    "entity_id": {
+      "pattern": "^method-variant:",
+      "title": "Entity Id",
+      "type": "string"
+    },
+    "label": {
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "method_id": {
+      "pattern": "^method:",
+      "title": "Method Id",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "MethodVariant",
+      "default": "MethodVariant",
+      "enum": [
+        "MethodVariant"
+      ],
+      "title": "Record Type",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-method-variant-v1.1",
+      "default": "sckg-method-variant-v1.1",
+      "enum": [
+        "sckg-method-variant-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_id",
+    "method_id",
+    "label"
+  ],
+  "title": "MethodVariant",
+  "type": "object"
+}

@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "level": {
+      "enum": [
+        "mandatory",
+        "conditional",
+        "optional",
+        "recommended"
+      ],
+      "title": "Level",
+      "type": "string"
+    },
+    "reference_artifact_revision_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Reference Artifact Revision Ids",
+      "type": "array"
+    },
+    "representation_constraint_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Representation Constraint Ids",
+      "type": "array"
+    },
+    "requirement_id": {
+      "pattern": "^requirement:",
+      "title": "Requirement Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-requirement-v1.1",
+      "default": "sckg-requirement-v1.1",
+      "enum": [
+        "sckg-requirement-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "when": {
+      "items": {
+        "$ref": "#/$defs/ParameterCondition"
+      },
+      "maxItems": 8,
+      "title": "When",
+      "type": "array"
+    }
+  },
+  "required": [
+    "requirement_id",
+    "level",
+    "scope_id"
+  ],
+  "title": "Requirement",
+  "type": "object"
+}

@@ -1,0 +1,97 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "aggregation_unit": {
+      "minLength": 1,
+      "title": "Aggregation Unit",
+      "type": "string"
+    },
+    "benchmark_id": {
+      "pattern": "^benchmark-study:",
+      "title": "Benchmark Id",
+      "type": "string"
+    },
+    "dataset_id": {
+      "pattern": "^evaluation-dataset:",
+      "title": "Dataset Id",
+      "type": "string"
+    },
+    "evidence_span_ids": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Evidence Span Ids",
+      "type": "array"
+    },
+    "metric_id": {
+      "pattern": "^metric:",
+      "title": "Metric Id",
+      "type": "string"
+    },
+    "result_id": {
+      "pattern": "^empirical-result:",
+      "title": "Result Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-empirical-result-v1.1",
+      "default": "sckg-empirical-result-v1.1",
+      "enum": [
+        "sckg-empirical-result-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "reported",
+        "verified_local",
+        "not_comparable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "subject_id": {
+      "minLength": 1,
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "uncertainty": {
+      "anyOf": [
+        {
+          "maxLength": 120,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Uncertainty"
+    },
+    "value": {
+      "title": "Value",
+      "type": "number"
+    }
+  },
+  "required": [
+    "result_id",
+    "benchmark_id",
+    "dataset_id",
+    "subject_id",
+    "metric_id",
+    "value",
+    "aggregation_unit",
+    "scope_id",
+    "evidence_span_ids",
+    "status"
+  ],
+  "title": "EmpiricalResult",
+  "type": "object"
+}

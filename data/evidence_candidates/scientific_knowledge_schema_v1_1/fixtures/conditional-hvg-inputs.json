@@ -1,0 +1,297 @@
+{
+  "atomic_claims": [],
+  "benchmark_studies": [],
+  "derived_relations": [],
+  "description": "One HVG operator has parameter-conditioned alternative input requirements without a global input edge.",
+  "empirical_results": [],
+  "entities": [
+    {
+      "entity_id": "task:feature_selection",
+      "label": "feature selection",
+      "record_type": "ScientificTask",
+      "schema_version": "sckg-scientific-task-v1.1"
+    },
+    {
+      "entity_id": "method:hvg_selection",
+      "label": "highly variable gene selection",
+      "record_type": "Method",
+      "schema_version": "sckg-method-v1.1"
+    },
+    {
+      "entity_id": "software-project:scanpy",
+      "label": "Scanpy",
+      "record_type": "SoftwareProject",
+      "schema_version": "sckg-software-project-v1.1"
+    },
+    {
+      "distribution_name": "scanpy",
+      "ecosystem": "python",
+      "entity_id": "package:scanpy",
+      "project_id": "software-project:scanpy",
+      "record_type": "Package",
+      "schema_version": "sckg-package-v1.1"
+    },
+    {
+      "entity_id": "package-release:scanpy:1.11.2",
+      "immutable_release_ref": "pypi:scanpy:1.11.2",
+      "package_id": "package:scanpy",
+      "record_type": "PackageRelease",
+      "schema_version": "sckg-package-release-v1.1",
+      "version": "1.11.2"
+    },
+    {
+      "entity_id": "operator:scanpy.pp.highly_variable_genes",
+      "package_id": "package:scanpy",
+      "qualified_name": "scanpy.pp.highly_variable_genes",
+      "record_type": "Operator",
+      "schema_version": "sckg-operator-v1.1"
+    },
+    {
+      "contract_refs": [],
+      "entity_id": "operator-revision:scanpy.pp.highly_variable_genes:1.11.2",
+      "implements_method_ids": [
+        "method:hvg_selection"
+      ],
+      "implements_method_variant_ids": [],
+      "input_ports": [
+        {
+          "cross_port_alignment_constraints": [],
+          "input_port_id": "input-port:scanpy_hvg.expression",
+          "max_cardinality": 1,
+          "min_cardinality": 1,
+          "requirement_combination": "any_of",
+          "requirements": [
+            {
+              "level": "conditional",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:hvg_counts"
+              ],
+              "requirement_id": "requirement:hvg_counts_for_v3_flavors",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:scanpy-hvg-1.11",
+              "when": [
+                {
+                  "operator": "in",
+                  "parameter_id": "parameter:hvg_flavor",
+                  "values": [
+                    "seurat_v3",
+                    "seurat_v3_paper"
+                  ]
+                }
+              ]
+            },
+            {
+              "level": "conditional",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:hvg_log_expression"
+              ],
+              "requirement_id": "requirement:hvg_log_for_dispersion_flavors",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:scanpy-hvg-1.11",
+              "when": [
+                {
+                  "operator": "in",
+                  "parameter_id": "parameter:hvg_flavor",
+                  "values": [
+                    "seurat",
+                    "cell_ranger"
+                  ]
+                }
+              ]
+            }
+          ],
+          "role": "expression",
+          "schema_version": "sckg-input-port-v1.1",
+          "scope_id": "scope:scanpy-hvg-1.11"
+        }
+      ],
+      "operator_id": "operator:scanpy.pp.highly_variable_genes",
+      "output_ports": [
+        {
+          "invalidates": [],
+          "irreversible": false,
+          "lineage_input_port_ids": [
+            "input-port:scanpy_hvg.expression"
+          ],
+          "output_port_id": "output-port:scanpy_hvg.mask",
+          "preserves": [
+            "feature_identity"
+          ],
+          "production_conditions": [],
+          "representation_type_id": "representation-type:hvg_mask",
+          "role": "feature_mask",
+          "schema_version": "sckg-output-port-v1.1",
+          "scope_id": "scope:scanpy-hvg-1.11",
+          "transforms": [
+            "feature_statistics_to_boolean_mask"
+          ]
+        }
+      ],
+      "package_release_id": "package-release:scanpy:1.11.2",
+      "record_type": "OperatorRevision",
+      "schema_version": "sckg-operator-revision-v1.1",
+      "scope_id": "scope:scanpy-hvg-1.11"
+    }
+  ],
+  "evaluation_datasets": [],
+  "evidence_assessments": [],
+  "expected_semantics": [
+    "hvg_counts_and_log_inputs_are_conditional_alternatives",
+    "scope_and_parameter_conditions_are_structured"
+  ],
+  "fixture_id": "conformance-fixture:conditional-hvg-inputs",
+  "instance_bindings": [],
+  "metrics": [],
+  "representation_constraints": [
+    {
+      "allow_missing_modalities": false,
+      "constraint_id": "representation-constraint:hvg_counts",
+      "feature_alignment": "same_features",
+      "forbidden_transformations": [
+        "normalized",
+        "log_transformed"
+      ],
+      "observation_alignment": "not_applicable",
+      "representation_type_id": "representation-type:raw_counts",
+      "required_component_roles": [],
+      "required_metadata": [],
+      "required_modalities": [
+        "rna"
+      ],
+      "required_provenance_method_ids": [],
+      "required_transformations": [],
+      "required_value_states": [
+        "nonnegative_integer"
+      ],
+      "schema_version": "sckg-representation-constraint-v1.1",
+      "scope_id": "scope:scanpy-hvg-1.11"
+    },
+    {
+      "allow_missing_modalities": false,
+      "constraint_id": "representation-constraint:hvg_log_expression",
+      "feature_alignment": "same_features",
+      "forbidden_transformations": [],
+      "observation_alignment": "not_applicable",
+      "representation_type_id": "representation-type:log_expression",
+      "required_component_roles": [],
+      "required_metadata": [],
+      "required_modalities": [
+        "rna"
+      ],
+      "required_provenance_method_ids": [],
+      "required_transformations": [
+        "normalized",
+        "log_transformed"
+      ],
+      "required_value_states": [
+        "real_continuous"
+      ],
+      "schema_version": "sckg-representation-constraint-v1.1",
+      "scope_id": "scope:scanpy-hvg-1.11"
+    }
+  ],
+  "representation_types": [
+    {
+      "axes": [
+        "cell",
+        "gene"
+      ],
+      "components": [],
+      "feature_identity": "gene identifiers",
+      "label": "raw RNA counts",
+      "missingness_semantics": "measured zero is zero count",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:raw_counts",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [
+        "unnormalized"
+      ],
+      "value_semantics": "nonnegative count abundance"
+    },
+    {
+      "axes": [
+        "cell",
+        "gene"
+      ],
+      "components": [],
+      "feature_identity": "gene identifiers",
+      "label": "log-transformed RNA expression",
+      "missingness_semantics": "missing entries are not equivalent to measured zero",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:log_expression",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [
+        "normalized",
+        "log_transformed"
+      ],
+      "value_semantics": "real-valued transformed abundance"
+    },
+    {
+      "axes": [
+        "gene"
+      ],
+      "components": [],
+      "feature_identity": "gene identifiers aligned to input",
+      "label": "highly-variable-gene mask",
+      "missingness_semantics": "complete feature mask required",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "gene",
+      "representation_type_id": "representation-type:hvg_mask",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [
+        "feature_selected"
+      ],
+      "value_semantics": "boolean feature selection mask"
+    }
+  ],
+  "review_decisions": [],
+  "schema_version": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+  "scopes": [
+    {
+      "assay_technology_ids": [],
+      "biological_context_ids": [],
+      "combination": "all_of",
+      "evaluation_context_ids": [],
+      "modalities": [
+        "rna"
+      ],
+      "observation_units": [
+        "cell"
+      ],
+      "organism_taxa": [],
+      "parameter_conditions": [],
+      "representation_constraint_ids": [],
+      "resource_constraints": [],
+      "schema_version": "sckg-applicability-scope-v1.1",
+      "scope_id": "scope:scanpy-hvg-1.11",
+      "scope_status": "explicit",
+      "study_design_constraints": [],
+      "task_ids": [
+        "task:feature_selection"
+      ],
+      "valid_from": null,
+      "valid_to": null,
+      "version_constraints": [
+        {
+          "expression": ">=1.11,<2",
+          "status": "range",
+          "subject_id": "operator:scanpy.pp.highly_variable_genes"
+        }
+      ]
+    }
+  ],
+  "supersessions": []
+}

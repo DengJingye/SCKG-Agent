@@ -1,0 +1,242 @@
+{
+  "$defs": {
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    },
+    "VersionConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "expression": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expression"
+        },
+        "status": {
+          "enum": [
+            "exact",
+            "range",
+            "unknown",
+            "version_independent",
+            "not_applicable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "subject_id": {
+          "minLength": 1,
+          "title": "Subject Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_id",
+        "status"
+      ],
+      "title": "VersionConstraint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assay_technology_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Assay Technology Ids",
+      "type": "array"
+    },
+    "biological_context_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Biological Context Ids",
+      "type": "array"
+    },
+    "combination": {
+      "default": "all_of",
+      "enum": [
+        "all_of",
+        "any_of"
+      ],
+      "title": "Combination",
+      "type": "string"
+    },
+    "evaluation_context_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Evaluation Context Ids",
+      "type": "array"
+    },
+    "modalities": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Modalities",
+      "type": "array"
+    },
+    "observation_units": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Observation Units",
+      "type": "array"
+    },
+    "organism_taxa": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Organism Taxa",
+      "type": "array"
+    },
+    "parameter_conditions": {
+      "items": {
+        "$ref": "#/$defs/ParameterCondition"
+      },
+      "maxItems": 16,
+      "title": "Parameter Conditions",
+      "type": "array"
+    },
+    "representation_constraint_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Representation Constraint Ids",
+      "type": "array"
+    },
+    "resource_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Resource Constraints",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "sckg-applicability-scope-v1.1",
+      "default": "sckg-applicability-scope-v1.1",
+      "enum": [
+        "sckg-applicability-scope-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:[a-z0-9][a-z0-9_.:-]{0,126}$",
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "scope_status": {
+      "enum": [
+        "explicit",
+        "partially_known",
+        "unknown",
+        "not_applicable"
+      ],
+      "title": "Scope Status",
+      "type": "string"
+    },
+    "study_design_constraints": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Study Design Constraints",
+      "type": "array"
+    },
+    "task_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Task Ids",
+      "type": "array"
+    },
+    "valid_from": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Valid From"
+    },
+    "valid_to": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Valid To"
+    },
+    "version_constraints": {
+      "items": {
+        "$ref": "#/$defs/VersionConstraint"
+      },
+      "maxItems": 16,
+      "title": "Version Constraints",
+      "type": "array"
+    }
+  },
+  "required": [
+    "scope_id",
+    "scope_status"
+  ],
+  "title": "ApplicabilityScope",
+  "type": "object"
+}

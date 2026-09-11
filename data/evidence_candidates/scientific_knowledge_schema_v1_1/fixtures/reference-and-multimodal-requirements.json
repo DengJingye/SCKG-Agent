@@ -1,0 +1,310 @@
+{
+  "atomic_claims": [],
+  "benchmark_studies": [],
+  "derived_relations": [],
+  "description": "Reference artifacts and multimodal alignment are explicit port requirements rather than metadata tags.",
+  "empirical_results": [],
+  "entities": [
+    {
+      "entity_id": "task:cell_type_annotation",
+      "label": "cell type annotation",
+      "record_type": "ScientificTask",
+      "schema_version": "sckg-scientific-task-v1.1"
+    },
+    {
+      "entity_id": "task:multimodal_integration",
+      "label": "multimodal integration",
+      "record_type": "ScientificTask",
+      "schema_version": "sckg-scientific-task-v1.1"
+    },
+    {
+      "entity_id": "method:reference_annotation",
+      "label": "reference-based annotation",
+      "record_type": "Method",
+      "schema_version": "sckg-method-v1.1"
+    },
+    {
+      "entity_id": "method:multivi",
+      "label": "MultiVI",
+      "record_type": "Method",
+      "schema_version": "sckg-method-v1.1"
+    },
+    {
+      "entity_id": "software-project:fixture",
+      "label": "Fixture project",
+      "record_type": "SoftwareProject",
+      "schema_version": "sckg-software-project-v1.1"
+    },
+    {
+      "distribution_name": "fixture",
+      "ecosystem": "fixture",
+      "entity_id": "package:fixture",
+      "project_id": "software-project:fixture",
+      "record_type": "Package",
+      "schema_version": "sckg-package-v1.1"
+    },
+    {
+      "entity_id": "package-release:fixture:1",
+      "immutable_release_ref": "fixture:1",
+      "package_id": "package:fixture",
+      "record_type": "PackageRelease",
+      "schema_version": "sckg-package-release-v1.1",
+      "version": "1"
+    },
+    {
+      "entity_id": "operator:fixture.annotate",
+      "package_id": "package:fixture",
+      "qualified_name": "fixture.annotate",
+      "record_type": "Operator",
+      "schema_version": "sckg-operator-v1.1"
+    },
+    {
+      "entity_id": "operator:fixture.multivi",
+      "package_id": "package:fixture",
+      "qualified_name": "fixture.multivi",
+      "record_type": "Operator",
+      "schema_version": "sckg-operator-v1.1"
+    },
+    {
+      "artifact_kind": "atlas",
+      "entity_id": "reference-artifact:cell_annotation_atlas",
+      "label": "versioned cell annotation atlas",
+      "record_type": "ReferenceArtifact",
+      "schema_version": "sckg-reference-artifact-v1.1"
+    },
+    {
+      "artifact_id": "reference-artifact:cell_annotation_atlas",
+      "content_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "entity_id": "reference-artifact-revision:cell_annotation_atlas:1",
+      "feature_namespace": "HGNC",
+      "label_ontology_id": "CL",
+      "record_type": "ReferenceArtifactRevision",
+      "schema_version": "sckg-reference-artifact-revision-v1.1",
+      "scope_id": "scope:multimodal-and-reference",
+      "species_taxa": [
+        "NCBITaxon:9606"
+      ],
+      "version": "1"
+    },
+    {
+      "contract_refs": [],
+      "entity_id": "operator-revision:fixture.annotate:1",
+      "implements_method_ids": [
+        "method:reference_annotation"
+      ],
+      "implements_method_variant_ids": [],
+      "input_ports": [
+        {
+          "cross_port_alignment_constraints": [],
+          "input_port_id": "input-port:annotation.query",
+          "max_cardinality": 1,
+          "min_cardinality": 1,
+          "requirement_combination": "all_of",
+          "requirements": [
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:annotation_query_expression"
+              ],
+              "requirement_id": "requirement:annotation.query",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:multimodal-and-reference",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [
+                "reference-artifact-revision:cell_annotation_atlas:1"
+              ],
+              "representation_constraint_ids": [],
+              "requirement_id": "requirement:annotation.reference",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:multimodal-and-reference",
+              "when": []
+            }
+          ],
+          "role": "query_expression",
+          "schema_version": "sckg-input-port-v1.1",
+          "scope_id": "scope:multimodal-and-reference"
+        }
+      ],
+      "operator_id": "operator:fixture.annotate",
+      "output_ports": [],
+      "package_release_id": "package-release:fixture:1",
+      "record_type": "OperatorRevision",
+      "schema_version": "sckg-operator-revision-v1.1",
+      "scope_id": "scope:multimodal-and-reference"
+    },
+    {
+      "contract_refs": [],
+      "entity_id": "operator-revision:fixture.multivi:1",
+      "implements_method_ids": [
+        "method:multivi"
+      ],
+      "implements_method_variant_ids": [],
+      "input_ports": [
+        {
+          "cross_port_alignment_constraints": [
+            "modality-specific feature axes",
+            "explicit observation mapping"
+          ],
+          "input_port_id": "input-port:multivi.modalities",
+          "max_cardinality": 2,
+          "min_cardinality": 1,
+          "requirement_combination": "all_of",
+          "requirements": [
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:multivi_partially_paired"
+              ],
+              "requirement_id": "requirement:multivi.modalities",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:multimodal-and-reference",
+              "when": []
+            }
+          ],
+          "role": "modalities",
+          "schema_version": "sckg-input-port-v1.1",
+          "scope_id": "scope:multimodal-and-reference"
+        }
+      ],
+      "operator_id": "operator:fixture.multivi",
+      "output_ports": [],
+      "package_release_id": "package-release:fixture:1",
+      "record_type": "OperatorRevision",
+      "schema_version": "sckg-operator-revision-v1.1",
+      "scope_id": "scope:multimodal-and-reference"
+    }
+  ],
+  "evaluation_datasets": [],
+  "evidence_assessments": [],
+  "expected_semantics": [
+    "reference_artifact_revision_is_a_separate_required_input",
+    "multimodal_constraints_preserve_modality_axes_and_partial_pairing"
+  ],
+  "fixture_id": "conformance-fixture:reference-and-multimodal-requirements",
+  "instance_bindings": [],
+  "metrics": [],
+  "representation_constraints": [
+    {
+      "allow_missing_modalities": false,
+      "constraint_id": "representation-constraint:annotation_query_expression",
+      "feature_alignment": "explicit_mapping",
+      "forbidden_transformations": [],
+      "observation_alignment": "not_applicable",
+      "representation_type_id": "representation-type:query_expression",
+      "required_component_roles": [],
+      "required_metadata": [],
+      "required_modalities": [
+        "rna"
+      ],
+      "required_provenance_method_ids": [],
+      "required_transformations": [],
+      "required_value_states": [],
+      "schema_version": "sckg-representation-constraint-v1.1",
+      "scope_id": "scope:multimodal-and-reference"
+    },
+    {
+      "allow_missing_modalities": true,
+      "constraint_id": "representation-constraint:multivi_partially_paired",
+      "feature_alignment": "explicit_mapping",
+      "forbidden_transformations": [],
+      "observation_alignment": "partially_paired",
+      "representation_type_id": "representation-type:rna_atac_multimodal",
+      "required_component_roles": [],
+      "required_metadata": [
+        "modality_indicator",
+        "batch_key"
+      ],
+      "required_modalities": [
+        "rna",
+        "atac"
+      ],
+      "required_provenance_method_ids": [],
+      "required_transformations": [],
+      "required_value_states": [],
+      "schema_version": "sckg-representation-constraint-v1.1",
+      "scope_id": "scope:multimodal-and-reference"
+    }
+  ],
+  "representation_types": [
+    {
+      "axes": [
+        "cell",
+        "gene"
+      ],
+      "components": [],
+      "feature_identity": "gene namespace must match or map to reference",
+      "label": "query expression",
+      "missingness_semantics": "missing genes require explicit mapping",
+      "modalities": [
+        "rna"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:query_expression",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [],
+      "value_semantics": "expression abundance"
+    },
+    {
+      "axes": [
+        "cell",
+        "gene",
+        "peak"
+      ],
+      "components": [],
+      "feature_identity": "genes and peaks retain separate namespaces",
+      "label": "RNA and ATAC multimodal observations",
+      "missingness_semantics": "unobserved modality differs from measured zero",
+      "modalities": [
+        "rna",
+        "atac"
+      ],
+      "observation_unit": "cell",
+      "representation_type_id": "representation-type:rna_atac_multimodal",
+      "schema_version": "sckg-representation-type-v1.1",
+      "structural_properties": [],
+      "transformation_state": [],
+      "value_semantics": "modality-partitioned count matrices"
+    }
+  ],
+  "review_decisions": [],
+  "schema_version": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+  "scopes": [
+    {
+      "assay_technology_ids": [],
+      "biological_context_ids": [],
+      "combination": "all_of",
+      "evaluation_context_ids": [],
+      "modalities": [
+        "rna",
+        "atac"
+      ],
+      "observation_units": [
+        "cell"
+      ],
+      "organism_taxa": [],
+      "parameter_conditions": [],
+      "representation_constraint_ids": [],
+      "resource_constraints": [],
+      "schema_version": "sckg-applicability-scope-v1.1",
+      "scope_id": "scope:multimodal-and-reference",
+      "scope_status": "explicit",
+      "study_design_constraints": [
+        "paired_or_partially_paired_modalities"
+      ],
+      "task_ids": [
+        "task:cell_type_annotation",
+        "task:multimodal_integration"
+      ],
+      "valid_from": null,
+      "valid_to": null,
+      "version_constraints": []
+    }
+  ],
+  "supersessions": []
+}

@@ -1,0 +1,363 @@
+{
+  "$defs": {
+    "InputPort": {
+      "additionalProperties": false,
+      "properties": {
+        "cross_port_alignment_constraints": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Cross Port Alignment Constraints",
+          "type": "array"
+        },
+        "input_port_id": {
+          "pattern": "^input-port:",
+          "title": "Input Port Id",
+          "type": "string"
+        },
+        "max_cardinality": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cardinality"
+        },
+        "min_cardinality": {
+          "minimum": 0,
+          "title": "Min Cardinality",
+          "type": "integer"
+        },
+        "requirement_combination": {
+          "default": "all_of",
+          "enum": [
+            "all_of",
+            "any_of"
+          ],
+          "title": "Requirement Combination",
+          "type": "string"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Requirements",
+          "type": "array"
+        },
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-input-port-v1.1",
+          "default": "sckg-input-port-v1.1",
+          "enum": [
+            "sckg-input-port-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_port_id",
+        "role",
+        "min_cardinality",
+        "requirements",
+        "scope_id"
+      ],
+      "title": "InputPort",
+      "type": "object"
+    },
+    "OutputPort": {
+      "additionalProperties": false,
+      "properties": {
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "irreversible": {
+          "default": false,
+          "title": "Irreversible",
+          "type": "boolean"
+        },
+        "lineage_input_port_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Lineage Input Port Ids",
+          "type": "array"
+        },
+        "output_port_id": {
+          "pattern": "^output-port:",
+          "title": "Output Port Id",
+          "type": "string"
+        },
+        "preserves": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Preserves",
+          "type": "array"
+        },
+        "production_conditions": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 8,
+          "title": "Production Conditions",
+          "type": "array"
+        },
+        "representation_type_id": {
+          "pattern": "^representation-type:",
+          "title": "Representation Type Id",
+          "type": "string"
+        },
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-output-port-v1.1",
+          "default": "sckg-output-port-v1.1",
+          "enum": [
+            "sckg-output-port-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "transforms": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Transforms",
+          "type": "array"
+        }
+      },
+      "required": [
+        "output_port_id",
+        "role",
+        "representation_type_id",
+        "scope_id"
+      ],
+      "title": "OutputPort",
+      "type": "object"
+    },
+    "ParameterCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "operator": {
+          "enum": [
+            "equals",
+            "in",
+            "not_in",
+            "present"
+          ],
+          "title": "Operator",
+          "type": "string"
+        },
+        "parameter_id": {
+          "minLength": 1,
+          "title": "Parameter Id",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "parameter_id",
+        "operator"
+      ],
+      "title": "ParameterCondition",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "enum": [
+            "mandatory",
+            "conditional",
+            "optional",
+            "recommended"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "reference_artifact_revision_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Reference Artifact Revision Ids",
+          "type": "array"
+        },
+        "representation_constraint_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 8,
+          "title": "Representation Constraint Ids",
+          "type": "array"
+        },
+        "requirement_id": {
+          "pattern": "^requirement:",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "sckg-requirement-v1.1",
+          "default": "sckg-requirement-v1.1",
+          "enum": [
+            "sckg-requirement-v1.1"
+          ],
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope_id": {
+          "pattern": "^scope:",
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "when": {
+          "items": {
+            "$ref": "#/$defs/ParameterCondition"
+          },
+          "maxItems": 8,
+          "title": "When",
+          "type": "array"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "level",
+        "scope_id"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "contract_refs": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Contract Refs",
+      "type": "array"
+    },
+    "entity_id": {
+      "pattern": "^operator-revision:",
+      "title": "Entity Id",
+      "type": "string"
+    },
+    "implements_method_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Implements Method Ids",
+      "type": "array"
+    },
+    "implements_method_variant_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Implements Method Variant Ids",
+      "type": "array"
+    },
+    "input_ports": {
+      "items": {
+        "$ref": "#/$defs/InputPort"
+      },
+      "maxItems": 16,
+      "title": "Input Ports",
+      "type": "array"
+    },
+    "operator_id": {
+      "pattern": "^operator:",
+      "title": "Operator Id",
+      "type": "string"
+    },
+    "output_ports": {
+      "items": {
+        "$ref": "#/$defs/OutputPort"
+      },
+      "maxItems": 16,
+      "title": "Output Ports",
+      "type": "array"
+    },
+    "package_release_id": {
+      "pattern": "^package-release:",
+      "title": "Package Release Id",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "OperatorRevision",
+      "default": "OperatorRevision",
+      "enum": [
+        "OperatorRevision"
+      ],
+      "title": "Record Type",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-operator-revision-v1.1",
+      "default": "sckg-operator-revision-v1.1",
+      "enum": [
+        "sckg-operator-revision-v1.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope_id": {
+      "pattern": "^scope:",
+      "title": "Scope Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_id",
+    "operator_id",
+    "package_release_id",
+    "implements_method_ids",
+    "scope_id"
+  ],
+  "title": "OperatorRevision",
+  "type": "object"
+}
