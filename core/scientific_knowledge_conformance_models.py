@@ -163,6 +163,23 @@ class MethodVariant(StrictModel):
     defining_parameter_conditions: list[ParameterCondition] = Field(default_factory=list, max_length=16)
 
 
+class ParameterDefinition(StrictModel):
+    schema_version: Literal["sckg-parameter-definition-v1.1"] = "sckg-parameter-definition-v1.1"
+    record_type: Literal["ParameterDefinition"] = "ParameterDefinition"
+    entity_id: str = Field(pattern=r"^parameter:")
+    label: str = Field(min_length=1)
+    owner_operator_id: str = Field(pattern=r"^operator:")
+    value_domain: str = Field(min_length=1, max_length=240)
+    unit: str | None = Field(default=None, max_length=80)
+
+
+class Limitation(StrictModel):
+    schema_version: Literal["sckg-limitation-v1.1"] = "sckg-limitation-v1.1"
+    record_type: Literal["Limitation"] = "Limitation"
+    entity_id: str = Field(pattern=r"^limitation:")
+    label: str = Field(min_length=1)
+
+
 class SoftwareProject(StrictModel):
     schema_version: Literal["sckg-software-project-v1.1"] = "sckg-software-project-v1.1"
     record_type: Literal["SoftwareProject"] = "SoftwareProject"
@@ -306,6 +323,8 @@ EntityRecord = Annotated[
         ScientificTask,
         Method,
         MethodVariant,
+        ParameterDefinition,
+        Limitation,
         SoftwareProject,
         Package,
         PackageRelease,
@@ -592,6 +611,8 @@ class ConformanceBundle(StrictModel):
                 raise ValueError("package release references unknown package")
             if isinstance(entity, Operator) and entity.package_id not in entity_ids:
                 raise ValueError("operator references unknown package")
+            if isinstance(entity, ParameterDefinition) and entity.owner_operator_id not in entity_ids:
+                raise ValueError("parameter definition references unknown operator")
             if isinstance(entity, OperatorRevision):
                 if entity.operator_id not in entity_ids or entity.package_release_id not in entity_ids:
                     raise ValueError("operator revision identity chain is incomplete")
@@ -629,6 +650,8 @@ class ConformanceBundle(StrictModel):
         if any(item.scope_id not in scope_ids for item in all_scoped):
             raise ValueError("record references unknown applicability scope")
         claim_ids = {item.claim_revision_id for item in self.atomic_claims}
+        if any(item.subject_id not in entity_ids for item in self.atomic_claims):
+            raise ValueError("atomic claim references unknown subject")
         if any(item.claim_revision_id not in claim_ids for item in self.evidence_assessments):
             raise ValueError("evidence assessment references unknown claim")
         if any(
