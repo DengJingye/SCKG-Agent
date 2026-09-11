@@ -1,0 +1,204 @@
+{
+  "schema_version": "sckg-method-kg-atomic-claim-quality-v1",
+  "batch_id": "method-kg-atomic-claim-batch1-v1",
+  "promotion_status": "candidate_only_human_review_required",
+  "claim_count": 48,
+  "relation_count": 196,
+  "projected_relation_count": 52,
+  "evidence_gap_count": 13,
+  "claims_by_entity": {
+    "CellTypist": 6,
+    "HVG selection": 3,
+    "Harmony": 6,
+    "Leiden": 4,
+    "PCA": 4,
+    "Scanorama": 6,
+    "Scrublet": 6,
+    "SingleR": 6,
+    "UMAP": 3,
+    "neighbor graph construction": 4
+  },
+  "claims_by_predicate": {
+    "consumes": 8,
+    "key_parameter": 9,
+    "limitation": 5,
+    "produces": 12,
+    "requires_representation": 4,
+    "supports_task": 10
+  },
+  "quality_gates": {
+    "schema_validity": {
+      "value": 1.0,
+      "passed": true
+    },
+    "evidence_span_resolvability": {
+      "value": 1.0,
+      "passed": true
+    },
+    "atomic_claim_content_hash_validity": {
+      "value": 1.0,
+      "passed": true
+    },
+    "evidence_span_content_hash_validity": {
+      "value": 1.0,
+      "passed": true
+    },
+    "critical_semantic_edge_provenance": {
+      "value": 1.0,
+      "passed": true
+    },
+    "entity_alias_consistency": {
+      "value": 1.0,
+      "passed": true,
+      "scope": "Batch 1 entity registry only; global alias issues remain blockers."
+    },
+    "alias_collision_count": {
+      "value": 0,
+      "passed": true
+    },
+    "unsupported_candidate_relation_count": {
+      "value": 0,
+      "passed": true
+    },
+    "unresolved_decision_path_contradiction_count": {
+      "value": 0,
+      "passed": true
+    },
+    "dangling_edge_count": {
+      "value": 0,
+      "passed": true
+    },
+    "unresolved_duplicate_promoted_claim_count": {
+      "value": 0,
+      "passed": true
+    },
+    "source_bound_projection_mismatch_count": {
+      "value": 0,
+      "passed": true,
+      "scope": "Batch 1 candidate projection only; the baseline Decision Graph mismatch remains unresolved."
+    }
+  },
+  "baseline_integrity_issues": [
+    {
+      "issue": "source_bound_projection_mismatch",
+      "status": "blocks_canonical_promotion",
+      "finding": "Decision Graph source-material projection marks source_bound=true for canonical evidence rows whose source_bound value is false.",
+      "observed_count": 10,
+      "observed_ids": [
+        "benchmark:HR_BMK_DoubletFinder_doublet_detection_2020",
+        "benchmark:HR_BMK_Harmony_scIB_integration_2022",
+        "benchmark:HR_BMK_Scanpy_batch_correction_2020",
+        "benchmark:HR_BMK_Scrublet_doublet_detection_2020",
+        "benchmark:HR_BMK_Seurat_scIB_integration_2022",
+        "benchmark:HR_BMK_SoupX_ambient_decontamination_2026",
+        "benchmark:HR_BMK_cell2location_spatial_deconvolution_2022",
+        "benchmark:HR_BMK_scGPT_SAE_interpretability_2026",
+        "benchmark:HR_BMK_scvi_tools_scIB_integration_2022",
+        "benchmark:HR_BMK_tradeSeq_trajectory_de_2024"
+      ]
+    },
+    {
+      "issue": "scanpy_contract_missing_from_decision_snapshot",
+      "status": "blocks_decision_projection",
+      "finding": "The current Scanpy contract exists on disk but is absent from the older Decision Graph snapshot.",
+      "contract_file_exists": true,
+      "decision_snapshot_contains_scanpy_contract": false
+    },
+    {
+      "issue": "stale_celltypist_singler_contract_versions",
+      "status": "blocks_decision_projection",
+      "finding": "Decision Graph contract nodes predate the current wrapper-implemented CellTypist and SingleR contract files.",
+      "decision_snapshot_versions": {
+        "celltypist:1.7.1": "0.1.0-planning-only",
+        "singler:2.14.0": "0.1.0-planning-only"
+      },
+      "current_file_versions": {
+        "celltypist:1.7.1": "0.2.0-wrapper-implemented",
+        "singler:2.14.0": "0.2.0-wrapper-implemented"
+      }
+    },
+    {
+      "issue": "input_fingerprint_drift",
+      "status": "blocks_canonical_promotion",
+      "finding": "Current graph manifest input fingerprints no longer match selected catalog and contract inputs.",
+      "drifted_inputs": {
+        "knowledge_graph_v2": [
+          "contracts/tools/celltypist/1.7.1.json",
+          "contracts/tools/singler/2.14.0.json",
+          "data/scrna_tools.tsv"
+        ],
+        "decision_graph_v3": [
+          "contracts/tools/celltypist/1.7.1.json",
+          "contracts/tools/singler/2.14.0.json"
+        ]
+      }
+    },
+    {
+      "issue": "scvi_vs_scvi_tools_identity",
+      "status": "blocks_global_alias_gate",
+      "finding": "No governed semantic alias record establishes whether scVI denotes a model, method, or the scvi-tools package."
+    },
+    {
+      "issue": "monocle_vs_monocle3_identity",
+      "status": "blocks_global_alias_gate",
+      "finding": "No governed semantic alias/version record resolves Monocle versus Monocle3 identity."
+    }
+  ],
+  "technically_valid_candidate_claim_ids": [
+    "atomic-claim:05f99318736117acd69561a2",
+    "atomic-claim:0dd260c938fbbe264be34d31",
+    "atomic-claim:14d7afd8b9f67d013f6f6ee2",
+    "atomic-claim:192a8599295ba2817095fe5f",
+    "atomic-claim:1faedfef2b385dcf8ccf4b77",
+    "atomic-claim:20e8041f84905605ac9b22d4",
+    "atomic-claim:25ab507683663d8976ca0085",
+    "atomic-claim:2a54f59146c8a1acf6c28ad4",
+    "atomic-claim:2df5bd0c6d3280b626f39830",
+    "atomic-claim:34cf451d689595561d600bad",
+    "atomic-claim:3c09bab987f00e2fd8dcc8aa",
+    "atomic-claim:4190fad0606564f71280ddc8",
+    "atomic-claim:438df4f8c7ab4d8c2e089f0d",
+    "atomic-claim:49e6a478e7ef0861a25ed4ab",
+    "atomic-claim:4d57badd70ac33a5cccc81aa",
+    "atomic-claim:57050d61751e4535a0f09d7e",
+    "atomic-claim:5a46ab0f1a2a9780c46104d5",
+    "atomic-claim:5d8a1c0c0a32387ad7557abb",
+    "atomic-claim:60acaec7ee63a9785c1e5635",
+    "atomic-claim:60b52936860933b97d81421d",
+    "atomic-claim:6a0061e7494165b06221a8c2",
+    "atomic-claim:6c2eb53868c9f55ec8f49d81",
+    "atomic-claim:7028c77301fc58af93e12a82",
+    "atomic-claim:72b22fcbefb86a38816c88c1",
+    "atomic-claim:82fb9d02b7516601b7eb9b65",
+    "atomic-claim:88faec5807a869176755283c",
+    "atomic-claim:8b10ed6a6991c5b34ea8e196",
+    "atomic-claim:8fe686a1e3912c7cbe355df1",
+    "atomic-claim:9570a70cabe22b4bffe0f9a0",
+    "atomic-claim:99884b84406d7959c9446635",
+    "atomic-claim:9b280f1299a54d2f1ca412b0",
+    "atomic-claim:9bca74fc29365b21162cd383",
+    "atomic-claim:9cb68cf27cbc88ebd96b62fb",
+    "atomic-claim:a0b7fff4a35112d29488d58d",
+    "atomic-claim:a2e288f28a37f855e91a45a6",
+    "atomic-claim:af3c4cf2b1db2d6c72cee649",
+    "atomic-claim:b9516497a8cac23972611a0a",
+    "atomic-claim:c32953393ad75474e150cfdd",
+    "atomic-claim:d0b01674c412aa2668a287b9",
+    "atomic-claim:d12ad78846b144662d96cfe5",
+    "atomic-claim:d9456e565a257d61ed7550a3",
+    "atomic-claim:e7072f71f26cb42899304423",
+    "atomic-claim:ea3d886ce4a17fd25d2082e5",
+    "atomic-claim:ea728cd996a33c190876b504",
+    "atomic-claim:f46623a20c8b466a430684fe",
+    "atomic-claim:f47baa416548c9c7b6f367a0",
+    "atomic-claim:f5af082bedee0ce6f377fd0a",
+    "atomic-claim:fb338159201999bdaa0546b7"
+  ],
+  "canonical_promotion_eligible_claim_ids": [],
+  "promotion_blockers": [
+    "All Batch 1 claims remain candidate_pending_review and require explicit human review.",
+    "Baseline source-bound projection mismatch and input fingerprint drift must be resolved before projection.",
+    "Decision Graph contract/version drift must be rebuilt separately, not repaired by this batch.",
+    "Global scVI/scvi-tools and Monocle/Monocle3 alias decisions remain unresolved."
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "claim_id": {
+      "maxLength": 37,
+      "minLength": 37,
+      "title": "Claim Id",
+      "type": "string"
+    },
+    "claim_text": {
+      "maxLength": 500,
+      "minLength": 1,
+      "title": "Claim Text",
+      "type": "string"
+    },
+    "content_hash": {
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Content Hash",
+      "type": "string"
+    },
+    "modality": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Modality",
+      "type": "array"
+    },
+    "object_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Object Id"
+    },
+    "object_type": {
+      "enum": [
+        "Task",
+        "Representation",
+        "Parameter",
+        "Limitation",
+        "Method",
+        "Value"
+      ],
+      "title": "Object Type",
+      "type": "string"
+    },
+    "object_value": {
+      "anyOf": [
+        {
+          "maxLength": 320,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Object Value"
+    },
+    "polarity": {
+      "default": "positive",
+      "enum": [
+        "positive",
+        "negative",
+        "conditional"
+      ],
+      "title": "Polarity",
+      "type": "string"
+    },
+    "predicate": {
+      "enum": [
+        "supports_task",
+        "consumes",
+        "requires_representation",
+        "produces",
+        "prerequisite",
+        "key_parameter",
+        "limitation"
+      ],
+      "title": "Predicate",
+      "type": "string"
+    },
+    "review_status": {
+      "default": "candidate_pending_review",
+      "enum": [
+        "candidate_pending_review",
+        "reviewed",
+        "verified",
+        "human_reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-method-kg-atomic-claim-v1",
+      "default": "sckg-method-kg-atomic-claim-v1",
+      "enum": [
+        "sckg-method-kg-atomic-claim-v1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "default": "general",
+      "enum": [
+        "general",
+        "documented_api",
+        "reported_workflow",
+        "dataset_specific"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "source_content_hash": {
+      "maxLength": 64,
+      "minLength": 64,
+      "title": "Source Content Hash",
+      "type": "string"
+    },
+    "source_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_span_id": {
+      "maxLength": 29,
+      "minLength": 29,
+      "title": "Source Span Id",
+      "type": "string"
+    },
+    "subject_id": {
+      "maxLength": 128,
+      "minLength": 3,
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "subject_type": {
+      "enum": [
+        "Method",
+        "Tool"
+      ],
+      "title": "Subject Type",
+      "type": "string"
+    },
+    "version": {
+      "anyOf": [
+        {
+          "maxLength": 80,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Version"
+    }
+  },
+  "required": [
+    "claim_id",
+    "subject_id",
+    "subject_type",
+    "predicate",
+    "object_type",
+    "claim_text",
+    "modality",
+    "source_span_id",
+    "source_id",
+    "source_content_hash",
+    "content_hash"
+  ],
+  "title": "AtomicClaim",
+  "type": "object"
+}

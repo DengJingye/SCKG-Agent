@@ -1,0 +1,120 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "derived_from_claim_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Derived From Claim Ids",
+      "type": "array"
+    },
+    "evidence_span_ids": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Evidence Span Ids",
+      "type": "array"
+    },
+    "relation": {
+      "enum": [
+        "SUPPORTS",
+        "SUBJECT",
+        "OBJECT",
+        "SUPPORTS_TASK",
+        "CONSUMES",
+        "REQUIRES_REPRESENTATION",
+        "PRODUCES",
+        "PREREQUISITE",
+        "KEY_PARAMETER",
+        "HAS_LIMITATION"
+      ],
+      "title": "Relation",
+      "type": "string"
+    },
+    "relation_id": {
+      "maxLength": 39,
+      "minLength": 39,
+      "title": "Relation Id",
+      "type": "string"
+    },
+    "relation_kind": {
+      "enum": [
+        "provenance",
+        "claim_structure",
+        "method_projection"
+      ],
+      "title": "Relation Kind",
+      "type": "string"
+    },
+    "review_status": {
+      "default": "candidate_pending_review",
+      "enum": [
+        "candidate_pending_review",
+        "reviewed",
+        "verified",
+        "human_reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-method-kg-claim-relation-v1",
+      "default": "sckg-method-kg-claim-relation-v1",
+      "enum": [
+        "sckg-method-kg-claim-relation-v1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Source Id",
+      "type": "string"
+    },
+    "source_type": {
+      "enum": [
+        "EvidenceSpan",
+        "AtomicClaim",
+        "Method",
+        "Tool",
+        "Representation"
+      ],
+      "title": "Source Type",
+      "type": "string"
+    },
+    "target_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Target Id",
+      "type": "string"
+    },
+    "target_type": {
+      "enum": [
+        "AtomicClaim",
+        "Method",
+        "Tool",
+        "Task",
+        "Representation",
+        "Parameter",
+        "Limitation"
+      ],
+      "title": "Target Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "relation_id",
+    "relation_kind",
+    "source_id",
+    "source_type",
+    "relation",
+    "target_id",
+    "target_type"
+  ],
+  "title": "ClaimLinkedRelationCandidate",
+  "type": "object"
+}
