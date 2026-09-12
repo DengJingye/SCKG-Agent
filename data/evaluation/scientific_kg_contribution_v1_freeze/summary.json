@@ -1,0 +1,183 @@
+{
+  "schema_version": "scientific-kg-contribution-summary-v1",
+  "evaluation_status": "GO",
+  "evaluation_date": "2026-09-12",
+  "current_commit": "c0ee68c891c7861eb5bbb63347d7a1f06d1e6c2e",
+  "pre_kg_commit": "47b12d9224891a775c366964b6509a6984340a88",
+  "comparison": {
+    "baseline": "RepresentationLedger + Capability Pack + CapabilityPlanCompiler with explicit no-op applicability",
+    "kg_enabled": "RepresentationLedger + Capability Pack + the same CapabilityPlanCompiler + production Scientific KG applicability"
+  },
+  "expected_spec": {
+    "path": "eval/specs/scientific_kg_contribution_v1.expected.json",
+    "sha256": "6a7027c60b2cf493415f371d7ec0754e56ae480e42db86c97021cfcb8842f290",
+    "independent_of_kg_enabled_outputs": true
+  },
+  "gates": {
+    "serialized_input_equivalence": {
+      "passed": true,
+      "pre_kg_sha256": "02ce0304effa706788874688728a5a3a896de8195f6a18c1544654c8abe4e09f",
+      "current_sha256": "02ce0304effa706788874688728a5a3a896de8195f6a18c1544654c8abe4e09f",
+      "contract_and_evidence_file_count": 24,
+      "dynamic_metadata_remaining": false
+    },
+    "pre_kg_current_noop_planner_equivalence": {
+      "passed": true,
+      "scenarios_passed": 4,
+      "scenarios_total": 4
+    },
+    "input_integrity_after": {
+      "pre_kg": true,
+      "current": true
+    }
+  },
+  "aggregate": {
+    "behavioral_incremental_changes": {
+      "numerator": 0,
+      "denominator": 4
+    },
+    "explanation_or_provenance_improvements": {
+      "numerator": 4,
+      "denominator": 4
+    },
+    "previously_correct_behavior_regressions": {
+      "numerator": 0,
+      "denominator": 4
+    },
+    "correct_allow_or_block": {
+      "baseline": {
+        "numerator": 4,
+        "denominator": 4
+      },
+      "kg_enabled": {
+        "numerator": 4,
+        "denominator": 4
+      }
+    },
+    "unnecessary_step_events": {
+      "baseline": 0,
+      "kg_enabled": 0,
+      "applicable_scenarios": 2
+    },
+    "invalid_reuse_events": {
+      "baseline": 0,
+      "kg_enabled": 0,
+      "applicable_scenarios": 2
+    },
+    "inappropriate_scheduling_events": {
+      "baseline": 0,
+      "kg_enabled": 0,
+      "applicable_scenarios": 4
+    },
+    "evaluated_representation_linkage": {
+      "baseline": {
+        "numerator": 2,
+        "denominator": 4
+      },
+      "kg_enabled": {
+        "numerator": 4,
+        "denominator": 4
+      }
+    },
+    "resolvable_supporting_evidence": {
+      "baseline": {
+        "numerator": 0,
+        "denominator": 4
+      },
+      "kg_enabled": {
+        "numerator": 4,
+        "denominator": 4
+      }
+    },
+    "explicit_candidate_status": {
+      "baseline": {
+        "numerator": 0,
+        "denominator": 4
+      },
+      "kg_enabled": {
+        "numerator": 4,
+        "denominator": 4
+      }
+    },
+    "specific_incompatibility_reason": {
+      "baseline": {
+        "numerator": 0,
+        "denominator": 2
+      },
+      "kg_enabled": {
+        "numerator": 2,
+        "denominator": 2
+      }
+    },
+    "correct_missing_requirement": {
+      "baseline": {
+        "numerator": 1,
+        "denominator": 1
+      },
+      "kg_enabled": {
+        "numerator": 1,
+        "denominator": 1
+      },
+      "note": "Baseline used no_registered_producer:raw_counts; KG supplied a structured raw_umi_counts requirement plus assessed incompatible representations."
+    }
+  },
+  "scenarios": [
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "classification": "same behavior, explanation/provenance improvement",
+      "behavioral_change": false,
+      "explanation_changes": [
+        "resolvable supporting evidence",
+        "explicit candidate knowledge status"
+      ]
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "classification": "same behavior, explanation/provenance improvement",
+      "behavioral_change": false,
+      "explanation_changes": [
+        "specific stale and observation-identity reasons",
+        "evaluated representation linkage",
+        "resolvable supporting evidence",
+        "explicit candidate knowledge status"
+      ]
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "classification": "same behavior, explanation/provenance improvement",
+      "behavioral_change": false,
+      "explanation_changes": [
+        "resolvable supporting evidence",
+        "explicit candidate knowledge status"
+      ]
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "classification": "same behavior, explanation/provenance improvement",
+      "behavioral_change": false,
+      "explanation_changes": [
+        "specific normalized and integrated incompatibility reasons",
+        "structured raw UMI missing requirement",
+        "evaluated representation linkage",
+        "resolvable supporting evidence",
+        "explicit candidate knowledge status"
+      ]
+    }
+  ],
+  "tests": {
+    "evaluation_harness": "30 passed",
+    "kg_planner_integration": "5 passed",
+    "git_diff_check": "passed"
+  },
+  "audit_artifacts_excluded_from_freeze": {
+    "original_no_go": "data/evaluation/scientific_kg_contribution_v1/",
+    "complete_corrected_run": "data/evaluation/scientific_kg_contribution_v1_corrected/"
+  },
+  "interpretation": "Across these four bounded synthetic mechanisms, the existing Ledger, Capability Pack and Planner already produced the expected behavior. Scientific KG added structured scientific reasons, representation linkage, evidence provenance and candidate-status governance without changing or regressing Planner behavior.",
+  "limitations": [
+    "The four scenarios are synthetic bounded mechanism tests.",
+    "The result does not establish broad scientific utility or production readiness for the broader candidate KG.",
+    "Supporting-reference checks reuse frozen candidate evidence assessments and are not a new independent scientific adjudication.",
+    "Future behavioral evaluation must target decisions not already fully encoded by Capability Pack and RepresentationLedger contracts."
+  ]
+}
