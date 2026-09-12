@@ -92,6 +92,38 @@ class RepresentationEligibility(StrictModel):
     reasons: list[str] = Field(default_factory=list)
 
 
+class ScientificMissingRequirement(StrictModel):
+    input_port_id: str
+    requirement_ids: list[str] = Field(default_factory=list)
+    representation_constraint_ids: list[str] = Field(default_factory=list)
+    required_representation_type_ids: list[str] = Field(default_factory=list)
+    reason_codes: list[str] = Field(default_factory=list)
+    rejected_representation_record_ids: list[str] = Field(default_factory=list)
+
+
+class ScientificEvidenceReference(StrictModel):
+    claim_revision_id: str
+    evidence_span_id: str
+    source_revision_id: str
+    locator: str
+    content_hash: str = Field(min_length=64, max_length=64)
+
+
+class ScientificApplicabilityResult(StrictModel):
+    action_id: str
+    operator_revision_id: str
+    decision_scope: Literal["existing_representation_reuse", "action_applicability"]
+    knowledge_status: Literal["candidate"] = "candidate"
+    applicable: bool
+    blocked: bool
+    assessed_representation_ids: list[str] = Field(default_factory=list)
+    reusable_representation_ids: list[str] = Field(default_factory=list)
+    reusable_representation_record_ids: list[str] = Field(default_factory=list)
+    missing_requirements: list[ScientificMissingRequirement] = Field(default_factory=list)
+    incompatibility_reasons: list[str] = Field(default_factory=list)
+    evidence_references: list[ScientificEvidenceReference] = Field(default_factory=list)
+
+
 class CapabilityPlanResult(StrictModel):
     plan_id: str
     workflow_plan_id: str
@@ -100,3 +132,6 @@ class CapabilityPlanResult(StrictModel):
     planned_method_ids: list[str]
     blocked: bool
     blocking_reasons: list[str] = Field(default_factory=list)
+    scientific_applicability_results: list[ScientificApplicabilityResult] = Field(
+        default_factory=list
+    )

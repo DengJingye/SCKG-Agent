@@ -15,9 +15,17 @@ from core.execution_models import (
     WorkflowNode,
     WorkflowPlan,
 )
-from core.representation_models import CapabilityPlanResult, RepresentationLedger
+from core.representation_models import (
+    CapabilityPlanResult,
+    RepresentationLedger,
+    ScientificApplicabilityResult,
+)
 from core.research_workspace_models import StepContract, StepParameterSpec
 from core.tool_contract_registry import ToolContractRegistry
+from engine.scientific_kg_applicability import (
+    ScientificKGApplicability,
+    default_scientific_kg_applicability,
+)
 
 
 class CapabilityPlanCompiler:
@@ -27,9 +35,13 @@ class CapabilityPlanCompiler:
         self,
         registry: CapabilityPackRegistry | None = None,
         tool_registry: ToolContractRegistry | None = None,
+        scientific_applicability: ScientificKGApplicability | None = None,
     ) -> None:
         self.registry = registry or CapabilityPackRegistry()
         self.tool_registry = tool_registry or ToolContractRegistry()
+        self.scientific_applicability = (
+            scientific_applicability or default_scientific_kg_applicability()
+        )
 
     def compile(
         self,
@@ -65,21 +77,59 @@ class CapabilityPlanCompiler:
         reused: set[str] = set()
         selected: list[MethodBinding] = []
         planned_outputs: set[str] = set(current)
+        produced_by_plan: set[str] = set()
         blockers: list[str] = list(ledger.blocking_errors)
         visiting: set[str] = set()
+        scientific_decisions: dict[str, ScientificApplicabilityResult] = {}
 
-        def ensure(representation_id: str) -> bool:
+        def scientific_decision(
+            action_id: str | None,
+        ) -> ScientificApplicabilityResult | None:
+            if pack_id != "scanpy_core" or action_id is None:
+                return None
+            if action_id not in scientific_decisions:
+                decision = self.scientific_applicability.assess(
+                    action_id=action_id,
+                    ledger=ledger,
+                )
+                if decision is not None:
+                    scientific_decisions[action_id] = decision
+            return scientific_decisions.get(action_id)
+
+        def ensure(
+            representation_id: str,
+            *,
+            consumer_action_id: str | None = None,
+        ) -> bool:
+            reuse_rejection_reasons: list[str] = []
+            decision = scientific_decision(consumer_action_id)
             if representation_id in planned_outputs:
                 record = current.get(representation_id)
                 if record is not None:
-                    reused.add(representation_id)
-                return True
+                    decision_rejects_reuse = bool(
+                        decision is not None
+                        and decision.blocked
+                        and representation_id in decision.assessed_representation_ids
+                        and representation_id
+                        not in decision.reusable_representation_ids
+                    )
+                    if decision_rejects_reuse:
+                        reuse_rejection_reasons.extend(
+                            f"scientific_kg:{consumer_action_id}:{reason}"
+                            for reason in decision.incompatibility_reasons
+                        )
+                    else:
+                        reused.add(representation_id)
+                        return True
+                else:
+                    return True
             if representation_id in visiting:
                 blockers.append(f"representation_cycle:{representation_id}")
                 return False
             visiting.add(representation_id)
             candidates = _rank_methods(producers.get(representation_id, []), options)
             if not candidates:
+                blockers.extend(reuse_rejection_reasons)
                 blockers.append(f"no_registered_producer:{representation_id}")
                 visiting.remove(representation_id)
                 return False
@@ -89,14 +139,22 @@ class CapabilityPlanCompiler:
                 blocker_checkpoint = len(blockers)
                 selected_checkpoint = list(selected)
                 outputs_checkpoint = set(planned_outputs)
+                produced_checkpoint = set(produced_by_plan)
                 reused_checkpoint = set(reused)
+                method_decision = scientific_decision(method.method_id)
                 local_ok = True
                 for requirement in method.consumes:
-                    if not ensure(requirement.representation_id):
+                    if not ensure(
+                        requirement.representation_id,
+                        consumer_action_id=method.method_id,
+                    ):
                         local_ok = False
                         break
                     record = current.get(requirement.representation_id)
-                    if record is not None:
+                    if (
+                        record is not None
+                        and requirement.representation_id not in produced_by_plan
+                    ):
                         result = compatibility_check(
                             producer=definitions[requirement.representation_id],
                             consumer=requirement,
@@ -116,20 +174,30 @@ class CapabilityPlanCompiler:
                 if local_ok:
                     chosen = method
                     break
+                if method_decision is not None and method_decision.blocked:
+                    candidate_reasons.extend(
+                        f"scientific_kg:{method.method_id}:{reason}"
+                        for reason in method_decision.incompatibility_reasons
+                    )
                 candidate_reasons.extend(blockers[blocker_checkpoint:])
                 del blockers[blocker_checkpoint:]
                 selected[:] = selected_checkpoint
                 planned_outputs.clear()
                 planned_outputs.update(outputs_checkpoint)
+                produced_by_plan.clear()
+                produced_by_plan.update(produced_checkpoint)
                 reused.clear()
                 reused.update(reused_checkpoint)
             if chosen is None:
+                blockers.extend(reuse_rejection_reasons)
                 blockers.extend(candidate_reasons or [f"no_scientifically_compatible_producer:{representation_id}"])
                 visiting.remove(representation_id)
                 return False
             if chosen not in selected:
                 selected.append(chosen)
-                planned_outputs.update(item.representation_id for item in chosen.produces)
+                produced = {item.representation_id for item in chosen.produces}
+                planned_outputs.update(produced)
+                produced_by_plan.update(produced)
             visiting.remove(representation_id)
             return representation_id in planned_outputs
 
@@ -211,6 +279,10 @@ class CapabilityPlanCompiler:
             reused_representation_ids=sorted(reused),
             planned_method_ids=[item.method_id for item in selected],
             blocked=bool(blockers), blocking_reasons=blockers,
+            scientific_applicability_results=sorted(
+                scientific_decisions.values(),
+                key=lambda item: item.action_id,
+            ),
         )
 
     def _resolve_parameters(
