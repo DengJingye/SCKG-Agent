@@ -1690,3 +1690,55 @@
 - 修复后 bootstrap 显式执行 `%matplotlib inline`；QC、HVG、PCA variance、ranked markers 和 UMAP 分别使用审核过的 `sc.pl.violin`、`sc.pl.highly_variable_genes`、`sc.pl.pca_variance_ratio`、`sc.pl.rank_genes_groups`、`sc.pl.umap`。可复现 PNG 改存隐藏 `.sckg_notebook_artifacts/<notebook>`，不再作为主要用户界面。
 - 真实浏览器在 JupyterLab 运行 `scanpy_core-inline-172240.ipynb`：kernel 从 Busy 回到 Idle，17/17 个代码单元已执行、error=0、Notebook 内 `image/png=5`；人工页面检查确认 Marker 与 UMAP 图直接显示在对应代码单元之后，不再出现 `<Figure ...>` 占位文本。
 - 本次 correction 将“浏览器页面直接出现图”定义为该问题的最终验收证据；以后不得用 service test、PNG 文件存在或 `nbconvert` 结果替代真实交互路径。
+
+---
+
+## INC-2026-09-14-034 - Justification Fidelity 冻结输入与投影修复对象耦合
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-09-14 |
+| 检查点 | CP3 Decision-local Evidence Projection v1 |
+| Commit/worktree | e0ab62c + uncommitted CP1/CP2/CP3 work |
+| 当前状态 | OPEN / STOP_FOR_REVIEW |
+| 严重级别 | P0 - 无法在不破坏冻结契约的前提下验证 CP3 |
+| 责任 stage | Evaluation preregistration / system-under-test version boundary |
+
+### 现象、预期与实际
+
+- 预期：v1.1 formal baseline 冻结后，CP3 只修改 production evidence projection，再以同一 frozen atoms/evidence/scope 检查 precision、recall 与 behavior invariance。
+- 实际：preregistration 的 13 个 source_artifact_digests 包含 engine/scientific_kg_applicability.py。CP3 对该文件的任何合法修改都会使 load_frozen_preregistration() 先抛出 frozen_source_artifact_digest_mismatch，后续 fidelity 检查无法开始。
+- 第一条失败测试：新 CP3 focused suite 同时出现一个测试字符串断言问题；随后所有 v1.1 evaluator tests 在 frozen digest gate 处一致失败。前者不改变本 incident 的架构阻塞结论。
+- 第一 divergent Trace span：不适用；失败发生在 evaluation artifact integrity gate，尚未进入 product-facing request/Trace。
+
+### First cause 与责任层
+
+- First cause：冻结 manifest 将 mutable system-under-test implementation digest 与 immutable scientific input/spec digests 放入同一不可变集合。
+- 责任层：evaluation preregistration artifact/version boundary。
+- production projection 本身尚未完成验收，不得把当前未提交 diff 认定为修复。
+
+### 为什么此前测试没有发现
+
+- v1/v1.1 formal run 都在 production implementation 未变化时执行，13/13 digest gate 合法通过。
+- 只有进入 Runbook 明确要求的 post-formal CP3 production correction 后，冻结边界矛盾才显现。
+
+### 最小恢复建议
+
+- 下一版本必须明确分离 immutable scientific evidence/spec/input digests、system-under-test code identity、post-change candidate implementation identity。
+- post-change fidelity comparison 应保留旧/new SUT digest，而不是把新 implementation 误判为 evidence/spec drift。
+- 该修复涉及 evaluation boundary；当前 CP3 又涉及 production projection，跨两个 responsibility layers，因此本轮按 Runbook 停止，不做第二个 patch。
+
+### 传播风险与预防
+
+- 若忽略 digest gate，会削弱 preregistration 完整性；若直接更新 frozen manifest，又会重写 gold/历史 formal identity。
+- 预防规则：formal preregistration 不得把计划在 intervention checkpoint 中修改的 SUT implementation 当作不可变 scientific source artifact；SUT 版本应作为独立比较维度记录。
+
+### CP2.6 resolution - 2026-09-14
+
+- 新增 v1.2 evaluation boundary，保持 frozen spec、12 atoms、8 negative controls、metrics、taxonomy、scientific source/evidence fixtures 与 v1/v1.1 historical formal trees immutable。
+- engine/scientific_kg_applicability.py 被显式建模为唯一允许变化的 System Under Test；pre-fix SHA 固定记录，未来 post-fix SHA 必须另行记录，未声明 production change 仍为 hard failure。
+- v1.2 formal evaluation 未运行；CP2.6 只验证 version boundary。
+- focused evaluator/versioning regression 为 36 passed；既有 KG planner integration 为 5 passed；git diff --check 通过。
+- 当前状态：RESOLVED / READY_TO_RESUME_CP3。

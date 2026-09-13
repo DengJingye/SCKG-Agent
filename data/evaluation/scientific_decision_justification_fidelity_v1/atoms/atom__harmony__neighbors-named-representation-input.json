@@ -1,0 +1,105 @@
+{
+  "scenario_id": "harmony-embedding-to-neighbors",
+  "atom_id": "atom:harmony:neighbors-named-representation-input",
+  "proposition": "Scanpy neighbors 1.11.2 accepts X or an explicitly selected named obsm representation through use_rep.",
+  "primary_owner_expected": "SCIENTIFIC_KG",
+  "primary_owner_observed": "SCIENTIFIC_KG",
+  "scientific_evidence_expected": true,
+  "evidence_check": {
+    "passed": true,
+    "observed_bindings": [
+      {
+        "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+        "claim_content_hash": "faf2d9b98597497888851e9da7ee7b54597058e0c3f1fd740aebbc201f75ef84",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+        "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+      }
+    ]
+  },
+  "scope_check": {
+    "passed": true,
+    "expected": {
+      "scope_id": "scope:uat:scanpy:neighbors:1.11.2",
+      "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope and representation-constraint:uat:neighbors-embedding",
+      "dimensions": {
+        "version": {
+          "state": "compatible",
+          "expected": "scanpy==1.11.2",
+          "context_source": "operator/interface binding: scanpy_core.neighbors_integrated -> operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected"
+        },
+        "task": {
+          "state": "compatible",
+          "expected": "task:neighbor_graph",
+          "context_source": "frozen scenario target/action mapping: neighbor_graph -> scanpy_core.neighbors_integrated"
+        },
+        "modality": {
+          "state": "compatible",
+          "expected": "rna",
+          "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+        },
+        "observation_unit": {
+          "state": "compatible",
+          "expected": "cell",
+          "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+        },
+        "representation_type": {
+          "state": "compatible",
+          "expected": "representation-type:cell_embedding",
+          "context_source": "Ledger record integrated_representation plus project-fixed representation-type mapping"
+        },
+        "named_representation_selection": {
+          "state": "compatible",
+          "expected": "explicit use_rep branch",
+          "context_source": "operator/interface binding: scanpy_core.neighbors_integrated is the frozen named-representation action"
+        }
+      },
+      "overall_state": "compatible"
+    },
+    "observed": {
+      "scope_id": "scope:uat:scanpy:neighbors:1.11.2",
+      "overall_state": "compatible",
+      "version": {
+        "state": "compatible"
+      },
+      "task": {
+        "state": "compatible"
+      },
+      "modality": {
+        "state": "compatible"
+      },
+      "observation_unit": {
+        "state": "compatible"
+      },
+      "representation_type": {
+        "state": "compatible"
+      },
+      "named_representation_selection": {
+        "state": "compatible"
+      }
+    }
+  },
+  "representation_link_check": {
+    "passed": true,
+    "expected_record_ids": [
+      "rep:demo:harmony-embedding"
+    ],
+    "observed_record_ids": [
+      "rep:demo:harmony-embedding"
+    ],
+    "observed_record_id": null,
+    "observed_absence": null
+  },
+  "epistemic_check": {
+    "passed": true,
+    "expected": "candidate",
+    "observed": "candidate"
+  },
+  "ownership_check": {
+    "passed": true
+  },
+  "passed": true,
+  "first_failure": null,
+  "failures": []
+}

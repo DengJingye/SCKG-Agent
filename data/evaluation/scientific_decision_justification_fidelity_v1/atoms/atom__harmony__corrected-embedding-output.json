@@ -1,0 +1,107 @@
+{
+  "scenario_id": "harmony-embedding-to-neighbors",
+  "atom_id": "atom:harmony:corrected-embedding-output",
+  "proposition": "With return_object false, the default Harmony 2.0.5 interface returns corrected PCA embeddings as a matrix.",
+  "primary_owner_expected": "SCIENTIFIC_KG",
+  "primary_owner_observed": "SCIENTIFIC_KG",
+  "scientific_evidence_expected": true,
+  "evidence_check": {
+    "passed": true,
+    "observed_bindings": [
+      {
+        "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+        "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+        "evidence_span_id": "uat-authoritative-span:harmony.output",
+        "source_revision_id": "source-revision:cran:harmony:2.0.5",
+        "locator": "harmony/R/ui.R#L51-L62",
+        "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+      }
+    ]
+  },
+  "scope_check": {
+    "passed": false,
+    "expected": {
+      "scope_id": "scope:uat:harmony:generic:2.0.5",
+      "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+      "dimensions": {
+        "version": {
+          "state": "compatible",
+          "expected": "harmony==2.0.5",
+          "context_source": "operator/interface binding: producer_operator_revision_id identifies Harmony 2.0.5"
+        },
+        "task": {
+          "state": "compatible",
+          "expected": "task:batch_integration",
+          "context_source": "frozen producer operator binding for rep:demo:harmony-embedding"
+        },
+        "modality": {
+          "state": "compatible",
+          "expected": "rna",
+          "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+        },
+        "observation_unit": {
+          "state": "compatible",
+          "expected": "cell",
+          "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+        },
+        "interface": {
+          "state": "unknown",
+          "evaluation": "not_evaluated",
+          "context_source": "frozen scenario identifies the Harmony operator revision but does not record return_object or select the generic/PCA-default interface variant"
+        }
+      },
+      "overall_state": "partially_resolved"
+    },
+    "observed": {
+      "scope_id": "scope:uat:harmony:generic:2.0.5",
+      "overall_state": "incompatible",
+      "version": {
+        "state": "incompatible"
+      },
+      "task": {
+        "state": "incompatible"
+      },
+      "modality": {
+        "state": "compatible"
+      },
+      "observation_unit": {
+        "state": "compatible"
+      },
+      "interface": {
+        "state": "unknown",
+        "evaluation": "not_evaluated"
+      }
+    }
+  },
+  "representation_link_check": {
+    "passed": true,
+    "expected_record_ids": [
+      "rep:demo:harmony-embedding"
+    ],
+    "observed_record_ids": [
+      "rep:demo:harmony-embedding"
+    ],
+    "observed_record_id": null,
+    "observed_absence": null
+  },
+  "epistemic_check": {
+    "passed": true,
+    "expected": "candidate",
+    "observed": "candidate"
+  },
+  "ownership_check": {
+    "passed": true
+  },
+  "passed": false,
+  "first_failure": "SCOPE_MISMATCH",
+  "failures": [
+    {
+      "code": "SCOPE_MISMATCH",
+      "detail": "task"
+    },
+    {
+      "code": "SCOPE_MISMATCH",
+      "detail": "version"
+    }
+  ]
+}

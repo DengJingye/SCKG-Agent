@@ -1,0 +1,404 @@
+{
+  "result": {
+    "scenario_id": "harmony-embedding-to-neighbors",
+    "behavior_digest": "4bf9342aa9304ace66fdb858ecbfb6dccc2dec31df9febce7e5cfaa496a97517",
+    "expected_behavior_digest": "4bf9342aa9304ace66fdb858ecbfb6dccc2dec31df9febce7e5cfaa496a97517",
+    "behavior_unchanged": true,
+    "atom_results": [
+      {
+        "atom_id": "atom:harmony:corrected-embedding-output",
+        "passed": false,
+        "first_failure": "SCOPE_MISMATCH"
+      },
+      {
+        "atom_id": "atom:harmony:neighbors-named-representation-input",
+        "passed": true,
+        "first_failure": null
+      },
+      {
+        "atom_id": "atom:harmony:embedding-record-state",
+        "passed": true,
+        "first_failure": null
+      }
+    ],
+    "scenario_reference_count_unique": 4,
+    "passed": false,
+    "first_failure": "EXTRA_NON_DECISION_EVIDENCE",
+    "failures": [
+      {
+        "code": "EXTRA_NON_DECISION_EVIDENCE",
+        "atom_id": null,
+        "detail": "claim-revision:uat:neighbors-output:v1:2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a:scanpy-authoritative-span:neighbors.metadata:1.11.2"
+      },
+      {
+        "code": "EXTRA_NON_DECISION_EVIDENCE",
+        "atom_id": null,
+        "detail": "claim-revision:uat:neighbors-output:v1:2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a:scanpy-authoritative-span:neighbors.output:1.11.2"
+      },
+      {
+        "code": "SCOPE_MISMATCH",
+        "atom_id": "atom:harmony:corrected-embedding-output",
+        "detail": "task"
+      },
+      {
+        "code": "SCOPE_MISMATCH",
+        "atom_id": "atom:harmony:corrected-embedding-output",
+        "detail": "version"
+      }
+    ]
+  },
+  "raw_input_and_projection": {
+    "scenario_id": "harmony-embedding-to-neighbors",
+    "ledger": {
+      "schema_version": "sckg-representation-ledger-v1",
+      "ledger_id": "ledger:demo:harmony",
+      "profile_id": "profile:ledger:demo:harmony",
+      "source_artifact_id": "artifact:ledger:demo:harmony",
+      "source_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "cell_index_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "gene_index_hash": "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+      "records": [
+        {
+          "representation_record_id": "rep:demo:harmony-embedding",
+          "representation_id": "integrated_representation",
+          "schema_version": "1.0",
+          "value_state": "real_continuous",
+          "slot": "demo/integrated_representation",
+          "provenance": [
+            "validated_integration_action",
+            "harmony.RunHarmony"
+          ],
+          "cell_index_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "gene_index_hash": null,
+          "parameter_hash": "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+          "parent_record_ids": [],
+          "status": "current",
+          "validated": true,
+          "metadata": {
+            "batch_key": "donor",
+            "lineage_id": "lineage:pbmc-demo",
+            "producer_operator_revision_id": "operator-revision:harmony.RunHarmony:2.0.5:uat-corrected"
+          },
+          "stale_reasons": []
+        }
+      ],
+      "metadata": {},
+      "warnings": [],
+      "blocking_errors": [],
+      "created_at": "2000-01-01T00:00:00Z"
+    },
+    "raw_planner_output": {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "planner_outputs": {
+        "plan": {
+          "plan_id": "cap-plan-d1217367b04035f3",
+          "requirement_id": "kg-contribution-v1:harmony-embedding-to-neighbors",
+          "profile_id": "profile:ledger:demo:harmony",
+          "steps": [
+            {
+              "node_id": "scanpy_core.neighbors_integrated",
+              "name": "scanpy_core.neighbors_integrated",
+              "operation": "scanpy_core.neighbors_integrated",
+              "tool_name": "Scanpy",
+              "tool_contract_id": "Scanpy:1.11.2",
+              "input_artifacts": [
+                "integrated_representation"
+              ],
+              "output_artifacts": [
+                "neighbor_graph"
+              ],
+              "parameters": {
+                "n_neighbors": 15
+              },
+              "parameter_provenance": [
+                {
+                  "parameter_name": "n_neighbors",
+                  "value_or_range": 15,
+                  "origin_type": "source_bound_prior",
+                  "source_type": "policy_rule",
+                  "source_id": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html",
+                  "source_span": "parameter_schema.properties.n_neighbors",
+                  "tool_version": "1.11.2",
+                  "run_id": null,
+                  "policy_rule_id": "reviewed_step_parameter_default",
+                  "applicable_scope": "capability_plan",
+                  "limitations": []
+                }
+              ],
+              "preconditions": [
+                "req.neighbors_integrated"
+              ],
+              "resource_budget": {
+                "max_cells": 10000,
+                "max_runtime_seconds": 900,
+                "max_memory_mb": null,
+                "memory_enforcement": "monitor_only",
+                "gpu_allowed": false
+              },
+              "failure_policy": "block_and_preserve_last_valid_representation",
+              "skippable": false
+            }
+          ],
+          "edges": [],
+          "candidate_tools": [
+            "Scanpy"
+          ],
+          "selected_probe_tools": [],
+          "parameter_search_space": {},
+          "execution_budget": {
+            "max_initial_runs": 12,
+            "reserved_repair_runs": 4,
+            "reserved_validation_reruns": 2,
+            "max_total_runs": 18,
+            "max_concurrent_runs": 1,
+            "timeout_seconds": 900
+          },
+          "expected_outputs": [
+            {
+              "artifact_id": "neighbor_graph",
+              "artifact_type": "representation",
+              "format": "registered_artifact",
+              "required": true,
+              "validator_id": "representation_contract_v1"
+            }
+          ],
+          "blocking_conditions": [],
+          "execution_blockers": [
+            "capability_pack_execution_not_eligible"
+          ],
+          "planning_warnings": [
+            "reuse:integrated_representation"
+          ],
+          "data_awareness": "data_aware",
+          "execution_eligible": false,
+          "approval_required": true,
+          "plan_status": "dry_run"
+        },
+        "result": {
+          "plan_id": "result-cap-plan-d1217367b04035f3",
+          "workflow_plan_id": "cap-plan-d1217367b04035f3",
+          "target_representations": [
+            "neighbor_graph"
+          ],
+          "reused_representation_ids": [
+            "integrated_representation"
+          ],
+          "planned_method_ids": [
+            "scanpy_core.neighbors_integrated"
+          ],
+          "blocked": false,
+          "blocking_reasons": [],
+          "scientific_applicability_results": [
+            {
+              "action_id": "scanpy_core.neighbors_integrated",
+              "operator_revision_id": "operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected",
+              "decision_scope": "existing_representation_reuse",
+              "knowledge_status": "candidate",
+              "applicable": true,
+              "blocked": false,
+              "assessed_representation_ids": [
+                "integrated_representation"
+              ],
+              "reusable_representation_ids": [
+                "integrated_representation"
+              ],
+              "reusable_representation_record_ids": [
+                "rep:demo:harmony-embedding"
+              ],
+              "missing_requirements": [],
+              "incompatibility_reasons": [],
+              "evidence_references": [
+                {
+                  "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+                  "evidence_span_id": "uat-authoritative-span:harmony.output",
+                  "source_revision_id": "source-revision:cran:harmony:2.0.5",
+                  "locator": "harmony/R/ui.R#L51-L62",
+                  "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+                },
+                {
+                  "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+                  "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+                  "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                  "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+                  "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+                },
+                {
+                  "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+                  "evidence_span_id": "scanpy-authoritative-span:neighbors.metadata:1.11.2",
+                  "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                  "locator": "src/scanpy/neighbors/__init__.py#L206-L235",
+                  "content_hash": "4eaffdda90550ee716300be8172d85f84a6f4d5ce21c4fc0915aedd882a58dd9"
+                },
+                {
+                  "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+                  "evidence_span_id": "scanpy-authoritative-span:neighbors.output:1.11.2",
+                  "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                  "locator": "src/scanpy/neighbors/__init__.py#L148-L168",
+                  "content_hash": "e2cfb8edef55f79e79ccc5c575d21a7cbda7b6807fb79fc40b16d73a88b9751a"
+                }
+              ]
+            }
+          ]
+        },
+        "resolved_reused_ledger_records": [
+          {
+            "representation_record_id": "rep:demo:harmony-embedding",
+            "representation_id": "integrated_representation",
+            "schema_version": "1.0",
+            "value_state": "real_continuous",
+            "slot": "demo/integrated_representation",
+            "provenance": [
+              "validated_integration_action",
+              "harmony.RunHarmony"
+            ],
+            "cell_index_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "gene_index_hash": null,
+            "parameter_hash": "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh",
+            "parent_record_ids": [],
+            "status": "current",
+            "validated": true,
+            "metadata": {
+              "batch_key": "donor",
+              "lineage_id": "lineage:pbmc-demo",
+              "producer_operator_revision_id": "operator-revision:harmony.RunHarmony:2.0.5:uat-corrected"
+            },
+            "stale_reasons": []
+          }
+        ]
+      },
+      "ledger_before_sha256": "89418af9bb9537578fe8e70de231bcd46059aaa8f4b38df73ec71561e36b5daf",
+      "ledger_after_sha256": "89418af9bb9537578fe8e70de231bcd46059aaa8f4b38df73ec71561e36b5daf",
+      "noop_assess_calls": null
+    },
+    "emitted_atoms": [
+      {
+        "atom_id": "atom:harmony:corrected-embedding-output",
+        "scenario_id": "harmony-embedding-to-neighbors",
+        "proposition": "Harmony returns a corrected embedding matrix, not corrected expression counts.",
+        "primary_owner": "SCIENTIFIC_KG",
+        "scientific_evidence_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+            "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+            "evidence_span_id": "uat-authoritative-span:harmony.output",
+            "source_revision_id": "source-revision:cran:harmony:2.0.5",
+            "locator": "harmony/R/ui.R#L51-L62",
+            "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+          }
+        ],
+        "scope": {
+          "scope_id": "scope:uat:harmony:generic:2.0.5",
+          "overall_state": "incompatible",
+          "version": {
+            "state": "incompatible"
+          },
+          "task": {
+            "state": "incompatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          },
+          "interface": {
+            "state": "unknown",
+            "evaluation": "not_evaluated"
+          }
+        },
+        "knowledge_status": "candidate",
+        "representation_record_ids": [
+          "rep:demo:harmony-embedding"
+        ]
+      },
+      {
+        "atom_id": "atom:harmony:neighbors-named-representation-input",
+        "scenario_id": "harmony-embedding-to-neighbors",
+        "proposition": "Scanpy neighbors accepts X or a named obsm representation; PCA is an automatic/default path rather than a universal prerequisite.",
+        "primary_owner": "SCIENTIFIC_KG",
+        "scientific_evidence_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+            "claim_content_hash": "faf2d9b98597497888851e9da7ee7b54597058e0c3f1fd740aebbc201f75ef84",
+            "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+            "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+            "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+            "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+          }
+        ],
+        "scope": {
+          "scope_id": "scope:uat:scanpy:neighbors:1.11.2",
+          "overall_state": "compatible",
+          "version": {
+            "state": "compatible"
+          },
+          "task": {
+            "state": "compatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          },
+          "representation_type": {
+            "state": "compatible"
+          },
+          "named_representation_selection": {
+            "state": "compatible"
+          }
+        },
+        "knowledge_status": "candidate",
+        "representation_record_ids": [
+          "rep:demo:harmony-embedding"
+        ]
+      },
+      {
+        "atom_id": "atom:harmony:embedding-record-state",
+        "scenario_id": "harmony-embedding-to-neighbors",
+        "proposition": "The frozen Harmony embedding record has status current.",
+        "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+        "scientific_evidence_bindings": [],
+        "scope": {
+          "overall_state": "not_applicable"
+        },
+        "knowledge_status": "observed",
+        "representation_record_id": "rep:demo:harmony-embedding"
+      }
+    ],
+    "scenario_scientific_references": [
+      {
+        "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+        "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+        "evidence_span_id": "uat-authoritative-span:harmony.output",
+        "source_revision_id": "source-revision:cran:harmony:2.0.5",
+        "locator": "harmony/R/ui.R#L51-L62",
+        "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+      },
+      {
+        "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+        "claim_content_hash": "faf2d9b98597497888851e9da7ee7b54597058e0c3f1fd740aebbc201f75ef84",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+        "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+      },
+      {
+        "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+        "claim_content_hash": "2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.metadata:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/__init__.py#L206-L235",
+        "content_hash": "4eaffdda90550ee716300be8172d85f84a6f4d5ce21c4fc0915aedd882a58dd9"
+      },
+      {
+        "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+        "claim_content_hash": "2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.output:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/__init__.py#L148-L168",
+        "content_hash": "e2cfb8edef55f79e79ccc5c575d21a7cbda7b6807fb79fc40b16d73a88b9751a"
+      }
+    ]
+  }
+}

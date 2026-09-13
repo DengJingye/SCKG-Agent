@@ -1,0 +1,1424 @@
+{
+  "schema_version": "scientific-decision-justification-fidelity-result-v1",
+  "evaluation_id": "scientific-decision-justification-fidelity-v1",
+  "formal_run_ordinal": 1,
+  "status": "FAIL",
+  "started_at": "2026-09-13T03:09:51.227284+00:00",
+  "finished_at": "2026-09-13T03:09:51.956747+00:00",
+  "frozen_identity": {
+    "baseline_commit": "e0ab62c368b6a544f077c601e5590e785578fae2",
+    "preregistered_baseline_commit": "d05e8b71649bb46dba004bfca91fe4d32ea2894b",
+    "expected_spec_sha256": "989bdf9b51a5e0529174a5a7b2da0bfe9735a6142fecbac9d985306cf6f61a85",
+    "source_artifact_digest_count": 13,
+    "atom_count": 12,
+    "mutation_count": 8
+  },
+  "first_failure": "BEHAVIOR_MUTATED",
+  "failure_counts": {
+    "BEHAVIOR_MUTATED": 2,
+    "EXTRA_NON_DECISION_EVIDENCE": 12,
+    "SCOPE_MISMATCH": 2
+  },
+  "metrics": {
+    "evidence_fidelity": {
+      "scientific_evidence_recall": {
+        "numerator": 5,
+        "denominator": 5
+      },
+      "non_scientific_evidence_abstention": {
+        "numerator": 7,
+        "denominator": 7
+      },
+      "evidence_object_and_binding_resolvability": {
+        "numerator": 17,
+        "denominator": 17
+      },
+      "scientific_decision_evidence_precision": {
+        "numerator": 5,
+        "denominator": 17
+      }
+    },
+    "scope_fidelity": {
+      "numerator": 4,
+      "denominator": 5
+    },
+    "representation_linkage_fidelity": {
+      "concrete_records": {
+        "numerator": 11,
+        "denominator": 6
+      },
+      "explicit_absence": {
+        "numerator": 1,
+        "denominator": 1
+      }
+    },
+    "epistemic_state_fidelity": {
+      "numerator": 5,
+      "denominator": 5
+    },
+    "ownership_fidelity": {
+      "numerator": 12,
+      "denominator": 12
+    },
+    "behavior_digest_invariance": {
+      "numerator": 2,
+      "denominator": 4
+    },
+    "negative_control_first_cause_detection": {
+      "numerator": 8,
+      "denominator": 8
+    }
+  },
+  "scenario_results": [
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "behavior_digest": "7a77bcc5d7506360311a2b3682e9f0d35bea86bed9820a52a4b43a1d52a7d783",
+      "expected_behavior_digest": "7a77bcc5d7506360311a2b3682e9f0d35bea86bed9820a52a4b43a1d52a7d783",
+      "behavior_unchanged": true,
+      "atom_results": [
+        {
+          "atom_id": "atom:valid-graph:leiden-input",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:valid-graph:record-state",
+          "passed": true,
+          "first_failure": null
+        }
+      ],
+      "scenario_reference_count_unique": 4,
+      "passed": false,
+      "first_failure": "EXTRA_NON_DECISION_EVIDENCE",
+      "failures": [
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:leiden-output:v1:81a38d60f8a65511c29301b51fa62ae7903a5d0f4cc212a5938b6f7b69ae1234:scanpy-authoritative-span:leiden.output:1.11.2"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:neighbors-output:v1:2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a:scanpy-authoritative-span:neighbors.metadata:1.11.2"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:neighbors-output:v1:2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a:scanpy-authoritative-span:neighbors.output:1.11.2"
+        }
+      ]
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "behavior_digest": "a7a643e7c1ef77b5a67ed8b4e485d001179a03895fa4ba1ce59aaed3eaef0efb",
+      "expected_behavior_digest": "e2ddce42b82fcbeb3e44a78c9a496080b3aca83bdd87815ef084b0f5393b2500",
+      "behavior_unchanged": false,
+      "atom_results": [
+        {
+          "atom_id": "atom:invalid-graph:leiden-input",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:invalid-graph:stale-record-state",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:invalid-graph:misaligned-record-state",
+          "passed": true,
+          "first_failure": null
+        }
+      ],
+      "scenario_reference_count_unique": 2,
+      "passed": false,
+      "first_failure": "BEHAVIOR_MUTATED",
+      "failures": [
+        {
+          "code": "BEHAVIOR_MUTATED",
+          "atom_id": null,
+          "detail": "canonical behavior digest differs"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:leiden-output:v1:81a38d60f8a65511c29301b51fa62ae7903a5d0f4cc212a5938b6f7b69ae1234:scanpy-authoritative-span:leiden.output:1.11.2"
+        }
+      ]
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "behavior_digest": "4bf9342aa9304ace66fdb858ecbfb6dccc2dec31df9febce7e5cfaa496a97517",
+      "expected_behavior_digest": "4bf9342aa9304ace66fdb858ecbfb6dccc2dec31df9febce7e5cfaa496a97517",
+      "behavior_unchanged": true,
+      "atom_results": [
+        {
+          "atom_id": "atom:harmony:corrected-embedding-output",
+          "passed": false,
+          "first_failure": "SCOPE_MISMATCH"
+        },
+        {
+          "atom_id": "atom:harmony:neighbors-named-representation-input",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:harmony:embedding-record-state",
+          "passed": true,
+          "first_failure": null
+        }
+      ],
+      "scenario_reference_count_unique": 4,
+      "passed": false,
+      "first_failure": "EXTRA_NON_DECISION_EVIDENCE",
+      "failures": [
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:neighbors-output:v1:2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a:scanpy-authoritative-span:neighbors.metadata:1.11.2"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:neighbors-output:v1:2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a:scanpy-authoritative-span:neighbors.output:1.11.2"
+        },
+        {
+          "code": "SCOPE_MISMATCH",
+          "atom_id": "atom:harmony:corrected-embedding-output",
+          "detail": "task"
+        },
+        {
+          "code": "SCOPE_MISMATCH",
+          "atom_id": "atom:harmony:corrected-embedding-output",
+          "detail": "version"
+        }
+      ]
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "behavior_digest": "9b4ada28d00ae47f9df03a4982ac169c31db8fbe957e68b1b394e593aec1ede3",
+      "expected_behavior_digest": "f7ba47f7af9bb5f991c9ed741e52abfa148af9e4d862316503077bf6b5864954",
+      "behavior_unchanged": false,
+      "atom_results": [
+        {
+          "atom_id": "atom:scrublet:raw-umi-input",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:scrublet:normalized-record-state",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:scrublet:integrated-record-state",
+          "passed": true,
+          "first_failure": null
+        },
+        {
+          "atom_id": "atom:scrublet:raw-umi-absence",
+          "passed": true,
+          "first_failure": null
+        }
+      ],
+      "scenario_reference_count_unique": 7,
+      "passed": false,
+      "first_failure": "BEHAVIOR_MUTATED",
+      "failures": [
+        {
+          "code": "BEHAVIOR_MUTATED",
+          "atom_id": null,
+          "detail": "canonical behavior digest differs"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:scrublet-no-delete:v1:2861638daf7acf056a1ad09cc9b127e5387afcd329266323e5bf261e5c223ad2:uat-authoritative-span:scrublet.input_output"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:scrublet-no-delete:v1:2861638daf7acf056a1ad09cc9b127e5387afcd329266323e5bf261e5c223ad2:uat-authoritative-span:scrublet.threshold"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:scrublet-output:v1:0fbf23ff1406f558b51e0bbd256d056e17708a6b63d894bbd1813087796a2795:uat-authoritative-span:scrublet.input_output"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:scrublet-sample-scope:v1:2cdfa0fa3ba2d0cd109874783e160434f503c3ecd802c88976bb0dc847968e21:uat-authoritative-span:scrublet.sample_scope"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:scrublet-threshold:v1:50c8159b4fba877a6b74561f0498698d9d0ec9c6c119c64edfd2ceaf53e80179:uat-authoritative-span:scrublet.sample_scope"
+        },
+        {
+          "code": "EXTRA_NON_DECISION_EVIDENCE",
+          "atom_id": null,
+          "detail": "claim-revision:uat:scrublet-threshold:v1:50c8159b4fba877a6b74561f0498698d9d0ec9c6c119c64edfd2ceaf53e80179:uat-authoritative-span:scrublet.threshold"
+        }
+      ]
+    }
+  ],
+  "atom_results": [
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "atom_id": "atom:valid-graph:leiden-input",
+      "proposition": "Scanpy Leiden 1.11.2 accepts a sparse adjacency or neighbor-graph connectivities as its graph input.",
+      "primary_owner_expected": "SCIENTIFIC_KG",
+      "primary_owner_observed": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+            "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+            "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+            "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+            "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+            "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+          }
+        ]
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+          "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+          "dimensions": {
+            "version": {
+              "state": "compatible",
+              "expected": "scanpy==1.11.2",
+              "context_source": "operator/interface binding: scanpy_core.leiden -> operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected"
+            },
+            "task": {
+              "state": "compatible",
+              "expected": "task:clustering",
+              "context_source": "frozen scenario target/action mapping: cluster_labels -> scanpy_core.leiden"
+            },
+            "modality": {
+              "state": "compatible",
+              "expected": "rna",
+              "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+            },
+            "observation_unit": {
+              "state": "compatible",
+              "expected": "cell",
+              "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+            }
+          },
+          "overall_state": "compatible"
+        },
+        "observed": {
+          "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+          "overall_state": "compatible",
+          "version": {
+            "state": "compatible"
+          },
+          "task": {
+            "state": "compatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          }
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [
+          "rep:demo:neighbor-graph:valid"
+        ],
+        "observed_record_ids": [
+          "rep:demo:neighbor-graph:valid"
+        ],
+        "observed_record_id": null,
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "candidate",
+        "observed": "candidate"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "atom_id": "atom:valid-graph:record-state",
+      "proposition": "The frozen neighbor-graph record has status current.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": "rep:demo:neighbor-graph:valid",
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed",
+        "observed": "observed"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "atom_id": "atom:invalid-graph:leiden-input",
+      "proposition": "Scanpy Leiden 1.11.2 accepts a sparse adjacency or neighbor-graph connectivities as its graph input.",
+      "primary_owner_expected": "SCIENTIFIC_KG",
+      "primary_owner_observed": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+            "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+            "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+            "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+            "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+            "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+          }
+        ]
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+          "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+          "dimensions": {
+            "version": {
+              "state": "compatible",
+              "expected": "scanpy==1.11.2",
+              "context_source": "operator/interface binding: scanpy_core.leiden -> operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected"
+            },
+            "task": {
+              "state": "compatible",
+              "expected": "task:clustering",
+              "context_source": "frozen scenario target/action mapping: cluster_labels -> scanpy_core.leiden"
+            },
+            "modality": {
+              "state": "compatible",
+              "expected": "rna",
+              "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+            },
+            "observation_unit": {
+              "state": "compatible",
+              "expected": "cell",
+              "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+            }
+          },
+          "overall_state": "compatible"
+        },
+        "observed": {
+          "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+          "overall_state": "compatible",
+          "version": {
+            "state": "compatible"
+          },
+          "task": {
+            "state": "compatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          }
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [
+          "rep:demo:neighbor-graph:stale",
+          "rep:demo:neighbor-graph:misaligned"
+        ],
+        "observed_record_ids": [
+          "rep:demo:neighbor-graph:stale",
+          "rep:demo:neighbor-graph:misaligned"
+        ],
+        "observed_record_id": null,
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "candidate",
+        "observed": "candidate"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "atom_id": "atom:invalid-graph:stale-record-state",
+      "proposition": "The frozen stale neighbor-graph record has status stale.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": "rep:demo:neighbor-graph:stale",
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed",
+        "observed": "observed"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "atom_id": "atom:invalid-graph:misaligned-record-state",
+      "proposition": "The frozen misaligned neighbor-graph record has an observation identity that does not match the current dataset.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": "rep:demo:neighbor-graph:misaligned",
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed",
+        "observed": "observed"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "atom_id": "atom:harmony:corrected-embedding-output",
+      "proposition": "With return_object false, the default Harmony 2.0.5 interface returns corrected PCA embeddings as a matrix.",
+      "primary_owner_expected": "SCIENTIFIC_KG",
+      "primary_owner_observed": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+            "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+            "evidence_span_id": "uat-authoritative-span:harmony.output",
+            "source_revision_id": "source-revision:cran:harmony:2.0.5",
+            "locator": "harmony/R/ui.R#L51-L62",
+            "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+          }
+        ]
+      },
+      "scope_check": {
+        "passed": false,
+        "expected": {
+          "scope_id": "scope:uat:harmony:generic:2.0.5",
+          "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+          "dimensions": {
+            "version": {
+              "state": "compatible",
+              "expected": "harmony==2.0.5",
+              "context_source": "operator/interface binding: producer_operator_revision_id identifies Harmony 2.0.5"
+            },
+            "task": {
+              "state": "compatible",
+              "expected": "task:batch_integration",
+              "context_source": "frozen producer operator binding for rep:demo:harmony-embedding"
+            },
+            "modality": {
+              "state": "compatible",
+              "expected": "rna",
+              "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+            },
+            "observation_unit": {
+              "state": "compatible",
+              "expected": "cell",
+              "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+            },
+            "interface": {
+              "state": "unknown",
+              "evaluation": "not_evaluated",
+              "context_source": "frozen scenario identifies the Harmony operator revision but does not record return_object or select the generic/PCA-default interface variant"
+            }
+          },
+          "overall_state": "partially_resolved"
+        },
+        "observed": {
+          "scope_id": "scope:uat:harmony:generic:2.0.5",
+          "overall_state": "incompatible",
+          "version": {
+            "state": "incompatible"
+          },
+          "task": {
+            "state": "incompatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          },
+          "interface": {
+            "state": "unknown",
+            "evaluation": "not_evaluated"
+          }
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [
+          "rep:demo:harmony-embedding"
+        ],
+        "observed_record_ids": [
+          "rep:demo:harmony-embedding"
+        ],
+        "observed_record_id": null,
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "candidate",
+        "observed": "candidate"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": false,
+      "first_failure": "SCOPE_MISMATCH",
+      "failures": [
+        {
+          "code": "SCOPE_MISMATCH",
+          "detail": "task"
+        },
+        {
+          "code": "SCOPE_MISMATCH",
+          "detail": "version"
+        }
+      ]
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "atom_id": "atom:harmony:neighbors-named-representation-input",
+      "proposition": "Scanpy neighbors 1.11.2 accepts X or an explicitly selected named obsm representation through use_rep.",
+      "primary_owner_expected": "SCIENTIFIC_KG",
+      "primary_owner_observed": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+            "claim_content_hash": "faf2d9b98597497888851e9da7ee7b54597058e0c3f1fd740aebbc201f75ef84",
+            "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+            "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+            "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+            "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+          }
+        ]
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "scope_id": "scope:uat:scanpy:neighbors:1.11.2",
+          "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope and representation-constraint:uat:neighbors-embedding",
+          "dimensions": {
+            "version": {
+              "state": "compatible",
+              "expected": "scanpy==1.11.2",
+              "context_source": "operator/interface binding: scanpy_core.neighbors_integrated -> operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected"
+            },
+            "task": {
+              "state": "compatible",
+              "expected": "task:neighbor_graph",
+              "context_source": "frozen scenario target/action mapping: neighbor_graph -> scanpy_core.neighbors_integrated"
+            },
+            "modality": {
+              "state": "compatible",
+              "expected": "rna",
+              "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+            },
+            "observation_unit": {
+              "state": "compatible",
+              "expected": "cell",
+              "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+            },
+            "representation_type": {
+              "state": "compatible",
+              "expected": "representation-type:cell_embedding",
+              "context_source": "Ledger record integrated_representation plus project-fixed representation-type mapping"
+            },
+            "named_representation_selection": {
+              "state": "compatible",
+              "expected": "explicit use_rep branch",
+              "context_source": "operator/interface binding: scanpy_core.neighbors_integrated is the frozen named-representation action"
+            }
+          },
+          "overall_state": "compatible"
+        },
+        "observed": {
+          "scope_id": "scope:uat:scanpy:neighbors:1.11.2",
+          "overall_state": "compatible",
+          "version": {
+            "state": "compatible"
+          },
+          "task": {
+            "state": "compatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          },
+          "representation_type": {
+            "state": "compatible"
+          },
+          "named_representation_selection": {
+            "state": "compatible"
+          }
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [
+          "rep:demo:harmony-embedding"
+        ],
+        "observed_record_ids": [
+          "rep:demo:harmony-embedding"
+        ],
+        "observed_record_id": null,
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "candidate",
+        "observed": "candidate"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "atom_id": "atom:harmony:embedding-record-state",
+      "proposition": "The frozen Harmony embedding record has status current.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": "rep:demo:harmony-embedding",
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed",
+        "observed": "observed"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "atom_id": "atom:scrublet:raw-umi-input",
+      "proposition": "Scrublet 0.2.3 requires a cell-by-gene raw unnormalized UMI count matrix.",
+      "primary_owner_expected": "SCIENTIFIC_KG",
+      "primary_owner_observed": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:scrublet-input:v1",
+            "claim_content_hash": "ecf837d3814d1673997ec90f73ce3f4caafa2c29e6bce0ed773da374e8aa4413",
+            "evidence_span_id": "uat-authoritative-span:scrublet.input_output",
+            "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+            "locator": "scrublet-0.2.3/README.md#L9-L15",
+            "content_hash": "a7a87800f203431beb09ab3ddf847bbc1b5455942dca69e6313210d33d30c6a2"
+          }
+        ]
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "scope_id": "scope:uat:scrublet:0.2.3",
+          "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope and representation-constraint:uat:scrublet-raw",
+          "dimensions": {
+            "version": {
+              "state": "compatible",
+              "expected": "scrublet==0.2.3",
+              "context_source": "operator/interface binding: scanpy_core.doublet_detection_action -> operator-revision:scrublet.Scrublet.scrub_doublets:0.2.3:uat-corrected"
+            },
+            "task": {
+              "state": "compatible",
+              "expected": "task:doublet_detection",
+              "context_source": "frozen scenario target/action mapping: doublet_scores_and_calls -> scanpy_core.doublet_detection_action"
+            },
+            "modality": {
+              "state": "compatible",
+              "expected": "rna",
+              "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+            },
+            "observation_unit": {
+              "state": "compatible",
+              "expected": "cell",
+              "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+            },
+            "required_representation": {
+              "state": "missing",
+              "expected": "representation-type:raw_umi_counts",
+              "context_source": "Ledger/profile state via atom:scrublet:raw-umi-absence; not inferred from scientific scope"
+            },
+            "capture_or_sample_unit": {
+              "state": "unknown",
+              "evaluation": "not_evaluated",
+              "context_source": "frozen scenario and Ledger provide no capture_unit_id or sample-cardinality context"
+            },
+            "droplet_umi_study_design": {
+              "state": "unknown",
+              "evaluation": "not_evaluated",
+              "context_source": "frozen scenario does not identify assay/capture study design"
+            }
+          },
+          "overall_state": "partially_resolved"
+        },
+        "observed": {
+          "scope_id": "scope:uat:scrublet:0.2.3",
+          "overall_state": "partially_resolved",
+          "version": {
+            "state": "compatible"
+          },
+          "task": {
+            "state": "compatible"
+          },
+          "modality": {
+            "state": "compatible"
+          },
+          "observation_unit": {
+            "state": "compatible"
+          },
+          "required_representation": {
+            "state": "missing"
+          },
+          "capture_or_sample_unit": {
+            "state": "unknown",
+            "evaluation": "not_evaluated"
+          },
+          "droplet_umi_study_design": {
+            "state": "unknown",
+            "evaluation": "not_evaluated"
+          }
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [
+          "rep:demo:normalized-expression",
+          "rep:demo:integrated-expression"
+        ],
+        "observed_record_ids": [
+          "rep:demo:normalized-expression",
+          "rep:demo:integrated-expression"
+        ],
+        "observed_record_id": null,
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "candidate",
+        "observed": "candidate"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "atom_id": "atom:scrublet:normalized-record-state",
+      "proposition": "The frozen normalized-expression record is a library-size-normalized representation.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": "rep:demo:normalized-expression",
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed",
+        "observed": "observed"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "atom_id": "atom:scrublet:integrated-record-state",
+      "proposition": "The frozen integrated-expression record is an integrated representation.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": "rep:demo:integrated-expression",
+        "observed_absence": null
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed",
+        "observed": "observed"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "atom_id": "atom:scrublet:raw-umi-absence",
+      "proposition": "The frozen RepresentationLedger contains no representation record of type raw_umi_counts.",
+      "primary_owner_expected": "REPRESENTATION_LEDGER_PROFILER",
+      "primary_owner_observed": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "evidence_check": {
+        "passed": true,
+        "observed_bindings": []
+      },
+      "scope_check": {
+        "passed": true,
+        "expected": {
+          "overall_state": "not_applicable"
+        },
+        "observed": {
+          "overall_state": "not_applicable"
+        }
+      },
+      "representation_link_check": {
+        "passed": true,
+        "expected_record_ids": [],
+        "observed_record_ids": [],
+        "observed_record_id": null,
+        "observed_absence": {
+          "representation_type_id": "representation-type:raw_umi_counts",
+          "matching_record_count": 0
+        }
+      },
+      "epistemic_check": {
+        "passed": true,
+        "expected": "observed_absence",
+        "observed": "observed_absence"
+      },
+      "ownership_check": {
+        "passed": true
+      },
+      "passed": true,
+      "first_failure": null,
+      "failures": []
+    }
+  ],
+  "evidence_reference_checks": [
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+        "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+        "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": true,
+      "classification": "decision_support"
+    },
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:leiden-output:v1",
+        "claim_content_hash": "81a38d60f8a65511c29301b51fa62ae7903a5d0f4cc212a5938b6f7b69ae1234",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.output:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L108-L118",
+        "content_hash": "c1259b85e010c20046cc5b7d8418a5e937307ea0207bef28ee6e35873f14bd06"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+        "claim_content_hash": "2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.metadata:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/__init__.py#L206-L235",
+        "content_hash": "4eaffdda90550ee716300be8172d85f84a6f4d5ce21c4fc0915aedd882a58dd9"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+        "claim_content_hash": "2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.output:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/__init__.py#L148-L168",
+        "content_hash": "e2cfb8edef55f79e79ccc5c575d21a7cbda7b6807fb79fc40b16d73a88b9751a"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+        "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+        "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": true,
+      "classification": "decision_support"
+    },
+    {
+      "scenario_id": "stale-or-misaligned-graph",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:leiden-output:v1",
+        "claim_content_hash": "81a38d60f8a65511c29301b51fa62ae7903a5d0f4cc212a5938b6f7b69ae1234",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.output:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L108-L118",
+        "content_hash": "c1259b85e010c20046cc5b7d8418a5e937307ea0207bef28ee6e35873f14bd06"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+        "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+        "evidence_span_id": "uat-authoritative-span:harmony.output",
+        "source_revision_id": "source-revision:cran:harmony:2.0.5",
+        "locator": "harmony/R/ui.R#L51-L62",
+        "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": true,
+      "classification": "decision_support"
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+        "claim_content_hash": "faf2d9b98597497888851e9da7ee7b54597058e0c3f1fd740aebbc201f75ef84",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+        "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": true,
+      "classification": "decision_support"
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+        "claim_content_hash": "2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.metadata:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/__init__.py#L206-L235",
+        "content_hash": "4eaffdda90550ee716300be8172d85f84a6f4d5ce21c4fc0915aedd882a58dd9"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:neighbors-output:v1",
+        "claim_content_hash": "2e647032424587ca25a7249ab613c61efe758e0d664dac79e862cd17ece71a2a",
+        "evidence_span_id": "scanpy-authoritative-span:neighbors.output:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/neighbors/__init__.py#L148-L168",
+        "content_hash": "e2cfb8edef55f79e79ccc5c575d21a7cbda7b6807fb79fc40b16d73a88b9751a"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-input:v1",
+        "claim_content_hash": "ecf837d3814d1673997ec90f73ce3f4caafa2c29e6bce0ed773da374e8aa4413",
+        "evidence_span_id": "uat-authoritative-span:scrublet.input_output",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/README.md#L9-L15",
+        "content_hash": "a7a87800f203431beb09ab3ddf847bbc1b5455942dca69e6313210d33d30c6a2"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": true,
+      "classification": "decision_support"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-no-delete:v1",
+        "claim_content_hash": "2861638daf7acf056a1ad09cc9b127e5387afcd329266323e5bf261e5c223ad2",
+        "evidence_span_id": "uat-authoritative-span:scrublet.input_output",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/README.md#L9-L15",
+        "content_hash": "a7a87800f203431beb09ab3ddf847bbc1b5455942dca69e6313210d33d30c6a2"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-no-delete:v1",
+        "claim_content_hash": "2861638daf7acf056a1ad09cc9b127e5387afcd329266323e5bf261e5c223ad2",
+        "evidence_span_id": "uat-authoritative-span:scrublet.threshold",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/src/scrublet/scrublet.py#L130-L135",
+        "content_hash": "1af46faf4424424943827df2d6b3aa8a22a39b87fead9b7a8132161fd0a035e9"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-output:v1",
+        "claim_content_hash": "0fbf23ff1406f558b51e0bbd256d056e17708a6b63d894bbd1813087796a2795",
+        "evidence_span_id": "uat-authoritative-span:scrublet.input_output",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/README.md#L9-L15",
+        "content_hash": "a7a87800f203431beb09ab3ddf847bbc1b5455942dca69e6313210d33d30c6a2"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-sample-scope:v1",
+        "claim_content_hash": "2cdfa0fa3ba2d0cd109874783e160434f503c3ecd802c88976bb0dc847968e21",
+        "evidence_span_id": "uat-authoritative-span:scrublet.sample_scope",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/README.md#L17-L20",
+        "content_hash": "cc28a6147628ceeed69094454ec11c46b813fbf75db43952842182160f509030"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-threshold:v1",
+        "claim_content_hash": "50c8159b4fba877a6b74561f0498698d9d0ec9c6c119c64edfd2ceaf53e80179",
+        "evidence_span_id": "uat-authoritative-span:scrublet.sample_scope",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/README.md#L17-L20",
+        "content_hash": "cc28a6147628ceeed69094454ec11c46b813fbf75db43952842182160f509030"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    },
+    {
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "reference": {
+        "claim_revision_id": "claim-revision:uat:scrublet-threshold:v1",
+        "claim_content_hash": "50c8159b4fba877a6b74561f0498698d9d0ec9c6c119c64edfd2ceaf53e80179",
+        "evidence_span_id": "uat-authoritative-span:scrublet.threshold",
+        "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+        "locator": "scrublet-0.2.3/src/scrublet/scrublet.py#L130-L135",
+        "content_hash": "1af46faf4424424943827df2d6b3aa8a22a39b87fead9b7a8132161fd0a035e9"
+      },
+      "object_resolution_passed": true,
+      "resolution_failure": null,
+      "claim_source_binding_passed": true,
+      "supports_frozen_decision_atom": false,
+      "classification": "extra_non_decision_evidence"
+    }
+  ],
+  "negative_control_results": [
+    {
+      "mutation_id": "mutation:wrong-evidence:leiden-output-for-input",
+      "target_atom_id": "atom:valid-graph:leiden-input",
+      "dimension": "evidence_semantic_support",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "EVIDENCE_DOES_NOT_SUPPORT_DECISION_ATOM",
+      "observed_first_failure": "EVIDENCE_DOES_NOT_SUPPORT_DECISION_ATOM",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:binding-mismatch:harmony-span-neighbors-claim",
+      "target_atom_id": "atom:harmony:corrected-embedding-output",
+      "dimension": "claim_source_binding",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "CLAIM_SOURCE_BINDING_MISMATCH",
+      "observed_first_failure": "CLAIM_SOURCE_BINDING_MISMATCH",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:representation-link:valid-to-stale-record",
+      "target_atom_id": "atom:valid-graph:record-state",
+      "dimension": "representation_record_linkage",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "REPRESENTATION_LINK_WRONG",
+      "observed_first_failure": "REPRESENTATION_LINK_WRONG",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:epistemic:candidate-to-trusted",
+      "target_atom_id": "atom:harmony:corrected-embedding-output",
+      "dimension": "epistemic_status",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "EPISTEMIC_STATUS_CONFLATION",
+      "observed_first_failure": "EPISTEMIC_STATUS_CONFLATION",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:scope:scrublet-capture-unknown-to-compatible",
+      "target_atom_id": "atom:scrublet:raw-umi-input",
+      "dimension": "scope_capture_or_sample_unit",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "SCOPE_SILENTLY_WIDENED",
+      "observed_first_failure": "SCOPE_SILENTLY_WIDENED",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:scope:scrublet-capture-unknown-to-incompatible",
+      "target_atom_id": "atom:scrublet:raw-umi-input",
+      "dimension": "scope_capture_or_sample_unit",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "SCOPE_MISMATCH",
+      "observed_first_failure": "SCOPE_MISMATCH",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:runtime-citation:stale-record",
+      "target_atom_id": "atom:invalid-graph:stale-record-state",
+      "dimension": "forbidden_scientific_evidence_attachment",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "OWNER_MISATTRIBUTION",
+      "observed_first_failure": "OWNER_MISATTRIBUTION",
+      "passed": true
+    },
+    {
+      "mutation_id": "mutation:owner:ledger-absence-to-scientific-kg",
+      "target_atom_id": "atom:scrublet:raw-umi-absence",
+      "dimension": "primary_owner",
+      "behavior_digest_unchanged": true,
+      "single_dimension_change_verified": true,
+      "expected_first_failure": "OWNER_MISATTRIBUTION",
+      "observed_first_failure": "OWNER_MISATTRIBUTION",
+      "passed": true
+    }
+  ],
+  "unknown_scope_preservation": {
+    "harmony_interface": {
+      "state": "unknown",
+      "evaluation": "not_evaluated"
+    },
+    "scrublet_capture_or_sample_unit": {
+      "state": "unknown",
+      "evaluation": "not_evaluated"
+    },
+    "scrublet_study_design": {
+      "state": "unknown",
+      "evaluation": "not_evaluated"
+    }
+  },
+  "qualification_boundary": "Synthetic bounded mechanism evaluation only; not canonical promotion, broad scientific qualification, or proof of planner behavioral gain."
+}

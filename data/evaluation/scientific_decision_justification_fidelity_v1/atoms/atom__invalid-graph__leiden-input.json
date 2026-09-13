@@ -1,0 +1,91 @@
+{
+  "scenario_id": "stale-or-misaligned-graph",
+  "atom_id": "atom:invalid-graph:leiden-input",
+  "proposition": "Scanpy Leiden 1.11.2 accepts a sparse adjacency or neighbor-graph connectivities as its graph input.",
+  "primary_owner_expected": "SCIENTIFIC_KG",
+  "primary_owner_observed": "SCIENTIFIC_KG",
+  "scientific_evidence_expected": true,
+  "evidence_check": {
+    "passed": true,
+    "observed_bindings": [
+      {
+        "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+        "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+        "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+      }
+    ]
+  },
+  "scope_check": {
+    "passed": true,
+    "expected": {
+      "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+      "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+      "dimensions": {
+        "version": {
+          "state": "compatible",
+          "expected": "scanpy==1.11.2",
+          "context_source": "operator/interface binding: scanpy_core.leiden -> operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected"
+        },
+        "task": {
+          "state": "compatible",
+          "expected": "task:clustering",
+          "context_source": "frozen scenario target/action mapping: cluster_labels -> scanpy_core.leiden"
+        },
+        "modality": {
+          "state": "compatible",
+          "expected": "rna",
+          "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"
+        },
+        "observation_unit": {
+          "state": "compatible",
+          "expected": "cell",
+          "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"
+        }
+      },
+      "overall_state": "compatible"
+    },
+    "observed": {
+      "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+      "overall_state": "compatible",
+      "version": {
+        "state": "compatible"
+      },
+      "task": {
+        "state": "compatible"
+      },
+      "modality": {
+        "state": "compatible"
+      },
+      "observation_unit": {
+        "state": "compatible"
+      }
+    }
+  },
+  "representation_link_check": {
+    "passed": true,
+    "expected_record_ids": [
+      "rep:demo:neighbor-graph:stale",
+      "rep:demo:neighbor-graph:misaligned"
+    ],
+    "observed_record_ids": [
+      "rep:demo:neighbor-graph:stale",
+      "rep:demo:neighbor-graph:misaligned"
+    ],
+    "observed_record_id": null,
+    "observed_absence": null
+  },
+  "epistemic_check": {
+    "passed": true,
+    "expected": "candidate",
+    "observed": "candidate"
+  },
+  "ownership_check": {
+    "passed": true
+  },
+  "passed": true,
+  "first_failure": null,
+  "failures": []
+}
