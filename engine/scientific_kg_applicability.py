@@ -199,7 +199,7 @@ class ScientificKGApplicability:
             operator_revision_id=binding.operator_revision_id,
             used_records=reusable_records,
         )
-        claim_ids = self._consulted_claim_ids(
+        claim_ids = self._decision_claim_ids(
             binding.operator_revision_id,
             relations,
         )
@@ -470,20 +470,44 @@ class ScientificKGApplicability:
         )
         return sorted(relations, key=lambda item: item.relation_id)
 
-    def _consulted_claim_ids(
+    def _decision_claim_ids(
         self,
         operator_revision_id: str,
         relations: list[DerivedRelation],
     ) -> list[str]:
+        """Project evidence for the decision-bearing proposition only.
+
+        Input/requirement claims owned by the target operator establish local
+        applicability.  A cross-ecosystem CAN_FEED bridge additionally needs
+        the producer's output claim.  Merely sharing an operator with the
+        action is not enough: output, limitation, and project-guardrail claims
+        do not justify an input-side applicability decision.
+        """
+
+        input_predicates = {
+            "accepts_optional_representation",
+            "accepts_representation",
+            "requires_compatibility",
+            "requires_representation",
+        }
         claim_ids = {
             claim.claim_revision_id
             for claim in self.claims.values()
             if claim.subject_id == operator_revision_id
+            and claim.predicate in input_predicates
         }
         claim_ids.update(
             claim_id
             for relation in relations
+            if relation.relation == "CAN_FEED"
+            and _operator_ecosystem(relation.source_id)
+            != _operator_ecosystem(relation.target_id)
             for claim_id in relation.derived_from_claim_revision_ids
+            if (
+                (claim := self.claims.get(claim_id)) is not None
+                and claim.subject_id == relation.source_id
+                and claim.predicate == "produces"
+            )
         )
         return sorted(claim_ids)
 
@@ -518,6 +542,11 @@ class ScientificKGApplicability:
 @lru_cache(maxsize=1)
 def default_scientific_kg_applicability() -> ScientificKGApplicability:
     return ScientificKGApplicability()
+
+
+def _operator_ecosystem(operator_revision_id: str) -> str:
+    identity = operator_revision_id.removeprefix("operator-revision:")
+    return identity.split(".", 1)[0].split(":", 1)[0]
 
 
 def _candidate_binding_is_explicit(
