@@ -1,0 +1,679 @@
+{
+  "schema_version": "scientific-decision-justification-fidelity-expected-v1",
+  "evaluation_id": "scientific-decision-justification-fidelity-v1",
+  "preregistration_status": "frozen_candidate",
+  "baseline_commit": "d05e8b71649bb46dba004bfca91fe4d32ea2894b",
+  "basis": "Twelve decision-justification atoms derived from the independently frozen four-scenario scientific decision rules, deterministic Ledger fixtures, and pinned candidate AtomicClaimRevision/evidence/scope records. They were not derived from a new evaluator run or from generated explanation prose.",
+  "scope": {
+    "scenario_count": 4,
+    "scenario_ids": [
+      "valid-neighbor-graph-to-leiden",
+      "stale-or-misaligned-graph",
+      "harmony-embedding-to-neighbors",
+      "scrublet-rejects-transformed-expression"
+    ],
+    "knowledge_status": "candidate",
+    "qualification_boundary": "Synthetic bounded mechanism evaluation only; not canonical promotion, broad scientific qualification, or proof of planner behavioral gain."
+  },
+  "owner_vocabulary": {
+    "SCIENTIFIC_KG": "Versioned scientific claims, applicability scopes, representation constraints, and exact source/evidence provenance.",
+    "REPRESENTATION_LEDGER_PROFILER": "Observed dataset-local representation records, record status, validation flag, identity hashes, lineage metadata, and representation absence.",
+    "CAPABILITY_PACK_PLANNER": "Planned methods, scheduling, reuse decisions, blocking decisions, producer availability, and compiled plan structure.",
+    "POLICY_APPROVAL": "Execution authorization and approval decisions; not exercised by these four plan-only scenarios."
+  },
+  "atomicity_policy": {
+    "one_atom_one_primary_owner": true,
+    "runtime_state_and_planner_conclusion_must_be_separate": true,
+    "scientific_citations_for_runtime_state_are_forbidden": true,
+    "planner_behavior_is_validated_outside_atoms": true
+  },
+  "scope_authority_policy": {
+    "resolution_chain": [
+      "AtomicClaimRevision",
+      "ApplicabilityScope and RepresentationConstraint",
+      "frozen expected scope",
+      "frozen scenario context"
+    ],
+    "generated_explanation_text_is_authoritative": false,
+    "claim_scope_alone_establishes_scenario_compatibility": false,
+    "unknown_is_not_incompatible": true,
+    "unknown_is_not_compatible": true
+  },
+  "reference_policy": {
+    "binding_key_fields": [
+      "claim_revision_id",
+      "claim_content_hash",
+      "evidence_span_id",
+      "source_revision_id",
+      "locator",
+      "content_hash"
+    ],
+    "deduplication": "Deduplicate exact binding tuples within each scenario while retaining the first emitted occurrence. The same binding emitted in two scenarios is evaluated once per scenario.",
+    "decision_relevance": "A resolvable and internally valid reference counts as support only when its AtomicClaim proposition supports the target DecisionJustificationAtom under the frozen scope.",
+    "extra_reference_rule": "Every scenario-local unique scientific reference is adjudicable. A valid but non-decision-bearing reference remains in the precision denominator and fails EXTRA_NON_DECISION_EVIDENCE.",
+    "runtime_fact_rule": "Any scientific reference attached as proof of an atom with scientific_evidence_expected=false fails OWNER_MISATTRIBUTION."
+  },
+  "atoms": [
+    {
+      "atom_id": "atom:valid-graph:leiden-input",
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "proposition": "Scanpy Leiden 1.11.2 accepts a sparse adjacency or neighbor-graph connectivities as its graph input.",
+      "primary_owner": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "expected_evidence_bindings": [
+        {
+          "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+          "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+          "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+          "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+          "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+        }
+      ],
+      "context_representation_record_ids": ["rep:demo:neighbor-graph:valid"],
+      "expected_scope": {
+        "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+        "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+        "dimensions": {
+          "version": {"state": "compatible", "expected": "scanpy==1.11.2", "context_source": "operator/interface binding: scanpy_core.leiden -> operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected"},
+          "task": {"state": "compatible", "expected": "task:clustering", "context_source": "frozen scenario target/action mapping: cluster_labels -> scanpy_core.leiden"},
+          "modality": {"state": "compatible", "expected": "rna", "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"},
+          "observation_unit": {"state": "compatible", "expected": "cell", "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"}
+        },
+        "overall_state": "compatible"
+      },
+      "expected_epistemic_state": "candidate"
+    },
+    {
+      "atom_id": "atom:valid-graph:record-state",
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "proposition": "The frozen neighbor-graph record has status current.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "valid-graph-record-identity", "field": "record_id", "expected": "rep:demo:neighbor-graph:valid"},
+        {"obligation_id": "valid-graph-type", "field": "representation_id", "expected": "neighbor_graph"},
+        {"obligation_id": "valid-graph-current", "field": "status", "expected": "current"},
+        {"obligation_id": "valid-graph-validated", "field": "validated", "expected": true},
+        {"obligation_id": "valid-graph-observation-alignment", "field": "cell_index_hash", "expected_relation": "equals_ledger_cell_index_hash"},
+        {"obligation_id": "valid-graph-lineage", "field": "metadata.lineage_id", "expected": "lineage:pbmc-demo"}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed"
+    },
+    {
+      "atom_id": "atom:invalid-graph:leiden-input",
+      "scenario_id": "stale-or-misaligned-graph",
+      "proposition": "Scanpy Leiden 1.11.2 accepts a sparse adjacency or neighbor-graph connectivities as its graph input.",
+      "primary_owner": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "expected_evidence_bindings": [
+        {
+          "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+          "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+          "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+          "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+          "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+        }
+      ],
+      "context_representation_record_ids": [
+        "rep:demo:neighbor-graph:stale",
+        "rep:demo:neighbor-graph:misaligned"
+      ],
+      "expected_scope": {
+        "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+        "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+        "dimensions": {
+          "version": {"state": "compatible", "expected": "scanpy==1.11.2", "context_source": "operator/interface binding: scanpy_core.leiden -> operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected"},
+          "task": {"state": "compatible", "expected": "task:clustering", "context_source": "frozen scenario target/action mapping: cluster_labels -> scanpy_core.leiden"},
+          "modality": {"state": "compatible", "expected": "rna", "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"},
+          "observation_unit": {"state": "compatible", "expected": "cell", "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"}
+        },
+        "overall_state": "compatible"
+      },
+      "expected_epistemic_state": "candidate"
+    },
+    {
+      "atom_id": "atom:invalid-graph:stale-record-state",
+      "scenario_id": "stale-or-misaligned-graph",
+      "proposition": "The frozen stale neighbor-graph record has status stale.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "stale-graph-record-identity", "field": "record_id", "expected": "rep:demo:neighbor-graph:stale"},
+        {"obligation_id": "stale-graph-type", "field": "representation_id", "expected": "neighbor_graph"},
+        {"obligation_id": "stale-graph-status", "field": "status", "expected": "stale"},
+        {"obligation_id": "stale-graph-validated", "field": "validated", "expected": true},
+        {"obligation_id": "stale-graph-observation-alignment", "field": "cell_index_hash", "expected_relation": "equals_ledger_cell_index_hash"},
+        {"obligation_id": "stale-graph-reason", "field": "stale_reasons", "expected_contains": "upstream_representation_changed"}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed"
+    },
+    {
+      "atom_id": "atom:invalid-graph:misaligned-record-state",
+      "scenario_id": "stale-or-misaligned-graph",
+      "proposition": "The frozen misaligned neighbor-graph record has an observation identity that does not match the current dataset.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "misaligned-graph-record-identity", "field": "record_id", "expected": "rep:demo:neighbor-graph:misaligned"},
+        {"obligation_id": "misaligned-graph-type", "field": "representation_id", "expected": "neighbor_graph"},
+        {"obligation_id": "misaligned-graph-status", "field": "status", "expected": "current"},
+        {"obligation_id": "misaligned-graph-validated", "field": "validated", "expected": true},
+        {"obligation_id": "misaligned-graph-observation-alignment", "field": "cell_index_hash", "expected_relation": "not_equal_to_ledger_cell_index_hash"},
+        {"obligation_id": "misaligned-graph-stale-reasons", "field": "stale_reasons", "expected": []}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed"
+    },
+    {
+      "atom_id": "atom:harmony:corrected-embedding-output",
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "proposition": "With return_object false, the default Harmony 2.0.5 interface returns corrected PCA embeddings as a matrix.",
+      "primary_owner": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "expected_evidence_bindings": [
+        {
+          "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+          "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+          "evidence_span_id": "uat-authoritative-span:harmony.output",
+          "source_revision_id": "source-revision:cran:harmony:2.0.5",
+          "locator": "harmony/R/ui.R#L51-L62",
+          "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+        }
+      ],
+      "context_representation_record_ids": ["rep:demo:harmony-embedding"],
+      "expected_scope": {
+        "scope_id": "scope:uat:harmony:generic:2.0.5",
+        "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope",
+        "dimensions": {
+          "version": {"state": "compatible", "expected": "harmony==2.0.5", "context_source": "operator/interface binding: producer_operator_revision_id identifies Harmony 2.0.5"},
+          "task": {"state": "compatible", "expected": "task:batch_integration", "context_source": "frozen producer operator binding for rep:demo:harmony-embedding"},
+          "modality": {"state": "compatible", "expected": "rna", "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"},
+          "observation_unit": {"state": "compatible", "expected": "cell", "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"},
+          "interface": {"state": "unknown", "evaluation": "not_evaluated", "context_source": "frozen scenario identifies the Harmony operator revision but does not record return_object or select the generic/PCA-default interface variant"}
+        },
+        "overall_state": "partially_resolved"
+      },
+      "expected_epistemic_state": "candidate"
+    },
+    {
+      "atom_id": "atom:harmony:neighbors-named-representation-input",
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "proposition": "Scanpy neighbors 1.11.2 accepts X or an explicitly selected named obsm representation through use_rep.",
+      "primary_owner": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "expected_evidence_bindings": [
+        {
+          "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+          "claim_content_hash": "faf2d9b98597497888851e9da7ee7b54597058e0c3f1fd740aebbc201f75ef84",
+          "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+          "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+          "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c"
+        }
+      ],
+      "context_representation_record_ids": ["rep:demo:harmony-embedding"],
+      "expected_scope": {
+        "scope_id": "scope:uat:scanpy:neighbors:1.11.2",
+        "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope and representation-constraint:uat:neighbors-embedding",
+        "dimensions": {
+          "version": {"state": "compatible", "expected": "scanpy==1.11.2", "context_source": "operator/interface binding: scanpy_core.neighbors_integrated -> operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected"},
+          "task": {"state": "compatible", "expected": "task:neighbor_graph", "context_source": "frozen scenario target/action mapping: neighbor_graph -> scanpy_core.neighbors_integrated"},
+          "modality": {"state": "compatible", "expected": "rna", "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"},
+          "observation_unit": {"state": "compatible", "expected": "cell", "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"},
+          "representation_type": {"state": "compatible", "expected": "representation-type:cell_embedding", "context_source": "Ledger record integrated_representation plus project-fixed representation-type mapping"},
+          "named_representation_selection": {"state": "compatible", "expected": "explicit use_rep branch", "context_source": "operator/interface binding: scanpy_core.neighbors_integrated is the frozen named-representation action"}
+        },
+        "overall_state": "compatible"
+      },
+      "expected_epistemic_state": "candidate"
+    },
+    {
+      "atom_id": "atom:harmony:embedding-record-state",
+      "scenario_id": "harmony-embedding-to-neighbors",
+      "proposition": "The frozen Harmony embedding record has status current.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "harmony-record-identity", "field": "record_id", "expected": "rep:demo:harmony-embedding"},
+        {"obligation_id": "harmony-ledger-type", "field": "representation_id", "expected": "integrated_representation"},
+        {"obligation_id": "harmony-record-current", "field": "status", "expected": "current"},
+        {"obligation_id": "harmony-record-validated", "field": "validated", "expected": true},
+        {"obligation_id": "harmony-record-observation-alignment", "field": "cell_index_hash", "expected_relation": "equals_ledger_cell_index_hash"},
+        {"obligation_id": "harmony-record-producer", "field": "metadata.producer_operator_revision_id", "expected": "operator-revision:harmony.RunHarmony:2.0.5:uat-corrected"},
+        {"obligation_id": "harmony-record-lineage", "field": "metadata.lineage_id", "expected": "lineage:pbmc-demo"}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed"
+    },
+    {
+      "atom_id": "atom:scrublet:raw-umi-input",
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "proposition": "Scrublet 0.2.3 requires a cell-by-gene raw unnormalized UMI count matrix.",
+      "primary_owner": "SCIENTIFIC_KG",
+      "scientific_evidence_expected": true,
+      "expected_evidence_bindings": [
+        {
+          "claim_revision_id": "claim-revision:uat:scrublet-input:v1",
+          "claim_content_hash": "ecf837d3814d1673997ec90f73ce3f4caafa2c29e6bce0ed773da374e8aa4413",
+          "evidence_span_id": "uat-authoritative-span:scrublet.input_output",
+          "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+          "locator": "scrublet-0.2.3/README.md#L9-L15",
+          "content_hash": "a7a87800f203431beb09ab3ddf847bbc1b5455942dca69e6313210d33d30c6a2"
+        }
+      ],
+      "context_representation_record_ids": [
+        "rep:demo:normalized-expression",
+        "rep:demo:integrated-expression"
+      ],
+      "expected_scope": {
+        "scope_id": "scope:uat:scrublet:0.2.3",
+        "resolution_source": "AtomicClaimRevision.scope_id plus frozen ApplicabilityScope and representation-constraint:uat:scrublet-raw",
+        "dimensions": {
+          "version": {"state": "compatible", "expected": "scrublet==0.2.3", "context_source": "operator/interface binding: scanpy_core.doublet_detection_action -> operator-revision:scrublet.Scrublet.scrub_doublets:0.2.3:uat-corrected"},
+          "task": {"state": "compatible", "expected": "task:doublet_detection", "context_source": "frozen scenario target/action mapping: doublet_scores_and_calls -> scanpy_core.doublet_detection_action"},
+          "modality": {"state": "compatible", "expected": "rna", "context_source": "project-fixed mapping: ScientificKGApplicability defaults unannotated evaluated records to rna"},
+          "observation_unit": {"state": "compatible", "expected": "cell", "context_source": "project-fixed mapping: RepresentationLedger cell_index_hash denotes the cell observation axis"},
+          "required_representation": {"state": "missing", "expected": "representation-type:raw_umi_counts", "context_source": "Ledger/profile state via atom:scrublet:raw-umi-absence; not inferred from scientific scope"},
+          "capture_or_sample_unit": {"state": "unknown", "evaluation": "not_evaluated", "context_source": "frozen scenario and Ledger provide no capture_unit_id or sample-cardinality context"},
+          "droplet_umi_study_design": {"state": "unknown", "evaluation": "not_evaluated", "context_source": "frozen scenario does not identify assay/capture study design"}
+        },
+        "overall_state": "partially_resolved"
+      },
+      "expected_epistemic_state": "candidate"
+    },
+    {
+      "atom_id": "atom:scrublet:normalized-record-state",
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "proposition": "The frozen normalized-expression record is a library-size-normalized representation.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "normalized-record-identity", "field": "record_id", "expected": "rep:demo:normalized-expression"},
+        {"obligation_id": "normalized-record-type", "field": "representation_id", "expected": "library_size_normalized"},
+        {"obligation_id": "normalized-record-status", "field": "status", "expected": "current"},
+        {"obligation_id": "normalized-record-validation", "field": "validated", "expected": true},
+        {"obligation_id": "normalized-record-value-state", "field": "value_state", "expected": "nonnegative_continuous"},
+        {"obligation_id": "normalized-record-provenance", "field": "provenance", "expected_contains": "normalize_total"},
+        {"obligation_id": "normalized-record-observation-alignment", "field": "cell_index_hash", "expected_relation": "equals_ledger_cell_index_hash"}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed"
+    },
+    {
+      "atom_id": "atom:scrublet:integrated-record-state",
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "proposition": "The frozen integrated-expression record is an integrated representation.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "integrated-record-identity", "field": "record_id", "expected": "rep:demo:integrated-expression"},
+        {"obligation_id": "integrated-record-type", "field": "representation_id", "expected": "integrated_representation"},
+        {"obligation_id": "integrated-record-status", "field": "status", "expected": "current"},
+        {"obligation_id": "integrated-record-validation", "field": "validated", "expected": true},
+        {"obligation_id": "integrated-record-value-state", "field": "value_state", "expected": "real_continuous"},
+        {"obligation_id": "integrated-record-provenance", "field": "provenance", "expected_contains": "validated_integration_action"},
+        {"obligation_id": "integrated-record-observation-alignment", "field": "cell_index_hash", "expected_relation": "equals_ledger_cell_index_hash"}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed"
+    },
+    {
+      "atom_id": "atom:scrublet:raw-umi-absence",
+      "scenario_id": "scrublet-rejects-transformed-expression",
+      "proposition": "The frozen RepresentationLedger contains no representation record of type raw_umi_counts.",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "scientific_evidence_expected": false,
+      "forbid_scientific_evidence": true,
+      "expected_evidence_bindings": [],
+      "representation_obligations": [
+        {"obligation_id": "raw-umi-absence", "field": "ledger.records mapped representation_type_id", "expected_absent": "representation-type:raw_umi_counts", "expected_matching_record_count": 0}
+      ],
+      "expected_scope": {"overall_state": "not_applicable"},
+      "expected_epistemic_state": "observed_absence"
+    }
+  ],
+  "behavior_digest_invariants": {
+    "policy": "Planner behavior is independent from the justification atoms. For every negative-control mutation, the canonical behavior projection must remain byte-equivalent to the unmutated projection.",
+    "canonical_projection_includes": [
+      "blocked",
+      "blocking_errors and reason codes",
+      "planned method IDs",
+      "step order",
+      "dependency edges",
+      "parameters",
+      "step inputs and outputs",
+      "reused representation records",
+      "missing producer conclusions"
+    ],
+    "canonical_projection_excludes": [
+      "scientific_applicability_results justification projection",
+      "nondeterministic identifiers",
+      "timing fields"
+    ],
+    "scenarios": [
+      {
+        "scenario_id": "valid-neighbor-graph-to-leiden",
+        "blocked": false,
+        "planned_methods": ["scanpy_core.leiden"],
+        "reused_representation_record_ids": ["rep:demo:neighbor-graph:valid"],
+        "forbidden_methods": [
+          "scanpy_core.pca",
+          "scanpy_core.pca_scaled",
+          "scanpy_core.neighbors",
+          "scanpy_core.neighbors_integrated",
+          "scanpy_core.umap"
+        ],
+        "planner_conclusion": "reuse_existing_neighbor_graph"
+      },
+      {
+        "scenario_id": "stale-or-misaligned-graph",
+        "blocked": true,
+        "planned_methods": [],
+        "reused_representation_record_ids": [],
+        "forbidden_reuse_record_ids": [
+          "rep:demo:neighbor-graph:stale",
+          "rep:demo:neighbor-graph:misaligned"
+        ],
+        "required_reason_groups": [
+          ["representation_stale", "upstream_representation_changed"],
+          ["observation_identity_mismatch", "cell_index_hash_mismatch"]
+        ],
+        "planner_conclusion": "block_without_compatible_graph_or_rebuild_inputs"
+      },
+      {
+        "scenario_id": "harmony-embedding-to-neighbors",
+        "blocked": false,
+        "planned_methods": ["scanpy_core.neighbors_integrated"],
+        "reused_representation_record_ids": ["rep:demo:harmony-embedding"],
+        "forbidden_methods": ["scanpy_core.pca", "scanpy_core.pca_scaled"],
+        "planner_conclusion": "reuse_harmony_embedding_without_forcing_pca"
+      },
+      {
+        "scenario_id": "scrublet-rejects-transformed-expression",
+        "blocked": true,
+        "planned_methods": [],
+        "reused_representation_record_ids": [],
+        "forbidden_reuse_record_ids": [
+          "rep:demo:normalized-expression",
+          "rep:demo:integrated-expression"
+        ],
+        "required_missing_representation_type_ids": ["representation-type:raw_umi_counts"],
+        "required_planner_or_capability_pack_conclusion": "no_registered_producer:raw_counts",
+        "planner_conclusion": "block_and_request_preserved_raw_umi_counts"
+      }
+    ]
+  },
+  "negative_controls": [
+    {
+      "mutation_id": "mutation:wrong-evidence:leiden-output-for-input",
+      "target_atom_id": "atom:valid-graph:leiden-input",
+      "dimension": "evidence_semantic_support",
+      "application": {
+        "target_path": "emitted_atoms[atom:valid-graph:leiden-input].scientific_evidence_bindings[0]",
+        "operation": "replace_complete_reference_tuple",
+        "lookup_registry": "frozen AtomicClaimRevision, EvidenceSpan and SourceRevision registries",
+        "recompute_fields": []
+      },
+      "original_binding": {
+        "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+        "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+        "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+      },
+      "replacement_binding": {
+        "claim_revision_id": "claim-revision:uat:leiden-output:v1",
+        "claim_content_hash": "81a38d60f8a65511c29301b51fa62ae7903a5d0f4cc212a5938b6f7b69ae1234",
+        "evidence_span_id": "scanpy-authoritative-span:leiden.output:1.11.2",
+        "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+        "locator": "src/scanpy/tools/_leiden.py#L108-L118",
+        "content_hash": "c1259b85e010c20046cc5b7d8418a5e937307ea0207bef28ee6e35873f14bd06"
+      },
+      "single_fault_proof": "The replacement is a real, resolvable, hash-valid and internally valid Leiden-output claim/evidence binding under the same source revision and scope; only support for the target input proposition is absent.",
+      "expected_first_failure": "EVIDENCE_DOES_NOT_SUPPORT_DECISION_ATOM"
+    },
+    {
+      "mutation_id": "mutation:binding-mismatch:harmony-span-neighbors-claim",
+      "target_atom_id": "atom:harmony:corrected-embedding-output",
+      "dimension": "claim_source_binding",
+      "application": {
+        "target_path": "emitted_atoms[atom:harmony:corrected-embedding-output].scientific_evidence_bindings[0].claim_revision_id",
+        "operation": "replace_scalar_only",
+        "fixed_fields": [
+          "claim_content_hash",
+          "evidence_span_id",
+          "source_revision_id",
+          "locator",
+          "content_hash",
+          "atom.expected_scope",
+          "scenario_context",
+          "representation_linkage",
+          "epistemic_state"
+        ]
+      },
+      "original_binding": {
+        "claim_revision_id": "claim-revision:uat:harmony-output:v1",
+        "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+        "evidence_span_id": "uat-authoritative-span:harmony.output",
+        "source_revision_id": "source-revision:cran:harmony:2.0.5",
+        "locator": "harmony/R/ui.R#L51-L62",
+        "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+      },
+      "replacement_binding": {
+        "claim_revision_id": "claim-revision:uat:neighbors-input:v1",
+        "claim_content_hash": "2f74c801b4f5e8956cd0538056ce072713418715b5021de467664884ed2491c2",
+        "evidence_span_id": "uat-authoritative-span:harmony.output",
+        "source_revision_id": "source-revision:cran:harmony:2.0.5",
+        "locator": "harmony/R/ui.R#L51-L62",
+        "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910"
+      },
+      "single_fault_proof": "Evidence bytes, source, locator, hash, atom proposition, scope and representation linkage remain unchanged; only the claim_revision_id bound to the span is replaced.",
+      "expected_first_failure": "CLAIM_SOURCE_BINDING_MISMATCH"
+    },
+    {
+      "mutation_id": "mutation:representation-link:valid-to-stale-record",
+      "target_atom_id": "atom:valid-graph:record-state",
+      "dimension": "representation_record_linkage",
+      "application": {
+        "target_path": "emitted_atoms[atom:valid-graph:record-state].representation_record_id",
+        "operation": "replace_scalar_only",
+        "lookup_registry": "union of all RepresentationRecord objects in the four frozen evaluation scenarios",
+        "fixed_fields": ["proposition", "owner", "evidence", "scope", "epistemic_state", "planner_behavior_digest"]
+      },
+      "original_binding": {
+        "representation_record_id": "rep:demo:neighbor-graph:valid"
+      },
+      "replacement_binding": {
+        "representation_record_id": "rep:demo:neighbor-graph:stale"
+      },
+      "single_fault_proof": "Both record IDs resolve in the frozen four-scenario request set; the atom proposition and all other fields remain unchanged, while only the linked record is wrong for this scenario.",
+      "expected_first_failure": "REPRESENTATION_LINK_WRONG"
+    },
+    {
+      "mutation_id": "mutation:epistemic:candidate-to-trusted",
+      "target_atom_id": "atom:harmony:corrected-embedding-output",
+      "dimension": "epistemic_status",
+      "application": {
+        "target_path": "emitted_atoms[atom:harmony:corrected-embedding-output].knowledge_status",
+        "operation": "replace_scalar_only",
+        "fixed_fields": ["claim", "evidence", "source", "scope", "owner", "representation_linkage", "planner_behavior_digest"]
+      },
+      "original_binding": {
+        "knowledge_status": "candidate"
+      },
+      "replacement_binding": {
+        "knowledge_status": "trusted"
+      },
+      "single_fault_proof": "Claim, evidence, source, scope, representation linkage and behavior stay fixed; only the declared knowledge status changes.",
+      "expected_first_failure": "EPISTEMIC_STATUS_CONFLATION"
+    },
+    {
+      "mutation_id": "mutation:scope:scrublet-capture-unknown-to-compatible",
+      "target_atom_id": "atom:scrublet:raw-umi-input",
+      "dimension": "scope_capture_or_sample_unit",
+      "application": {
+        "target_path": "emitted_atoms[atom:scrublet:raw-umi-input].scope.capture_or_sample_unit",
+        "operation": "replace_scope_dimension_only",
+        "fixed_fields": ["claim", "evidence", "other_scope_dimensions", "owner", "representation_linkage", "epistemic_state", "planner_behavior_digest"]
+      },
+      "original_binding": {
+        "state": "unknown",
+        "evaluation": "not_evaluated"
+      },
+      "replacement_binding": {
+        "state": "compatible",
+        "evaluation": "evaluated"
+      },
+      "single_fault_proof": "Only the unresolved capture/sample scope dimension is changed; claim/evidence, all other scope dimensions, record linkage and behavior remain fixed.",
+      "expected_first_failure": "SCOPE_SILENTLY_WIDENED"
+    },
+    {
+      "mutation_id": "mutation:scope:scrublet-capture-unknown-to-incompatible",
+      "target_atom_id": "atom:scrublet:raw-umi-input",
+      "dimension": "scope_capture_or_sample_unit",
+      "application": {
+        "target_path": "emitted_atoms[atom:scrublet:raw-umi-input].scope.capture_or_sample_unit",
+        "operation": "replace_scope_dimension_only",
+        "fixed_fields": ["claim", "evidence", "other_scope_dimensions", "owner", "representation_linkage", "epistemic_state", "planner_behavior_digest"]
+      },
+      "original_binding": {
+        "state": "unknown",
+        "evaluation": "not_evaluated"
+      },
+      "replacement_binding": {
+        "state": "incompatible",
+        "evaluation": "evaluated"
+      },
+      "single_fault_proof": "Only the unresolved capture/sample scope dimension is changed; claim/evidence, all other scope dimensions, record linkage and behavior remain fixed.",
+      "expected_first_failure": "SCOPE_MISMATCH"
+    },
+    {
+      "mutation_id": "mutation:runtime-citation:stale-record",
+      "target_atom_id": "atom:invalid-graph:stale-record-state",
+      "dimension": "forbidden_scientific_evidence_attachment",
+      "application": {
+        "target_path": "emitted_atoms[atom:invalid-graph:stale-record-state].scientific_evidence_bindings",
+        "operation": "append_complete_reference_tuple",
+        "fixed_fields": ["proposition", "owner", "representation_linkage", "scope", "epistemic_state", "planner_behavior_digest"]
+      },
+      "original_binding": {
+        "scientific_evidence_bindings": []
+      },
+      "replacement_binding": {
+        "scientific_evidence_bindings": [
+          {
+            "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+            "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+            "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+            "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+            "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+            "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1"
+          }
+        ]
+      },
+      "single_fault_proof": "The runtime fact, owner, record linkage and behavior remain unchanged; one real scientific reference is attached where scientific evidence is explicitly forbidden.",
+      "expected_first_failure": "OWNER_MISATTRIBUTION"
+    },
+    {
+      "mutation_id": "mutation:owner:ledger-absence-to-scientific-kg",
+      "target_atom_id": "atom:scrublet:raw-umi-absence",
+      "dimension": "primary_owner",
+      "application": {
+        "target_path": "emitted_atoms[atom:scrublet:raw-umi-absence].primary_owner",
+        "operation": "replace_scalar_only",
+        "fixed_fields": ["proposition", "evidence_expectation", "representation_absence", "scope", "epistemic_state", "planner_behavior_digest"]
+      },
+      "original_binding": {
+        "primary_owner": "REPRESENTATION_LEDGER_PROFILER"
+      },
+      "replacement_binding": {
+        "primary_owner": "SCIENTIFIC_KG"
+      },
+      "single_fault_proof": "The representation-absence proposition, frozen Ledger, evidence expectation, scope and planner behavior remain unchanged; only the primary owner is changed.",
+      "expected_first_failure": "OWNER_MISATTRIBUTION"
+    }
+  ],
+  "metric_denominators": {
+    "atom_completeness": {"denominator": 12, "unit": "frozen_atoms"},
+    "ownership_fidelity": {"denominator": 12, "unit": "frozen_atoms"},
+    "scientific_evidence_recall": {"denominator": 5, "unit": "scientific_evidence_expected_atoms"},
+    "non_scientific_evidence_abstention": {"denominator": 7, "unit": "scientific_evidence_forbidden_atoms"},
+    "scope_fidelity": {"denominator": 5, "unit": "scientific_evidence_expected_atoms"},
+    "representation_record_linkage": {"denominator": 6, "unit": "concrete_runtime_representation_records"},
+    "missing_representation_linkage": {"denominator": 1, "unit": "explicit_representation_absence_obligations"},
+    "scientific_candidate_status_fidelity": {"denominator": 5, "unit": "scientific_evidence_expected_atoms"},
+    "scenario_candidate_status_fidelity": {"denominator": 4, "unit": "scenarios"},
+    "behavior_digest_invariance": {"denominator": 4, "unit": "scenarios"},
+    "negative_control_first_cause_detection": {"denominator": 8, "unit": "single_fault_mutations"},
+    "scientific_decision_evidence_precision": {
+      "denominator": "all scenario-local unique emitted scientific reference bindings",
+      "frozen_prior_observed_count": 17,
+      "prior_observed_count_source": "data/evaluation/scientific_kg_contribution_v1_corrected/report.json",
+      "note": "The runtime denominator must not discard resolvable but non-decision-bearing citation decoration."
+    }
+  },
+  "first_cause_failure_taxonomy": {
+    "precedence": [
+      "BEHAVIOR_MUTATED",
+      "EXPECTED_ATOM_MISSING",
+      "UNEXPECTED_ATOM",
+      "OWNER_MISATTRIBUTION",
+      "EVIDENCE_UNRESOLVABLE",
+      "CLAIM_SOURCE_BINDING_MISMATCH",
+      "EVIDENCE_DOES_NOT_SUPPORT_DECISION_ATOM",
+      "EXTRA_NON_DECISION_EVIDENCE",
+      "SCOPE_MISMATCH",
+      "SCOPE_SILENTLY_WIDENED",
+      "REPRESENTATION_LINK_MISSING",
+      "REPRESENTATION_LINK_WRONG",
+      "EPISTEMIC_STATUS_CONFLATION"
+    ],
+    "evidence_resolution_precedence": [
+      "Resolve and integrity-check each referenced claim, evidence span, source revision, locator target and content object independently.",
+      "If any referenced object does not exist, cannot resolve, is missing or corrupt, or fails its own source/span content-integrity check, classify EVIDENCE_UNRESOLVABLE.",
+      "If all referenced objects resolve and pass their own integrity checks but the claim/content-hash/span/source members do not form a frozen valid relationship, classify CLAIM_SOURCE_BINDING_MISMATCH."
+    ],
+    "definitions": {
+      "BEHAVIOR_MUTATED": "Planner behavior digest changed while evaluating a justification-only mutation.",
+      "EXPECTED_ATOM_MISSING": "A frozen atom was not emitted or could not be reconstructed.",
+      "UNEXPECTED_ATOM": "A decision claim outside the frozen atom set was asserted as required justification.",
+      "OWNER_MISATTRIBUTION": "The atom owner is wrong, or scientific evidence is used to prove a runtime/Planner/Policy fact.",
+      "EVIDENCE_UNRESOLVABLE": "Use only when a referenced evidence object cannot be independently resolved or integrity-verified as an evidence object: a referenced claim, span, or source ID does not exist; source or span content is missing or corrupt; the evidence-span content hash or source integrity check fails; or the locator/source revision cannot resolve to the frozen evidence object. Do not use this class when the referenced objects each resolve and pass their own integrity checks but are combined incorrectly.",
+      "CLAIM_SOURCE_BINDING_MISMATCH": "Use when every referenced object is individually resolvable and integrity-valid but their frozen relationship is invalid: an existing claim ID is paired with another existing claim's claim_content_hash; an existing claim is paired with an evidence span not bound to that claim; or individually valid claim, span, source, locator, and hash members do not form the frozen valid binding. This class deterministically applies to mutation:binding-mismatch:harmony-span-neighbors-claim.",
+      "EVIDENCE_DOES_NOT_SUPPORT_DECISION_ATOM": "An internally valid claim/evidence binding does not support the atom proposition under the frozen scope.",
+      "EXTRA_NON_DECISION_EVIDENCE": "A resolvable citation does not support any frozen scientific atom in its scenario.",
+      "SCOPE_MISMATCH": "A resolved scope dimension contradicts the frozen scenario context, including an expected unknown/not_evaluated dimension emitted as incompatible.",
+      "SCOPE_SILENTLY_WIDENED": "An unresolved or narrower frozen scope is asserted as compatible without authoritative resolution; specifically, expected unknown/not_evaluated emitted as compatible uses this failure.",
+      "REPRESENTATION_LINK_MISSING": "A required concrete record or explicit absence is not linked.",
+      "REPRESENTATION_LINK_WRONG": "The explanation links a different record than the one that supports the atom.",
+      "EPISTEMIC_STATUS_CONFLATION": "Candidate knowledge is asserted as trusted/canonical or observed state is recast as scientific knowledge."
+    }
+  },
+  "stop_conditions": [
+    "Any change to this expected specification after verifier implementation begins.",
+    "Any derivation of expected atoms, scope, owners, or accepted evidence from a new evaluator output.",
+    "Any production-code, Planner, KG, Ledger, Capability Pack, contract, retrieval, runtime, or policy modification required to make the evaluation pass.",
+    "Any negative control found to change more than its declared dimension.",
+    "Any mutation that changes the canonical Planner behavior digest.",
+    "Any inability to resolve a frozen expected claim/span/source/hash from the pinned candidate artifacts.",
+    "Any attempt to coerce Scrublet capture/sample scope from unknown/not_evaluated to compatible or incompatible without new independently adjudicated scenario evidence.",
+    "Any formal evaluation run during preregistration materialization."
+  ]
+}
