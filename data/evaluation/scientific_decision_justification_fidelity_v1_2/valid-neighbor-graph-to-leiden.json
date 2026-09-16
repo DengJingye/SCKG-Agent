@@ -1,0 +1,291 @@
+{
+  "behavior_digest": "7a77bcc5d7506360311a2b3682e9f0d35bea86bed9820a52a4b43a1d52a7d783",
+  "emitted_atoms": [
+    {
+      "atom_id": "atom:valid-graph:leiden-input",
+      "knowledge_status": "candidate",
+      "primary_owner": "SCIENTIFIC_KG",
+      "proposition": "Scanpy Leiden consumes an explicit sparse adjacency or the connectivities selected from a neighbor graph; UMAP is not an input.",
+      "representation_record_ids": [
+        "rep:demo:neighbor-graph:valid"
+      ],
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "scientific_evidence_bindings": [
+        {
+          "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+          "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+          "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1",
+          "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+          "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+          "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa"
+        }
+      ],
+      "scope": {
+        "modality": {
+          "state": "compatible"
+        },
+        "observation_unit": {
+          "state": "compatible"
+        },
+        "overall_state": "compatible",
+        "scope_id": "scope:uat:scanpy:leiden:1.11.2",
+        "task": {
+          "state": "compatible"
+        },
+        "version": {
+          "state": "compatible"
+        }
+      }
+    },
+    {
+      "atom_id": "atom:valid-graph:record-state",
+      "knowledge_status": "observed",
+      "primary_owner": "REPRESENTATION_LEDGER_PROFILER",
+      "proposition": "The frozen neighbor-graph record has status current.",
+      "representation_record_id": "rep:demo:neighbor-graph:valid",
+      "scenario_id": "valid-neighbor-graph-to-leiden",
+      "scientific_evidence_bindings": [],
+      "scope": {
+        "overall_state": "not_applicable"
+      }
+    }
+  ],
+  "expected_behavior_digest": "7a77bcc5d7506360311a2b3682e9f0d35bea86bed9820a52a4b43a1d52a7d783",
+  "ledger": {
+    "blocking_errors": [],
+    "cell_index_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "created_at": "2000-01-01T00:00:00Z",
+    "gene_index_hash": "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+    "ledger_id": "ledger:demo:valid-graph",
+    "metadata": {},
+    "profile_id": "profile:ledger:demo:valid-graph",
+    "records": [
+      {
+        "cell_index_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "gene_index_hash": null,
+        "metadata": {
+          "component_roles": [
+            "connectivities",
+            "distances",
+            "parameters"
+          ],
+          "connectivities_key": "connectivities",
+          "distances_key": "distances",
+          "lineage_id": "lineage:pbmc-demo",
+          "neighbors_key": "neighbors",
+          "producer_operator_revision_id": "operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected"
+        },
+        "parameter_hash": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+        "parent_record_ids": [],
+        "provenance": [
+          "neighbor_representation_bound"
+        ],
+        "representation_id": "neighbor_graph",
+        "representation_record_id": "rep:demo:neighbor-graph:valid",
+        "schema_version": "1.0",
+        "slot": "demo/neighbor_graph",
+        "stale_reasons": [],
+        "status": "current",
+        "validated": true,
+        "value_state": "graph"
+      }
+    ],
+    "schema_version": "sckg-representation-ledger-v1",
+    "source_artifact_id": "artifact:ledger:demo:valid-graph",
+    "source_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "warnings": []
+  },
+  "raw_planner_output": {
+    "ledger_after_sha256": "00b206601b6a2b242d59b5e225839b873bfc300c9bbcf2f9da9ab2454d989940",
+    "ledger_before_sha256": "00b206601b6a2b242d59b5e225839b873bfc300c9bbcf2f9da9ab2454d989940",
+    "noop_assess_calls": null,
+    "planner_outputs": {
+      "plan": {
+        "approval_required": true,
+        "blocking_conditions": [],
+        "candidate_tools": [
+          "Scanpy"
+        ],
+        "data_awareness": "data_aware",
+        "edges": [],
+        "execution_blockers": [
+          "capability_pack_execution_not_eligible"
+        ],
+        "execution_budget": {
+          "max_concurrent_runs": 1,
+          "max_initial_runs": 12,
+          "max_total_runs": 18,
+          "reserved_repair_runs": 4,
+          "reserved_validation_reruns": 2,
+          "timeout_seconds": 900
+        },
+        "execution_eligible": false,
+        "expected_outputs": [
+          {
+            "artifact_id": "cluster_labels",
+            "artifact_type": "representation",
+            "format": "registered_artifact",
+            "required": true,
+            "validator_id": "representation_contract_v1"
+          }
+        ],
+        "parameter_search_space": {},
+        "plan_id": "cap-plan-3e1676b6657ec15b",
+        "plan_status": "dry_run",
+        "planning_warnings": [
+          "reuse:neighbor_graph"
+        ],
+        "profile_id": "profile:ledger:demo:valid-graph",
+        "requirement_id": "kg-contribution-v1:valid-neighbor-graph-to-leiden",
+        "selected_probe_tools": [],
+        "steps": [
+          {
+            "failure_policy": "block_and_preserve_last_valid_representation",
+            "input_artifacts": [
+              "neighbor_graph"
+            ],
+            "name": "scanpy_core.leiden",
+            "node_id": "scanpy_core.leiden",
+            "operation": "scanpy_core.leiden",
+            "output_artifacts": [
+              "cluster_labels"
+            ],
+            "parameter_provenance": [
+              {
+                "applicable_scope": "capability_plan",
+                "limitations": [],
+                "origin_type": "source_bound_prior",
+                "parameter_name": "resolution",
+                "policy_rule_id": "reviewed_step_parameter_default",
+                "run_id": null,
+                "source_id": "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.leiden.html",
+                "source_span": "parameter_schema.properties.leiden_resolution",
+                "source_type": "policy_rule",
+                "tool_version": "1.11.2",
+                "value_or_range": 1.0
+              },
+              {
+                "applicable_scope": "capability_plan",
+                "limitations": [],
+                "origin_type": "source_bound_prior",
+                "parameter_name": "random_state",
+                "policy_rule_id": "reviewed_step_parameter_default",
+                "run_id": null,
+                "source_id": "scanpy_core_reproducibility_policy_v1",
+                "source_span": "parameter_schema.properties.random_state",
+                "source_type": "policy_rule",
+                "tool_version": "1.11.2",
+                "value_or_range": 0
+              }
+            ],
+            "parameters": {
+              "random_state": 0,
+              "resolution": 1.0
+            },
+            "preconditions": [
+              "req.leiden"
+            ],
+            "resource_budget": {
+              "gpu_allowed": false,
+              "max_cells": 10000,
+              "max_memory_mb": null,
+              "max_runtime_seconds": 900,
+              "memory_enforcement": "monitor_only"
+            },
+            "skippable": false,
+            "tool_contract_id": "Scanpy:1.11.2",
+            "tool_name": "Scanpy"
+          }
+        ]
+      },
+      "resolved_reused_ledger_records": [
+        {
+          "cell_index_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "gene_index_hash": null,
+          "metadata": {
+            "component_roles": [
+              "connectivities",
+              "distances",
+              "parameters"
+            ],
+            "connectivities_key": "connectivities",
+            "distances_key": "distances",
+            "lineage_id": "lineage:pbmc-demo",
+            "neighbors_key": "neighbors",
+            "producer_operator_revision_id": "operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected"
+          },
+          "parameter_hash": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+          "parent_record_ids": [],
+          "provenance": [
+            "neighbor_representation_bound"
+          ],
+          "representation_id": "neighbor_graph",
+          "representation_record_id": "rep:demo:neighbor-graph:valid",
+          "schema_version": "1.0",
+          "slot": "demo/neighbor_graph",
+          "stale_reasons": [],
+          "status": "current",
+          "validated": true,
+          "value_state": "graph"
+        }
+      ],
+      "result": {
+        "blocked": false,
+        "blocking_reasons": [],
+        "plan_id": "result-cap-plan-3e1676b6657ec15b",
+        "planned_method_ids": [
+          "scanpy_core.leiden"
+        ],
+        "reused_representation_ids": [
+          "neighbor_graph"
+        ],
+        "scientific_applicability_results": [
+          {
+            "action_id": "scanpy_core.leiden",
+            "applicable": true,
+            "assessed_representation_ids": [
+              "neighbor_graph"
+            ],
+            "blocked": false,
+            "decision_scope": "existing_representation_reuse",
+            "evidence_references": [
+              {
+                "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+                "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1",
+                "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+                "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+                "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa"
+              }
+            ],
+            "incompatibility_reasons": [],
+            "knowledge_status": "candidate",
+            "missing_requirements": [],
+            "operator_revision_id": "operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected",
+            "reusable_representation_ids": [
+              "neighbor_graph"
+            ],
+            "reusable_representation_record_ids": [
+              "rep:demo:neighbor-graph:valid"
+            ]
+          }
+        ],
+        "target_representations": [
+          "cluster_labels"
+        ],
+        "workflow_plan_id": "cap-plan-3e1676b6657ec15b"
+      }
+    },
+    "scenario_id": "valid-neighbor-graph-to-leiden"
+  },
+  "scenario_id": "valid-neighbor-graph-to-leiden",
+  "scenario_scientific_references": [
+    {
+      "claim_content_hash": "bc01a9d2c577ad839817a58bc0a1a6b71436780b123750c89308a4b9222eda78",
+      "claim_revision_id": "claim-revision:uat:leiden-input:v1",
+      "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1",
+      "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+      "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+      "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa"
+    }
+  ]
+}
