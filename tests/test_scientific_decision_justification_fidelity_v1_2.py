@@ -21,6 +21,11 @@ from eval.scientific_decision_justification_fidelity_v1_1 import (
 )
 from eval.scientific_decision_justification_fidelity_v1_2 import (
     BOUNDARY_PATH,
+    EVALUATION_ID,
+    EVALUATOR_SCHEMA_VERSION,
+    EXPECTED_POST_FIX_SUT_SHA256,
+    preflight_formal_evaluation,
+    run_formal_evaluation,
     validate_digest_boundary,
     validate_version_boundary,
 )
@@ -215,3 +220,121 @@ def test_sut_digest_change_must_be_declared() -> None:
                 "allowed_changed_production_files"
             ],
         )
+
+
+@pytest.fixture(scope="module")
+def completed_v1_2_run(tmp_path_factory):
+    output = tmp_path_factory.mktemp("v1-2-formal") / "formal"
+    historical_before = {
+        row["path"]: history._tree_hash(ROOT / row["path"])
+        for row in json.loads(BOUNDARY_PATH.read_text(encoding="utf-8"))[
+            "historical_formal_runs"
+        ]
+    }
+
+    report = run_formal_evaluation(output)
+
+    historical_after = {
+        path: history._tree_hash(ROOT / path) for path in historical_before
+    }
+    assert historical_after == historical_before
+    return output, report
+
+
+def test_v1_2_formal_runner_emits_only_v1_2_identity(completed_v1_2_run) -> None:
+    output, report = completed_v1_2_run
+    started = json.loads(
+        (output / "formal_run_started.json").read_text(encoding="utf-8")
+    )
+    completed = json.loads(
+        (output / "formal_run_completed.json").read_text(encoding="utf-8")
+    )
+
+    assert started["schema_version"] == EVALUATOR_SCHEMA_VERSION
+    assert started["evaluation_id"] == EVALUATION_ID
+    assert completed["schema_version"] == EVALUATOR_SCHEMA_VERSION
+    assert completed["evaluation_id"] == EVALUATION_ID
+    assert report["schema_version"] == EVALUATOR_SCHEMA_VERSION
+    assert report["evaluation_id"] == EVALUATION_ID
+    assert EXPECTED_POST_FIX_SUT_SHA256 == started["declared_sut_sha256"]
+    assert (output / "evidence_reference_checks.json").is_file()
+    assert (output / "negative_controls.json").is_file()
+    assert not (ROOT / "data/evaluation/scientific_decision_justification_fidelity_v1_2").exists()
+
+
+def test_v1_2_formal_runner_reuses_frozen_semantics_unchanged(
+    completed_v1_2_run,
+) -> None:
+    output, report = completed_v1_2_run
+    boundary = json.loads(BOUNDARY_PATH.read_text(encoding="utf-8"))
+    spec_path = ROOT / boundary["frozen_expected_spec"]["path"]
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+
+    assert hashlib.sha256(spec_path.read_bytes()).hexdigest() == (
+        boundary["frozen_expected_spec"]["sha256"]
+    )
+    assert len(spec["atoms"]) == len(report["atom_results"]) == 12
+    assert len(spec["negative_controls"]) == len(
+        report["negative_control_results"]
+    ) == 8
+    assert set(report["metrics"]) == {
+        "evidence_fidelity",
+        "scope_fidelity",
+        "representation_linkage_fidelity",
+        "epistemic_state_fidelity",
+        "ownership_fidelity",
+        "behavior_digest_invariance",
+        "negative_control_first_cause_detection",
+    }
+    assert json.loads(
+        (output / "negative_controls.json").read_text(encoding="utf-8")
+    )["results"] == report["negative_control_results"]
+
+
+def test_v1_2_preflight_rejects_sut_digest_drift(tmp_path) -> None:
+    with pytest.raises(ValueError, match="declared_v1_2_sut_digest_mismatch"):
+        preflight_formal_evaluation(
+            tmp_path / "formal",
+            expected_sut_sha256="0" * 64,
+        )
+
+
+def test_v1_2_write_once_guards_started_and_completed_runs(
+    tmp_path,
+    completed_v1_2_run,
+) -> None:
+    incomplete = tmp_path / "incomplete"
+    incomplete.mkdir()
+    (incomplete / "formal_run_started.json").write_text("{}\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="incomplete_run_exists"):
+        preflight_formal_evaluation(incomplete)
+
+    completed, _ = completed_v1_2_run
+    with pytest.raises(FileExistsError, match="completed_run_exists"):
+        run_formal_evaluation(completed)
+
+
+def test_v1_2_failure_after_start_remains_auditable_and_non_rerunnable(
+    tmp_path,
+) -> None:
+    output = tmp_path / "failed-after-start"
+
+    def fail_collection():
+        raise RuntimeError("injected_collection_failure")
+
+    with pytest.raises(RuntimeError, match="injected_collection_failure"):
+        run_formal_evaluation(output, case_collector=fail_collection)
+
+    assert (output / "formal_run_started.json").is_file()
+    assert not (output / "formal_run_completed.json").exists()
+    with pytest.raises(RuntimeError, match="incomplete_run_exists"):
+        run_formal_evaluation(output)
+
+
+def test_v1_2_rejects_historical_output_paths() -> None:
+    for name in (
+        "scientific_decision_justification_fidelity_v1",
+        "scientific_decision_justification_fidelity_v1_1",
+    ):
+        with pytest.raises(ValueError, match="historical_formal_output_path_forbidden"):
+            preflight_formal_evaluation(ROOT / "data/evaluation" / name)
