@@ -1752,3 +1752,75 @@
 - 历史 v1/v1.1 formal outputs、frozen atoms、gold、source bindings 和 preregistration 均未修改或重跑；v1.2 formal evaluation 仍未运行。
 - Prevention rule：`historical experiment integrity != current worktree identity`。历史测试验证历史记录未被篡改；当前 regression 必须通过对应 active version boundary 验证当前 SUT。
 - 修复后 CP3 projection `4 passed`，historical v1 `26 passed`，historical v1.1 `7 passed`，active v1.2 `9 passed`，完整 Justification Fidelity focused suite `42 passed`。
+
+---
+
+## INC-2026-09-16-035 - v1.2 缺少可执行的 write-once formal entrypoint
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-09-16 |
+| 检查点 | CP4.5 / CP4.6 |
+| 当前状态 | RESOLVED |
+| 责任 stage | Evaluation formal-run boundary |
+
+### First cause 与修复
+
+- Pre-run integrity 全部通过，但 v1.2 模块只验证 boundary，未提供可写入正式 artifacts 的 canonical entrypoint。
+- 最早 divergence 在 formal command dispatch，尚未执行 formal，也未产生 started/completed marker。
+- 只在 evaluation layer 增加经过测试的 write-once runner；production SUT、frozen spec、Planner、KG 与历史 formal artifacts 均未改动。
+- runner freeze 后再执行一次正式运行，ordinal=`1`、status=`PASS`，且写后拒绝覆盖。
+
+### Prevention rule
+
+- 每个 formal evaluation version 在授权运行前必须具备独立的 canonical entrypoint、write-once guard、artifact-isolation test 与未运行计数证明。
+
+---
+
+## INC-2026-09-16-036 - CP5 官方 PDF 获取成功但解析/runtime 边界失败
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-09-16 |
+| 检查点 | CP5 EvidenceGap acquisition pilot |
+| 当前状态 | RESOLVED; failed artifacts preserved |
+| 责任 stage | Existing PDF extraction runtime boundary |
+
+### First cause 与修复
+
+- 首次 acquisition 已解析 authoritative source identity 并取得 SoupX 1.6.2 PDF，但在 bounded EvidenceSpan 生成前进入 PDF parsing/runtime failure。
+- 最早 divergence 位于 source acquisition 与 evidence extraction 之间；没有 Candidate Claim、canonical promotion 或 execution side effect。
+- 失败 run 保留不覆盖；修复只复用并正确加载仓库既有 PDF extraction/runtime dependency，没有新造 crawler，也没有修改 KG、Planner 或 scientific claim。
+- repaired run 生成唯一 SourceWork/Revision/Artifact、一个 exact EvidenceSpan，并验证二次请求不再外部抓取。
+
+### Prevention rule
+
+- Evidence acquisition smoke 必须在外部请求前验证既有 PDF extraction runtime；下载成功不能替代 EvidenceSpan resolvability 验收。
+- 失败 acquisition artifacts 必须保留，新 run 使用独立目录，禁止就地覆盖。
+
+---
+
+## INC-2026-09-16-037 - CP6 候选 claim 的 operator scope 可能被 package-level span 过度扩张
+
+### 基本信息
+
+| 字段 | 内容 |
+|---|---|
+| 首次发现 | 2026-09-16 |
+| 检查点 | CP6 Candidate knowledge deposition |
+| 当前状态 | RESOLVED_BEFORE_ACCEPTANCE |
+| 责任 stage | Candidate claim scope construction |
+
+### First cause 与修复
+
+- 官方 span 直接定义 SoupChannel `tod`/`toc` 输入表语义，但不足以支持更宽的 preprocessing、raw-count workflow 或其他 operator 语义。
+- 修复将 candidate proposition 限定到 version-pinned SoupChannel input-table semantics，不产生 derived workflow relation，也不授予 execution authority。
+- EvidenceAssessment 明确记录 scope aligned，Candidate 继续为 `candidate_pending_review`。
+
+### Prevention rule
+
+- Package-level authoritative material不得自动提升为 operator-specific workflow claim；subject、predicate、object 与 scope 必须分别由 bounded span 直接支持。
