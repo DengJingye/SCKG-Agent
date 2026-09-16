@@ -7,6 +7,12 @@ from pathlib import Path
 
 import pytest
 
+import eval.scientific_decision_justification_fidelity_history as history
+import eval.scientific_decision_justification_fidelity_v1 as fidelity_v1
+from eval.scientific_decision_justification_fidelity_history import (
+    load_historical_preregistration,
+    verify_historical_integrity,
+)
 from eval.scientific_decision_justification_fidelity_v1 import (
     PREREGISTRATION_PATH,
     SPEC_PATH,
@@ -15,7 +21,6 @@ from eval.scientific_decision_justification_fidelity_v1 import (
     JustificationVerifier,
     apply_frozen_mutation,
     build_positive_control_cases,
-    load_frozen_preregistration,
     mutation_changes_only_declared_dimension,
 )
 
@@ -36,8 +41,17 @@ def _atom(cases, atom_id):
     return next(atom for case in cases for atom in case["emitted_atoms"] if atom["atom_id"] == atom_id)
 
 
+@pytest.fixture(autouse=True)
+def _use_explicit_historical_lane(monkeypatch) -> None:
+    monkeypatch.setattr(
+        fidelity_v1,
+        "load_frozen_preregistration",
+        load_historical_preregistration,
+    )
+
+
 def test_frozen_spec_and_preregistration_manifest_are_integrity_verified() -> None:
-    spec, manifest = load_frozen_preregistration()
+    spec, manifest = load_historical_preregistration()
 
     assert hashlib.sha256(SPEC_PATH.read_bytes()).hexdigest() == SPEC_SHA256
     assert manifest["expected_spec"]["sha256"] == SPEC_SHA256
@@ -47,7 +61,7 @@ def test_frozen_spec_and_preregistration_manifest_are_integrity_verified() -> No
 
 
 def test_exact_frozen_atom_and_mutation_sets_are_loaded() -> None:
-    spec, manifest = load_frozen_preregistration()
+    spec, manifest = load_historical_preregistration()
 
     assert len(spec["atoms"]) == manifest["counts"]["atom_count"] == 12
     assert len(spec["negative_controls"]) == manifest["counts"]["negative_control_count"] == 8
@@ -55,12 +69,48 @@ def test_exact_frozen_atom_and_mutation_sets_are_loaded() -> None:
 
 
 def test_all_thirteen_source_artifacts_are_digest_verified() -> None:
-    _, manifest = load_frozen_preregistration()
+    result = verify_historical_integrity()
 
-    assert len(manifest["source_artifact_digests"]) == 13
-    for row in manifest["source_artifact_digests"]:
-        path = SPEC_PATH.parents[2] / row["path"]
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == row["sha256"]
+    assert result["historical_source_count"] == 13
+    assert result["historical_sut_paths"] == [
+        "engine/scientific_kg_applicability.py"
+    ]
+    assert result["current_worktree_sut_checked"] is False
+
+
+def test_tampered_historical_report_is_rejected(monkeypatch) -> None:
+    original = history._file_hash
+
+    def tampered(path: Path) -> str:
+        if path.as_posix().endswith(
+            "scientific_decision_justification_fidelity_v1/report.json"
+        ):
+            return "0" * 64
+        return original(path)
+
+    monkeypatch.setattr(history, "_file_hash", tampered)
+    with pytest.raises(ValueError, match="historical_formal_tree_mismatch"):
+        verify_historical_integrity()
+
+
+def test_tampered_historical_manifest_is_rejected(monkeypatch) -> None:
+    original = history._file_hash
+
+    def tampered(path: Path) -> str:
+        if path == PREREGISTRATION_PATH:
+            return "0" * 64
+        return original(path)
+
+    monkeypatch.setattr(history, "_file_hash", tampered)
+    with pytest.raises(ValueError, match="historical_preregistration_digest_mismatch"):
+        verify_historical_integrity()
+
+
+def test_historical_recorded_sut_digest_mismatch_is_rejected(monkeypatch) -> None:
+    monkeypatch.setattr(history, "_git_blob_hash", lambda *_: "0" * 64)
+
+    with pytest.raises(ValueError, match="historical_recorded_sut_digest_mismatch"):
+        verify_historical_integrity()
 
 
 def test_positive_controls_cover_all_atoms_and_pass() -> None:

@@ -1742,3 +1742,13 @@
 - v1.2 formal evaluation 未运行；CP2.6 只验证 version boundary。
 - focused evaluator/versioning regression 为 36 passed；既有 KG planner integration 为 5 passed；git diff --check 通过。
 - 当前状态：RESOLVED / READY_TO_RESUME_CP3。
+
+### CP3.5 regression-routing correction - 2026-09-14
+
+- CP3 提交后，旧 v1/v1.1 regression tests 仍以当前 worktree SUT 校验历史 pre-fix digest，产生 30 个 `HISTORICAL_TEST_USING_CURRENT_SUT`；另有 1 个 v1.2 test 仍假设没有 declared SUT change。
+- First cause 是 regression harness 未把“历史实验完整性”与“当前 worktree identity”分为两个显式 verification lanes；不是 CP3 projection behavior regression。
+- Historical lane 现在从冻结 manifest、formal artifact trees、formal markers 和历史 baseline Git blob 校验当时的 SUT identity，不再要求当前 SUT 退回历史 SHA。
+- Active v1.2 lane 显式声明 `engine/scientific_kg_applicability.py` 为可变 SUT，记录 pre/post digest，同时继续对 undeclared production change、frozen spec、evidence fixture 和历史 formal trees fail closed。
+- 历史 v1/v1.1 formal outputs、frozen atoms、gold、source bindings 和 preregistration 均未修改或重跑；v1.2 formal evaluation 仍未运行。
+- Prevention rule：`historical experiment integrity != current worktree identity`。历史测试验证历史记录未被篡改；当前 regression 必须通过对应 active version boundary 验证当前 SUT。
+- 修复后 CP3 projection `4 passed`，historical v1 `26 passed`，historical v1.1 `7 passed`，active v1.2 `9 passed`，完整 Justification Fidelity focused suite `42 passed`。

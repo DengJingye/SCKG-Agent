@@ -7,12 +7,26 @@ from pathlib import Path
 
 import pytest
 
+import eval.scientific_decision_justification_fidelity_history as history
+import eval.scientific_decision_justification_fidelity_v1 as fidelity_v1
+import eval.scientific_decision_justification_fidelity_v1_1 as fidelity_v1_1
+import eval.scientific_decision_justification_fidelity_v1_2 as fidelity_v1_2
+from eval.scientific_decision_justification_fidelity_history import (
+    load_historical_preregistration,
+)
 from eval.scientific_decision_justification_fidelity_v1 import ROOT
+from eval.scientific_decision_justification_fidelity_v1_1 import (
+    build_report,
+    collect_current_cases,
+)
 from eval.scientific_decision_justification_fidelity_v1_2 import (
     BOUNDARY_PATH,
     validate_digest_boundary,
     validate_version_boundary,
 )
+
+
+DECLARED_SUT = "engine/scientific_kg_applicability.py"
 
 
 def _boundary_inputs():
@@ -36,15 +50,80 @@ def _boundary_inputs():
     return boundary, sources, actual
 
 
-def test_current_boundary_preserves_historical_runs_and_has_not_run_v1_2() -> None:
-    result = validate_version_boundary(changed_production_paths=set())
+def test_current_boundary_accepts_declared_cp3_sut_and_has_not_run_v1_2() -> None:
+    result = validate_version_boundary(changed_production_paths={DECLARED_SUT})
 
     assert result["historical_formal_runs_verified"] == 2
     assert result["formal_evaluation_run"] is False
     assert result["frozen_spec_sha256"] == (
         "989bdf9b51a5e0529174a5a7b2da0bfe9735a6142fecbac9d985306cf6f61a85"
     )
-    assert result["sut_observations"][0]["changed"] is False
+    assert result["declared_production_changes"] == [DECLARED_SUT]
+    assert result["sut_observations"][0]["changed"] is True
+    assert (
+        result["sut_observations"][0]["post_fix_sha256"]
+        != result["sut_observations"][0]["pre_fix_sha256"]
+    )
+
+
+def test_historical_lane_does_not_silently_route_through_v1_2(monkeypatch) -> None:
+    monkeypatch.setattr(
+        fidelity_v1_2,
+        "validate_version_boundary",
+        lambda **_: (_ for _ in ()).throw(AssertionError("unexpected v1.2 route")),
+    )
+
+    result = history.verify_historical_integrity()
+
+    assert result["historical_run_count"] == 2
+    assert result["current_worktree_sut_checked"] is False
+
+
+def test_v1_2_lane_does_not_reinterpret_historical_lane(monkeypatch) -> None:
+    monkeypatch.setattr(
+        history,
+        "verify_historical_integrity",
+        lambda **_: (_ for _ in ()).throw(AssertionError("unexpected history route")),
+    )
+
+    result = validate_version_boundary(changed_production_paths={DECLARED_SUT})
+
+    assert result["historical_formal_runs_verified"] == 2
+    assert result["sut_observations"][0]["changed"] is True
+
+
+def test_active_v1_2_lane_measures_current_cp3_projection(monkeypatch) -> None:
+    validate_version_boundary(changed_production_paths={DECLARED_SUT})
+    monkeypatch.setattr(
+        fidelity_v1,
+        "load_frozen_preregistration",
+        load_historical_preregistration,
+    )
+    monkeypatch.setattr(
+        fidelity_v1_1,
+        "load_frozen_preregistration",
+        load_historical_preregistration,
+    )
+
+    report = build_report(collect_current_cases())
+    evidence = report["metrics"]["evidence_fidelity"]
+
+    assert evidence["scientific_evidence_recall"] == {
+        "numerator": 5,
+        "denominator": 5,
+    }
+    assert evidence["scientific_decision_evidence_precision"] == {
+        "numerator": 5,
+        "denominator": 5,
+    }
+    assert evidence["non_scientific_evidence_abstention"] == {
+        "numerator": 7,
+        "denominator": 7,
+    }
+    assert report["metrics"]["negative_control_first_cause_detection"] == {
+        "numerator": 8,
+        "denominator": 8,
+    }
 
 
 def test_explicit_sut_change_records_before_and_after_digest() -> None:
