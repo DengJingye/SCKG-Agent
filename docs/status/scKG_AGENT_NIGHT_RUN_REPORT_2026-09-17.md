@@ -4,7 +4,7 @@
 
 - Run ID: `night-2026-09-14-to-2026-09-17`
 - Baseline commit: `e0ab62c368b6a544f077c601e5590e785578fae2`
-- Final HEAD: `232a3f10787fafa2bd07a3f8eec9480fa9444e52`
+- Pre-closure HEAD: `232a3f10787fafa2bd07a3f8eec9480fa9444e52`
 - Branch: `feature/method-kg-expansion-v1`
 - Overall status: `PASS`
 - Final checkpoint: `CP7 — PASS`
@@ -149,10 +149,13 @@ Accepted commits created during this run:
 - `d35e4bc038b075ae0db9b435b63cc10106dac3a2` — add write-once v1.2 formal runner
 - `c0f43e22ff62b0405b424f9638672d303056e128` — add governed EvidenceGap acquisition pilot
 - `232a3f10787fafa2bd07a3f8eec9480fa9444e52` — add governed candidate knowledge deposition pilot
+- `273b516ea88597793bdbf9fe1413917b04b7e918` — freeze v1.2 formal artifacts
+- `968502254d9999ea5c6eaf3c448e658afb02ae94` — add candidate admin review queue
 
-CP7 is intentionally uncommitted. Its implementation, tests, and audit
-artifacts remain visible for review. Existing evaluation/development artifact
-directories remain untracked and were not deleted, overwritten, or promoted.
+CP7 implementation and tests are frozen. Its pilot audit directory follows the
+existing local-untracked pilot convention. Existing pilot/development artifact
+directories were not deleted, overwritten, promoted, or mixed into the formal
+artifact commit.
 
 ## Final decision
 
