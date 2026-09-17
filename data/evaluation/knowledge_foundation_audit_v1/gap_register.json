@@ -1,0 +1,199 @@
+{
+  "schema_version": "knowledge-foundation-gap-register-v1",
+  "audit_commit": "08c1850640226864a102f719f90535d470b621f1",
+  "priority_definition": {
+    "P0": "Can cause a wrong scientific decision, wrong retrieval, unsupported citation or false certainty.",
+    "P1": "A core midterm task lacks sufficient decision depth.",
+    "P2": "Useful expansion but not required for the Midterm Core.",
+    "P3": "Defer."
+  },
+  "gaps": [
+    {
+      "gap_id": "P0-RAG-DENSE-MANIFEST-DRIFT",
+      "priority": "P0",
+      "layer": "Evidence RAG",
+      "finding": "evidence_index_manifest declares 773 dense vectors while the JSONL is empty and the runtime .npy/metadata files are absent.",
+      "failure_mode": "evaluation or UI may report dense readiness that runtime cannot provide",
+      "current_containment": "HybridRetrievalService can fall back to FTS5 when it observes missing runtime artifacts",
+      "required_before_midterm": "Make reported dense availability match loadable artifacts; do not change ranking semantics as part of this audit."
+    },
+    {
+      "gap_id": "P0-RAG-UNRESOLVABLE-FORMAL-CHUNKS",
+      "priority": "P0",
+      "layer": "Evidence RAG",
+      "finding": "10 trusted_core formal benchmark chunks are source_bound=false and lack exact resolvable spans.",
+      "failure_mode": "retrieved benchmark assertions can be cited as decision support without a valid evidence object",
+      "current_containment": "decision-local grounding should abstain from unsupported references",
+      "required_before_midterm": "Exclude them from supported-citation eligibility or bind them to verified spans."
+    },
+    {
+      "gap_id": "P0-RAG-SOURCE-MISMATCH-QUARANTINE",
+      "priority": "P0",
+      "layer": "Evidence RAG",
+      "finding": "The CellTypist/SingleR benchmark source record points to a quarantined, unrelated PanomiR PDF candidate.",
+      "failure_mode": "wrong-source evidence",
+      "current_containment": "source_status=quarantined",
+      "required_before_midterm": "Verify the quarantine remains a hard exclusion in every benchmark/recommendation lane."
+    },
+    {
+      "gap_id": "P0-RAG-SOFTWARE-VERSION-UNRESOLVED",
+      "priority": "P0",
+      "layer": "Evidence RAG",
+      "finding": "0/17 canonical software-document sources are pinned to an immutable release/tag/commit.",
+      "failure_mode": "current README/stable/devel semantics may be applied to frozen operator versions",
+      "current_containment": "chunks are retrieval-only",
+      "required_before_midterm": "Version-sensitive requirements must use pinned source revisions or remain unknown."
+    },
+    {
+      "gap_id": "P0-KG-HARMONY-VERSION-IDENTITY",
+      "priority": "P0",
+      "layer": "Scientific KG / ToolContract boundary",
+      "finding": "Harmony KG operator revision is 2.0.5; production ToolContract is 2.0.0.",
+      "failure_mode": "scientific applicability and execution interface can refer to different implementations",
+      "current_containment": "candidate knowledge status and bounded integration tests",
+      "required_before_midterm": "Resolve identity or explicitly prove compatible inheritance before treating the path as version-consistent."
+    },
+    {
+      "gap_id": "P0-KG-SINGLER-VERSION-IDENTITY",
+      "priority": "P0",
+      "layer": "Scientific KG / ToolContract boundary",
+      "finding": "SingleR KG operator revision is 2.14.1; ToolContract is 2.14.0.",
+      "failure_mode": "reference and API requirements can be attributed to the wrong release",
+      "current_containment": "execution disabled",
+      "required_before_midterm": "Keep the path non-ready until versions are reconciled."
+    },
+    {
+      "gap_id": "P0-KG-REFERENCE-ARTIFACT-IDENTITY",
+      "priority": "P0",
+      "layer": "Scientific KG",
+      "finding": "CellTypist model, SingleR reference and pySCENIC database resources lack immutable ReferenceArtifactRevision identities and digests.",
+      "failure_mode": "existence of a matrix may be mistaken for scientifically compatible reference input",
+      "current_containment": "CellTypist/SingleR execution disabled; pySCENIC not production-used",
+      "required_before_midterm": "Reference-dependent scenarios must block or clarify rather than claim applicability."
+    },
+    {
+      "gap_id": "P0-KG-UNSAFE-CAN-FEED-PROJECTION",
+      "priority": "P0",
+      "layer": "Scientific KG candidate",
+      "finding": "The core candidate contains 66 CAN_FEED relations; many predate the corrected proof model and do not establish cross-tool version, identity, alignment, parameter or staleness compatibility.",
+      "failure_mode": "coarse type equality can create an invalid workflow edge",
+      "current_containment": "core candidate is not promoted; production uses only the corrected UAT overlay",
+      "required_before_midterm": "Do not use these relations as trusted planner edges without reviewed derivation proofs."
+    },
+    {
+      "gap_id": "P0-KG-SCOPE-REVIEW-PENDING",
+      "priority": "P0",
+      "layer": "Scientific KG candidate",
+      "finding": "All 236 core claims and 171 derived relations remain candidate_pending_review despite structural schema validity.",
+      "failure_mode": "scope-complete records may still encode scientifically over-broad requirements",
+      "current_containment": "candidate knowledge status is exposed in production justification",
+      "required_before_midterm": "Only the independently reviewed benchmark propositions may act as gold; unreviewed candidate KG cannot serve as scientific gold."
+    },
+    {
+      "gap_id": "P1-RAG-GENERAL-CLAIM-DOMINANCE",
+      "priority": "P1",
+      "layer": "Evidence RAG",
+      "finding": "344/783 evidence chunks are general claims.",
+      "failure_mode": "method identity/overview can outrank direct input/output/limitation evidence",
+      "current_containment": "atomic claim grounding prefers direct support",
+      "required_before_midterm": "Report claim-type denominators and direct-support precision separately."
+    },
+    {
+      "gap_id": "P1-RAG-TASK-IMBALANCE",
+      "priority": "P1",
+      "layer": "Evidence RAG",
+      "finding": "RNA velocity has 221 task-tagged chunks while ambient RNA and GRN each have 1; edgeR, Slingshot and pySCENIC have zero direct tool chunks.",
+      "failure_mode": "benchmark task coverage is mistaken for comparable evidence depth",
+      "current_containment": "Seed v0 reports per-scenario denominators",
+      "required_before_midterm": "Do not aggregate across task families without coverage stratification."
+    },
+    {
+      "gap_id": "P1-RAG-TASK-TAG-GRANULARITY",
+      "priority": "P1",
+      "layer": "Evidence RAG",
+      "finding": "HVG, PCA, neighbors and UMAP lack dedicated canonical task tags and are inferred through broad Scanpy/clustering categories.",
+      "failure_mode": "wrong-task filtering and unstable retrieval denominators",
+      "current_containment": "tool/entity filters and claim types",
+      "required_before_midterm": "Treat task-specific retrieval coverage as PARTIAL."
+    },
+    {
+      "gap_id": "P1-KG-SOUXP-INPUT-SEMANTICS",
+      "priority": "P1",
+      "layer": "Scientific KG candidate",
+      "finding": "SoupX empty-droplet profile input semantics remain an explicit core EvidenceGap; the later pilot claim remains candidate_pending_review.",
+      "failure_mode": "ambient correction may be planned without the required capture-level evidence",
+      "current_containment": "no production planner binding",
+      "required_before_midterm": "Keep SoupX path not ready; benchmark may test acquisition/governance, not trusted execution."
+    },
+    {
+      "gap_id": "P1-KG-MULTIMODAL-ALIGNMENT",
+      "priority": "P1",
+      "layer": "Scientific KG / RepresentationLedger boundary",
+      "finding": "MOFA2/scvi-tools candidate types describe modalities, but actual sample/component identity alignment remains runtime-owned and unbound.",
+      "failure_mode": "scientific overlap may be conflated with actual aligned runtime instances",
+      "current_containment": "no production planner binding",
+      "required_before_midterm": "Keep scientific support and runtime identity validation separate in gold and reporting."
+    },
+    {
+      "gap_id": "P1-KG-STUDY-DESIGN-CONSTRAINTS",
+      "priority": "P1",
+      "layer": "Scientific KG candidate",
+      "finding": "edgeR pseudobulk ports exist, but sample/donor/replicate/design/contrast semantics are high-risk and have not been independently adjudicated for production.",
+      "failure_mode": "cell-level observations may be treated as independent biological replicates",
+      "current_containment": "candidate-only, no planner path",
+      "required_before_midterm": "No claim of pseudobulk planning readiness."
+    },
+    {
+      "gap_id": "P1-PRODUCTION-CANDIDATE-COVERAGE",
+      "priority": "P1",
+      "layer": "Production consumption",
+      "finding": "Only Scanpy/Harmony/Scrublet bounded decisions reach CapabilityPlanCompiler through ScientificKGApplicability; the other 11 core ecosystems do not.",
+      "failure_mode": "graph presence is misreported as Agent capability",
+      "current_containment": "core_tool_coverage uses strict production-consumption readiness",
+      "required_before_midterm": "Report 3/14 planning-ready, not 14/14."
+    },
+    {
+      "gap_id": "P1-TOOLCONTRACT-DEPTH",
+      "priority": "P1",
+      "layer": "ToolContract / Planner",
+      "finding": "Only 5 of the 14 core ecosystems have a ToolContract; only Harmony and Scrublet are enabled and integration-passed under the strict execution-ready definition.",
+      "failure_mode": "scientific candidate depth is confused with execution feasibility",
+      "current_containment": "execution and scientific promotion are separate",
+      "required_before_midterm": "Report execution readiness separately; do not block candidate scientific knowledge solely for missing runtime binding."
+    },
+    {
+      "gap_id": "P2-KG-COMPARATIVE-EVIDENCE",
+      "priority": "P2",
+      "layer": "Scientific KG candidate",
+      "finding": "BenchmarkStudy, EvaluationDataset and EmpiricalResult are 0 in the v1 core conformance bundle.",
+      "failure_mode": "no evidence-grounded universal or scoped method ranking can be claimed",
+      "current_containment": "dataset-scoped pilot evaluations live in Decision Graph and carry limitations",
+      "required_before_midterm": "Method recommendation must avoid unsupported superiority claims."
+    },
+    {
+      "gap_id": "P2-KG-MOFA2-FEATURE-WEIGHTS",
+      "priority": "P2",
+      "layer": "Scientific KG candidate",
+      "finding": "MOFA2 feature-weight output is an explicit optional coverage gap.",
+      "failure_mode": "incomplete interpretation workflow, not incorrect current applicability",
+      "current_containment": "optional EvidenceGap",
+      "required_before_midterm": "May remain not_run/unknown."
+    },
+    {
+      "gap_id": "P3-CATALOG-BREADTH",
+      "priority": "P3",
+      "layer": "legacy catalog graph",
+      "finding": "1847 catalog records are discovery metadata, not verified scientific capabilities.",
+      "failure_mode": "node count used as capability claim",
+      "current_containment": "catalog-only claim boundary",
+      "required_before_midterm": "Defer broad catalog enrichment; report it only as recall/discovery coverage."
+    }
+  ],
+  "summary": {
+    "P0": 9,
+    "P1": 8,
+    "P2": 2,
+    "P3": 1,
+    "total": 20
+  }
+}
