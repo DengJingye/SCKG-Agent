@@ -1,0 +1,110 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "capabilities_under_test": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Capabilities Under Test",
+      "type": "array"
+    },
+    "dataset_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dataset Id"
+    },
+    "difficulty": {
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "title": "Difficulty",
+      "type": "string"
+    },
+    "historical_anchor": {
+      "title": "Historical Anchor",
+      "type": "boolean"
+    },
+    "review_status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "scenario_id": {
+      "pattern": "^scenario:v2\\.1:",
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-parent-scenario-v2.1",
+      "default": "sckg-parent-scenario-v2.1",
+      "enum": [
+        "sckg-parent-scenario-v2.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scientific_question": {
+      "minLength": 1,
+      "title": "Scientific Question",
+      "type": "string"
+    },
+    "source_group": {
+      "minLength": 1,
+      "title": "Source Group",
+      "type": "string"
+    },
+    "split": {
+      "enum": [
+        "development",
+        "validation",
+        "frozen_holdout"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "study_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Study Id"
+    },
+    "task_family": {
+      "minLength": 1,
+      "title": "Task Family",
+      "type": "string"
+    }
+  },
+  "required": [
+    "scenario_id",
+    "task_family",
+    "scientific_question",
+    "source_group",
+    "difficulty",
+    "split",
+    "capabilities_under_test",
+    "historical_anchor"
+  ],
+  "title": "ParentScenario",
+  "type": "object"
+}

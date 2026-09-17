@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "MethodAlternativeSet": {
+      "additionalProperties": false,
+      "properties": {
+        "goal": {
+          "minLength": 1,
+          "title": "Goal",
+          "type": "string"
+        },
+        "methods": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Methods",
+          "type": "array"
+        }
+      },
+      "required": [
+        "goal",
+        "methods"
+      ],
+      "title": "MethodAlternativeSet",
+      "type": "object"
+    },
+    "PartialOrderConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "after": {
+          "minLength": 1,
+          "title": "After",
+          "type": "string"
+        },
+        "before": {
+          "minLength": 1,
+          "title": "Before",
+          "type": "string"
+        }
+      },
+      "required": [
+        "before",
+        "after"
+      ],
+      "title": "PartialOrderConstraint",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acceptable_method_alternatives": {
+      "items": {
+        "$ref": "#/$defs/MethodAlternativeSet"
+      },
+      "title": "Acceptable Method Alternatives",
+      "type": "array"
+    },
+    "acceptable_terminal_states": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Acceptable Terminal States",
+      "type": "array"
+    },
+    "forbidden_operations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Forbidden Operations",
+      "type": "array"
+    },
+    "generated_from_sut": {
+      "const": false,
+      "default": false,
+      "enum": [
+        false
+      ],
+      "title": "Generated From Sut",
+      "type": "boolean"
+    },
+    "gold_origin": {
+      "const": "independent_source_adjudication_draft",
+      "default": "independent_source_adjudication_draft",
+      "enum": [
+        "independent_source_adjudication_draft"
+      ],
+      "title": "Gold Origin",
+      "type": "string"
+    },
+    "optional_operations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Optional Operations",
+      "type": "array"
+    },
+    "parent_scenario_id": {
+      "pattern": "^scenario:v2\\.1:",
+      "title": "Parent Scenario Id",
+      "type": "string"
+    },
+    "partial_order_constraints": {
+      "items": {
+        "$ref": "#/$defs/PartialOrderConstraint"
+      },
+      "title": "Partial Order Constraints",
+      "type": "array"
+    },
+    "required_final_states": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Required Final States",
+      "type": "array"
+    },
+    "required_prerequisites": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Prerequisites",
+      "type": "array"
+    },
+    "review_status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-workflow-gold-v2.1",
+      "default": "sckg-workflow-gold-v2.1",
+      "enum": [
+        "sckg-workflow-gold-v2.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "split": {
+      "enum": [
+        "development",
+        "validation",
+        "frozen_holdout"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "workflow_gold_id": {
+      "pattern": "^workflow-gold:v2\\.1:",
+      "title": "Workflow Gold Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "workflow_gold_id",
+    "parent_scenario_id",
+    "split",
+    "required_final_states",
+    "acceptable_terminal_states"
+  ],
+  "title": "WorkflowGold",
+  "type": "object"
+}

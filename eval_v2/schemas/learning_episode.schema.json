@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "LearningCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "added_evidence": {
+          "title": "Added Evidence",
+          "type": "boolean"
+        },
+        "candidate_claim_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Claim Id"
+        },
+        "condition": {
+          "enum": [
+            "S0",
+            "S1",
+            "S2"
+          ],
+          "title": "Condition",
+          "type": "string"
+        },
+        "evidence_artifact_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence Artifact Id"
+        },
+        "knowledge_snapshot_id": {
+          "minLength": 1,
+          "title": "Knowledge Snapshot Id",
+          "type": "string"
+        },
+        "structured_candidate": {
+          "title": "Structured Candidate",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "condition",
+        "knowledge_snapshot_id",
+        "added_evidence",
+        "structured_candidate"
+      ],
+      "title": "LearningCondition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "claim_construction_visible_queries": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Claim Construction Visible Queries",
+      "type": "array"
+    },
+    "conditions": {
+      "items": {
+        "$ref": "#/$defs/LearningCondition"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "title": "Conditions",
+      "type": "array"
+    },
+    "episode_id": {
+      "pattern": "^learning-episode:v2\\.1:",
+      "title": "Episode Id",
+      "type": "string"
+    },
+    "hidden_related_query": {
+      "minLength": 1,
+      "title": "Hidden Related Query",
+      "type": "string"
+    },
+    "original_query": {
+      "minLength": 1,
+      "title": "Original Query",
+      "type": "string"
+    },
+    "parent_scenario_id": {
+      "pattern": "^scenario:v2\\.1:",
+      "title": "Parent Scenario Id",
+      "type": "string"
+    },
+    "review_status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-learning-episode-v2.1",
+      "default": "sckg-learning-episode-v2.1",
+      "enum": [
+        "sckg-learning-episode-v2.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_work_id": {
+      "minLength": 1,
+      "title": "Source Work Id",
+      "type": "string"
+    },
+    "split": {
+      "enum": [
+        "development",
+        "validation",
+        "frozen_holdout"
+      ],
+      "title": "Split",
+      "type": "string"
+    }
+  },
+  "required": [
+    "episode_id",
+    "parent_scenario_id",
+    "split",
+    "source_work_id",
+    "original_query",
+    "hidden_related_query",
+    "claim_construction_visible_queries",
+    "conditions"
+  ],
+  "title": "LearningEpisode",
+  "type": "object"
+}

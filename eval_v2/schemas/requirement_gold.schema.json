@@ -1,0 +1,149 @@
+{
+  "$defs": {
+    "RequirementExpectation": {
+      "additionalProperties": false,
+      "properties": {
+        "criticality": {
+          "enum": [
+            "hard",
+            "soft"
+          ],
+          "title": "Criticality",
+          "type": "string"
+        },
+        "evidence_required": {
+          "title": "Evidence Required",
+          "type": "boolean"
+        },
+        "expected_state": {
+          "enum": [
+            "SATISFIED",
+            "VIOLATED",
+            "UNKNOWN",
+            "MISSING",
+            "NOT_APPLICABLE"
+          ],
+          "title": "Expected State",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "requirement_id": {
+          "pattern": "^requirement-gold:",
+          "title": "Requirement Id",
+          "type": "string"
+        },
+        "resolution_mode": {
+          "enum": [
+            "provide_resource",
+            "ask_user",
+            "acquire_evidence",
+            "select_other",
+            "schedule_prerequisite",
+            "none"
+          ],
+          "title": "Resolution Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_id",
+        "expected_state",
+        "rationale",
+        "evidence_required",
+        "criticality",
+        "resolution_mode"
+      ],
+      "title": "RequirementExpectation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "expected_action": {
+      "enum": [
+        "ALLOW",
+        "BLOCK",
+        "CLARIFY"
+      ],
+      "title": "Expected Action",
+      "type": "string"
+    },
+    "generated_from_sut": {
+      "const": false,
+      "default": false,
+      "enum": [
+        false
+      ],
+      "title": "Generated From Sut",
+      "type": "boolean"
+    },
+    "gold_origin": {
+      "const": "independent_source_adjudication_draft",
+      "default": "independent_source_adjudication_draft",
+      "enum": [
+        "independent_source_adjudication_draft"
+      ],
+      "title": "Gold Origin",
+      "type": "string"
+    },
+    "parent_scenario_id": {
+      "pattern": "^scenario:v2\\.1:",
+      "title": "Parent Scenario Id",
+      "type": "string"
+    },
+    "requirement_gold_id": {
+      "pattern": "^requirement-gold-set:v2\\.1:",
+      "title": "Requirement Gold Id",
+      "type": "string"
+    },
+    "requirements": {
+      "items": {
+        "$ref": "#/$defs/RequirementExpectation"
+      },
+      "minItems": 1,
+      "title": "Requirements",
+      "type": "array"
+    },
+    "review_status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-requirement-gold-v2.1",
+      "default": "sckg-requirement-gold-v2.1",
+      "enum": [
+        "sckg-requirement-gold-v2.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "split": {
+      "enum": [
+        "development",
+        "validation",
+        "frozen_holdout"
+      ],
+      "title": "Split",
+      "type": "string"
+    }
+  },
+  "required": [
+    "requirement_gold_id",
+    "parent_scenario_id",
+    "split",
+    "requirements",
+    "expected_action"
+  ],
+  "title": "RequirementGold",
+  "type": "object"
+}

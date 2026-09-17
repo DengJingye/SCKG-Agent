@@ -1,0 +1,150 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "allowed_evidence_spans": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Evidence Spans",
+      "type": "array"
+    },
+    "claim": {
+      "minLength": 1,
+      "title": "Claim",
+      "type": "string"
+    },
+    "decision_id": {
+      "pattern": "^decision:v2\\.1:",
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "evidence_gap_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Gap Ids",
+      "type": "array"
+    },
+    "evidence_gold_id": {
+      "pattern": "^evidence-gold:v2\\.1:",
+      "title": "Evidence Gold Id",
+      "type": "string"
+    },
+    "evidence_required": {
+      "title": "Evidence Required",
+      "type": "boolean"
+    },
+    "expected_epistemic_state": {
+      "enum": [
+        "source_bound_draft",
+        "candidate",
+        "runtime_observed",
+        "unknown",
+        "not_applicable"
+      ],
+      "title": "Expected Epistemic State",
+      "type": "string"
+    },
+    "forbidden_evidence_spans": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Forbidden Evidence Spans",
+      "type": "array"
+    },
+    "generated_from_sut": {
+      "const": false,
+      "default": false,
+      "enum": [
+        false
+      ],
+      "title": "Generated From Sut",
+      "type": "boolean"
+    },
+    "gold_origin": {
+      "const": "independent_source_adjudication_draft",
+      "default": "independent_source_adjudication_draft",
+      "enum": [
+        "independent_source_adjudication_draft"
+      ],
+      "title": "Gold Origin",
+      "type": "string"
+    },
+    "owner": {
+      "enum": [
+        "ScientificKG",
+        "RepresentationLedger",
+        "CapabilityPack",
+        "ToolContract",
+        "Policy",
+        "UserClarification"
+      ],
+      "title": "Owner",
+      "type": "string"
+    },
+    "parent_scenario_id": {
+      "pattern": "^scenario:v2\\.1:",
+      "title": "Parent Scenario Id",
+      "type": "string"
+    },
+    "review_status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "reviewed",
+        "rejected"
+      ],
+      "title": "Review Status",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-evidence-gold-v2.1",
+      "default": "sckg-evidence-gold-v2.1",
+      "enum": [
+        "sckg-evidence-gold-v2.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "minLength": 1,
+      "title": "Scope",
+      "type": "string"
+    },
+    "source_work_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Work Ids",
+      "type": "array"
+    },
+    "split": {
+      "enum": [
+        "development",
+        "validation",
+        "frozen_holdout"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "evidence_gold_id",
+    "parent_scenario_id",
+    "split",
+    "decision_id",
+    "claim",
+    "owner",
+    "scope",
+    "version",
+    "evidence_required",
+    "expected_epistemic_state"
+  ],
+  "title": "EvidenceGold",
+  "type": "object"
+}

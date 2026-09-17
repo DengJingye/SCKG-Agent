@@ -1,0 +1,1382 @@
+{
+  "benchmark_run": false,
+  "contract": {
+    "path": "docs/SCIENTIFIC_AGENT_EVALUATION_SUITE_V2_1.md",
+    "sha256": "c5417679a43ebf89495101504c2532cd85dbfde203968febc0fb825fcf46fb5f"
+  },
+  "final_status": "MIDTERM_CORE_SEED_V0_FROZEN",
+  "gold_status": "project_owner_reviewed",
+  "human_review_complete": true,
+  "independent_external_expert_review": false,
+  "learning_episodes": [
+    {
+      "artifact_level_hidden_query_isolation": true,
+      "claim_construction_visible_queries": [
+        "What do SoupX tod and toc input tables contain?"
+      ],
+      "episode_id": "learning-episode:v2.1:soupx-input-semantics",
+      "hidden_related_query": "A dataset contains A) an unfiltered droplet-by-gene matrix and B) a filtered cell-by-gene matrix. For SoupChannel construction, which artifact should populate tod, which should populate toc, and what is missing if only B is available?",
+      "original_query": "What do SoupX tod and toc input tables contain?",
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "s0_to_s1": {
+        "evidence_artifact_after": "source-artifact:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+        "evidence_artifact_before": null,
+        "structured_candidate_after": false,
+        "structured_candidate_before": false
+      },
+      "s1_to_s2": {
+        "candidate_after": "claim-revision:cp6:7005e7aaf1f910d6:1",
+        "candidate_before": null,
+        "evidence_artifact_unchanged": true
+      },
+      "scientific_correctness_evaluated": false
+    },
+    {
+      "artifact_level_hidden_query_isolation": true,
+      "claim_construction_visible_queries": [
+        "What inputs does SingleR need for reference-based annotation?"
+      ],
+      "episode_id": "learning-episode:v2.1:singler-reference-suitability",
+      "hidden_related_query": "Should a reference from an unrelated tissue be accepted without clarification?",
+      "original_query": "What inputs does SingleR need for reference-based annotation?",
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "s0_to_s1": {
+        "evidence_artifact_after": "gold-span:singler:reference-choice:3.22",
+        "evidence_artifact_before": null,
+        "structured_candidate_after": false,
+        "structured_candidate_before": false
+      },
+      "s1_to_s2": {
+        "candidate_after": "candidate-claim:v2.1:singler-reference-suitability",
+        "candidate_before": null,
+        "evidence_artifact_unchanged": true
+      },
+      "scientific_correctness_evaluated": false
+    },
+    {
+      "artifact_level_hidden_query_isolation": true,
+      "claim_construction_visible_queries": [
+        "Which measurements are required for this scVelo velocity workflow?"
+      ],
+      "episode_id": "learning-episode:v2.1:scvelo-layer-requirement",
+      "hidden_related_query": "Can the same workflow run when only total expression is present?",
+      "original_query": "Which measurements are required for this scVelo velocity workflow?",
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "s0_to_s1": {
+        "evidence_artifact_after": "source-artifact:scvelo:0.3.3:22b6e7e6",
+        "evidence_artifact_before": null,
+        "structured_candidate_after": false,
+        "structured_candidate_before": false
+      },
+      "s1_to_s2": {
+        "candidate_after": "candidate-claim:v2.1:scvelo-layer-requirement",
+        "candidate_before": null,
+        "evidence_artifact_unchanged": true
+      },
+      "scientific_correctness_evaluated": false
+    }
+  ],
+  "parent_scenarios": [
+    {
+      "dataset_id": "dataset:pbmc3k-processed",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "scanpy-authoritative-span:leiden.input:1.11.2"
+          ],
+          "decision_proposition": "Leiden may consume a neighbor graph or an explicit adjacency matrix.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:neighbor-graph-reuse-leiden:leiden-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "official_project_source",
+              "candidate_only": true,
+              "content_hash": "de18c2abd57140a3d43c6114cf52b2beceabf81799418acb43803e70a14fbff1",
+              "evidence_span_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+              "excerpt_normalization": "trim_and_join_source_line_whitespace",
+              "line_end": 99,
+              "line_start": 72,
+              "locator": "src/scanpy/tools/_leiden.py#L72-L99",
+              "normalized_proposition": "Leiden consumes a sparse adjacency, default neighbor connectivities, or the connectivities selected through neighbors_key.",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Sparse adjacency matrix of the graph, defaults to neighbors connectivities.",
+              "source_file_sha256": "e69b2aa18e82ea7bd553018f66e6aa006dfd337498b9149cfa726893a8ea66fd",
+              "source_path": "src/scanpy/tools/_leiden.py",
+              "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+              "verification_method": "exact_bounded_span_from_pinned_source",
+              "version_pin": {
+                "git_commit": "5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                "release": "1.11.2"
+              }
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scanpy 1.11.2 Leiden",
+          "version": "1.11.2"
+        },
+        {
+          "allowed_evidence_spans": [],
+          "decision_proposition": "The registered graph is current.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:neighbor-graph-reuse-leiden:graph-current",
+          "forbidden_evidence_spans": [
+            "scanpy-authoritative-span:leiden.input:1.11.2"
+          ],
+          "owner": "RepresentationLedger",
+          "provenance": [],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "current dataset instance",
+          "version": "runtime"
+        },
+        {
+          "allowed_evidence_spans": [],
+          "decision_proposition": "The registered graph is stale.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:neighbor-graph-reuse-leiden:graph-stale",
+          "forbidden_evidence_spans": [
+            "scanpy-authoritative-span:leiden.input:1.11.2"
+          ],
+          "owner": "RepresentationLedger",
+          "provenance": [],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "current dataset instance",
+          "version": "runtime"
+        },
+        {
+          "allowed_evidence_spans": [],
+          "decision_proposition": "Graph observation identity differs from the current dataset.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:neighbor-graph-reuse-leiden:graph-misaligned",
+          "forbidden_evidence_spans": [
+            "scanpy-authoritative-span:leiden.input:1.11.2"
+          ],
+          "owner": "RepresentationLedger",
+          "provenance": [],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "current dataset instance",
+          "version": "runtime"
+        }
+      ],
+      "historical_anchor": true,
+      "mutation_ids": [
+        "mutation:v2.1:wrong-source-binding",
+        "mutation:v2.1:missing-representation-link",
+        "mutation:v2.1:invalid-graph-reuse"
+      ],
+      "nested_record_ids": [
+        "record:v2.1:g0:neighbor-graph-reuse-leiden",
+        "record:v2.1:t1:neighbor-graph-valid",
+        "record:v2.1:t1:neighbor-graph-stale",
+        "record:v2.1:t2:neighbor-graph-valid",
+        "record:v2.1:t2:neighbor-graph-stale",
+        "record:v2.1:t3:neighbor-graph-reuse",
+        "record:v2.1:t4:pbmc3k-processed-reuse",
+        "record:v2.1:t8:wrong-source-binding",
+        "record:v2.1:t8:missing-representation-link",
+        "record:v2.1:t8:invalid-graph-reuse"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:neighbor-graph-reuse-leiden-valid",
+        "requirement-gold-set:v2.1:neighbor-graph-reuse-leiden-stale"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "POSSIBLE_SUT_GOLD_COUPLING"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:neighbor-graph-reuse-leiden",
+      "scientific_question": "When may Leiden reuse an existing neighbor graph, and when must reuse be rejected?",
+      "study_id": "study:pbmc3k-anchor",
+      "task_family": "clustering",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:neighbor-graph-reuse-leiden-valid",
+        "workflow-gold:v2.1:neighbor-graph-reuse-leiden-stale"
+      ]
+    },
+    {
+      "dataset_id": "dataset:pbmc3k-harmony-state",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:harmony.generic_input"
+          ],
+          "decision_proposition": "Harmony accepts matrix-like cell embeddings with batch covariates.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:harmony-embedding-neighbors:harmony-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "b3070bffd6a47600a7e325ec88952297afa4000fd83768ab26f473c09d2b64dc",
+              "evidence_span_id": "uat-authoritative-span:harmony.generic_input",
+              "line_end": 15,
+              "line_start": 3,
+              "locator": "harmony/R/ui.R#L3-L15",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Use this generic with a cell embeddings matrix, a metadata table and a categorical covariate to run the Harmony algorithm directly on cell embedding matrix.",
+              "source_file_sha256": "edf98fad7061bf78bd48a307558e6f854d02ba8488676297a7230bd27814df87",
+              "source_line_span_sha256": "7a45e5ea11b2eb4194a87e3b978e1b8b3c29febd0167732b23fc79dc0a76011e",
+              "source_path": "harmony/R/ui.R",
+              "source_revision_id": "source-revision:cran:harmony:2.0.5",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Harmony 2.0.5",
+          "version": "2.0.5"
+        },
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:harmony.output"
+          ],
+          "decision_proposition": "Harmony returns corrected cell embeddings.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:harmony-embedding-neighbors:harmony-output",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "186e47816603f58791bd782f8e0e88a9b22edefb817531cf2452f47eddd28910",
+              "evidence_span_id": "uat-authoritative-span:harmony.output",
+              "line_end": 62,
+              "line_start": 51,
+              "locator": "harmony/R/ui.R#L51-L62",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Whether to return the Harmony object or only the corrected PCA embeddings. By default, matrix with corrected PCA embeddings. If return_object is TRUE, returns the full Harmony object (R6 reference class type).",
+              "source_file_sha256": "edf98fad7061bf78bd48a307558e6f854d02ba8488676297a7230bd27814df87",
+              "source_line_span_sha256": "d7e19dca3c452e6b2b9698dd0c34bff7ef14a584697b117cbd0d1214ec4b3568",
+              "source_path": "harmony/R/ui.R",
+              "source_revision_id": "source-revision:cran:harmony:2.0.5",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Harmony 2.0.5",
+          "version": "2.0.5"
+        },
+        {
+          "allowed_evidence_spans": [
+            "scanpy-authoritative-span:neighbors.input:1.11.2"
+          ],
+          "decision_proposition": "Scanpy neighbors can use a selected representation from obsm.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:harmony-embedding-neighbors:neighbors-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "official_project_source",
+              "candidate_only": true,
+              "content_hash": "78ef4922ef634f5b34fea033bf49522563338d03c452fcdf33c59a652576d65c",
+              "evidence_span_id": "scanpy-authoritative-span:neighbors.input:1.11.2",
+              "excerpt_normalization": "trim_and_join_source_line_whitespace",
+              "line_end": 13,
+              "line_start": 3,
+              "locator": "src/scanpy/neighbors/_doc.py#L3-L13",
+              "normalized_proposition": "use_rep selects X or an obsm representation; automatic selection may use or compute X_pca.",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Use the indicated representation. `'X'` or any key for `.obsm` is valid.",
+              "source_file_sha256": "6a4db483b2cd843ccdefab37eb9f20ee9bd86e51b89925d636bede4fe4a7ee61",
+              "source_path": "src/scanpy/neighbors/_doc.py",
+              "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+              "verification_method": "exact_bounded_span_from_pinned_source",
+              "version_pin": {
+                "git_commit": "5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                "release": "1.11.2"
+              }
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scanpy 1.11.2 neighbors",
+          "version": "1.11.2"
+        }
+      ],
+      "historical_anchor": true,
+      "mutation_ids": [
+        "mutation:v2.1:wrong-revision-binding"
+      ],
+      "nested_record_ids": [
+        "record:v2.1:g0:harmony-embedding-neighbors",
+        "record:v2.1:t1:harmony-embedding-neighbors",
+        "record:v2.1:t2:harmony-embedding-neighbors",
+        "record:v2.1:t3:harmony-neighbors",
+        "record:v2.1:t4:pancreas-batch-aware",
+        "record:v2.1:t8:wrong-revision-binding"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:harmony-embedding-neighbors"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "MULTIPLE_VALID_WORKFLOWS",
+        "POSSIBLE_SUT_GOLD_COUPLING"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:harmony-embedding-neighbors",
+      "scientific_question": "Can neighbors consume a compatible Harmony-corrected embedding without forcing PCA?",
+      "study_id": "study:pbmc3k-anchor",
+      "task_family": "batch_integration",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:harmony-embedding-neighbors"
+      ]
+    },
+    {
+      "dataset_id": "dataset:pbmc3k-transformed-only",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:scrublet.input_output"
+          ],
+          "decision_proposition": "Scrublet requires a raw unnormalized UMI count matrix.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:scrublet-transformed-input:raw-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "a7a87800f203431beb09ab3ddf847bbc1b5455942dca69e6313210d33d30c6a2",
+              "evidence_span_id": "uat-authoritative-span:scrublet.input_output",
+              "line_end": 15,
+              "line_start": 9,
+              "locator": "scrublet-0.2.3/README.md#L9-L15",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Given a raw (unnormalized) UMI counts matrix counts_matrix with cells as rows and genes as columns, calculate a doublet score for each cell: doublet_scores, predicted_doublets = scrub.scrub_doublets().",
+              "source_file_sha256": "72f3b14a4966db3c50e77ee76f2386d6b0d9c08d5aa608eedca8f8b76f32e1f2",
+              "source_line_span_sha256": "90b98e14d1d71c251ccb56963bc2b85fb0cbcdf7657b48ba9c77426e96a6ecca",
+              "source_path": "scrublet-0.2.3/README.md",
+              "source_revision_id": "source-revision:pypi:scrublet:0.2.3",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scrublet 0.2.3",
+          "version": "0.2.3"
+        }
+      ],
+      "historical_anchor": true,
+      "mutation_ids": [
+        "mutation:v2.1:silent-scope-widening"
+      ],
+      "nested_record_ids": [
+        "record:v2.1:g0:scrublet-transformed-input",
+        "record:v2.1:t1:scrublet-transformed-input",
+        "record:v2.1:t2:scrublet-transformed-input",
+        "record:v2.1:t3:scrublet-input",
+        "record:v2.1:t8:silent-scope-widening"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:scrublet-transformed-input"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "SCOPE_AMBIGUOUS"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:scrublet-transformed-input",
+      "scientific_question": "May Scrublet run when only normalized or integrated expression is available?",
+      "study_id": "study:pbmc3k-anchor",
+      "task_family": "doublet_detection",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:scrublet-transformed-input"
+      ]
+    },
+    {
+      "dataset_id": "dataset:pbmc3k-raw",
+      "evidence_gold": [],
+      "historical_anchor": true,
+      "mutation_ids": [],
+      "nested_record_ids": [
+        "record:v2.1:t5:soupx-input-semantics",
+        "record:v2.1:t6:soupx-input-semantics",
+        "record:v2.1:t7:complete-pending-candidate"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:soupx-input-semantics"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "SOURCE_SUPPORT_WEAK",
+        "HIDDEN_QUERY_LEAKAGE_RISK"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:soupx-input-semantics",
+      "scientific_question": "What do SoupX tod/toc tables represent, and can acquired evidence be deposited without promotion?",
+      "study_id": "study:pbmc3k-anchor",
+      "task_family": "ambient_rna_correction",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:soupx-input-semantics"
+      ]
+    },
+    {
+      "dataset_id": "dataset:pbmc3k-raw",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "scanpy-authoritative-span:hvg.flavor_input:1.11.2"
+          ],
+          "decision_proposition": "Dispersion-based HVG flavors expect logarithmized data.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:hvg-flavor-conditional-input:dispersion-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "official_project_source",
+              "candidate_only": true,
+              "content_hash": "e41e37a1a299b109f27622f8ee2428f4d0209000af825b0e5ad6274e19fca3c1",
+              "evidence_span_id": "scanpy-authoritative-span:hvg.flavor_input:1.11.2",
+              "excerpt_normalization": "trim_and_join_source_line_whitespace",
+              "line_end": 543,
+              "line_start": 542,
+              "locator": "src/scanpy/preprocessing/_highly_variable_genes.py#L542-L543",
+              "normalized_proposition": "Logarithmized data are expected except for seurat_v3 and seurat_v3_paper, which expect count data.",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+              "source_file_sha256": "dc1382b1c19be495b547fd08a7b4711f75522db5852a27200ba7eddefd175788",
+              "source_path": "src/scanpy/preprocessing/_highly_variable_genes.py",
+              "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+              "verification_method": "exact_bounded_span_from_pinned_source",
+              "version_pin": {
+                "git_commit": "5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                "release": "1.11.2"
+              }
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scanpy 1.11.2 HVG flavor condition",
+          "version": "1.11.2"
+        },
+        {
+          "allowed_evidence_spans": [
+            "scanpy-authoritative-span:hvg.flavor_input:1.11.2"
+          ],
+          "decision_proposition": "Seurat v3 HVG flavors expect count data.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:hvg-flavor-conditional-input:count-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "official_project_source",
+              "candidate_only": true,
+              "content_hash": "e41e37a1a299b109f27622f8ee2428f4d0209000af825b0e5ad6274e19fca3c1",
+              "evidence_span_id": "scanpy-authoritative-span:hvg.flavor_input:1.11.2",
+              "excerpt_normalization": "trim_and_join_source_line_whitespace",
+              "line_end": 543,
+              "line_start": 542,
+              "locator": "src/scanpy/preprocessing/_highly_variable_genes.py#L542-L543",
+              "normalized_proposition": "Logarithmized data are expected except for seurat_v3 and seurat_v3_paper, which expect count data.",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+              "source_file_sha256": "dc1382b1c19be495b547fd08a7b4711f75522db5852a27200ba7eddefd175788",
+              "source_path": "src/scanpy/preprocessing/_highly_variable_genes.py",
+              "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+              "verification_method": "exact_bounded_span_from_pinned_source",
+              "version_pin": {
+                "git_commit": "5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                "release": "1.11.2"
+              }
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scanpy 1.11.2 HVG flavor condition",
+          "version": "1.11.2"
+        },
+        {
+          "allowed_evidence_spans": [
+            "gold-span:scanpy:hvg-default-flavor:1.11.2"
+          ],
+          "decision_proposition": "Scanpy 1.11.2 highly_variable_genes resolves an omitted flavor argument to seurat.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:hvg-flavor-conditional-input:default-flavor",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "Scanpy project",
+              "candidate_only": true,
+              "content_hash": "729c78e95e9a94c2a79f66e39326f4a3bd0c39aa4e6b9193bd3208efb737350c",
+              "evidence_span_id": "gold-span:scanpy:hvg-default-flavor:1.11.2",
+              "exact_text": "flavor: Literal[\"seurat\", \"cell_ranger\", \"seurat_v3\", \"seurat_v3_paper\"] = \"seurat\"\nExpects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+              "immutable_uri": "https://github.com/scverse/scanpy/blob/5400eb87ef7d4e9f6f5a9256d98a7927723456fa/src/scanpy/preprocessing/_highly_variable_genes.py#L523-L543",
+              "locator": "src/scanpy/preprocessing/_highly_variable_genes.py#L523-L543",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "scanpy/preprocessing/_highly_variable_genes.py",
+              "source_file_sha256": "dc1382b1c19be495b547fd08a7b4711f75522db5852a27200ba7eddefd175788",
+              "source_revision_id": "source-revision:scanpy:1.11.2:5400eb87",
+              "source_type": "official_release_source",
+              "source_work_id": "source-work:github:scverse/scanpy",
+              "version": "1.11.2"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scanpy 1.11.2 API default",
+          "version": "1.11.2"
+        },
+        {
+          "allowed_evidence_spans": [
+            "scanpy-authoritative-span:hvg.output:1.11.2"
+          ],
+          "decision_proposition": "HVG selection records a highly-variable feature mask and statistics.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:hvg-flavor-conditional-input:hvg-output",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "official_project_source",
+              "candidate_only": true,
+              "content_hash": "7672f751f8f265ca69719969c630718bdbb7d2033b018290c9547caac600d015",
+              "evidence_span_id": "scanpy-authoritative-span:hvg.output:1.11.2",
+              "excerpt_normalization": "trim_and_join_source_line_whitespace",
+              "line_end": 627,
+              "line_start": 622,
+              "locator": "src/scanpy/preprocessing/_highly_variable_genes.py#L622-L627",
+              "normalized_proposition": "The function records a boolean highly_variable indicator in adata.var when operating in place.",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "boolean indicator of highly-variable genes",
+              "source_file_sha256": "dc1382b1c19be495b547fd08a7b4711f75522db5852a27200ba7eddefd175788",
+              "source_path": "src/scanpy/preprocessing/_highly_variable_genes.py",
+              "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+              "verification_method": "exact_bounded_span_from_pinned_source",
+              "version_pin": {
+                "git_commit": "5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+                "release": "1.11.2"
+              }
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "Scanpy 1.11.2",
+          "version": "1.11.2"
+        }
+      ],
+      "historical_anchor": false,
+      "mutation_ids": [],
+      "nested_record_ids": [
+        "record:v2.1:t1:hvg-flavor-seurat",
+        "record:v2.1:t1:hvg-flavor-seurat-v3",
+        "record:v2.1:t1:hvg-flavor-default-seurat",
+        "record:v2.1:t2:hvg-flavor-seurat",
+        "record:v2.1:t2:hvg-flavor-seurat-v3",
+        "record:v2.1:t2:hvg-flavor-default-seurat",
+        "record:v2.1:t3:hvg-input",
+        "record:v2.1:t4:pbmc3k-raw-core"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:hvg-flavor-seurat",
+        "requirement-gold-set:v2.1:hvg-flavor-seurat-v3",
+        "requirement-gold-set:v2.1:hvg-flavor-default-seurat"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "MULTIPLE_VALID_WORKFLOWS"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:hvg-flavor-conditional-input",
+      "scientific_question": "Which expression state is required for the selected Scanpy HVG flavor?",
+      "study_id": "study:pbmc3k-anchor",
+      "task_family": "feature_selection",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:hvg-flavor-seurat",
+        "workflow-gold:v2.1:hvg-flavor-seurat-v3",
+        "workflow-gold:v2.1:hvg-flavor-default-seurat"
+      ]
+    },
+    {
+      "dataset_id": "scientific-state:singler-query-reference-pair",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:singler.interface",
+            "uat-authoritative-span:singler.raw_query"
+          ],
+          "decision_proposition": "SingleR accepts query expression including raw-count query input.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:singler-reference-compatibility:query-input",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "a9d45612de1f1a42c6b4c4da6ab928fa5a22d6adcec959c44ba7df002cf90a56",
+              "evidence_span_id": "uat-authoritative-span:singler.interface",
+              "line_end": 14,
+              "line_start": 1,
+              "locator": "SingleR/R/SingleR.R#L1-L14",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+              "source_file_sha256": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+              "source_line_span_sha256": "d2030d4eda4ae5aa89972741f6f5f5f38686c8b7aa2f2953ac97148763512bd0",
+              "source_path": "SingleR/R/SingleR.R",
+              "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            },
+            {
+              "candidate_only": true,
+              "content_hash": "93c1f82b716f044250c4462190241a5d5b4d4174bf69800ae2dccf408b9c3bcf",
+              "evidence_span_id": "uat-authoritative-span:singler.raw_query",
+              "line_end": 65,
+              "line_start": 63,
+              "locator": "SingleR/R/classifySingleR.R#L63-L65",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation. Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+              "source_file_sha256": "afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8",
+              "source_line_span_sha256": "9f4e677a43b7696de7a960a6d8796d9ecf3f4fb20c52f1e85fd49d84051067bd",
+              "source_path": "SingleR/R/classifySingleR.R",
+              "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "SingleR 2.14.1",
+          "version": "2.14.1"
+        },
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:singler.reference_state"
+          ],
+          "decision_proposition": "SingleR requires reference expression profiles.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:singler-reference-compatibility:reference-expression",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "9ee9ea0346819ee0a08b8e528775d935f02104af2bf06678a5d9d0e1720d469c",
+              "evidence_span_id": "uat-authoritative-span:singler.reference_state",
+              "line_end": 99,
+              "line_start": 74,
+              "locator": "SingleR/R/trainSingleR.R#L74-L99",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+              "source_file_sha256": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+              "source_line_span_sha256": "2d012ee2cac7f75511b6782e782b8944814b917aa6c3fcf4ff45f6bb455b2d22",
+              "source_path": "SingleR/R/trainSingleR.R",
+              "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "SingleR 2.14.1",
+          "version": "2.14.1"
+        },
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:singler.reference_labels"
+          ],
+          "decision_proposition": "Reference labels are required to train/use the SingleR reference.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:singler-reference-compatibility:reference-labels",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "e8ab7c92b2f7c83768f8fd8dccd072b978c3a000a40b929563e272a359e7a729",
+              "evidence_span_id": "uat-authoritative-span:singler.reference_labels",
+              "line_end": 12,
+              "line_start": 3,
+              "locator": "SingleR/R/trainSingleR.R#L3-L12",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "Train the SingleR classifier on one or more reference datasets with known labels. ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples). labels A character vector or factor of known labels for all samples in ref.",
+              "source_file_sha256": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+              "source_line_span_sha256": "bf4883d0db241e86b3977190da29ae144e2e7d6cc29570f41e950f1c39e5b611",
+              "source_path": "SingleR/R/trainSingleR.R",
+              "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "SingleR 2.14.1",
+          "version": "2.14.1"
+        },
+        {
+          "allowed_evidence_spans": [
+            "uat-authoritative-span:singler.feature_intersection"
+          ],
+          "decision_proposition": "Query and reference must have a usable feature intersection.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:singler-reference-compatibility:shared-features",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "candidate_only": true,
+              "content_hash": "74a2db41f81f0647b16410203a2422560012e1687382a387b55efe8bff81aef4",
+              "evidence_span_id": "uat-authoritative-span:singler.feature_intersection",
+              "line_end": 38,
+              "line_start": 35,
+              "locator": "SingleR/R/SingleR.R#L35-L38",
+              "retrieval_eligible": false,
+              "review_status": "candidate_source_verified",
+              "schema_version": "sckg-authoritative-evidence-span-candidate-v1.1",
+              "source_bound": true,
+              "source_excerpt": "This function is just a convenient wrapper around trainSingleR and classifySingleR. The function will automatically restrict the analysis to the intersection of the genes in both ref and test. If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+              "source_file_sha256": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+              "source_line_span_sha256": "1564afea806c68cc668616d972a9cb780832aa5dd9fe7703076bd6d01662efe5",
+              "source_path": "SingleR/R/SingleR.R",
+              "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+              "verification_method": "exact_bounded_span_from_pinned_source"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "SingleR 2.14.1",
+          "version": "2.14.1"
+        },
+        {
+          "allowed_evidence_spans": [
+            "gold-span:singler:reference-choice:3.22"
+          ],
+          "decision_proposition": "Reference choice materially affects annotation; the reference should cover expected labels and a similar technology or protocol is preferred.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:singler-reference-compatibility:reference-choice",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "Bioconductor",
+              "candidate_only": true,
+              "content_hash": "bc655c9db3a7c1c3dbfa7b435ca47c59be8c199bcdcce5cfd88a13d98ef4687b",
+              "evidence_span_id": "gold-span:singler:reference-choice:3.22",
+              "exact_text": "Unsurprisingly, the choice of reference has a major impact on the annotation results. We need to pick a reference that contains a superset of the labels that we expect to be present in our test dataset. We would also prefer a reference that is generated from a similar technology or protocol as our test dataset.",
+              "immutable_uri": "https://bioconductor.org/books/3.22/SingleRBook/classic-mode.html",
+              "locator": "Chapter 2, section 2.5 Choice of reference",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "SingleRBook / Classic mode / Choice of reference",
+              "source_file_sha256": "234a0d0e6b4766437f3a500e351a8afaafecae8e391c89bbf576a7863aac1169",
+              "source_revision_id": "source-revision:SingleRBook:3.22",
+              "source_type": "official_versioned_book",
+              "source_work_id": "source-work:bioconductor:SingleRBook",
+              "version": "3.22"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "SingleRBook 3.22 classic-mode reference choice",
+          "version": "3.22"
+        }
+      ],
+      "historical_anchor": false,
+      "mutation_ids": [
+        "mutation:v2.1:hidden-query-leak"
+      ],
+      "nested_record_ids": [
+        "record:v2.1:g0:singler-reference-compatibility",
+        "record:v2.1:t2:singler-reference-compatibility",
+        "record:v2.1:t3:singler-reference",
+        "record:v2.1:t4:pancreas-reference-annotation",
+        "record:v2.1:t5:singler-reference-suitability",
+        "record:v2.1:t6:singler-reference-suitability",
+        "record:v2.1:t7:missing-provenance",
+        "record:v2.1:t8:hidden-query-leak"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:singler-reference-compatibility"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "UNKNOWN_SHOULD_REMAIN_UNKNOWN",
+        "SCOPE_AMBIGUOUS"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:singler-reference-compatibility",
+      "scientific_question": "Is the query/reference pair sufficiently aligned and biologically suitable for SingleR?",
+      "study_id": null,
+      "task_family": "cell_type_annotation",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:singler-reference-compatibility"
+      ]
+    },
+    {
+      "dataset_id": "scientific-state:celltypist-query",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "gold-span:celltypist:normalized-input:1.7.1"
+          ],
+          "decision_proposition": "CellTypist 1.7.1 expects normalized logarithmized expression for AnnData input.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:celltypist-model-feature-alignment:normalized-input",
+          "forbidden_evidence_spans": [
+            "sourcev2:6d070f599929bf055fb8"
+          ],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "CellTypist project",
+              "candidate_only": true,
+              "content_hash": "6f0b97804189c689fe92ebaf87646db5c175918d3c05d1bbe12d0dc13a73dfa4",
+              "evidence_span_id": "gold-span:celltypist:normalized-input:1.7.1",
+              "exact_text": "CellTypist requires a logarithmised and normalised expression matrix stored in the `AnnData` (log1p normalised expression to 10,000 counts per cell). Within the `AnnData`, please provide all genes to ensure maximal overlap with genes in the model.",
+              "immutable_uri": "https://github.com/Teichlab/celltypist/blob/fe357564a6625d3b1732a022fd39f18e55696e80/README.md#L166-L170",
+              "locator": "README.md#L166-L170",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "CellTypist README.md",
+              "source_file_sha256": "d1a086776c56a93ce09f1a82a42cd121a6acd0df256194d6a78db200cb951632",
+              "source_revision_id": "source-revision:celltypist:1.7.1:fe357564",
+              "source_type": "official_release_documentation",
+              "source_work_id": "source-work:celltypist:official-readme",
+              "version": "1.7.1"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "CellTypist 1.7.1 annotate input",
+          "version": "1.7.1"
+        },
+        {
+          "allowed_evidence_spans": [
+            "gold-span:celltypist:normalized-input:1.7.1"
+          ],
+          "decision_proposition": "Providing all genes maximizes overlap with features in the CellTypist model.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:celltypist-model-feature-alignment:feature-overlap-guidance",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "CellTypist project",
+              "candidate_only": true,
+              "content_hash": "6f0b97804189c689fe92ebaf87646db5c175918d3c05d1bbe12d0dc13a73dfa4",
+              "evidence_span_id": "gold-span:celltypist:normalized-input:1.7.1",
+              "exact_text": "CellTypist requires a logarithmised and normalised expression matrix stored in the `AnnData` (log1p normalised expression to 10,000 counts per cell). Within the `AnnData`, please provide all genes to ensure maximal overlap with genes in the model.",
+              "immutable_uri": "https://github.com/Teichlab/celltypist/blob/fe357564a6625d3b1732a022fd39f18e55696e80/README.md#L166-L170",
+              "locator": "README.md#L166-L170",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "CellTypist README.md",
+              "source_file_sha256": "d1a086776c56a93ce09f1a82a42cd121a6acd0df256194d6a78db200cb951632",
+              "source_revision_id": "source-revision:celltypist:1.7.1:fe357564",
+              "source_type": "official_release_documentation",
+              "source_work_id": "source-work:celltypist:official-readme",
+              "version": "1.7.1"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "CellTypist 1.7.1 feature-overlap guidance",
+          "version": "1.7.1"
+        },
+        {
+          "allowed_evidence_spans": [
+            "gold-span:celltypist:default-model:1.7.1"
+          ],
+          "decision_proposition": "When annotate is called without a model argument, CellTypist 1.7.1 defaults to Immune_All_Low.pkl.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:celltypist-model-feature-alignment:default-model",
+          "forbidden_evidence_spans": [],
+          "owner": "ToolContract",
+          "provenance": [
+            {
+              "authority": "CellTypist project",
+              "candidate_only": true,
+              "content_hash": "e9f473a296e321fd47aab67dcfc04ace0c00783df9ae2f1c2a7851b2c3843319",
+              "evidence_span_id": "gold-span:celltypist:default-model:1.7.1",
+              "exact_text": "model: Optional[Union[str, Model]] = None\nModel used to predict the input cells. Default to using the `'Immune_All_Low.pkl'` model.",
+              "immutable_uri": "https://github.com/Teichlab/celltypist/blob/fe357564a6625d3b1732a022fd39f18e55696e80/celltypist/annotate.py#L7-L31",
+              "locator": "celltypist/annotate.py#L7-L31",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "celltypist/annotate.py",
+              "source_file_sha256": "29937a222a493ddcc66e5f083d72e602ff1ea5202adde07c8ac068fa9cfba171",
+              "source_revision_id": "source-revision:celltypist:1.7.1:fe357564",
+              "source_type": "official_release_api_source",
+              "source_work_id": "source-work:celltypist:annotate",
+              "version": "1.7.1"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "CellTypist 1.7.1 annotate API default",
+          "version": "1.7.1"
+        },
+        {
+          "allowed_evidence_spans": [],
+          "decision_proposition": "The actual selected model artifact identity, version and content hash are unresolved for this runtime scenario.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:celltypist-model-feature-alignment:resolved-model-artifact",
+          "forbidden_evidence_spans": [],
+          "owner": "ToolContract",
+          "provenance": [],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "selected runtime model artifact",
+          "version": "runtime"
+        },
+        {
+          "allowed_evidence_spans": [],
+          "decision_proposition": "Feature alignment against the resolved model artifact has not yet been computed for this runtime scenario.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:celltypist-model-feature-alignment:model-feature-alignment",
+          "forbidden_evidence_spans": [],
+          "owner": "ToolContract",
+          "provenance": [],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "selected runtime model artifact and query feature set",
+          "version": "runtime"
+        }
+      ],
+      "historical_anchor": false,
+      "mutation_ids": [],
+      "nested_record_ids": [
+        "record:v2.1:g0:celltypist-model-feature-alignment",
+        "record:v2.1:t2:celltypist-model-feature-alignment",
+        "record:v2.1:t3:celltypist-model"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:celltypist-model-feature-alignment"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "OWNER_AMBIGUOUS",
+        "VERSION_AMBIGUOUS"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:celltypist-model-feature-alignment",
+      "scientific_question": "Does CellTypist have compatible normalized input, a resolved model artifact, and an evaluated feature alignment?",
+      "study_id": null,
+      "task_family": "cell_type_annotation",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:celltypist-model-feature-alignment"
+      ]
+    },
+    {
+      "dataset_id": "scientific-state:scvelo-layer-availability",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "gold-span:scvelo:spliced-unspliced-input:0.3.3"
+          ],
+          "decision_proposition": "The selected canonical scVelo velocity workflow requires identified spliced and unspliced count matrices in AnnData layers.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:scvelo-layer-availability:layer-requirement",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "scVelo project",
+              "candidate_only": true,
+              "content_hash": "e2d339a7cd573891fc1bcc4f0a09e2d0855b673fa254988c1a78433dd985479c",
+              "evidence_span_id": "gold-span:scvelo:spliced-unspliced-input:0.3.3",
+              "exact_text": "First of all, the input data for scVelo are two count matrices of pre-mature (unspliced) and mature (spliced) abundances. Additional data layers where spliced and unspliced counts are stored (`adata.layers`).",
+              "immutable_uri": "https://github.com/theislab/scvelo/blob/22b6e7e6cdb3c321c5a1be4ab2f29486ba01ab4f/docs/source/getting_started.rst#L8-L31",
+              "locator": "docs/source/getting_started.rst#L7-L9,L26-L28",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "scVelo Getting Started",
+              "source_file_sha256": "93d2438590e985d84b11a35fb46b58e636010be7b925b564b5c4b0df40b79562",
+              "source_revision_id": "source-revision:scvelo:0.3.3:22b6e7e6",
+              "source_type": "official_release_documentation",
+              "source_work_id": "source-work:scvelo:official-docs",
+              "version": "0.3.3"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "scVelo 0.3.3 canonical velocity workflow",
+          "version": "0.3.3"
+        }
+      ],
+      "historical_anchor": false,
+      "mutation_ids": [
+        "mutation:v2.1:candidate-as-trusted"
+      ],
+      "nested_record_ids": [
+        "record:v2.1:g0:scvelo-layer-availability",
+        "record:v2.1:t1:scvelo-layer-availability",
+        "record:v2.1:t3:scvelo-input",
+        "record:v2.1:t5:scvelo-layer-requirement",
+        "record:v2.1:t6:scvelo-layer-requirement",
+        "record:v2.1:t7:candidate-trusted-conflation",
+        "record:v2.1:t8:candidate-as-trusted"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:scvelo-layer-availability"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "SCOPE_AMBIGUOUS"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:scvelo-layer-availability",
+      "scientific_question": "Are the required spliced/unspliced measurements available for an RNA-velocity task?",
+      "study_id": null,
+      "task_family": "rna_velocity",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:scvelo-layer-availability"
+      ]
+    },
+    {
+      "dataset_id": "scientific-state:mofa2-sample-alignment",
+      "evidence_gold": [
+        {
+          "allowed_evidence_spans": [
+            "gold-span:mofa2:input-output:ec2ee6d"
+          ],
+          "decision_proposition": "MOFA2 accepts multiple omics matrices measured on the same or overlapping sets of samples.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:mofa2-sample-alignment:overlapping-samples-supported",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "bioFAM",
+              "candidate_only": true,
+              "content_hash": "9fda3e998390e3aebc2402388875ea1ffe7d7e6338830dacbfd88782263e8693",
+              "evidence_span_id": "gold-span:mofa2:input-output:ec2ee6d",
+              "exact_text": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors.",
+              "immutable_uri": "https://github.com/bioFAM/MOFA2/blob/ec2ee6d9f81573d784795284d18e88675c0911cb/index.md#L8",
+              "locator": "index.md#L8",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "MOFA2 index.md",
+              "source_file_sha256": "d851c29a12769f4ed6b51c3e45d74bc7597e59f294d784af86530f96c4f9dcdf",
+              "source_revision_id": "source-revision:mofa2:gh-pages:ec2ee6d",
+              "source_type": "official_versioned_documentation",
+              "source_work_id": "source-work:mofa2:official-docs",
+              "version": "ec2ee6d"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "MOFA2 official documentation at ec2ee6d",
+          "version": "ec2ee6d"
+        },
+        {
+          "allowed_evidence_spans": [],
+          "decision_proposition": "The explicit sample-identity mapping across the supplied runtime matrices has not yet been verified.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:mofa2-sample-alignment:sample-identity-alignment",
+          "forbidden_evidence_spans": [],
+          "owner": "RepresentationLedger",
+          "provenance": [],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "current multi-omics dataset instances",
+          "version": "runtime"
+        },
+        {
+          "allowed_evidence_spans": [
+            "gold-span:mofa2:input-output:ec2ee6d"
+          ],
+          "decision_proposition": "MOFA2 infers a small number of interpretable latent factors.",
+          "evidence_gap_ids": [],
+          "evidence_gold_id": "evidence-gold:v2.1:mofa2-sample-alignment:latent-output",
+          "forbidden_evidence_spans": [],
+          "owner": "ScientificKG",
+          "provenance": [
+            {
+              "authority": "bioFAM",
+              "candidate_only": true,
+              "content_hash": "9fda3e998390e3aebc2402388875ea1ffe7d7e6338830dacbfd88782263e8693",
+              "evidence_span_id": "gold-span:mofa2:input-output:ec2ee6d",
+              "exact_text": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors.",
+              "immutable_uri": "https://github.com/bioFAM/MOFA2/blob/ec2ee6d9f81573d784795284d18e88675c0911cb/index.md#L8",
+              "locator": "index.md#L8",
+              "review_date": "2026-09-17",
+              "review_decision": "APPROVE",
+              "review_status": "reviewed",
+              "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+              "reviewer_role": "project_owner",
+              "source_document": "MOFA2 index.md",
+              "source_file_sha256": "d851c29a12769f4ed6b51c3e45d74bc7597e59f294d784af86530f96c4f9dcdf",
+              "source_revision_id": "source-revision:mofa2:gh-pages:ec2ee6d",
+              "source_type": "official_versioned_documentation",
+              "source_work_id": "source-work:mofa2:official-docs",
+              "version": "ec2ee6d"
+            }
+          ],
+          "review_date": "2026-09-17",
+          "review_decision": "APPROVE",
+          "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+          "reviewer_role": "project_owner",
+          "scope": "MOFA2 official documentation at ec2ee6d",
+          "version": "ec2ee6d"
+        }
+      ],
+      "historical_anchor": false,
+      "mutation_ids": [
+        "mutation:v2.1:split-crossing-derived-record"
+      ],
+      "nested_record_ids": [
+        "record:v2.1:g0:mofa2-sample-alignment",
+        "record:v2.1:t1:mofa2-sample-alignment",
+        "record:v2.1:t3:mofa2-input",
+        "record:v2.1:t7:decision-without-change-set",
+        "record:v2.1:t8:split-crossing-derived-record"
+      ],
+      "requirement_gold_ids": [
+        "requirement-gold-set:v2.1:mofa2-sample-alignment"
+      ],
+      "review_date": "2026-09-17",
+      "review_decision": "APPROVE",
+      "review_risks": [
+        "SCOPE_AMBIGUOUS"
+      ],
+      "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+      "reviewer_role": "project_owner",
+      "scenario_id": "scenario:v2.1:mofa2-sample-alignment",
+      "scientific_question": "Are multi-omic matrices aligned on the same or explicitly overlapping samples for MOFA2?",
+      "study_id": null,
+      "task_family": "multi_omics_integration",
+      "workflow_gold_ids": [
+        "workflow-gold:v2.1:mofa2-sample-alignment"
+      ]
+    }
+  ],
+  "real_data_studies": [
+    {
+      "artifact_status": "existing_local_versioned_inputs",
+      "biological_sanity_checks": [
+        "QC distributions",
+        "cluster/marker outputs as non-gold diagnostics"
+      ],
+      "checksum_status": "existing_frozen_hashes",
+      "dataset_ids": [
+        "dataset:pbmc3k-raw",
+        "dataset:pbmc3k-processed"
+      ],
+      "development_exposure": "historical_anchor",
+      "license_review_status": "draft",
+      "organism": "Homo sapiens",
+      "role": "PBMC historical anchor",
+      "scientific_checks": [
+        "workflow equivalence",
+        "representation lineage",
+        "reuse/skip"
+      ],
+      "study_id": "study:pbmc3k-anchor",
+      "technical_checks": [
+        "notebook execution",
+        "input hash unchanged",
+        "Trace topology"
+      ],
+      "tissue_context": "peripheral blood mononuclear cells",
+      "workflow_paths": [
+        "path:pbmc3k:raw-to-scanpy-core",
+        "path:pbmc3k:processed-reuse"
+      ]
+    },
+    {
+      "artifact_status": "candidate_not_acquired",
+      "biological_sanity_checks": [
+        "label coverage",
+        "known broad lineage separation without post hoc exact-label gold"
+      ],
+      "checksum_status": "pending_selection",
+      "dataset_ids": [
+        "dataset:pancreas-query-reference-pair"
+      ],
+      "development_exposure": "new_development_candidate",
+      "license_review_status": "pending_selection",
+      "organism": "Homo sapiens",
+      "role": "non-PBMC reference-annotation candidate",
+      "scientific_checks": [
+        "reference suitability",
+        "feature alignment"
+      ],
+      "study_id": "study:pancreas-reference-annotation-candidate",
+      "technical_checks": [
+        "download/checksum",
+        "notebook execution",
+        "input immutability"
+      ],
+      "tissue_context": "pancreatic cell atlas / cross-study annotation candidate",
+      "workflow_paths": [
+        "path:pancreas:reference-annotation"
+      ]
+    },
+    {
+      "artifact_status": "candidate_not_acquired",
+      "biological_sanity_checks": [
+        "broad lineage preservation without post hoc exact-label gold"
+      ],
+      "checksum_status": "pending_selection",
+      "dataset_ids": [
+        "dataset:pancreas-batch-candidate"
+      ],
+      "development_exposure": "new_development_candidate",
+      "license_review_status": "pending_selection",
+      "organism": "Homo sapiens",
+      "role": "non-PBMC batch-integration candidate",
+      "scientific_checks": [
+        "batch covariate validity",
+        "batch-aware workflow equivalence"
+      ],
+      "study_id": "study:pancreas-batch-integration-candidate",
+      "technical_checks": [
+        "download/checksum",
+        "notebook execution",
+        "input immutability"
+      ],
+      "tissue_context": "pancreatic multi-donor/batch integration candidate",
+      "workflow_paths": [
+        "path:pancreas:batch-aware-state-assessment"
+      ]
+    }
+  ],
+  "review_date": "2026-09-17",
+  "review_decision": "APPROVE",
+  "reviewer_reason": "Scientific question, workflow constraints, evidence scope, version and ownership boundaries were manually reviewed and accepted.",
+  "reviewer_role": "project_owner",
+  "schema_version": "sckg-midterm-core-seed-v0-review-checklist-v2",
+  "seed_manifest_sha256": "ad3e8c1012d116cb0ecf0bdd6affd7b8eb433d4ea6051a4ad8af61346de95db5"
+}

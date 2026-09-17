@@ -1,0 +1,224 @@
+{
+  "$defs": {
+    "BaselineEligibility": {
+      "additionalProperties": false,
+      "properties": {
+        "eligible_baselines": {
+          "items": {
+            "enum": [
+              "B0",
+              "B1",
+              "B2",
+              "B3",
+              "B4",
+              "S0",
+              "S1",
+              "S2"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Eligible Baselines",
+          "type": "array"
+        },
+        "intentionally_varied_capability": {
+          "minLength": 1,
+          "title": "Intentionally Varied Capability",
+          "type": "string"
+        },
+        "not_applicable_metrics": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Not Applicable Metrics",
+          "type": "array"
+        },
+        "shared_inputs": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Shared Inputs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "eligible_baselines",
+        "shared_inputs",
+        "intentionally_varied_capability"
+      ],
+      "title": "BaselineEligibility",
+      "type": "object"
+    },
+    "DenominatorMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "denominator_id": {
+          "minLength": 1,
+          "title": "Denominator Id",
+          "type": "string"
+        },
+        "exclusion_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exclusion Reason"
+        },
+        "included": {
+          "title": "Included",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "included",
+        "denominator_id"
+      ],
+      "title": "DenominatorMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "baseline_eligibility": {
+      "$ref": "#/$defs/BaselineEligibility"
+    },
+    "dataset_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Dataset Id"
+    },
+    "denominator": {
+      "$ref": "#/$defs/DenominatorMetadata"
+    },
+    "gold_ref": {
+      "minLength": 1,
+      "title": "Gold Ref",
+      "type": "string"
+    },
+    "mutation_parent_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mutation Parent Id"
+    },
+    "parent_scenario_id": {
+      "pattern": "^scenario:v2\\.1:",
+      "title": "Parent Scenario Id",
+      "type": "string"
+    },
+    "record_id": {
+      "pattern": "^record:v2\\.1:",
+      "title": "Record Id",
+      "type": "string"
+    },
+    "record_kind": {
+      "enum": [
+        "semantic_gateway",
+        "planning",
+        "applicability",
+        "evidence_decision",
+        "real_data_path",
+        "acquisition",
+        "learning_episode",
+        "governance_boundary",
+        "fault_injection"
+      ],
+      "title": "Record Kind",
+      "type": "string"
+    },
+    "replicate_id": {
+      "minLength": 1,
+      "title": "Replicate Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "sckg-evaluation-record-v2.1",
+      "default": "sckg-evaluation-record-v2.1",
+      "enum": [
+        "sckg-evaluation-record-v2.1"
+      ],
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_work_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Work Id"
+    },
+    "split": {
+      "enum": [
+        "development",
+        "validation",
+        "frozen_holdout"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "study_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Study Id"
+    },
+    "track": {
+      "enum": [
+        "G0",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8"
+      ],
+      "title": "Track",
+      "type": "string"
+    }
+  },
+  "required": [
+    "record_id",
+    "parent_scenario_id",
+    "replicate_id",
+    "track",
+    "split",
+    "record_kind",
+    "gold_ref",
+    "baseline_eligibility",
+    "denominator"
+  ],
+  "title": "EvaluationRecord",
+  "type": "object"
+}
