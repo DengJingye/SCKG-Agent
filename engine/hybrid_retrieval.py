@@ -31,6 +31,7 @@ from core.knowledge_intelligence_models import (
 )
 from core.settings import PROJECT_ROOT
 from engine.evidence_discovery_index import EvidenceChunk, load_chunks
+from engine.knowledge_foundation_safety import formal_evidence_is_quarantined
 
 
 DEFAULT_EVIDENCE_CHUNKS = PROJECT_ROOT / "data" / "indexes" / "evidence_chunks.jsonl"
@@ -278,7 +279,9 @@ class HybridRetrievalService:
                 "",
             )
             display_tool = matched_explicit or chunk.tool_name
-            source_bound = bool(chunk.source_bound or (chunk.source_span and chunk.chunk_text))
+            # Source binding is a governed identity assertion.  A non-empty
+            # locator and text cannot upgrade an unbound formal row.
+            source_bound = bool(chunk.source_bound)
             recommendation_eligible = str(chunk.recommendation_eligible).casefold() == "true"
             hits.append(
                 HybridRetrievalHit(
@@ -804,6 +807,8 @@ class HybridRetrievalService:
         for chunk_id, score in ranked:
             chunk = self._chunks_by_id.get(chunk_id)
             if chunk is None:
+                continue
+            if formal_evidence_is_quarantined(chunk):
                 continue
             chunk_tools = {
                 _tool_key(value)

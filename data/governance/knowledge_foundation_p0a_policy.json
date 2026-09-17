@@ -1,0 +1,63 @@
+{
+  "schema_version": "knowledge-foundation-p0a-policy-v1",
+  "dense_retrieval": {
+    "status": "unavailable",
+    "reason": "loadable_runtime_artifacts_absent",
+    "historical_build_manifest": "data/indexes/evidence_index_manifest.json",
+    "required_runtime_artifacts": [
+      "data/indexes/evidence_vectors.npy",
+      "data/indexes/evidence_vector_metadata.json"
+    ],
+    "fallback": "kg_plus_sqlite_fts5_bm25"
+  },
+  "formal_evidence_quarantine": {
+    "rule": "formal_publication_or_benchmark_chunks_require_explicit_source_bound_identity",
+    "known_unbound_chunk_ids": [
+      "benchmark:HR_BMK_DoubletFinder_doublet_detection_2020",
+      "benchmark:HR_BMK_Harmony_scIB_integration_2022",
+      "benchmark:HR_BMK_Scanpy_batch_correction_2020",
+      "benchmark:HR_BMK_Scrublet_doublet_detection_2020",
+      "benchmark:HR_BMK_Seurat_scIB_integration_2022",
+      "benchmark:HR_BMK_SoupX_ambient_decontamination_2026",
+      "benchmark:HR_BMK_cell2location_spatial_deconvolution_2022",
+      "benchmark:HR_BMK_scGPT_SAE_interpretability_2026",
+      "benchmark:HR_BMK_scvi_tools_scIB_integration_2022",
+      "benchmark:HR_BMK_tradeSeq_trajectory_de_2024"
+    ],
+    "retrieval_eligible": false,
+    "recommendation_eligible": false,
+    "citation_eligible": false
+  },
+  "version_bindings": [
+    {
+      "tool_name": "Harmony",
+      "scientific_operator_revision_id": "operator-revision:harmony.RunHarmony:2.0.5:uat-corrected",
+      "scientific_version": "2.0.5",
+      "tool_contract_id": "harmony:2.0.0",
+      "contract_version": "2.0.0",
+      "compatibility": "unknown",
+      "execution_binding": "blocked_until_cross_version_equivalence_reviewed"
+    },
+    {
+      "tool_name": "SingleR",
+      "scientific_operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+      "scientific_version": "2.14.1",
+      "tool_contract_id": "singler:2.14.0",
+      "contract_version": "2.14.0",
+      "compatibility": "unknown",
+      "execution_binding": "blocked_until_cross_version_equivalence_reviewed"
+    }
+  ],
+  "relation_actionability": {
+    "CAN_FEED": {
+      "required_review_status": "accepted",
+      "review_decision_required": true,
+      "candidate_pending_review_actionable": false
+    }
+  },
+  "candidate_scope": {
+    "reported_knowledge_status": "candidate",
+    "trusted_action_space_eligible": false,
+    "canonical_promotion": "none"
+  }
+}
