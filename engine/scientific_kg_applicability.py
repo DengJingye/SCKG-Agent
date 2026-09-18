@@ -33,6 +33,11 @@ DEFAULT_CANDIDATE_ROOT = (
 
 LEIDEN_OPERATOR = "operator-revision:scanpy.tl.leiden:1.11.2:uat-corrected"
 NEIGHBORS_OPERATOR = "operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected"
+HVG_OPERATOR = (
+    "operator-revision:scanpy.pp.highly_variable_genes:1.11.2:uat-corrected"
+)
+PCA_OPERATOR = "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected"
+UMAP_OPERATOR = "operator-revision:scanpy.tl.umap:1.11.2:uat-corrected"
 HARMONY_OPERATOR = "operator-revision:harmony.RunHarmony:2.0.5:uat-corrected"
 SCRUBLET_OPERATOR = (
     "operator-revision:scrublet.Scrublet.scrub_doublets:0.2.3:uat-corrected"
@@ -47,6 +52,29 @@ class _ActionBinding:
 
 
 _ACTION_BINDINGS = {
+    # The production Capability Pack currently exposes the reviewed
+    # log-expression HVG profile. Count-flavour selection remains outside this
+    # binding until the pack carries an explicit flavour parameter contract.
+    "scanpy_core.highly_variable_genes": _ActionBinding(
+        operator_revision_id=HVG_OPERATOR,
+        representation_ids=frozenset({"log1p_normalized"}),
+        decision_scope="action_applicability",
+    ),
+    "scanpy_core.pca_scaled": _ActionBinding(
+        operator_revision_id=PCA_OPERATOR,
+        representation_ids=frozenset({"scaled_hvg"}),
+        decision_scope="action_applicability",
+    ),
+    "scanpy_core.pca_log_hvg": _ActionBinding(
+        operator_revision_id=PCA_OPERATOR,
+        representation_ids=frozenset({"log1p_normalized", "hvg_selection"}),
+        decision_scope="action_applicability",
+    ),
+    "scanpy_core.neighbors": _ActionBinding(
+        operator_revision_id=NEIGHBORS_OPERATOR,
+        representation_ids=frozenset({"pca"}),
+        decision_scope="existing_representation_reuse",
+    ),
     "scanpy_core.leiden": _ActionBinding(
         operator_revision_id=LEIDEN_OPERATOR,
         representation_ids=frozenset({"neighbor_graph"}),
@@ -55,6 +83,11 @@ _ACTION_BINDINGS = {
     "scanpy_core.neighbors_integrated": _ActionBinding(
         operator_revision_id=NEIGHBORS_OPERATOR,
         representation_ids=frozenset({"integrated_representation"}),
+        decision_scope="existing_representation_reuse",
+    ),
+    "scanpy_core.umap": _ActionBinding(
+        operator_revision_id=UMAP_OPERATOR,
+        representation_ids=frozenset({"neighbor_graph"}),
         decision_scope="existing_representation_reuse",
     ),
     "scanpy_core.doublet_detection_action": _ActionBinding(
@@ -77,8 +110,9 @@ _REPRESENTATION_TYPE_BY_LEDGER_ID = {
     "raw_counts": "representation-type:raw_umi_counts",
     "filtered_counts": "representation-type:raw_umi_counts",
     "library_size_normalized": "representation-type:expression_matrix",
-    "log1p_normalized": "representation-type:expression_matrix",
+    "log1p_normalized": "representation-type:log_expression",
     "scaled_hvg": "representation-type:expression_matrix",
+    "hvg_selection": "representation-type:hvg_mask",
     "pca": "representation-type:pca_coordinates",
     "integrated_representation": "representation-type:cell_embedding",
     "neighbor_graph": "representation-type:neighbor_graph",
@@ -90,6 +124,7 @@ _VALUE_STATES_BY_LEDGER_ID = {
     "library_size_normalized": {"state_declared"},
     "log1p_normalized": {"state_declared"},
     "scaled_hvg": {"state_declared"},
+    "hvg_selection": {"feature_selected"},
     "pca": {"dimension_reduced"},
     "integrated_representation": {"dimension_reduced"},
     "neighbor_graph": {"graph_constructed"},
@@ -99,7 +134,17 @@ _TRANSFORMATIONS_BY_LEDGER_ID = {
     "library_size_normalized": {"normalized"},
     "log1p_normalized": {"normalized", "log1p"},
     "scaled_hvg": {"normalized", "log1p", "scaled"},
+    "hvg_selection": {"feature_selected"},
     "integrated_representation": {"integrated", "batch_corrected_embedding"},
+}
+
+_REPRESENTATION_TYPE_PARENTS = {
+    "representation-type:log_expression": frozenset(
+        {"representation-type:expression_matrix"}
+    ),
+    "representation-type:raw_umi_counts": frozenset(
+        {"representation-type:expression_matrix"}
+    ),
 }
 
 
@@ -199,9 +244,15 @@ class ScientificKGApplicability:
             operator_revision_id=binding.operator_revision_id,
             used_records=reusable_records,
         )
+        matched_constraint_ids = {
+            constraint_id
+            for item in port_results
+            for constraint_id in item["matched_constraint_ids"]
+        }
         claim_ids = self._decision_claim_ids(
             binding.operator_revision_id,
             relations,
+            matched_constraint_ids=matched_constraint_ids,
         )
         missing = [
             ScientificMissingRequirement(
@@ -331,11 +382,16 @@ class ScientificKGApplicability:
                 )
             )
 
+        matched_constraint_ids: list[str] = []
         if port.min_cardinality == 0 and not instances:
             satisfied = True
             selected: list[_InstanceView] = []
         elif port.requirement_combination == "any_of":
-            selected = next((items for _, _, items in matches if items), [])
+            selected_match = next(
+                ((constraint_ids, items) for _, constraint_ids, items in matches if items),
+                ([], []),
+            )
+            matched_constraint_ids, selected = selected_match
             satisfied = bool(selected)
         else:
             mandatory = [
@@ -347,6 +403,15 @@ class ScientificKGApplicability:
             ]
             satisfied = all(mandatory)
             selected = [item for _, _, items in matches for item in items[:1]] if satisfied else []
+            if satisfied:
+                matched_constraint_ids = sorted(
+                    {
+                        constraint_id
+                        for _, constraint_ids, items in matches
+                        if items
+                        for constraint_id in constraint_ids
+                    }
+                )
 
         reasons = [] if satisfied else sorted(
             {
@@ -371,6 +436,7 @@ class ScientificKGApplicability:
             "matched_record_ids": sorted(
                 {item.record.representation_record_id for item in selected}
             ),
+            "matched_constraint_ids": sorted(matched_constraint_ids),
             "reason_codes": reasons,
             "rejected_records": {
                 record_id: sorted(values)
@@ -389,7 +455,10 @@ class ScientificKGApplicability:
             failures.append("representation_stale")
         if not record.validated:
             failures.append("representation_not_validated")
-        if instance.representation_type_id != constraint.representation_type_id:
+        if not _representation_type_matches(
+            actual=instance.representation_type_id,
+            required=constraint.representation_type_id,
+        ):
             failures.append(
                 f"representation_type_mismatch:{constraint.representation_type_id}"
             )
@@ -474,6 +543,8 @@ class ScientificKGApplicability:
         self,
         operator_revision_id: str,
         relations: list[DerivedRelation],
+        *,
+        matched_constraint_ids: set[str],
     ) -> list[str]:
         """Project evidence for the decision-bearing proposition only.
 
@@ -490,11 +561,24 @@ class ScientificKGApplicability:
             "requires_compatibility",
             "requires_representation",
         }
-        claim_ids = {
-            claim.claim_revision_id
+        operator_input_claims = [
+            claim
             for claim in self.claims.values()
             if claim.subject_id == operator_revision_id
             and claim.predicate in input_predicates
+        ]
+        specifically_matched = {
+            claim.claim_revision_id
+            for claim in operator_input_claims
+            if claim.object_id in matched_constraint_ids
+        }
+        # Some reviewed claims intentionally use a bounded textual object
+        # rather than a constraint ID (for example the neighbors X/obsm
+        # proposition). Preserve those only when the operator has no
+        # constraint-addressable input claim; otherwise project the exact
+        # matched branch (not every alternative owned by the operator).
+        claim_ids = specifically_matched or {
+            claim.claim_revision_id for claim in operator_input_claims
         }
         claim_ids.update(
             claim_id
@@ -549,11 +633,35 @@ def _operator_ecosystem(operator_revision_id: str) -> str:
     return identity.split(".", 1)[0].split(":", 1)[0]
 
 
+def _representation_type_matches(*, actual: str, required: str) -> bool:
+    if actual == required:
+        return True
+    return required in _REPRESENTATION_TYPE_PARENTS.get(actual, frozenset())
+
+
 def _candidate_binding_is_explicit(
     action_id: str,
     records: list[RepresentationRecord],
     ledger: RepresentationLedger,
 ) -> bool:
+    newly_integrated_actions = {
+        "scanpy_core.highly_variable_genes",
+        "scanpy_core.pca_scaled",
+        "scanpy_core.pca_log_hvg",
+        "scanpy_core.neighbors",
+        "scanpy_core.umap",
+    }
+    # Legacy ledgers predate the v1.1 RepresentationType/lineage binding.  A
+    # stale hash alone is not enough to opt such records into the new
+    # scientific adapter: doing so would change established planner recovery
+    # behavior without an explicit semantic identity.  The existing three
+    # validated actions retain their earlier bounded legacy handling.
+    if action_id in newly_integrated_actions and not any(
+        record.metadata.get("representation_type_id")
+        and record.metadata.get("lineage_id")
+        for record in records
+    ):
+        return False
     if action_id == "scanpy_core.doublet_detection_action":
         raw_records = [
             record
@@ -583,11 +691,43 @@ def _candidate_binding_is_explicit(
             and record.metadata.get("connectivities_key")
             for record in records
         )
+    if action_id == "scanpy_core.umap":
+        return any(
+            record.parameter_hash
+            and record.metadata.get("lineage_id")
+            and record.metadata.get("neighbors_key")
+            and record.metadata.get("connectivities_key")
+            for record in records
+        )
     if action_id == "scanpy_core.neighbors_integrated":
         return any(
             record.parameter_hash
             and record.metadata.get("lineage_id")
             and record.metadata.get("producer_operator_revision_id") == HARMONY_OPERATOR
+            for record in records
+        )
+    if action_id == "scanpy_core.neighbors":
+        return any(
+            record.parameter_hash
+            and record.metadata.get("lineage_id")
+            and (
+                record.metadata.get("representation_type_id")
+                or record.representation_id == "pca"
+            )
+            for record in records
+        )
+    if action_id in {
+        "scanpy_core.highly_variable_genes",
+        "scanpy_core.pca_scaled",
+        "scanpy_core.pca_log_hvg",
+    }:
+        return any(
+            record.metadata.get("lineage_id")
+            and (
+                record.cell_index_hash == ledger.cell_index_hash
+                or record.representation_id == "hvg_selection"
+            )
+            and record.gene_index_hash == ledger.gene_index_hash
             for record in records
         )
     return False
