@@ -1,0 +1,218 @@
+{
+  "schema_version": "core-capability-readiness-review-packets-v1",
+  "target": "scVelo",
+  "status": "READY_FOR_HUMAN_REVIEW",
+  "package_release_id": "package-release:scvelo:0.3.4",
+  "source": {
+    "source_id": "source:scvelo:official:0.3.4",
+    "authority": "official",
+    "version": "0.3.4",
+    "source_uri": "https://scvelo.readthedocs.io/en/stable/api.html",
+    "candidate_only": true,
+    "version_resolution_risk": "The registered source identity is version-pinned, but the stored URI uses the mutable stable documentation alias and the evidence locator is section-level rather than an immutable source artifact offset."
+  },
+  "review_requirement": "qualified_human",
+  "review_decisions_created": 0,
+  "packets": [
+    {
+      "claim_revision_id": "claim-revision:v1-core:8c403c3df768d17c:1",
+      "claim_text": "scvelo.pp.moments requires spliced and unspliced count layers at input port input-port:v1-core:scvelo:scvelo_pp_moments:input1.",
+      "claim_content_hash": "06e7e5b64bb6466f86352fdab9ea1556df41ee9a0c62850c9c14c9073b80929a",
+      "subject_id": "operator-revision:scvelo.scvelo_pp_moments:0.3.4",
+      "predicate": "requires_representation_constraint",
+      "object_id": "representation-constraint:v1-core:scvelo:scvelo_pp_moments:input1",
+      "scope_id": "scope:v1-core:scvelo:scvelo_pp_moments",
+      "scope": {
+        "version": "0.3.4",
+        "task": "task:rna_velocity",
+        "modality": "rna",
+        "observation_unit": "cell"
+      },
+      "representation_constraint": {
+        "representation_type_id": "representation-type:spliced_unspliced",
+        "required_component_roles": ["spliced", "unspliced"],
+        "required_value_states": ["raw_counts"],
+        "observation_alignment": "same_observations",
+        "feature_alignment": "explicit_mapping"
+      },
+      "derived_relation_id": "derived-relation:v1-core:scvelo:scvelo_pp_moments:consumes:spliced_unspliced",
+      "evidence_span": {
+        "evidence_span_id": "evidence-span:v1-core:scvelo:scvelo_pp_moments:capability",
+        "locator": "official_api_or_package_documentation::capability",
+        "exact_text": "Compute first and second order moments for velocity estimation using a neighborhood graph.",
+        "content_hash": "86de5a68e2de47ae4f887f3dd73f498683494ab1add0bb9342eda74ab5dcbb9b"
+      },
+      "risk": {
+        "risk_class": "R3",
+        "review_status": "candidate_pending_review",
+        "review_requirement": "qualified_human"
+      },
+      "review_risks": [
+        "SOURCE_SUPPORT_WEAK: the bounded excerpt establishes moments and neighborhood use but does not explicitly name spliced/unspliced raw-count layers",
+        "VERSION_AMBIGUOUS: source URI is the mutable stable alias",
+        "SCOPE_AMBIGUOUS: the universal raw_counts state needs independent confirmation"
+      ],
+      "proposed_review_options": ["VALID_WITH_SCOPE", "NEEDS_REVISION", "REJECT"]
+    },
+    {
+      "claim_revision_id": "claim-revision:v1-core:608293c377ba11ac:1",
+      "claim_text": "scvelo.pp.moments requires cell neighbor graph at input port input-port:v1-core:scvelo:scvelo_pp_moments:input2.",
+      "claim_content_hash": "b06897990f8429ef851487729012ece3d30e37f055a6e56dea51699ee45955a0",
+      "subject_id": "operator-revision:scvelo.scvelo_pp_moments:0.3.4",
+      "predicate": "requires_representation_constraint",
+      "object_id": "representation-constraint:v1-core:scvelo:scvelo_pp_moments:input2",
+      "scope_id": "scope:v1-core:scvelo:scvelo_pp_moments",
+      "scope": {
+        "version": "0.3.4",
+        "task": "task:rna_velocity",
+        "modality": "rna",
+        "observation_unit": "cell"
+      },
+      "representation_constraint": {
+        "representation_type_id": "representation-type:neighbor_graph",
+        "required_component_roles": ["connectivities", "distances", "parameters"],
+        "required_value_states": ["graph_constructed"],
+        "observation_alignment": "same_observations"
+      },
+      "derived_relation_id": "derived-relation:v1-core:scvelo:scvelo_pp_moments:consumes:neighbor_graph",
+      "evidence_span": {
+        "evidence_span_id": "evidence-span:v1-core:scvelo:scvelo_pp_moments:capability",
+        "locator": "official_api_or_package_documentation::capability",
+        "exact_text": "Compute first and second order moments for velocity estimation using a neighborhood graph.",
+        "content_hash": "86de5a68e2de47ae4f887f3dd73f498683494ab1add0bb9342eda74ab5dcbb9b"
+      },
+      "risk": {
+        "risk_class": "R3",
+        "review_status": "candidate_pending_review",
+        "review_requirement": "qualified_human"
+      },
+      "review_risks": [
+        "The excerpt directly supports neighborhood use but does not enumerate all connectivities/distances/parameters component requirements",
+        "VERSION_AMBIGUOUS: source URI is the mutable stable alias"
+      ],
+      "proposed_review_options": ["VALID_WITH_SCOPE", "NEEDS_REVISION", "REJECT"]
+    },
+    {
+      "claim_revision_id": "claim-revision:v1-core:616e18a39979c345:1",
+      "claim_text": "scvelo.tl.velocity requires first and second order moments at input port input-port:v1-core:scvelo:scvelo_tl_velocity:input1.",
+      "claim_content_hash": "9303feee2d920bb67840befc4b309f526e7ef36fec5ab0a92420a5fa8198f045",
+      "subject_id": "operator-revision:scvelo.scvelo_tl_velocity:0.3.4",
+      "predicate": "requires_representation_constraint",
+      "object_id": "representation-constraint:v1-core:scvelo:scvelo_tl_velocity:input1",
+      "scope_id": "scope:v1-core:scvelo:scvelo_tl_velocity",
+      "scope": {
+        "version": "0.3.4",
+        "task": "task:rna_velocity",
+        "modality": "rna",
+        "observation_unit": "cell"
+      },
+      "representation_constraint": {
+        "representation_type_id": "representation-type:moments",
+        "required_value_states": ["moments_computed"],
+        "observation_alignment": "same_observations",
+        "feature_alignment": "explicit_mapping"
+      },
+      "derived_relation_id": "derived-relation:v1-core:scvelo:scvelo_tl_velocity:consumes:moments",
+      "evidence_span": {
+        "evidence_span_id": "evidence-span:v1-core:scvelo:scvelo_tl_velocity:capability",
+        "locator": "official_api_or_package_documentation::capability",
+        "exact_text": "Estimate RNA velocities from spliced and unspliced moments.",
+        "content_hash": "eee51e7a093f2404d096442937de83689d7f033bd7bdfe12a1520c33bcfbd0d2"
+      },
+      "risk": {
+        "risk_class": "R3",
+        "review_status": "candidate_pending_review",
+        "review_requirement": "qualified_human"
+      },
+      "review_risks": [
+        "The excerpt supports moment inputs but the exact representation schema and alignment requirements remain candidate semantics",
+        "VERSION_AMBIGUOUS: source URI is the mutable stable alias"
+      ],
+      "proposed_review_options": ["VALID_WITH_SCOPE", "NEEDS_REVISION", "REJECT"]
+    },
+    {
+      "claim_revision_id": "claim-revision:v1-core:4073492083f7e307:1",
+      "claim_text": "scvelo.tl.velocity_graph requires RNA velocity vectors at input port input-port:v1-core:scvelo:scvelo_tl_velocity_graph:input1.",
+      "claim_content_hash": "53605bf7fd2af990ca4e26f7023506dd924b250b06d9c25b04ab385e3c7c38df",
+      "subject_id": "operator-revision:scvelo.scvelo_tl_velocity_graph:0.3.4",
+      "predicate": "requires_representation_constraint",
+      "object_id": "representation-constraint:v1-core:scvelo:scvelo_tl_velocity_graph:input1",
+      "scope_id": "scope:v1-core:scvelo:scvelo_tl_velocity_graph",
+      "scope": {
+        "version": "0.3.4",
+        "task": "task:rna_velocity",
+        "modality": "rna",
+        "observation_unit": "cell"
+      },
+      "representation_constraint": {
+        "representation_type_id": "representation-type:velocity_vectors",
+        "required_value_states": ["velocity_inferred"],
+        "observation_alignment": "same_observations",
+        "feature_alignment": "explicit_mapping"
+      },
+      "derived_relation_id": "derived-relation:v1-core:scvelo:scvelo_tl_velocity_graph:consumes:velocity_vectors",
+      "evidence_span": {
+        "evidence_span_id": "evidence-span:v1-core:scvelo:scvelo_tl_velocity_graph:capability",
+        "locator": "official_api_or_package_documentation::capability",
+        "exact_text": "Compute a velocity graph containing transition probabilities between cells.",
+        "content_hash": "adae77753f1d5aaa55ff9fc4d75f142818b7d8d943b124b7fc9c12f866d1b644"
+      },
+      "risk": {
+        "risk_class": "R3",
+        "review_status": "candidate_pending_review",
+        "review_requirement": "qualified_human"
+      },
+      "review_risks": [
+        "SOURCE_SUPPORT_WEAK: the excerpt describes the output but does not explicitly establish the velocity-vector input relation",
+        "VERSION_AMBIGUOUS: source URI is the mutable stable alias"
+      ],
+      "proposed_review_options": ["VALID_WITH_SCOPE", "NEEDS_REVISION", "REJECT"]
+    },
+    {
+      "claim_revision_id": "claim-revision:v1-core:cd6896639cb7fb23:1",
+      "claim_text": "scvelo.tl.velocity_graph requires cell neighbor graph at input port input-port:v1-core:scvelo:scvelo_tl_velocity_graph:input2.",
+      "claim_content_hash": "16b3e0a583eef77a783373fcd6fa479732a817132c89f0b2d6b490c930ab64d9",
+      "subject_id": "operator-revision:scvelo.scvelo_tl_velocity_graph:0.3.4",
+      "predicate": "requires_representation_constraint",
+      "object_id": "representation-constraint:v1-core:scvelo:scvelo_tl_velocity_graph:input2",
+      "scope_id": "scope:v1-core:scvelo:scvelo_tl_velocity_graph",
+      "scope": {
+        "version": "0.3.4",
+        "task": "task:rna_velocity",
+        "modality": "rna",
+        "observation_unit": "cell"
+      },
+      "representation_constraint": {
+        "representation_type_id": "representation-type:neighbor_graph",
+        "required_component_roles": ["connectivities", "distances", "parameters"],
+        "required_value_states": ["graph_constructed"],
+        "observation_alignment": "same_observations"
+      },
+      "derived_relation_id": "derived-relation:v1-core:scvelo:scvelo_tl_velocity_graph:consumes:neighbor_graph",
+      "evidence_span": {
+        "evidence_span_id": "evidence-span:v1-core:scvelo:scvelo_tl_velocity_graph:capability",
+        "locator": "official_api_or_package_documentation::capability",
+        "exact_text": "Compute a velocity graph containing transition probabilities between cells.",
+        "content_hash": "adae77753f1d5aaa55ff9fc4d75f142818b7d8d943b124b7fc9c12f866d1b644"
+      },
+      "risk": {
+        "risk_class": "R3",
+        "review_status": "candidate_pending_review",
+        "review_requirement": "qualified_human"
+      },
+      "review_risks": [
+        "SOURCE_SUPPORT_WEAK: the excerpt does not explicitly establish the neighbor-graph input relation or all component requirements",
+        "VERSION_AMBIGUOUS: source URI is the mutable stable alias"
+      ],
+      "proposed_review_options": ["VALID_WITH_SCOPE", "NEEDS_REVISION", "REJECT"]
+    }
+  ],
+  "explicit_boundaries": {
+    "cellrank_compatibility_reviewed": false,
+    "can_feed_relations_activated": false,
+    "review_decision_created": false,
+    "canonical_promotion": false,
+    "tool_contract_created": false,
+    "capability_pack_created": false
+  }
+}

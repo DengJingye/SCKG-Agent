@@ -1,0 +1,129 @@
+{
+  "schema_version": "core-capability-readiness-review-packet-v1",
+  "target": "SoupX",
+  "status": "READY_FOR_HUMAN_REVIEW",
+  "review_item_id": "review-item:cp7:soupx:soupchannel-inputs:1.6.2",
+  "queue_status": "pending_human_review",
+  "review_decision": null,
+  "reviewer_reason": null,
+  "risk": {
+    "risk_class": "R3",
+    "review_requirement": "qualified_human"
+  },
+  "atomic_claim_revision": {
+    "claim_id": "claim:cp6:7005e7aaf1f910d6",
+    "claim_revision_id": "claim-revision:cp6:7005e7aaf1f910d6:1",
+    "subject_id": "package-release:soupx:1.6.2",
+    "predicate": "defines_input_table_semantics",
+    "object_value": "SoupChannel tod is a genes-by-droplets droplet table; toc contains the tod columns corresponding to droplets with cells.",
+    "scientific_proposition": "In SoupX 1.6.2, SoupChannel defines tod as a genes-by-droplets droplet table and toc as the count table containing only tod columns corresponding to droplets with cells.",
+    "knowledge_status": "candidate_pending_review"
+  },
+  "source_work": {
+    "source_work_id": "source-work:soupx:official-manual",
+    "canonical_title": "SoupX package manual",
+    "authority": "official"
+  },
+  "source_revision": {
+    "source_revision_id": "source-revision:soupx:official-manual:1.6.2",
+    "source_work_id": "source-work:soupx:official-manual",
+    "version": "1.6.2"
+  },
+  "source_artifact": {
+    "source_artifact_id": "source-artifact:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+    "artifact_type": "application/pdf",
+    "sha256": "dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+    "digest_reverified": true
+  },
+  "evidence_span": {
+    "evidence_span_id": "evidence-span:cp5:soupx:soupchannel-inputs:1.6.2",
+    "source_revision_id": "source-revision:soupx:official-manual:1.6.2",
+    "locator": "PDF page 24; SoupChannel; Arguments: tod and toc",
+    "text_offset_start": 37757,
+    "text_offset_end": 37907,
+    "exact_text": "tod Table of droplets. A matrix with columns being each droplet and rows each gene. toc Table of counts. Just those columns of tod that contain cells.",
+    "content_hash": "d56762056291c5c96519ff9eec38ca5345e1ad88e5ed4bf823f79181b0a558df",
+    "content_hash_reverified": true
+  },
+  "applicability_scope": {
+    "scope_id": "scope:cp6:soupx:soupchannel:1.6.2",
+    "scope_status": "explicit",
+    "combination": "all_of",
+    "version_constraints": [
+      {
+        "subject_id": "package-release:soupx:1.6.2",
+        "expression": "1.6.2",
+        "status": "exact"
+      }
+    ],
+    "modalities": [],
+    "organism_taxa": [],
+    "biological_context_ids": [],
+    "study_design_constraints": []
+  },
+  "representation_semantics": {
+    "tod": {
+      "orientation": "genes_by_droplets",
+      "column_unit": "droplet",
+      "row_unit": "gene"
+    },
+    "toc": {
+      "relationship_to_tod": "subset_of_columns",
+      "included_columns": "droplets containing cells"
+    },
+    "output_semantics": "not asserted by this claim"
+  },
+  "evidence_assessment": {
+    "assessment_id": "evidence-assessment:cp6:7005e7aaf1f910d6",
+    "stance": "supports",
+    "subject_aligned": true,
+    "predicate_aligned": true,
+    "object_aligned": true,
+    "scope_alignment": "aligned",
+    "rationale": "The exact version-pinned SoupChannel argument span directly defines tod and toc; it does not support broader raw-count, preprocessing, or workflow-order claims."
+  },
+  "limitations_and_conflicts": {
+    "conflicting_claim_revision_ids": [],
+    "conflict_status": "none_detected",
+    "claim_boundary": [
+      "does not establish a universal raw-count requirement for every SoupX operator",
+      "does not establish empty-droplet detection semantics beyond the tod/toc definitions",
+      "does not establish workflow order, execution safety, or automatic promotion",
+      "does not resolve the broader core-candidate droplet-profile EvidenceGap"
+    ]
+  },
+  "proposed_review_options": [
+    {
+      "action": "PROMOTE",
+      "meaning": "Accept only the bounded tod/toc input-table proposition.",
+      "additional_requirement": "approved KnowledgeChangeSet and immutable snapshot publication"
+    },
+    {
+      "action": "REJECT",
+      "meaning": "Reject the candidate proposition with reviewer rationale.",
+      "additional_requirement": "reviewer rationale"
+    },
+    {
+      "action": "NEEDS_REVISION",
+      "meaning": "Request a new claim revision without mutating this revision.",
+      "additional_requirement": "new claim revision"
+    },
+    {
+      "action": "MERGE",
+      "meaning": "Merge only after a reviewed identity/claim crosswalk.",
+      "additional_requirement": "reviewed identity/claim crosswalk and KnowledgeChangeSet"
+    },
+    {
+      "action": "SUPERSEDE",
+      "meaning": "Supersede only with a reviewed SupersessionRecord.",
+      "additional_requirement": "reviewed SupersessionRecord and KnowledgeChangeSet"
+    }
+  ],
+  "promotion_guard": {
+    "requires_review_decision": true,
+    "requires_knowledge_change_set": true,
+    "requires_immutable_snapshot": true,
+    "promotion_allowed_now": false,
+    "execution_authority_granted": false
+  }
+}
