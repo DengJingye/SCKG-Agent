@@ -1,0 +1,62 @@
+{
+  "campaign": "development_not_formal_midterm",
+  "frozen_foundation": {
+    "corpus_digest": "7c8545721cd73a47fc0849ccc240ba2e150a064e07005de5f11ac26ab1213fd0",
+    "dense_available": true,
+    "dimension": 1024,
+    "embedding_model": "BAAI/bge-m3",
+    "model_revision": "cb1779f90b988b8deb01f9155c790ef9417d7648",
+    "vector_count": 773
+  },
+  "kg_pair_policy": "R2_to_R3: HELPED if top10 hit appears or first-gold rank improves; HURT if top10 hit disappears or first-gold rank worsens; otherwise NEUTRAL",
+  "metric_policy": {
+    "irrelevant_context_rate": "non-gold hits divided by returned hits per query, then query averaged",
+    "mrr": "mean reciprocal rank of first exact accepted evidence span",
+    "ndcg_at_10": "binary relevance over exact accepted evidence spans, query averaged",
+    "not_applicable": "version metrics omit queries without an expected version",
+    "recall_at_k": "fraction of queries with at least one exact accepted indexed evidence span at k"
+  },
+  "nested_unit_policy": "multiple gold spans are OR-equivalent within one query and are not independent samples",
+  "primary_sampling_unit": "retrieval_query_scientific_information_need",
+  "profiles": [
+    {
+      "dense": false,
+      "governance": false,
+      "kg": false,
+      "profile_id": "R0_bm25_only",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": false,
+      "profile_id": "R1_dense_only",
+      "sparse": false
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": false,
+      "profile_id": "R2_bm25_dense_rrf",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": true,
+      "profile_id": "R3_kg_bm25_dense_rrf",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": true,
+      "kg": true,
+      "profile_id": "R4_kg_bm25_dense_rrf_governance",
+      "sparse": true
+    }
+  ],
+  "r1_catalog_policy": "excluded",
+  "r2_catalog_policy": "included_for_discovery_but_never_mixed_into_R1_metrics",
+  "schema_version": "sckg-retrieval-benchmark-v1-dev-config-v1",
+  "top_k": 10
+}
