@@ -341,6 +341,13 @@ def _merge_retrieval_results(
             result.governance_leakage_count for result in results
         ),
         stage_timings=[timing for result in results for timing in result.stage_timings],
+        scientific_evidence=(
+            {"queries": [result.scientific_evidence for result in results if result.scientific_evidence is not None],
+             "final_graph_chunk_ids": sorted({hit.chunk_id for hit in hits} & {
+                 cid for result in results if result.scientific_evidence is not None
+                 for cid in result.scientific_evidence.get("final_graph_chunk_ids", [])})}
+            if any(result.scientific_evidence is not None for result in results) else None
+        ),
     )
 
 

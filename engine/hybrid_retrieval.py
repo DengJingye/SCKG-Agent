@@ -95,6 +95,7 @@ class HybridRetrievalService:
         dense_encoder: Optional[DenseEncoder] = None,
         graph_dir: Path | None = None,
         query_cache_size: int = 256,
+        scientific_evidence_enabled: bool = False,
     ) -> None:
         self.evidence_chunks_path = Path(evidence_chunks_path)
         self.catalog_chunks_path = Path(catalog_chunks_path)
@@ -105,6 +106,8 @@ class HybridRetrievalService:
         self.dense_metadata_path = Path(dense_metadata_path)
         self.dense_encoder = dense_encoder
         self.graph_dir = Path(graph_dir or PROJECT_ROOT / "data" / "knowledge_graph_v2")
+        self.scientific_evidence_enabled = scientific_evidence_enabled
+        self._scientific_evidence_adapter = None
         self._lock = threading.RLock()
         self._chunks_by_id: Dict[str, EvidenceChunk] = {}
         self._dense_matrix: Optional[np.ndarray] = None
@@ -239,7 +242,32 @@ class HybridRetrievalService:
             )
         )
         stage_started = time.perf_counter()
-        fused = _rrf(sparse, dense)
+        scientific_ranked = []
+        scientific_diagnostic = None
+        if self.scientific_evidence_enabled:
+            try:
+                from engine.scientific_kg_evidence import ScientificKGEvidence
+
+                if self._scientific_evidence_adapter is None:
+                    self._scientific_evidence_adapter = ScientificKGEvidence()
+                scientific_ranked, scientific_diagnostic = self._scientific_evidence_adapter.query(
+                    effective_request, self._chunks_by_id, snapshot_id=self.index_build_id,
+                    corpus_digest=self._dense_source_digest,
+                )
+                before_filter = [cid for cid, _ in scientific_ranked]
+                scientific_ranked = self._filter_ranked(
+                    scientific_ranked, request=effective_request,
+                    task_ids=task_ids, candidate_tools=candidate_tools,
+                )
+                scientific_diagnostic["eligible_chunk_ids"] = [cid for cid, _ in scientific_ranked]
+                scientific_diagnostic["public_filter_rejected_chunk_ids"] = [cid for cid in before_filter if cid not in scientific_diagnostic["eligible_chunk_ids"]]
+                if before_filter and not scientific_ranked:
+                    scientific_diagnostic["fallback_reason"] = "public_eligibility_filter_rejected_graph_evidence"
+            except (OSError, ValueError, KeyError, IndexError, TypeError):
+                # No raw exception paths or query text in diagnostics/Trace.
+                scientific_ranked = []
+                scientific_diagnostic = {"fallback_reason": "scientific_graph_binding_unavailable", "knowledge_status": "candidate", "execution_authorized": False}
+        fused = _rrf(sparse, dense, scientific=scientific_ranked) if scientific_ranked else _rrf(sparse, dense)
         reranked = (
             self._governance_rerank(
                 fused,
@@ -304,6 +332,9 @@ class HybridRetrievalService:
             )
         dense_used = bool(dense and dense_status == "ready")
         leakage = sum(hit.recommendation_eligible for hit in hits if hit.governance_status == "catalog_only")
+        if scientific_diagnostic is not None:
+            scientific_diagnostic["final_graph_chunk_ids"] = [h.chunk_id for h in hits if h.chunk_id in {cid for cid, _ in scientific_ranked}]
+            scientific_diagnostic["merge_policy"] = "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification"
         return HybridRetrievalResult(
             query=request.query,
             mode=_retrieval_mode(
@@ -322,6 +353,7 @@ class HybridRetrievalService:
                 "kg_hard_filter" if request.use_kg else "kg_filter_skipped",
                 "sqlite_fts5_bm25" if request.enable_sparse else "sparse_retrieval_skipped",
                 "local_bge_m3" if dense_used else "local_dense_skipped",
+                *(["scientific_kg_evidence_lookup"] if self.scientific_evidence_enabled else []),
                 "rrf_fusion",
                 "source_governance_rerank" if request.use_governance_rerank else "governance_rerank_skipped",
                 "tool_contract_gate" if request.use_contract_gate else "tool_contract_gate_skipped",
@@ -330,6 +362,7 @@ class HybridRetrievalService:
             warnings=warnings,
             governance_leakage_count=leakage,
             stage_timings=stage_timings,
+            scientific_evidence=scientific_diagnostic,
         )
 
     def _named_tools_in_query(self, query: str) -> list[str]:
@@ -929,13 +962,15 @@ def _rrf(
     dense: Sequence[tuple[str, float]],
     *,
     k: int = 60,
+    scientific: Sequence[tuple[str, float]] = (),
 ) -> List[tuple[str, float, Optional[int], Optional[int]]]:
     values: Dict[str, List[Any]] = {}
-    for label, ranked in (("sparse", sparse), ("dense", dense)):
+    for label, ranked in (("sparse", sparse), ("dense", dense), ("scientific", scientific)):
         for rank, (chunk_id, _) in enumerate(ranked, start=1):
             value = values.setdefault(chunk_id, [0.0, None, None])
             value[0] += 1.0 / (k + rank)
-            value[1 if label == "sparse" else 2] = rank
+            if label != "scientific":
+                value[1 if label == "sparse" else 2] = rank
     return sorted(
         ((chunk_id, float(value[0]), value[1], value[2]) for chunk_id, value in values.items()),
         key=lambda item: (-item[1], item[0]),

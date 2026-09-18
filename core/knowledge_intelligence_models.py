@@ -158,6 +158,7 @@ class HybridRetrievalResult(KnowledgeIntelligenceModel):
     warnings: List[str] = Field(default_factory=list)
     governance_leakage_count: int = Field(default=0, ge=0)
     stage_timings: List[ChatStageTiming] = Field(default_factory=list)
+    scientific_evidence: Optional[Dict[str, Any]] = None
 
 
 class RetrievalCoverageReport(KnowledgeIntelligenceModel):
