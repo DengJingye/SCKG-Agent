@@ -1,0 +1,84 @@
+{
+  "schema_version": "core-capability-expansion-v1-readiness-gate",
+  "baseline_commit": "22a1dc9515ca18676e34a51017926a84d346a6fb",
+  "status": "NO_GO",
+  "implementation_started": false,
+  "production_files_changed": false,
+  "candidate_count": 3,
+  "eligible_candidate_count": 0,
+  "candidates": [
+    {
+      "ecosystem": "CellTypist",
+      "decision": "NOT_READY",
+      "authoritative_evidence": "PRESENT",
+      "tool_contract": "PRESENT_PLANNING_ONLY",
+      "capability_pack": "MISSING",
+      "reference_artifact_revision": "MISSING",
+      "execution_environment": "MISSING",
+      "blocking_owner": "reference_artifact_identity",
+      "first_blocker": "The configured reference manifest reference_packs/manifests/celltypist-immune-all-low-v1.json does not exist, and no immutable local model artifact/digest is registered.",
+      "required_before_integration": [
+        "immutable CellTypist model artifact",
+        "model content digest and versioned ReferenceArtifactRevision",
+        "model feature/label compatibility metadata",
+        "Capability Pack binding"
+      ]
+    },
+    {
+      "ecosystem": "scVelo",
+      "decision": "NOT_READY",
+      "authoritative_evidence": "CANDIDATE_SOURCE_BOUND",
+      "tool_contract": "MISSING",
+      "capability_pack": "MISSING",
+      "reference_artifact_revision": "NOT_APPLICABLE",
+      "execution_environment": "MISSING",
+      "blocking_owner": "scientific_review",
+      "first_blocker": "The decision-controlling spliced/unspliced, neighbor-graph and moments input relations are R3 candidate_pending_review claims requiring qualified human review.",
+      "required_before_integration": [
+        "qualified review of the direct layer and representation requirements",
+        "version-pinned scVelo ToolContract",
+        "bounded scVelo Capability Pack",
+        "planner binding that preserves candidate/trusted status"
+      ],
+      "explicit_exclusion": "No scVelo to CellRank compatibility is asserted or consumed."
+    },
+    {
+      "ecosystem": "SoupX",
+      "decision": "NOT_READY",
+      "authoritative_evidence": "EXACT_SOURCE_BOUND_CANDIDATE",
+      "tool_contract": "MISSING",
+      "capability_pack": "MISSING",
+      "reference_artifact_revision": "NOT_APPLICABLE",
+      "execution_environment": "MISSING",
+      "blocking_owner": "human_review",
+      "first_blocker": "Review item review-item:cp7:soupx:soupchannel-inputs:1.6.2 remains pending_human_review with no ReviewDecision and promotion_allowed_now=false.",
+      "required_before_integration": [
+        "qualified human decision for the SoupChannel input-table claim",
+        "reviewed operator-level port mapping",
+        "version-pinned SoupX ToolContract",
+        "bounded SoupX Capability Pack"
+      ]
+    }
+  ],
+  "frozen_boundaries": {
+    "rag_modified": false,
+    "kg_modified": false,
+    "planner_modified": false,
+    "tool_contracts_modified": false,
+    "capability_packs_modified": false,
+    "benchmark_gold_modified": false,
+    "formal_holdout_created": false,
+    "candidate_promoted": false,
+    "unreviewed_can_feed_consumed": false
+  },
+  "readiness_effect": {
+    "authoritative_evidence_ready": "13/14 unchanged",
+    "planning_ready": "3/14 unchanged",
+    "execution_ready": "2/14 unchanged"
+  },
+  "next_owner_actions": [
+    "Resolve and register one immutable CellTypist model artifact before building its Capability Pack.",
+    "Obtain qualified review for the bounded scVelo input-requirement cluster before contract construction.",
+    "Record an explicit qualified-human SoupX review decision before any production binding."
+  ]
+}
