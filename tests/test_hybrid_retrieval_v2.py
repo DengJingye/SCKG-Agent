@@ -576,4 +576,79 @@ def test_precise_supported_claim_label_keeps_positive_governance_boost(tmp_path)
     )
 
     assert reranked[0][0] == "source:direct-input"
-    assert reranked[0][1] - reranked[1][1] >= 0.05
+    assert reranked[0][1] > reranked[1][1]
+
+
+def test_governance_quality_signals_cannot_overwhelm_material_retrieval_rank(tmp_path):
+    index_dir = tmp_path / "indexes"
+    chunks = [
+        EvidenceChunk(
+            chunk_id="source:direct",
+            evidence_id="direct",
+            source_kind="publication",
+            source_table="source.jsonl",
+            source_record_id="direct",
+            source_id="direct",
+            tool_name="ExampleTool",
+            tool_names=["ExampleTool"],
+            task="doublet_detection",
+            canonical_task="doublet_detection",
+            task_tags=["doublet_detection"],
+            claim_type="general",
+            chunk_text="ExampleTool directly supports the requested scientific decision.",
+            source_span="Direct evidence",
+            source_bound=True,
+            retrieval_status="formal_frozen_retrieval_only",
+        ),
+        EvidenceChunk(
+            chunk_id="source:generic-metadata-match",
+            evidence_id="generic",
+            source_kind="source_document",
+            source_table="source.jsonl",
+            source_record_id="generic",
+            source_id="generic",
+            tool_name="ExampleTool",
+            tool_names=["ExampleTool"],
+            task="doublet_detection",
+            canonical_task="doublet_detection",
+            task_tags=["doublet_detection"],
+            claim_type="input_requirement",
+            chunk_text="ExampleTool input overview.",
+            source_span="Overview",
+            source_bound=True,
+            retrieval_status="retrieval_only",
+        ),
+    ]
+    _write_jsonl(index_dir / "evidence.jsonl", [chunk_to_dict(row) for row in chunks])
+    _write_jsonl(index_dir / "catalog.jsonl", [])
+    (index_dir / "manifest.json").write_text(
+        json.dumps({"build_id": "bounded-governance-rerank"}), encoding="utf-8"
+    )
+    service = HybridRetrievalService(
+        evidence_chunks_path=index_dir / "evidence.jsonl",
+        catalog_chunks_path=index_dir / "catalog.jsonl",
+        fts_index_path=index_dir / "fts.sqlite",
+        index_manifest_path=index_dir / "manifest.json",
+        coverage_path=index_dir / "coverage.json",
+        graph_dir=tmp_path / "missing",
+    )
+    request = HybridRetrievalRequest(
+        query="What input does ExampleTool require?",
+        tool_names=["ExampleTool"],
+        canonical_tasks=["doublet_detection"],
+        claim_types=["input_requirement"],
+        use_governance_rerank=True,
+    )
+
+    reranked = service._governance_rerank(
+        [
+            ("source:direct", 0.032, 1, None),
+            ("source:generic-metadata-match", 0.020, 2, None),
+        ],
+        request=request,
+        task_ids={"doublet_detection"},
+        claim_types={"input_requirement"},
+        candidate_tools={"exampletool"},
+    )
+
+    assert reranked[0][0] == "source:direct"

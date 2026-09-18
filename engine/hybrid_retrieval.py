@@ -859,13 +859,19 @@ class HybridRetrievalService:
                 _tool_key(value) for value in _chunk_mentioned_tools(chunk)
             }
             chunk_tasks = set(chunk.task_tags or ([chunk.canonical_task or chunk.task] if (chunk.canonical_task or chunk.task) else []))
-            adjusted = score
+            # Governance is a bounded quality tie-breaker over retrieval, not a
+            # second retrieval engine.  The former absolute additions (up to
+            # roughly 0.4) overwhelmed RRF scores around 0.03 and could move a
+            # generic/coarsely-labelled chunk above direct evidence solely due
+            # to metadata.  Keep the same governed signals, but express them as
+            # a dimensionless multiplier so retrieval rank remains material.
+            quality_multiplier = 1.0
             if explicit_tools & mentioned_tools:
-                adjusted += 0.12
+                quality_multiplier += 0.12
             elif candidate_tools & chunk_tools:
-                adjusted += 0.035
+                quality_multiplier += 0.035
             if task_ids & chunk_tasks:
-                adjusted += 0.06
+                quality_multiplier += 0.06
             boostable_claim_types = (
                 claim_types & _GOVERNANCE_BOOSTABLE_CLAIM_TYPES
             )
@@ -873,22 +879,23 @@ class HybridRetrievalService:
                 chunk.claim_type in boostable_claim_types
                 and _chunk_supports_claim_type(chunk, boostable_claim_types)
             ):
-                adjusted += 0.05
-            adjusted += _query_content_relevance(
+                quality_multiplier += 0.05
+            quality_multiplier += _query_content_relevance(
                 request.query,
                 chunk,
                 claim_types=claim_types,
             )
             if chunk.retrieval_status == "retrieval_only" and chunk.source_bound:
-                adjusted += 0.06
+                quality_multiplier += 0.06
             if chunk.source_kind == "source_document":
-                adjusted += 0.05
+                quality_multiplier += 0.05
             if chunk.retrieval_status == "catalog_only":
-                adjusted -= 0.045
+                quality_multiplier -= 0.045
             if chunk.source_kind in {"publication", "benchmark"} and not chunk.claim_text:
-                adjusted -= 0.08
+                quality_multiplier -= 0.08
             if not chunk.source_span:
-                adjusted -= 0.04
+                quality_multiplier -= 0.04
+            adjusted = score * max(0.0, quality_multiplier)
             reranked.append((chunk_id, adjusted, sparse_rank, dense_rank))
         return sorted(reranked, key=lambda item: (-item[1], item[0]))
 
