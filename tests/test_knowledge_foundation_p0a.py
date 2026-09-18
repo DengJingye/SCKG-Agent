@@ -26,11 +26,11 @@ def _write_jsonl(path, values):
     )
 
 
-def test_dense_unavailability_is_explicit_and_matches_runtime_artifacts() -> None:
+def test_dense_availability_is_explicit_and_matches_runtime_artifacts() -> None:
     status = dense_runtime_status()
 
-    assert status["declared_status"] == "unavailable"
-    assert status["loadable_dense_index"] is False
+    assert status["declared_status"] == "available"
+    assert status["loadable_dense_index"] is True
     assert status["availability_consistent"] is True
     assert status["fallback"] == "kg_plus_sqlite_fts5_bm25"
     assert all(not value.startswith("/") for value in status["required_runtime_artifacts"])
@@ -201,7 +201,7 @@ def test_p0a_repository_gates_pass_without_promoting_knowledge() -> None:
     result = evaluate_knowledge_foundation_p0a()
 
     assert result["decision"] == "PASS"
-    assert result["dense"]["loadable_dense_index"] is False
+    assert result["dense"]["loadable_dense_index"] is True
     assert result["formal_evidence"]["non_source_bound_scientific_chunks_eligible"] == 0
     assert result["version_identity"]["silent_version_mismatch_count"] == 0
     assert result["candidate_relations"]["candidate_can_feed_count"] == 66
