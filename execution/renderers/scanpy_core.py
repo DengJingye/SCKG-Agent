@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import sys
+from pathlib import Path
 
 from execution.capability_notebook import MaintainerTemplateRenderer
 
@@ -37,9 +39,9 @@ SCANPY_CORE_TEMPLATES = {
     "umap": "sc.tl.umap(adata, random_state=STEP_PARAMETERS.get('random_state', 0))",
     "leiden": "sc.tl.leiden(adata, resolution=STEP_PARAMETERS.get('resolution', 1.0), random_state=STEP_PARAMETERS.get('random_state', 0))",
     "rank_markers": "# Marker testing uses full_gene_unscaled_log1p, never scaled or integrated values.\nsc.tl.rank_genes_groups(adata, groupby='leiden', layer='log1p', use_raw=False, method='wilcoxon')",
-    "marker_evidence_annotation": "# Candidate labels require reviewed marker evidence and human confirmation.",
+    "marker_evidence_annotation": "annotation_delivery = ANNOTATION_SESSION.deliver(adata, ANNOTATION_EVIDENCE_BUNDLE)\nprint(annotation_delivery)",
     "reference_annotation": "# Reference binding requires a versioned reference manifest and overlap checks.",
-    "human_confirmation": "# Record the reviewed label decision; do not infer it from free-form model output.",
+    "human_confirmation": "print('WAITING_FOR_USER_CONFIRMATION: explicit human review bound to the candidate-set hash is required; no labels were assigned.')",
 }
 
 
@@ -119,6 +121,22 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
             "adata = sc.read_h5ad(INPUT_PATH)\n"
             "print(adata)"
         )
+        self._annotation_enabled = "marker_evidence_annotation" in context.get("planned_operations", [])
+        if self._annotation_enabled:
+            # Kernel and application dependencies remain separate. The application
+            # interpreter runs only the existing metadata service, not matrix analysis.
+            source += (
+                "\nimport sys, json\n"
+                f"sys.path.insert(0, {json.dumps(str(Path(__file__).resolve().parents[2]))})\n"
+                "from execution.annotation_delivery import AnnotationDeliverySession\n"
+                "# Optional explicit, human-reviewed source-bound candidate bundle; no auto-discovery.\n"
+                f"ANNOTATION_EVIDENCE_BUNDLE = {context.get('annotation_evidence_bundle')!r}\n"
+                "ANNOTATION_SESSION = AnnotationDeliverySession(adata, "
+                f"ledger=json.loads({json.dumps(json.dumps(context.get('representation_ledger')))}), "
+                "input_path=INPUT_PATH, output_dir=OUTPUT_DIR, "
+                f"application_python={json.dumps(sys.executable)}, "
+                f"plan_id={json.dumps(str(context.get('plan_id', 'unknown')))})\n"
+            )
         return [
             {
                 "cell_type": "markdown",
@@ -146,6 +164,8 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
             parameters,
             parameter_provenance=parameter_provenance,
         )
+        if step.operation == "rank_markers" and getattr(self, "_annotation_enabled", False):
+            cells[-1]["source"] += "\nANNOTATION_SESSION.record_computed_markers(adata)"
         diagnostic_source = SCANPY_CORE_DIAGNOSTICS.get(step.operation)
         if diagnostic_source is None:
             return cells
@@ -173,3 +193,19 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
             ]
         )
         return cells
+
+    def finalize(self, context):
+        confirmation = "human_confirmation" in context.get("planned_operations", [])
+        if "marker_evidence_annotation" not in context.get("planned_operations", []):
+            if not confirmation:
+                return []
+            source = ("import sys\n"
+                      f"sys.path.insert(0, {json.dumps(str(Path(__file__).resolve().parents[2]))})\n"
+                      "from execution.annotation_delivery import pending_confirmation\n"
+                      f"pending_confirmation(OUTPUT_DIR, {str(context['plan_id'])!r})")
+        else:
+            source = ("# Re-open persisted delivery/evidence; marker packets are not candidate completion.\n"
+                      f"ANNOTATION_SESSION.finish(adata, require_confirmation={confirmation!r})")
+        return [{"cell_type": "code", "id": "annotation-terminal-validation", "metadata": {},
+                 "execution_count": None, "outputs": [],
+                 "source": source}]

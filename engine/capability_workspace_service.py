@@ -215,6 +215,7 @@ class CapabilityWorkspaceService:
                         "input_path": str(path),
                         "artifact_id": request.artifact_id,
                         "batch_key": request.batch_key,
+                        "representation_ledger": ledger.model_dump(mode="json"),
                     },
                 )
                 notebook_hash = str(notebook_artifact.get("sha256") or "")

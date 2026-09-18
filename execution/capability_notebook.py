@@ -74,6 +74,8 @@ class GenericNotebookCompiler:
             renderer_id = step.notebook_renderer_id or ""
             renderers.setdefault(renderer_id, self.renderer_registry.get(renderer_id))
         context = dict(notebook_context or {})
+        context["plan_id"] = plan.plan_id
+        context["planned_operations"] = [step_contracts[node.operation].operation for node in plan.steps]
         context.setdefault("notebook_path", str(output_path))
         context.setdefault(
             "output_dir",
@@ -101,6 +103,10 @@ class GenericNotebookCompiler:
             if not rendered:
                 raise ValueError(f"renderer produced no cells: {step.method_id}")
             cells.extend(rendered)
+        for renderer in renderers.values():
+            finalize = getattr(renderer, "finalize", None)
+            if callable(finalize):
+                cells.extend(finalize(context))
         for index, cell in enumerate(cells):
             cell.setdefault("id", f"cell-{index:03d}")
             cell.setdefault("metadata", {})
