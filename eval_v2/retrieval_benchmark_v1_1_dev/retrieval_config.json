@@ -1,0 +1,75 @@
+{
+  "campaign": "development_not_formal_midterm",
+  "eligibility_boundary": "identical to v1; R1 excludes catalog and R2 permits catalog discovery",
+  "gold_resolution_policy": "gold_evidence_span_ids OR indexed_chunk_aliases; identity is accepted only when present in the frozen strengthened index",
+  "governance_sut": {
+    "path": "engine/hybrid_retrieval.py",
+    "sha256": "588a7ab35d51572dedefbe81fc0fce7803afa52409965d85b8e27cac6bf2443e"
+  },
+  "kg_snapshot_identity": {
+    "build_id": "",
+    "path": "data/knowledge_graph_v2/manifest.json",
+    "sha256": "db25060fd4c160a0e3da285d7310ebf3e6776541264449b56e2f0fce0033dcc4"
+  },
+  "metric_policy": "same v1 query-level metrics; raw numerators and denominators added without changing metric semantics",
+  "parent_campaign": "Retrieval Benchmark v1 DEV",
+  "primary_sampling_unit": "retrieval_query_scientific_information_need",
+  "profiles": [
+    {
+      "dense": false,
+      "governance": false,
+      "kg": false,
+      "profile_id": "R0_bm25_only",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": false,
+      "profile_id": "R1_dense_only",
+      "sparse": false
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": false,
+      "profile_id": "R2_bm25_dense_rrf",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": true,
+      "profile_id": "R3_kg_bm25_dense_rrf",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": true,
+      "kg": true,
+      "profile_id": "R4_kg_bm25_dense_rrf_governance",
+      "sparse": true
+    }
+  ],
+  "query_gold_policy": "byte-identical copies of frozen v1 queries and gold",
+  "schema_version": "sckg-retrieval-benchmark-v1.1-dev-config-v1",
+  "strengthened_foundation": {
+    "build_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+    "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+    "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+    "dense": {
+      "build_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+      "dimension": 1024,
+      "matrix_sha256": "d9b679c6d6c6638c88345620876666bf43693958bbb4d178e4b1dafa7c255d72",
+      "metadata_sha256": "e710f947094a08de2972fd5c801faf99484398e13158db624eb577c467602b36",
+      "model": "BAAI/bge-m3",
+      "model_revision": "cb1779f90b988b8deb01f9155c790ef9417d7648",
+      "source_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+      "vector_count": 790
+    },
+    "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
+    "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
+    "index_manifest_sha256": "0afc019e7c4cb5b52ea89dbccdb70b2d1e40cf3100efbd4562e0966d2a78d92a"
+  },
+  "top_k": 10
+}
