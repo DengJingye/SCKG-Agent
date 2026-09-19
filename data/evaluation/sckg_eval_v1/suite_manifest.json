@@ -1,0 +1,376 @@
+{
+  "git_head": "50834b5aa21fcbb2f61243bf7cd0b790e282c256",
+  "global_score_defined": false,
+  "new_large_experiment_run": false,
+  "schema_version": "sckg-eval-v1-suite-manifest",
+  "suite_count": 9,
+  "suites": [
+    {
+      "baselines_or_ablations": [],
+      "current_strongest_evidence": "Scientific KG Inventory Snapshot v1",
+      "global_score_eligible": false,
+      "main_gap": "No canonical cross-layer identity merge; correctness metrics remain partial.",
+      "metric_ids": [
+        "kg_total_nodes",
+        "kg_total_edges",
+        "kg_entity_type_count",
+        "kg_relation_type_count",
+        "kg_invalid_endpoint_count",
+        "kg_orphan_claim_count",
+        "kg_claim_without_scope_count",
+        "kg_claim_without_evidence_count",
+        "kg_dangling_evidence_span_count",
+        "kg_unresolved_source_revision_count",
+        "kg_broken_rag_mapping_count",
+        "kg_duplicate_canonical_identity_count",
+        "kg_candidate_count",
+        "kg_reviewed_count",
+        "kg_trusted_canonical_count",
+        "kg_rejected_count",
+        "kg_superseded_count",
+        "kg_schema_conformance_rate",
+        "kg_claim_evidence_binding_precision",
+        "kg_evidence_resolvability",
+        "kg_source_correctness",
+        "kg_scope_correctness",
+        "kg_version_correctness",
+        "kg_readiness_l0_count",
+        "kg_readiness_l0_rate",
+        "kg_readiness_l1_count",
+        "kg_readiness_l1_rate",
+        "kg_readiness_l2_count",
+        "kg_readiness_l2_rate",
+        "kg_readiness_l3_count",
+        "kg_readiness_l3_rate",
+        "kg_readiness_l4_count",
+        "kg_readiness_l4_rate"
+      ],
+      "nested_units": [],
+      "primary_units": [
+        "node",
+        "relation",
+        "AtomicClaimRevision",
+        "claim-evidence pair",
+        "OperatorRevision"
+      ],
+      "purpose": "Scientific KG structure, semantic completeness, evidence grounding, governance, and readiness.",
+      "status": "CURRENT_MEASURED",
+      "suite_id": "KG-Eval"
+    },
+    {
+      "baselines_or_ablations": [
+        "manual gold",
+        "candidate extractor"
+      ],
+      "current_strongest_evidence": "Specification only",
+      "future_dataset_spec": {
+        "document_count": "3-5",
+        "document_type": "manually annotated authoritative PDFs",
+        "gold_freeze_rule": "gold must be frozen before extraction"
+      },
+      "global_score_eligible": false,
+      "main_gap": "Freeze gold for 3-5 manually annotated authoritative PDFs before extraction.",
+      "metric_ids": [
+        "ingestion_entity_precision",
+        "ingestion_entity_recall",
+        "ingestion_entity_f1",
+        "ingestion_relation_precision",
+        "ingestion_relation_recall",
+        "ingestion_relation_f1",
+        "ingestion_claim_precision",
+        "ingestion_claim_recall",
+        "ingestion_claim_f1",
+        "ingestion_evidence_span_exact_match",
+        "ingestion_evidence_span_overlap",
+        "ingestion_claim_evidence_alignment",
+        "ingestion_scope_accuracy",
+        "ingestion_version_accuracy",
+        "ingestion_duplicate_detection_accuracy",
+        "ingestion_hallucinated_candidate_rate",
+        "ingestion_admin_review_acceptance_rate"
+      ],
+      "nested_units": [
+        "entity",
+        "relation",
+        "claim",
+        "EvidenceSpan"
+      ],
+      "primary_units": [
+        "document"
+      ],
+      "purpose": "PDF or authoritative source to Candidate Scientific KG extraction quality.",
+      "status": "PLANNED_PILOT_NOT_RUN",
+      "suite_id": "Ingestion-Eval"
+    },
+    {
+      "baselines_or_ablations": [
+        "BM25",
+        "Dense",
+        "Hybrid",
+        "Scientific KG + Hybrid"
+      ],
+      "current_strongest_evidence": "Independent Retrieval Validation v1 plus current direct-evidence audits",
+      "global_score_eligible": false,
+      "main_gap": "Disclosed SEALED cases are quarantined from future post-fix validation.",
+      "metric_ids": [
+        "retrieval_hit_at_5",
+        "retrieval_hit_at_10",
+        "retrieval_mrr_at_10",
+        "retrieval_source_correctness",
+        "retrieval_scope_correctness",
+        "retrieval_version_correctness",
+        "retrieval_evidence_binding_correctness",
+        "retrieval_abstention_accuracy",
+        "retrieval_false_certainty_rate",
+        "retrieval_scientific_kg_participation",
+        "retrieval_helped_rate",
+        "retrieval_neutral_rate",
+        "retrieval_hurt_rate",
+        "retrieval_false_filter_event_count"
+      ],
+      "nested_units": [],
+      "primary_units": [
+        "parent scientific information need"
+      ],
+      "purpose": "Retrieval, grounding, abstention, and Scientific KG contribution per information need.",
+      "result_classifications": [
+        "DEVELOPMENT",
+        "REGRESSION",
+        "HISTORICAL_SEALED",
+        "QUARANTINED_AFTER_DISCLOSURE"
+      ],
+      "status": "PARTIAL_CURRENT_AND_HISTORICAL",
+      "suite_id": "Retrieval-Eval"
+    },
+    {
+      "baselines_or_ablations": [
+        "LLM proposal",
+        "deterministic governance correction",
+        "actual tool call"
+      ],
+      "current_strongest_evidence": "36-case Agent Tool Selection Eval v1",
+      "global_score_eligible": false,
+      "main_gap": "Development cases are visible and are not independent validation.",
+      "metric_ids": [
+        "agent_intent_accuracy",
+        "agent_action_selection_accuracy",
+        "agent_tool_trigger_precision",
+        "agent_tool_trigger_recall",
+        "agent_parameter_correctness",
+        "agent_data_binding_accuracy",
+        "agent_clarification_accuracy",
+        "agent_block_accuracy",
+        "agent_unnecessary_tool_call_rate",
+        "agent_unauthorized_execution_rate",
+        "agent_false_terminal_completion_rate"
+      ],
+      "nested_units": [
+        "LLM proposal",
+        "governance correction",
+        "actual tool call",
+        "final task state"
+      ],
+      "observation_layers": [
+        "LLM proposal",
+        "deterministic governance correction",
+        "actual tool call",
+        "final task state"
+      ],
+      "primary_units": [
+        "conversation task"
+      ],
+      "purpose": "Intent, action, tool, parameter, binding, clarification, blocking, and terminal behavior.",
+      "status": "DEVELOPMENT_RESULT",
+      "suite_id": "Agent-Eval"
+    },
+    {
+      "baselines_or_ablations": [
+        "pre-KG planner",
+        "current KG-enabled planner",
+        "frozen state gold"
+      ],
+      "current_strongest_evidence": "Four paired KG/planner scenarios and PBMC raw/processed replay evidence",
+      "global_score_eligible": false,
+      "main_gap": "No frozen broad planner benchmark yet.",
+      "mapped_cases": [
+        "Raw PBMC3k",
+        "Processed PBMC3k",
+        "valid graph -> Leiden",
+        "stale graph",
+        "Harmony -> neighbors",
+        "transformed expression -> Scrublet"
+      ],
+      "metric_ids": [
+        "planner_action_precision",
+        "planner_action_recall",
+        "planner_reuse_accuracy",
+        "planner_recompute_accuracy",
+        "planner_block_accuracy",
+        "planner_invalid_reuse_rate",
+        "planner_unnecessary_step_rate",
+        "planner_dependency_correctness"
+      ],
+      "nested_units": [],
+      "primary_units": [
+        "data-state scenario"
+      ],
+      "purpose": "State-aware reuse, recompute, block, action, and dependency decisions.",
+      "status": "PILOT_PARTIAL",
+      "suite_id": "Planner-Eval",
+      "test_case_schema": [
+        "case_id",
+        "input_artifact",
+        "current_representation_records",
+        "representation_status",
+        "identity_hashes",
+        "target_state",
+        "gold_reuse",
+        "gold_recompute",
+        "gold_block",
+        "required_actions",
+        "forbidden_actions"
+      ]
+    },
+    {
+      "baselines_or_ablations": [
+        "global evidence bag",
+        "decision-local evidence projection"
+      ],
+      "current_strongest_evidence": "12 atoms, 8 single-fault mutations, and 4 behavior-invariance pairs",
+      "formal_assets": {
+        "decision_atoms": 12,
+        "paired_scenarios": 4,
+        "single_fault_mutations": 8
+      },
+      "global_score_eligible": false,
+      "main_gap": "Strong formal historical evidence; not new independent validation.",
+      "metric_ids": [
+        "justification_scientific_evidence_recall",
+        "justification_decision_evidence_precision",
+        "justification_extra_nondecision_evidence_rate",
+        "justification_runtime_citation_abstention",
+        "justification_ownership_fidelity",
+        "justification_scope_fidelity",
+        "justification_epistemic_fidelity",
+        "justification_representation_linkage",
+        "justification_evidence_resolvability",
+        "justification_negative_control_pass_rate",
+        "justification_behavior_invariance"
+      ],
+      "nested_units": [],
+      "primary_units": [
+        "DecisionJustificationAtom"
+      ],
+      "purpose": "Decision-local evidence ownership, fidelity, resolvability, and robustness.",
+      "status": "FROZEN_HISTORICAL",
+      "suite_id": "Justification-Eval"
+    },
+    {
+      "baselines_or_ablations": [],
+      "current_strongest_evidence": "Raw and Processed PBMC3k current-version replay v2",
+      "evaluation_layers": [
+        "engineering",
+        "data_state",
+        "scientific_terminal",
+        "human_terminal"
+      ],
+      "global_score_eligible": false,
+      "main_gap": "Annotation terminals remain BLOCKED; execution is not full scientific completion.",
+      "mapped_cases": [
+        "Raw PBMC3k",
+        "Processed PBMC3k"
+      ],
+      "metric_ids": [
+        "e2e_plan_compile_rate",
+        "e2e_notebook_compile_rate",
+        "e2e_execution_success_rate",
+        "e2e_terminal_completion_rate",
+        "e2e_artifact_integrity_rate",
+        "e2e_input_mutation_rate",
+        "e2e_scientific_validation_pass_rate",
+        "e2e_human_confirmation_completion_rate"
+      ],
+      "nested_units": [],
+      "primary_units": [
+        "dataset x scientific task"
+      ],
+      "purpose": "Engineering, data-state, scientific terminal, and human terminal outcomes.",
+      "status": "CURRENT_MEASURED_PARTIAL",
+      "suite_id": "E2E-Eval"
+    },
+    {
+      "baselines_or_ablations": [
+        "expected injected first cause",
+        "observed first cause"
+      ],
+      "current_strongest_evidence": "Specification only",
+      "future_failure_types": [
+        "route_failure",
+        "missing_artifact",
+        "stale_representation",
+        "scientific_subject_unresolved",
+        "evidence_unresolved",
+        "public_filter_rejection",
+        "policy_deny",
+        "notebook_failure",
+        "terminal_state_unmet",
+        "review_rejected"
+      ],
+      "global_score_eligible": false,
+      "main_gap": "No frozen injected-failure campaign has been run.",
+      "metric_ids": [
+        "trace_stage_coverage",
+        "trace_referential_integrity",
+        "trace_first_causal_failure_accuracy",
+        "trace_owner_attribution_accuracy",
+        "trace_missing_span_rate",
+        "trace_ordering_accuracy",
+        "trace_replay_consistency"
+      ],
+      "nested_units": [],
+      "primary_units": [
+        "trace or injected-failure scenario"
+      ],
+      "purpose": "Trace completeness, causal localization, ownership, ordering, and replay consistency.",
+      "status": "SPEC_DEFINED_BENCHMARK_NOT_RUN",
+      "suite_id": "Trace-Eval",
+      "test_case_schema": [
+        "case_id",
+        "parent_scenario_id",
+        "injected_failure_type",
+        "expected_first_causal_failure",
+        "expected_owner",
+        "required_stages",
+        "required_references",
+        "ordering_constraints",
+        "replay_id"
+      ]
+    },
+    {
+      "baselines_or_ablations": [
+        "previous frozen checkpoint"
+      ],
+      "current_strongest_evidence": "Checkpoint-focused and regression test artifacts",
+      "global_score_eligible": false,
+      "main_gap": "Overlapping test counts must not be summed or called scientific accuracy.",
+      "metric_ids": [
+        "regression_unit_pass_rate",
+        "regression_integration_pass_rate",
+        "regression_regression_pass_rate",
+        "regression_artifact_integrity",
+        "regression_deterministic_replay",
+        "regression_cold_reload_consistency",
+        "regression_new_regression_count",
+        "regression_historical_baseline_failure_count"
+      ],
+      "nested_units": [],
+      "overlap_policy": "do not sum overlapping test selections",
+      "primary_units": [
+        "test or deterministic replay"
+      ],
+      "purpose": "Engineering stability and artifact integrity.",
+      "status": "CURRENT_MEASURED_ENGINEERING",
+      "suite_id": "Regression-Eval"
+    }
+  ]
+}
