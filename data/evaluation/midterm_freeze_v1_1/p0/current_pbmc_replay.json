@@ -1,0 +1,526 @@
+{
+  "schema_version": "current-version-pbmc3k-replay-v2",
+  "classification": "CURRENT_MEASURED",
+  "run_id": "20260919-current-01",
+  "finished_at": "2026-09-19T03:49:04.051030+00:00",
+  "status": "PASS_WITH_EXPECTED_TERMINAL_BLOCKS",
+  "browser_product_replay": true,
+  "manual_jupyter_restart_and_run_all": true,
+  "real_llm_authorized": true,
+  "real_llm_exercised": false,
+  "controlled_execution_requested": false,
+  "execution_request_count": 0,
+  "datasets": {
+    "raw": {
+      "dataset": "raw",
+      "classification": "CURRENT_MEASURED",
+      "product_surface": "Streamlit Research -> Stepwise -> local JupyterLab",
+      "real_llm_exercised": false,
+      "research_runtime_mode": "local_deterministic",
+      "source_path": "<workspace>/SCKG-Agent/.sckg_exec/approved-inputs/pbmc3k-scanpy-official/1.0.0/pbmc3k_raw.h5ad",
+      "source_sha256": "89a96f1beaa2dd83a687666d3f19a4513ac27a2a2d12581fcd77afed7ea653a1",
+      "uploaded_copy_path": ".sckg_exec/approved-inputs/research-uploads/local-user/89a96f1beaa2dd83a687666d3f19a4513ac27a2a2d12581fcd77afed7ea653a1.h5ad",
+      "uploaded_copy_sha256": "89a96f1beaa2dd83a687666d3f19a4513ac27a2a2d12581fcd77afed7ea653a1",
+      "source_upload_integrity": true,
+      "data_profile": {
+        "profile_id": "profile_89a96f1beaa2dd83",
+        "shape": [
+          2700,
+          32738
+        ],
+        "raw_exists": false,
+        "layers": [],
+        "obsm_keys": [],
+        "obsp_keys": [],
+        "obs_keys": [],
+        "matrix_profiles": [
+          {
+            "matrix_id": "X",
+            "shape": [
+              2700,
+              32738
+            ],
+            "dtype": "float32",
+            "is_sparse": true,
+            "min_value": 1.0,
+            "max_value": 365.0,
+            "negative_fraction": 0.0,
+            "nonzero_integer_fraction": 1.0,
+            "nan_fraction": 0.0,
+            "inf_fraction": 0.0,
+            "inferred_state": "raw_counts",
+            "inference_confidence": "high",
+            "state_evidence": [
+              {
+                "state_name": "nonzero_integer_fraction",
+                "value": 1.0,
+                "method": "deterministic_even_sample_of_sparse_stored_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "raw_counts": 0.995
+                },
+                "warnings": [
+                  "nonnegative_integer_values"
+                ]
+              },
+              {
+                "state_name": "negative_fraction",
+                "value": 0.0,
+                "method": "deterministic_even_sample_of_sparse_stored_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "scaled_like": 0.001
+                },
+                "warnings": []
+              },
+              {
+                "state_name": "finite_value_check",
+                "value": {
+                  "nan_fraction": 0.0,
+                  "inf_fraction": 0.0,
+                  "p99": 30.0
+                },
+                "method": "deterministic_even_sample_of_sparse_stored_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "required_nan_fraction": 0.0,
+                  "required_inf_fraction": 0.0
+                },
+                "warnings": []
+              }
+            ],
+            "eligible_tasks": [
+              "doublet_detection"
+            ],
+            "blocking_reasons": []
+          }
+        ]
+      },
+      "workflow_plan": {
+        "plan_id": "cap-plan-060f3fdd8e1664bf",
+        "operations": [
+          "scanpy_core.calculate_qc",
+          "scanpy_core.filter_counts",
+          "scanpy_core.normalize_total",
+          "scanpy_core.log1p",
+          "scanpy_core.highly_variable_genes",
+          "scanpy_core.pca_log_hvg",
+          "scanpy_core.neighbors",
+          "scanpy_core.leiden",
+          "scanpy_core.rank_markers",
+          "scanpy_core.marker_evidence_annotation",
+          "scanpy_core.umap"
+        ],
+        "step_count": 11,
+        "plan_status": "dry_run",
+        "execution_eligible": false,
+        "planning_warnings": [
+          "batch_key_not_provided",
+          "reuse:raw_counts"
+        ]
+      },
+      "notebook": {
+        "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/scanpy_core-9e76f6b3d974.ipynb",
+        "sha256_after_execution": "cabe03c16ff5b79c4b60e79454fc9a9ae6bd74741dd351809f4acc46fb0601d1",
+        "code_cells": 18,
+        "executed_code_cells": 18,
+        "error_outputs": [
+          {
+            "code_cell_index": 17,
+            "ename": "RuntimeError",
+            "evalue": "ANNOTATION_TERMINAL_INCOMPLETE: annotation_cluster_coverage_incomplete; marker_evidence_candidates_missing"
+          }
+        ],
+        "cell_source_digests_match_compile_manifest": true,
+        "plan_id": "cap-plan-060f3fdd8e1664bf",
+        "execution_request_count": 0,
+        "kernel": {
+          "display_name": "scKG Doublet Python",
+          "language": "python",
+          "name": "sckg-doublet-python"
+        }
+      },
+      "terminal_validation": {
+        "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/annotation-1b43a5600bfb41cda815d41b66f1f4bd/terminal_validation.json",
+        "annotation_candidates_satisfied": false,
+        "automatic_marker_calculation_complete": true,
+        "confirmed_annotation_satisfied": false,
+        "execution_request_count": 0,
+        "full_scientific_task_completed": false,
+        "human_confirmation_required": true,
+        "missing_requirements": [
+          "annotation_cluster_coverage_incomplete",
+          "marker_evidence_candidates_missing"
+        ],
+        "required_annotation_target_satisfied": false,
+        "result": {
+          "blocking_reasons": [
+            "marker_evidence_candidates_missing"
+          ],
+          "candidate_set_hash": null,
+          "candidates": [],
+          "confirmation_required": true,
+          "eligible_for_confirmation": false,
+          "execution_eligible": false,
+          "execution_request_count": 0,
+          "method_binding_id": "scanpy_core.marker_evidence_annotation",
+          "method_family": "marker_evidence_based",
+          "produces_representation_id": "annotation_candidates",
+          "result_id": "annotation-marker-blocked",
+          "warnings": []
+        },
+        "schema_version": "annotation-delivery-v1",
+        "status": "BLOCKED"
+      },
+      "artifacts": [
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/01_qc_distributions.png",
+          "sha256": "a22735a29e8f0660f293b5c4414b42047f3879f6cb6eca70623bcba70a31373e",
+          "bytes": 135598
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/02_highly_variable_genes.png",
+          "sha256": "42067834151253faae44f42e77f56fca667619f47648ea7b92b4c20f13f745b2",
+          "bytes": 146640
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/03_pca_variance.png",
+          "sha256": "57037fe35eb25d1a315348bd12f7bd236826e62e719a41bdab1316876cddaa74",
+          "bytes": 40769
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/04_ranked_marker_genes.png",
+          "sha256": "5c9e8f9fc4adcb7c1d2d67afe1fef0cafd39b4bbd5fb5ca1d8969b657acd4e8a",
+          "bytes": 203248
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/05_umap_clusters_and_batch.png",
+          "sha256": "febdf2cd84f61535289bf7ae81e26d2417c4d0ffb6d1e789a3843fd46de33f65",
+          "bytes": 146118
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/annotation-1b43a5600bfb41cda815d41b66f1f4bd/delivery.json",
+          "sha256": "c14cf6ff5cc14208f625adbf7621c0bf0167eebabc2316da68256ec5e1d2d57f",
+          "bytes": 1227
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/annotation-1b43a5600bfb41cda815d41b66f1f4bd/marker_review_packet.json",
+          "sha256": "6263779dba36f387b8c8dcc8c69575178aa2d33c501f69139807c330f772b9fa",
+          "bytes": 2782313
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/annotation-1b43a5600bfb41cda815d41b66f1f4bd/request.json",
+          "sha256": "1f4fd7f9db4bb54966baf780e9949825a4a47a0415ca0a58c3be3f7af6f9e2dd",
+          "bytes": 2783152
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-9e76f6b3d974/annotation-1b43a5600bfb41cda815d41b66f1f4bd/terminal_validation.json",
+          "sha256": "323df3dca7b8cf9a6c7449750aa764e6f75c5c8df9db59a0584c771c22b5bcea",
+          "bytes": 1019
+        }
+      ],
+      "checks": {
+        "expected_shape": true,
+        "expected_plan_id": true,
+        "all_code_cells_executed": true,
+        "only_expected_terminal_block_errors": true,
+        "cell_source_digests_unchanged": true,
+        "source_file_unchanged": true
+      },
+      "PLAN_COMPILED": true,
+      "NOTEBOOK_COMPILED": true,
+      "NOTEBOOK_EXECUTED": true,
+      "CANDIDATE_TERMINAL_SATISFIED": false,
+      "HUMAN_CONFIRMATION_COMPLETED": false,
+      "FULL_SCIENTIFIC_TASK_COMPLETED": false,
+      "observation_path": "data/evaluation/current_version_pbmc3k_replay_v2/20260919-current-01/observed-1789788838110238000-3eba52.json"
+    },
+    "processed": {
+      "dataset": "processed",
+      "classification": "CURRENT_MEASURED",
+      "product_surface": "Streamlit Research -> Stepwise -> local JupyterLab",
+      "real_llm_exercised": false,
+      "research_runtime_mode": "local_deterministic",
+      "source_path": "<workspace>/SCKG-Agent/.sckg_exec/approved-inputs/pbmc3k-scanpy-official/1.0.0/pbmc3k.h5ad",
+      "source_sha256": "0db367b991dd95809732b218539ede489bea99113807f62ebd7ccc970025fe38",
+      "uploaded_copy_path": ".sckg_exec/approved-inputs/research-uploads/local-user/0db367b991dd95809732b218539ede489bea99113807f62ebd7ccc970025fe38.h5ad",
+      "uploaded_copy_sha256": "0db367b991dd95809732b218539ede489bea99113807f62ebd7ccc970025fe38",
+      "source_upload_integrity": true,
+      "data_profile": {
+        "profile_id": "profile_0db367b991dd9580",
+        "shape": [
+          2638,
+          1838
+        ],
+        "raw_exists": true,
+        "layers": [],
+        "obsm_keys": [
+          "X_draw_graph_fr",
+          "X_pca",
+          "X_tsne",
+          "X_umap"
+        ],
+        "obsp_keys": [
+          "connectivities",
+          "distances"
+        ],
+        "obs_keys": [
+          "louvain",
+          "n_counts",
+          "n_genes",
+          "percent_mito"
+        ],
+        "matrix_profiles": [
+          {
+            "matrix_id": "X",
+            "shape": [
+              2638,
+              1838
+            ],
+            "dtype": "float32",
+            "is_sparse": false,
+            "min_value": -2.4528515338897705,
+            "max_value": 10.0,
+            "negative_fraction": 0.90468,
+            "nonzero_integer_fraction": 0.00089,
+            "nan_fraction": 0.0,
+            "inf_fraction": 0.0,
+            "inferred_state": "scaled",
+            "inference_confidence": "high",
+            "state_evidence": [
+              {
+                "state_name": "nonzero_integer_fraction",
+                "value": 0.00089,
+                "method": "deterministic_even_sample_of_dense_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "raw_counts": 0.995
+                },
+                "warnings": [
+                  "negative_values_present"
+                ]
+              },
+              {
+                "state_name": "negative_fraction",
+                "value": 0.90468,
+                "method": "deterministic_even_sample_of_dense_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "scaled_like": 0.001
+                },
+                "warnings": []
+              },
+              {
+                "state_name": "finite_value_check",
+                "value": {
+                  "nan_fraction": 0.0,
+                  "inf_fraction": 0.0,
+                  "p99": 4.3232375669479355
+                },
+                "method": "deterministic_even_sample_of_dense_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "required_nan_fraction": 0.0,
+                  "required_inf_fraction": 0.0
+                },
+                "warnings": []
+              }
+            ],
+            "eligible_tasks": [],
+            "blocking_reasons": [
+              "not_validated_raw_counts"
+            ]
+          },
+          {
+            "matrix_id": "raw.X",
+            "shape": [
+              2638,
+              13714
+            ],
+            "dtype": "float32",
+            "is_sparse": true,
+            "min_value": 0.6931471824645996,
+            "max_value": 5.370637893676758,
+            "negative_fraction": 0.0,
+            "nonzero_integer_fraction": 0.0,
+            "nan_fraction": 0.0,
+            "inf_fraction": 0.0,
+            "inferred_state": "log_normalized",
+            "inference_confidence": "medium",
+            "state_evidence": [
+              {
+                "state_name": "nonzero_integer_fraction",
+                "value": 0.0,
+                "method": "deterministic_even_sample_of_sparse_stored_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "raw_counts": 0.995
+                },
+                "warnings": [
+                  "nonnegative_fractional_compressed_range"
+                ]
+              },
+              {
+                "state_name": "negative_fraction",
+                "value": 0.0,
+                "method": "deterministic_even_sample_of_sparse_stored_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "scaled_like": 0.001
+                },
+                "warnings": []
+              },
+              {
+                "state_name": "finite_value_check",
+                "value": {
+                  "nan_fraction": 0.0,
+                  "inf_fraction": 0.0,
+                  "p99": 3.4339871406555176
+                },
+                "method": "deterministic_even_sample_of_sparse_stored_values",
+                "sample_size": 100000,
+                "thresholds": {
+                  "required_nan_fraction": 0.0,
+                  "required_inf_fraction": 0.0
+                },
+                "warnings": []
+              }
+            ],
+            "eligible_tasks": [],
+            "blocking_reasons": [
+              "not_validated_raw_counts"
+            ]
+          }
+        ]
+      },
+      "workflow_plan": {
+        "plan_id": "cap-plan-39567af880c3cd1f",
+        "operations": [
+          "scanpy_core.marker_evidence_annotation"
+        ],
+        "step_count": 1,
+        "plan_status": "dry_run",
+        "execution_eligible": false,
+        "planning_warnings": [
+          "batch_key_not_provided",
+          "count_source_unresolved_counts_dependent_steps_unavailable",
+          "reuse:cluster_labels",
+          "reuse:marker_result",
+          "reuse:umap"
+        ]
+      },
+      "notebook": {
+        "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/scanpy_core-5129135809c4.ipynb",
+        "sha256_after_execution": "185ac2f7f311c8f662cfb3c401f95a541aa608394c82f2a7549521881c5e1a4f",
+        "code_cells": 4,
+        "executed_code_cells": 4,
+        "error_outputs": [
+          {
+            "code_cell_index": 3,
+            "ename": "RuntimeError",
+            "evalue": "ANNOTATION_TERMINAL_INCOMPLETE: marker_cluster_group_mismatch; marker_evidence_candidates_missing; validated_marker_result_required; marker_cluster_group_mismatch"
+          }
+        ],
+        "cell_source_digests_match_compile_manifest": true,
+        "plan_id": "cap-plan-39567af880c3cd1f",
+        "execution_request_count": 0,
+        "kernel": {
+          "display_name": "scKG Doublet Python",
+          "language": "python",
+          "name": "sckg-doublet-python"
+        }
+      },
+      "terminal_validation": {
+        "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-5129135809c4/annotation-2e755c8a46444e7e897fa8932ce7ddae/terminal_validation.json",
+        "annotation_candidates_satisfied": false,
+        "automatic_marker_calculation_complete": false,
+        "confirmed_annotation_satisfied": false,
+        "execution_request_count": 0,
+        "full_scientific_task_completed": false,
+        "human_confirmation_required": true,
+        "missing_requirements": [
+          "marker_cluster_group_mismatch",
+          "marker_evidence_candidates_missing",
+          "validated_marker_result_required",
+          "marker_cluster_group_mismatch"
+        ],
+        "required_annotation_target_satisfied": false,
+        "result": {
+          "blocking_reasons": [
+            "marker_evidence_candidates_missing",
+            "validated_marker_result_required"
+          ],
+          "candidate_set_hash": null,
+          "candidates": [],
+          "confirmation_required": true,
+          "eligible_for_confirmation": false,
+          "execution_eligible": false,
+          "execution_request_count": 0,
+          "method_binding_id": "scanpy_core.marker_evidence_annotation",
+          "method_family": "marker_evidence_based",
+          "produces_representation_id": "annotation_candidates",
+          "result_id": "annotation-marker-blocked",
+          "warnings": []
+        },
+        "schema_version": "annotation-delivery-v1",
+        "status": "BLOCKED"
+      },
+      "artifacts": [
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-5129135809c4/annotation-2e755c8a46444e7e897fa8932ce7ddae/delivery.json",
+          "sha256": "03155c2a0206b262d6e2ead3e07edb206cc3542c8c25b6f82d6b50ed2922f801",
+          "bytes": 1301
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-5129135809c4/annotation-2e755c8a46444e7e897fa8932ce7ddae/marker_review_packet.json",
+          "sha256": "a40bdd8b70da18ad2fd17ea7f2e02b03e86eae6c88d5f77ff4fdfebc729777a4",
+          "bytes": 163
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-5129135809c4/annotation-2e755c8a46444e7e897fa8932ce7ddae/request.json",
+          "sha256": "fb2805526a8ae56ba3f01c616529deaf2109bc765388e4ed5015e3235fcf2b88",
+          "bytes": 394
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-5129135809c4/annotation-2e755c8a46444e7e897fa8932ce7ddae/terminal_validation.json",
+          "sha256": "b7b87e9116bbc9f7c0a45905a79e68f21d36cb2f15835dec348486b8bd6ee963",
+          "bytes": 1130
+        },
+        {
+          "path": ".sckg_exec/research-workspace/local-user/capability-notebooks/.sckg_notebook_artifacts/scanpy_core-5129135809c4/existing_umap.png",
+          "sha256": "f4846f7624c4aa8950d956d6a7ca7320d781a0eb575b6e03ca92124f9f6ba6f4",
+          "bytes": 124702
+        }
+      ],
+      "checks": {
+        "expected_shape": true,
+        "expected_plan_id": true,
+        "all_code_cells_executed": true,
+        "only_expected_terminal_block_errors": true,
+        "cell_source_digests_unchanged": true,
+        "source_file_unchanged": true
+      },
+      "PLAN_COMPILED": true,
+      "NOTEBOOK_COMPILED": true,
+      "NOTEBOOK_EXECUTED": true,
+      "CANDIDATE_TERMINAL_SATISFIED": false,
+      "HUMAN_CONFIRMATION_COMPLETED": false,
+      "FULL_SCIENTIFIC_TASK_COMPLETED": false,
+      "observation_path": "data/evaluation/current_version_pbmc3k_replay_v2/20260919-current-01/observed-1789789183816981000-7ca71c.json"
+    }
+  },
+  "claims": {
+    "input_binding_correct": true,
+    "raw_numeric_workflow_completed": true,
+    "processed_reuse_workflow_completed": true,
+    "annotation_candidates_satisfied": false,
+    "human_confirmation_completed": false,
+    "full_scientific_task_completed": false
+  },
+  "limitations": [
+    "Research PLAN used the local deterministic path; this replay is not evidence of LLM planning quality.",
+    "Run All was an explicit manual Jupyter action, not controlled execution or an ExecutionRequest.",
+    "Both notebooks intentionally preserve annotation terminal blocks; no candidate or human-confirmed label was fabricated.",
+    "Processed natural-language wording about latest marker revision was not converted into a structured reviewed evidence bundle."
+  ]
+}
