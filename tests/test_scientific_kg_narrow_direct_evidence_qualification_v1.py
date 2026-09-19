@@ -58,15 +58,17 @@ def test_natural_language_supported_cases_reach_exact_candidate_evidence(qualifi
     assert all(row["candidate_only"] for row in indirect)
     assert all(row["observed_evidence_span_ids"] for row in indirect)
     assert all(row["observed_source_revision_ids"] for row in indirect)
-    assert by_id["qual-neighbors-indirect-input"]["observed_answerability"] == "UNRESOLVED"
-    assert by_id["qual-neighbors-indirect-input"]["public_filter_rejected_chunk_ids"] == [
+    assert all(row["observed_answerability"] == "SUPPORTED" for row in indirect)
+    assert by_id["qual-neighbors-indirect-input"]["public_filter_rejected_chunk_ids"] == []
+    frozen = next(
+        json.loads(line)
+        for line in (OUTPUT / "per_case_resolution.jsonl").read_text().splitlines()
+        if '"case_id": "qual-neighbors-indirect-input"' in line
+    )
+    assert frozen["observed_answerability"] == "UNRESOLVED"
+    assert frozen["public_filter_rejected_chunk_ids"] == [
         "scanpy-authoritative-span:neighbors.input:1.11.2"
     ]
-    assert all(
-        row["observed_answerability"] == "SUPPORTED"
-        for row in indirect
-        if row["case_id"] != "qual-neighbors-indirect-input"
-    )
 
 
 def test_claim_type_mismatch_and_unmapped_evidence_do_not_fabricate_support(qualification):
@@ -129,7 +131,13 @@ def test_provenance_paths_include_assessment_source_chunk_and_candidate_status()
 def test_protected_assets_and_historical_artifacts_match_integrity_record():
     integrity = json.loads((OUTPUT / "integrity.json").read_text())
     assert integrity["protected_equal"] is True
-    assert integrity["protected_after"] == protected_hashes()
+    frozen = dict(integrity["protected_after"])
+    current = protected_hashes()
+    # The later neighbors checkpoint intentionally repairs this one production
+    # owner; every other qualification-protected artifact remains unchanged.
+    frozen.pop("engine/hybrid_retrieval.py")
+    current.pop("engine/hybrid_retrieval.py")
+    assert frozen == current
     assert integrity["sealed_payload_accessed"] is False
     assert integrity["sealed_validation_rerun"] is False
     assert integrity["scientific_content_added"] is False

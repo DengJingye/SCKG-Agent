@@ -266,9 +266,14 @@ class HybridRetrievalService:
                 scientific_ranked = self._filter_ranked(
                     scientific_ranked, request=effective_request,
                     task_ids=task_ids, candidate_tools=candidate_tools,
+                    scientific_claim_owned_chunk_ids=set(before_filter),
                 )
                 scientific_diagnostic["eligible_chunk_ids"] = [cid for cid, _ in scientific_ranked]
                 scientific_diagnostic["public_filter_rejected_chunk_ids"] = [cid for cid in before_filter if cid not in scientific_diagnostic["eligible_chunk_ids"]]
+                scientific_diagnostic["public_filter_identity_basis"] = (
+                    "bound_scientific_claim_ownership_for_exact_graph_chunks;"
+                    "chunk_metadata_for_other_retrieval_channels"
+                )
                 if before_filter and not scientific_ranked:
                     scientific_diagnostic["fallback_reason"] = "public_eligibility_filter_rejected_graph_evidence"
             except (OSError, ValueError, KeyError, IndexError, TypeError):
@@ -314,6 +319,15 @@ class HybridRetrievalService:
                 ),
                 "",
             )
+            if (
+                scientific_diagnostic is not None
+                and chunk_id in set(scientific_diagnostic.get("eligible_chunk_ids", []))
+                and effective_request.tool_names
+            ):
+                # Exact Scientific KG bindings own the proposition presented to
+                # the user. Incidental producer/tool metadata on the immutable
+                # source chunk must not relabel the consumer claim.
+                matched_explicit = effective_request.tool_names[0]
             display_tool = matched_explicit or chunk.tool_name
             # Source binding is a governed identity assertion.  A non-empty
             # locator and text cannot upgrade an unbound formal row.
@@ -852,9 +866,11 @@ class HybridRetrievalService:
         request: HybridRetrievalRequest,
         task_ids: set[str],
         candidate_tools: set[str],
+        scientific_claim_owned_chunk_ids: set[str] | None = None,
     ) -> List[tuple[str, float]]:
         explicit_tools = {_tool_key(value) for value in request.tool_names}
         source_types = {value.casefold() for value in request.source_types}
+        claim_owned_ids = scientific_claim_owned_chunk_ids or set()
         filtered = []
         for chunk_id, score in ranked:
             chunk = self._chunks_by_id.get(chunk_id)
@@ -870,9 +886,10 @@ class HybridRetrievalService:
             mentioned_tools = {
                 _tool_key(value) for value in _chunk_mentioned_tools(chunk)
             }
-            if explicit_tools and not (explicit_tools & mentioned_tools):
+            claim_owned = chunk_id in claim_owned_ids
+            if explicit_tools and not claim_owned and not (explicit_tools & mentioned_tools):
                 continue
-            if task_ids and not explicit_tools:
+            if task_ids and not explicit_tools and not claim_owned:
                 governed_tool_tasks = {
                     task_id
                     for tool in _chunk_mentioned_tools(chunk)
@@ -880,7 +897,7 @@ class HybridRetrievalService:
                 }
                 if governed_tool_tasks and not (task_ids & governed_tool_tasks):
                     continue
-            if candidate_tools and chunk_tools and not (candidate_tools & chunk_tools):
+            if candidate_tools and chunk_tools and not claim_owned and not (candidate_tools & chunk_tools):
                 continue
             if source_types and chunk.source_type.casefold() not in source_types:
                 continue

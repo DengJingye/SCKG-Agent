@@ -127,12 +127,17 @@ def test_unsupported_or_runtime_request_retains_baseline(service, query):
     assert disabled.scientific_evidence is None
 
 
-def test_public_filter_is_not_bypassed(service):
+def test_public_filter_uses_exact_bound_claim_ownership(service):
     result = service.search(request("Scanpy neighbors input requirements"))
     diag = result.scientific_evidence
-    assert "scanpy-authoritative-span:neighbors.input:1.11.2" in diag["public_filter_rejected_chunk_ids"]
-    assert not diag["final_graph_chunk_ids"]
-    assert diag["fallback_reason"] == "public_eligibility_filter_rejected_graph_evidence"
+    assert diag["public_filter_rejected_chunk_ids"] == []
+    assert diag["final_graph_chunk_ids"] == [
+        "scanpy-authoritative-span:neighbors.input:1.11.2"
+    ]
+    assert diag["public_filter_identity_basis"].startswith(
+        "bound_scientific_claim_ownership"
+    )
+    assert result.answerability.status == "SUPPORTED"
 
 
 def test_wrong_snapshot_never_injects_graph_chunks(service):

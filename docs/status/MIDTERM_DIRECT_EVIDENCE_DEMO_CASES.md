@@ -85,3 +85,24 @@ Sparse adjacency matrix of the graph, defaults to neighbors connectivities.
 - EvidenceSpan: `scanpy-authoritative-span:leiden.input:1.11.2`
 - SourceRevision: `source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa`
 - Knowledge status: `candidate`
+
+## NEIGHBORS
+
+**User question**
+For Scanpy nearest-neighbor graph construction, what input representation does it accept?
+
+**Decision**
+`SUPPORTED` — the exact claim-bound neighbors input EvidenceSpan passed the production public eligibility filter.
+
+**Evidence shown to the user**
+Use the indicated representation. `'X'` or any key for `.obsm` is valid.
+
+**Citation and provenance**
+
+- Source: `source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa`
+- Source span: `src/scanpy/neighbors/_doc.py#L3-L13`
+- OperatorRevision: `operator-revision:scanpy.pp.neighbors:1.11.2:uat-corrected`
+- Claim: `claim-revision:uat:neighbors-input:v1`
+- EvidenceSpan: `scanpy-authoritative-span:neighbors.input:1.11.2`
+- SourceRevision: `source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa`
+- Knowledge status: `candidate`
