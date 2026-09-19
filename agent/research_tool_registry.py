@@ -92,6 +92,28 @@ class ResearchToolRegistry:
                                 "mode": retrieval.mode,
                                 "query": retrieval.query,
                                 "chunk_ids": [hit.chunk_id for hit in retrieval.hits],
+                                "answerability": (
+                                    retrieval.answerability.model_dump(mode="json")
+                                    if retrieval.answerability is not None
+                                    else None
+                                ),
+                                **(
+                                    {
+                                        "answerability_status": retrieval.answerability.status,
+                                        "answerability_reason": retrieval.answerability.reason,
+                                        "scientific_kg_used": retrieval.answerability.scientific_kg_used,
+                                        "operator_revision_id": retrieval.answerability.operator_revision_id,
+                                        "claim_ids": retrieval.answerability.claim_ids,
+                                        "evidence_span_ids": retrieval.answerability.evidence_span_ids,
+                                        "source_revision_ids": retrieval.answerability.source_revision_ids,
+                                        "scope_status": retrieval.answerability.scope_status,
+                                        "version_status": retrieval.answerability.version_status,
+                                        "evidence_gap_id": retrieval.answerability.evidence_gap_id,
+                                        "fallback_reason": retrieval.answerability.fallback_reason,
+                                    }
+                                    if retrieval.answerability is not None
+                                    else {}
+                                ),
                             },
                             warnings=retrieval.warnings,
                         )
@@ -197,6 +219,7 @@ class ResearchToolRegistry:
                 use_contract_gate=(
                     use_contract_gate and call.tool_name == "search_evidence"
                 ),
+                use_scientific_evidence=call.tool_name == "search_evidence",
             )
         )
 
@@ -348,7 +371,29 @@ def _merge_retrieval_results(
                  for cid in result.scientific_evidence.get("final_graph_chunk_ids", [])})}
             if any(result.scientific_evidence is not None for result in results) else None
         ),
+        answerability=_merge_answerability(results),
     )
+
+
+def _merge_answerability(results: list[HybridRetrievalResult]):
+    values = [result.answerability for result in results if result.answerability is not None]
+    if not values:
+        return None
+    if all(value.status == "SUPPORTED" for value in values):
+        selected = values[0].model_copy(deep=True)
+        selected.claim_ids = sorted({item for value in values for item in value.claim_ids})
+        selected.evidence_span_ids = sorted({item for value in values for item in value.evidence_span_ids})
+        selected.source_revision_ids = sorted({item for value in values for item in value.source_revision_ids})
+        selected.direct_evidence_chunk_ids = sorted({item for value in values for item in value.direct_evidence_chunk_ids})
+        selected.scientific_kg_used = bool(selected.direct_evidence_chunk_ids)
+        return selected
+    priority = {
+        "CLARIFICATION_REQUIRED": 0,
+        "INSUFFICIENT_EVIDENCE": 1,
+        "UNRESOLVED": 2,
+        "SUPPORTED": 3,
+    }
+    return sorted(values, key=lambda value: priority[value.status])[0]
 
 
 def _elapsed_ms(started: float) -> float:

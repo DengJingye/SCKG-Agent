@@ -24,6 +24,7 @@ from core.canonical_task_ontology import (
 from core.knowledge_intelligence_models import (
     ChatStageTiming,
     EmbeddingWorkerStatus,
+    EvidenceAnswerability,
     HybridRetrievalHit,
     HybridRetrievalRequest,
     HybridRetrievalResult,
@@ -244,15 +245,22 @@ class HybridRetrievalService:
         stage_started = time.perf_counter()
         scientific_ranked = []
         scientific_diagnostic = None
-        if self.scientific_evidence_enabled:
+        answerability = None
+        direct_evidence_requested = bool(
+            request.use_scientific_evidence or self.scientific_evidence_enabled
+        )
+        scientific_adapter = None
+        if direct_evidence_requested:
             try:
                 from engine.scientific_kg_evidence import ScientificKGEvidence
 
                 if self._scientific_evidence_adapter is None:
                     self._scientific_evidence_adapter = ScientificKGEvidence()
+                scientific_adapter = self._scientific_evidence_adapter
                 scientific_ranked, scientific_diagnostic = self._scientific_evidence_adapter.query(
-                    effective_request, self._chunks_by_id, snapshot_id=self.index_build_id,
+                    request, self._chunks_by_id, snapshot_id=self.index_build_id,
                     corpus_digest=self._dense_source_digest,
+                    subject_hints=effective_request.tool_names,
                 )
                 before_filter = [cid for cid, _ in scientific_ranked]
                 scientific_ranked = self._filter_ranked(
@@ -335,6 +343,16 @@ class HybridRetrievalService:
         if scientific_diagnostic is not None:
             scientific_diagnostic["final_graph_chunk_ids"] = [h.chunk_id for h in hits if h.chunk_id in {cid for cid, _ in scientific_ranked}]
             scientific_diagnostic["merge_policy"] = "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification"
+            if scientific_adapter is not None:
+                answerability = EvidenceAnswerability.model_validate(
+                    scientific_adapter.answerability(scientific_diagnostic)
+                )
+            else:
+                answerability = EvidenceAnswerability(
+                    status="UNRESOLVED",
+                    reason=scientific_diagnostic.get("fallback_reason", "scientific_graph_binding_unavailable"),
+                    fallback_reason=scientific_diagnostic.get("fallback_reason", ""),
+                )
         return HybridRetrievalResult(
             query=request.query,
             mode=_retrieval_mode(
@@ -353,7 +371,7 @@ class HybridRetrievalService:
                 "kg_hard_filter" if request.use_kg else "kg_filter_skipped",
                 "sqlite_fts5_bm25" if request.enable_sparse else "sparse_retrieval_skipped",
                 "local_bge_m3" if dense_used else "local_dense_skipped",
-                *(["scientific_kg_evidence_lookup"] if self.scientific_evidence_enabled else []),
+                *(["scientific_kg_evidence_lookup"] if direct_evidence_requested else []),
                 "rrf_fusion",
                 "source_governance_rerank" if request.use_governance_rerank else "governance_rerank_skipped",
                 "tool_contract_gate" if request.use_contract_gate else "tool_contract_gate_skipped",
@@ -363,6 +381,7 @@ class HybridRetrievalService:
             governance_leakage_count=leakage,
             stage_timings=stage_timings,
             scientific_evidence=scientific_diagnostic,
+            answerability=answerability,
         )
 
     def _named_tools_in_query(self, query: str) -> list[str]:

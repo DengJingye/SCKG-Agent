@@ -86,6 +86,28 @@ class HybridRetrievalRequest(KnowledgeIntelligenceModel):
     use_kg: bool = True
     use_governance_rerank: bool = True
     use_contract_gate: bool = False
+    use_scientific_evidence: bool = False
+
+
+class EvidenceAnswerability(KnowledgeIntelligenceModel):
+    status: Literal[
+        "SUPPORTED",
+        "INSUFFICIENT_EVIDENCE",
+        "CLARIFICATION_REQUIRED",
+        "UNRESOLVED",
+    ]
+    reason: str = Field(min_length=1)
+    scientific_kg_used: bool = False
+    operator_revision_id: str = ""
+    claim_ids: List[str] = Field(default_factory=list)
+    evidence_span_ids: List[str] = Field(default_factory=list)
+    source_revision_ids: List[str] = Field(default_factory=list)
+    scope_status: str = ""
+    version_status: str = ""
+    evidence_gap_id: str = ""
+    fallback_reason: str = ""
+    direct_evidence_chunk_ids: List[str] = Field(default_factory=list)
+    candidate_only: bool = True
 
 
 class HybridRetrievalHit(KnowledgeIntelligenceModel):
@@ -159,6 +181,7 @@ class HybridRetrievalResult(KnowledgeIntelligenceModel):
     governance_leakage_count: int = Field(default=0, ge=0)
     stage_timings: List[ChatStageTiming] = Field(default_factory=list)
     scientific_evidence: Optional[Dict[str, Any]] = None
+    answerability: Optional[EvidenceAnswerability] = None
 
 
 class RetrievalCoverageReport(KnowledgeIntelligenceModel):

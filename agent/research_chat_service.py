@@ -1421,6 +1421,37 @@ class ResearchChatService:
                     external_answer_used = True
                 else:
                     rejected_external_answer_audit = external_answer_audit
+        evidence_answerability = retrieval.answerability
+        if (
+            mode is AgentMode.ASK
+            and response_intent is ResearchChatIntent.EVIDENCE_QA
+            and evidence_answerability is not None
+            and evidence_answerability.status
+            in {"INSUFFICIENT_EVIDENCE", "CLARIFICATION_REQUIRED"}
+        ):
+            if evidence_answerability.status == "INSUFFICIENT_EVIDENCE":
+                report = "当前受治理知识库中没有足够证据支持该命题。"
+            else:
+                report = "现有条件不足以唯一解析证据；请补充具体版本、方法变体或适用条件。"
+            references = []
+            claim_bindings = []
+            external_answer_used = False
+            grounded_answer_audit = _audit_grounded_answer_v3(
+                report,
+                references=[],
+                execution_request_count=0,
+            ).model_dump(mode="json")
+        elif (
+            mode is AgentMode.ASK
+            and response_intent is ResearchChatIntent.EVIDENCE_QA
+            and evidence_answerability is not None
+            and evidence_answerability.status == "UNRESOLVED"
+            and not references
+        ):
+            report = (
+                "当前无法可靠解析该实体或条件；以下仅保留检索到的候选上下文，不构成确定性证据结论。\n\n"
+                + report
+            )
         compose_timing = _chat_timing(
             "answer_compose",
             compose_started,
@@ -1447,6 +1478,12 @@ class ResearchChatService:
                 "stage_timings": [
                     item.model_dump(mode="json") for item in retrieval.stage_timings
                 ],
+                "scientific_evidence": retrieval.scientific_evidence,
+                "evidence_answerability": (
+                    evidence_answerability.model_dump(mode="json")
+                    if evidence_answerability is not None
+                    else None
+                ),
             },
             "missing_evidence": [
                 blocker
@@ -1501,6 +1538,24 @@ class ResearchChatService:
             source_bound_context_available=bool(references),
             external_reasoning=external_reasoning,
         )
+        if (
+            response_intent is ResearchChatIntent.EVIDENCE_QA
+            and evidence_answerability is not None
+            and evidence_answerability.status
+            in {"INSUFFICIENT_EVIDENCE", "CLARIFICATION_REQUIRED"}
+        ):
+            if evidence_answerability.status == "CLARIFICATION_REQUIRED":
+                answerability = AnswerabilityDecision(
+                    verdict="CLARIFY",
+                    reason_codes=[evidence_answerability.reason],
+                )
+            else:
+                answerability = AnswerabilityDecision(
+                    verdict="ANSWER_VERIFIED",
+                    reason_codes=[evidence_answerability.reason],
+                    verified_context_available=False,
+                    unverified_model_knowledge_allowed=False,
+                )
         context_pack["answerability"] = answerability.model_dump(mode="json")
         audit_claims = list(grounded_answer_audit.get("claims") or [])
         task_switched = bool(
