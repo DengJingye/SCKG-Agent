@@ -1033,6 +1033,7 @@ from engine.knowledge_graph_view import (
     build_knowledge_graph_html,
     build_knowledge_graph_view,
 )
+from engine.scientific_kg_admin import ScientificKGAdminSnapshotService
 from engine.decision_graph_query import DecisionGraphQuery
 from engine.action_bundle_retriever import ActionBundleRetriever
 from engine.evidence_graph_query import EvidenceGraphQuery
@@ -3843,6 +3844,8 @@ def _render_evaluation_admin_panel() -> None:
                     use_container_width=True,
                     hide_index=True,
                 )
+
+
         if failures:
             with st.expander("Failure clusters and root stages"):
                 st.dataframe(_safe_rows(failures), use_container_width=True, hide_index=True)
@@ -4049,6 +4052,223 @@ def _render_evaluation_admin_panel() -> None:
     else:
         st.info("No real group trial feedback has been recorded.")
 
+
+def _render_scientific_kg_admin_page() -> None:
+    """Render the read-only Scientific KG checkpoint snapshot."""
+
+    _render_admin_header(
+        "Admin · Scientific KG",
+        "Candidate knowledge, direct evidence, readiness, and integrity",
+        "Read-only view of the frozen Scientific KG inventory. Candidate claims remain separate from reviewed or trusted knowledge.",
+    )
+    service = ScientificKGAdminSnapshotService(Path(__file__).resolve().parent)
+    summary = service.summary()
+    status = summary["snapshot_status"]
+    if status != "IDENTITY_MATCH":
+        st.error(f"Frozen snapshot identity check failed: {status}")
+        return
+
+    st.caption(
+        "SCIENTIFIC_KG only · checkpoint-1 physical layer counts · "
+        "candidate ≠ reviewed ≠ trusted ≠ execution-authorized"
+    )
+    overview_tab, graph_tab, readiness_tab = st.tabs(
+        ["Overview", "Scientific Graph", "Readiness & Integrity"]
+    )
+
+    with overview_tab:
+        metrics = st.columns(5)
+        metrics[0].metric("Scientific nodes", f"{summary['scientific_kg_nodes']:,}")
+        metrics[1].metric("Scientific edges", f"{summary['scientific_kg_edges']:,}")
+        metrics[2].metric("Candidate claims", f"{summary['candidate_claims']:,}")
+        metrics[3].metric("Evidence spans", f"{summary['evidence_spans']:,}")
+        metrics[4].metric("Evidence gaps", f"{summary['evidence_gaps']:,}")
+        governance_metrics = st.columns(4)
+        governance_metrics[0].metric("Reviewed claims", summary["reviewed_claims"])
+        governance_metrics[1].metric("Trusted claims", summary["trusted_claims"])
+        governance_metrics[2].metric(
+            "Readiness L4",
+            f"{summary['readiness_highest_exclusive'].get('L4', 0)}/{summary['audited_operator_revisions']}",
+        )
+        governance_metrics[3].metric(
+            "Integrity", f"{summary['hard_issues']} hard · {summary['warnings']} warning"
+        )
+        st.info(
+            "Trusted source evidence describes provenance quality. It does not promote a candidate scientific claim. No knowledge record can be changed from this page."
+        )
+
+        st.markdown("#### Separate graph layers")
+        st.dataframe(
+            service.layer_boundaries(),
+            use_container_width=True,
+            hide_index=True,
+        )
+        st.caption(
+            "Counting policy: DO_NOT_SUM_ACROSS_LAYERS. Legacy Tool KG, Decision Graph, and Scientific KG have different semantics and owners."
+        )
+
+        semantic_col, relation_col = st.columns(2)
+        with semantic_col:
+            st.markdown("#### Scientific semantic inventory")
+            st.dataframe(
+                service.semantic_inventory(),
+                use_container_width=True,
+                hide_index=True,
+                height=430,
+            )
+        with relation_col:
+            st.markdown("#### Scientific relation inventory")
+            st.dataframe(
+                service.relation_inventory(),
+                use_container_width=True,
+                hide_index=True,
+                height=430,
+            )
+        st.caption(
+            "Evaluation framework context: scKG-Eval v1 defines 9 suites and 117 metrics; this page reports the frozen KG/readiness slice only."
+        )
+
+    with graph_tab:
+        st.markdown("#### Small, evidence-linked subgraph")
+        st.caption(
+            "The workspace opens a bounded real subgraph. SourceRevision display nodes come from frozen source manifests and are excluded from physical graph totals."
+        )
+        controls = st.columns([1.0, 1.6, 1.4, 0.8, 0.8])
+        with controls[0]:
+            example = st.selectbox(
+                "Example", ["PCA", "neighbors", "Leiden"], key="scientific_kg_example"
+            )
+        with controls[1]:
+            search = st.text_input(
+                "Search",
+                value="",
+                placeholder="operator, claim, evidence span...",
+                key="scientific_kg_search",
+            )
+        node_type_options = sorted(
+            {row["type"] for row in service.semantic_inventory()}
+            | {"EvidenceReference", "InputPort", "OutputPort", "Requirement"}
+        )
+        with controls[2]:
+            node_types = st.multiselect(
+                "Node types", node_type_options, key="scientific_kg_node_types"
+            )
+        with controls[3]:
+            hops = st.selectbox("Hops", [1, 2], index=1, key="scientific_kg_hops")
+        with controls[4]:
+            max_nodes = st.select_slider(
+                "Node cap", options=[50, 75, 100], value=75, key="scientific_kg_cap"
+            )
+
+        selected_seed: str | None = None
+        matches: list[dict[str, Any]] = []
+        if search.strip():
+            matches = service.search_nodes(
+                search,
+                node_types=set(node_types) if node_types else None,
+                limit=50,
+            )
+            if matches:
+                labels = {
+                    f"{row['label']} · {row['node_type']} · {row['layer']}": row["graph_node_id"]
+                    for row in matches
+                }
+                selected_label = st.selectbox(
+                    "Search result", list(labels), key="scientific_kg_search_result"
+                )
+                selected_seed = labels[selected_label]
+            else:
+                st.warning("No Scientific KG nodes match the current search and type filter.")
+
+        if selected_seed:
+            graph = service.neighborhood_graph(
+                selected_seed, hops=int(hops), max_nodes=int(max_nodes)
+            )
+        else:
+            graph = service.example_graph(example, max_nodes=int(max_nodes))
+        if graph.truncated:
+            st.caption("Node cap reached; the canvas is a deterministic local projection.")
+        components.html(build_knowledge_graph_html(graph), height=760, scrolling=False)
+
+        node_options = {
+            f"{graph.nodes[node_id].label} · {graph.nodes[node_id].kind}": node_id
+            for node_id in graph.visible_node_ids
+        }
+        if node_options:
+            detail_label = st.selectbox(
+                "Inspect node", list(node_options), key="scientific_kg_inspect_node"
+            )
+            detail = service.get_node(node_options[detail_label])
+            if detail:
+                detail_col, record_col = st.columns([0.9, 1.5])
+                with detail_col:
+                    st.markdown("##### Identity & governance")
+                    st.table(
+                        [
+                            {"field": "canonical_id", "value": detail["canonical_id"]},
+                            {"field": "node_type", "value": detail["node_type"]},
+                            {"field": "layer", "value": detail["layer"]},
+                            {"field": "status", "value": detail["status"]},
+                            {"field": "knowledge_status", "value": detail["knowledge_status"]},
+                        ]
+                    )
+                with record_col:
+                    st.markdown("##### Frozen record")
+                    st.json(detail["record"])
+                if detail["node_type"] == "AtomicClaimRevision":
+                    chain = service.get_claim_evidence_chain(detail["graph_node_id"])
+                    st.markdown("##### Claim → EvidenceAssessment → EvidenceSpan → SourceRevision")
+                    if chain["complete"]:
+                        st.success("All referenced evidence and source records resolve in this frozen layer.")
+                    else:
+                        st.warning("Evidence chain is incomplete: " + "; ".join(chain["incomplete_reasons"]))
+                    st.dataframe(
+                        [
+                            {
+                                "evidence_span_id": row["evidence_span_id"],
+                                "materialized": row["materialized"],
+                                "source_revision": (
+                                    (row["source_revision"] or {}).get("source_revision_id")
+                                    or (row["source_revision"] or {}).get("source_id")
+                                    or "MISSING"
+                                ),
+                                "source_status": row["source_status"],
+                            }
+                            for row in chain["evidence"]
+                        ],
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+
+    with readiness_tab:
+        st.markdown("#### Production UAT direct-evidence readiness")
+        st.caption(
+            "L0 identity · L1 claim/scope · L2 verified span/source · L3 frozen corpus mapping · L4 public-filter survival"
+        )
+        st.dataframe(
+            service.readiness_rows(),
+            use_container_width=True,
+            hide_index=True,
+        )
+        source_cols = st.columns(4)
+        source_cols[0].metric("Audited revisions", summary["audited_operator_revisions"])
+        source_cols[1].metric("L4", summary["readiness_highest_exclusive"].get("L4", 0))
+        source_cols[2].metric("SourceRevision physical", summary["source_revision_physical"])
+        source_cols[3].metric("SourceRevision unique", summary["source_revision_unique"])
+        st.caption(
+            "Physical 6 / unique 5 is expected because frozen layers overlap and are not identity-merged without adjudication."
+        )
+        st.markdown("#### Integrity findings")
+        if summary["hard_issues"] == 0:
+            st.success("0 hard issues. Referential and schema gates passed for the frozen inventory.")
+        st.dataframe(
+            service.integrity_groups(),
+            use_container_width=True,
+            hide_index=True,
+        )
+        st.caption(
+            "Warnings preserve declared coverage gaps and unreferenced materialized spans. They are visible evidence boundaries, not hidden successes."
+        )
 
 def _render_memory_admin_panel() -> None:
     _render_admin_header(
@@ -7287,6 +7507,7 @@ with st.sidebar:
                 ("Defense Demo", "defense_demo"),
                 ("Evidence & RAG", "evidence_admin"),
                 ("Evaluation", "evaluation_admin"),
+                ("Scientific KG", "scientific_kg_admin"),
                 ("Runtime Packs", "runtime_packs"),
                 ("Memory", "memory_admin"),
                 ("Architecture", "architecture_admin"),
@@ -7955,6 +8176,8 @@ elif st.session_state.current_view == "evidence_admin":
     _render_evidence_admin_panel()
 elif st.session_state.current_view == "evaluation_admin":
     _render_evaluation_admin_panel()
+elif st.session_state.current_view == "scientific_kg_admin":
+    _render_scientific_kg_admin_page()
 elif st.session_state.current_view == "memory_admin":
     _render_memory_admin_panel()
 elif st.session_state.current_view == "architecture_admin":
