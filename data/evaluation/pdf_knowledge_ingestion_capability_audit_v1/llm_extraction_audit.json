@@ -1,0 +1,46 @@
+{
+  "UNSAFE_DIRECT_KG_MUTATION": true,
+  "extractors": [
+    {
+      "assessment": "UNSAFE_TO_REUSE_FOR_GOVERNED_PDF_INGESTION",
+      "candidate_only": false,
+      "hallucination_guard": "none",
+      "model_owner": "core/llm_client.py and runtime settings",
+      "module": "data_pipeline/llm_extractor.py",
+      "outputs": [
+        "tool profile fields"
+      ],
+      "prompt_version_owner": "inline unversioned system_prompt",
+      "retry_behavior": "client max_retries=2; extractor returns empty object on error",
+      "source_span_requirement": false,
+      "structured_schema": "JSON shape in prompt; no Pydantic model",
+      "validation": "json.loads only"
+    },
+    {
+      "assessment": "UNSAFE_DIRECT_KG_MUTATION",
+      "candidate_only": false,
+      "hallucination_guard": "low/model_extracted trust labels only",
+      "model_owner": "runtime extract_model setting",
+      "module": "data_pipeline/neo4j_loader.py",
+      "outputs": [
+        "Tool",
+        "Task",
+        "Modality",
+        "Hardware",
+        "Resolution",
+        "Algorithm"
+      ],
+      "prompt_version_owner": "inline unversioned prompt",
+      "retry_behavior": "single HTTP request; empty object on failure",
+      "source_span_requirement": false,
+      "structured_schema": "JSON response format; no Scientific KG conformance model",
+      "validation": "field defaults only",
+      "writes": [
+        "mutable Neo4j",
+        "append-only local JSONL backup"
+      ]
+    }
+  ],
+  "governed_pdf_extractor_exists": false,
+  "required_checkpoint_5_contract": "Versioned structured candidate entity/relation/claim/scope output with mandatory EvidenceSpan IDs and no canonical write authority."
+}

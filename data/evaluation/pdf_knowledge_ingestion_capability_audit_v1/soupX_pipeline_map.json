@@ -1,0 +1,98 @@
+{
+  "authoritative_repaired_run": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired",
+  "candidate_boundary_preserved": true,
+  "canonical_promotion_performed": false,
+  "original_incomplete_run": "data/evaluation/evidence_gap_acquisition_pilot_v1",
+  "pilot": "SoupX evidence-gap acquisition → candidate knowledge → review queue",
+  "pipeline": [
+    {
+      "artifact": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/selected_evidence_gap.json",
+      "limitation": "fixed SoupX gap",
+      "module": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "order": 1,
+      "stage": "EvidenceGap selection",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/source_registry.json",
+      "limitation": "fixed SoupX manual",
+      "module": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "order": 2,
+      "stage": "authoritative source discovery",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/source_registry.json",
+      "limitation": "ad hoc dictionaries",
+      "module": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "order": 3,
+      "stage": "SourceWork / SourceRevision",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/artifacts/soupx-1.6.2-manual.pdf",
+      "limitation": "parser has page-provenance limits",
+      "module": "data_pipeline/ingest_evidence_pdfs.py",
+      "order": 4,
+      "stage": "artifact hash and PDF parse",
+      "status": "IMPLEMENTED_REUSABLE"
+    },
+    {
+      "artifact": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/evidence_span.json",
+      "limitation": "hard-coded regular expression",
+      "module": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "order": 5,
+      "stage": "exact EvidenceSpan",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/candidate_knowledge_deposition_pilot_v1/evidence_assessments.jsonl",
+      "limitation": "formal model; hard-coded content",
+      "module": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "order": 6,
+      "stage": "EvidenceAssessment",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_atomic_claims.jsonl",
+      "limitation": "formal model; hard-coded content",
+      "module": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "order": 7,
+      "stage": "Candidate AtomicClaimRevision",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_overlay_graph.json",
+      "limitation": "isolated and retrieval-only",
+      "module": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "order": 8,
+      "stage": "Candidate KG / RAG",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/candidate_knowledge_deposition_pilot_v1/second_query_result.json",
+      "limitation": "single-query pattern",
+      "module": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "order": 9,
+      "stage": "candidate reuse",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/candidate_knowledge_review_queue_v1/review_queue.jsonl",
+      "limitation": "read-only action surface",
+      "module": "data_pipeline/build_candidate_knowledge_review_queue_v1.py",
+      "order": 10,
+      "stage": "Admin Review Item",
+      "status": "IMPLEMENTED_PILOT"
+    },
+    {
+      "artifact": "data/evaluation/candidate_knowledge_review_queue_v1/summary.json",
+      "limitation": "fails closed; no promotion backend",
+      "module": "data_pipeline/build_candidate_knowledge_review_queue_v1.py",
+      "order": 11,
+      "stage": "promotion guard",
+      "status": "IMPLEMENTED_PILOT"
+    }
+  ],
+  "source_code_was_primary_evidence": true
+}

@@ -1,0 +1,883 @@
+{
+  "allowed_statuses": [
+    "IMPLEMENTED_PILOT",
+    "IMPLEMENTED_PRODUCTION",
+    "IMPLEMENTED_REUSABLE",
+    "MISSING",
+    "PARTIAL",
+    "UNSAFE_TO_REUSE"
+  ],
+  "required_stage_count": 30,
+  "stages": [
+    {
+      "data_models": [
+        "upload summary",
+        "source registry row"
+      ],
+      "existing_implementation": [
+        "app.py",
+        "data_pipeline/ingest_evidence_pdfs.py",
+        "data_pipeline/build_source_registry.py"
+      ],
+      "missing_capability": [
+        "PDF uploads are preview-only in the app",
+        "no upload-to-SourceWork transaction"
+      ],
+      "owner": "No governed PDF registration owner",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "app.py",
+          "purpose": ""
+        },
+        {
+          "optional": true,
+          "path": "data/source_registry.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "UI upload and evidence acquisition are disconnected"
+      ],
+      "source_specific": false,
+      "stage": "File Upload / Registration",
+      "stage_number": 1,
+      "status": "PARTIAL",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "SourceArtifact pilot dictionary"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "formal SourceArtifact schema and generic registration adapter"
+      ],
+      "owner": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/source_registry.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "identity contract is embedded in a SoupX-specific runner"
+      ],
+      "source_specific": true,
+      "stage": "Content hash / artifact identity",
+      "stage_number": 2,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "SourceWork pilot dictionary",
+        "SourceDocumentRecord"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+        "data_pipeline/build_source_registry.py"
+      ],
+      "missing_capability": [
+        "formal model and generic persistence owner"
+      ],
+      "owner": "No single authoritative owner",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/source_registry.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "DUPLICATE_OWNER_RISK"
+      ],
+      "source_specific": true,
+      "stage": "SourceWork registration",
+      "stage_number": 3,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "SourceRevision pilot dictionary"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "generic revision builder and formal schema"
+      ],
+      "owner": "No formal SourceRevision owner",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/source_registry.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "DUPLICATE_OWNER_RISK",
+        "fixed SoupX identifier"
+      ],
+      "source_specific": true,
+      "stage": "SourceRevision creation",
+      "stage_number": 4,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "source registry row"
+      ],
+      "existing_implementation": [
+        "data_pipeline/build_source_registry.py"
+      ],
+      "missing_capability": [
+        "PDF-embedded metadata extraction"
+      ],
+      "owner": "data_pipeline/build_source_registry.py",
+      "persistent_artifacts": [
+        {
+          "optional": true,
+          "path": "data/source_registry.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "metadata is sourced from manifests, URLs, or Crossref rather than the PDF"
+      ],
+      "source_specific": false,
+      "stage": "DOI / title / metadata extraction",
+      "stage_number": 5,
+      "status": "PARTIAL",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "extraction result dictionary"
+      ],
+      "existing_implementation": [
+        "data_pipeline/ingest_evidence_pdfs.py"
+      ],
+      "missing_capability": [
+        "OCR and parser-version provenance"
+      ],
+      "owner": "data_pipeline/ingest_evidence_pdfs.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/extracted/soupx-1.6.2-manual.txt",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "preferred pdftotext path loses page boundaries"
+      ],
+      "source_specific": false,
+      "stage": "PDF text extraction",
+      "stage_number": 6,
+      "status": "IMPLEMENTED_REUSABLE",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "[PDF_PAGE N] markers",
+        "EvidenceChunk.source_span"
+      ],
+      "existing_implementation": [
+        "data_pipeline/ingest_evidence_pdfs.py",
+        "engine/source_corpus_v2.py"
+      ],
+      "missing_capability": [
+        "page-preserving default parser",
+        "stable locator contract"
+      ],
+      "owner": "engine/source_corpus_v2.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/rag_index/evidence_chunks.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "pdftotext is preferred and emits no page markers; section detection is heuristic"
+      ],
+      "source_specific": false,
+      "stage": "Page / section / locator preservation",
+      "stage_number": 7,
+      "status": "PARTIAL",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "EvidenceSpan pilot dictionary"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "generic span candidate generator and formal model"
+      ],
+      "owner": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/evidence_span.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "hard-coded SoupX regular expression"
+      ],
+      "source_specific": true,
+      "stage": "EvidenceSpan generation",
+      "stage_number": 8,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "EvidenceSpan exact_text, locator, content_hash"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "generic binding validator"
+      ],
+      "owner": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/evidence_span.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "validated only for one SoupX span"
+      ],
+      "source_specific": true,
+      "stage": "EvidenceSpan exact-text binding",
+      "stage_number": 9,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [],
+      "existing_implementation": [],
+      "missing_capability": [
+        "governed PDF entity extractor with span-bound structured output"
+      ],
+      "owner": "No owner",
+      "persistent_artifacts": [],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "legacy tool-profile extractor does not produce Scientific KG candidates"
+      ],
+      "source_specific": false,
+      "stage": "Entity extraction",
+      "stage_number": 10,
+      "status": "MISSING",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "source key",
+        "claim semantic fingerprint"
+      ],
+      "existing_implementation": [
+        "data_pipeline/build_source_registry.py",
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "Method, OperatorRevision, and Representation resolvers"
+      ],
+      "owner": "No cross-type entity resolver",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/summary.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "per-type logic is split across builders"
+      ],
+      "source_specific": false,
+      "stage": "Entity resolution / deduplication",
+      "stage_number": 11,
+      "status": "PARTIAL",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "legacy Tool KG JSON response",
+        "mutable Neo4j graph"
+      ],
+      "existing_implementation": [
+        "data_pipeline/neo4j_loader.py",
+        "data_pipeline/hybrid_loader.py"
+      ],
+      "missing_capability": [
+        "candidate-only Scientific KG relation extractor with evidence bindings"
+      ],
+      "owner": "data_pipeline/neo4j_loader.py",
+      "persistent_artifacts": [
+        {
+          "optional": true,
+          "path": "data/scKG_embeddings_backup.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "UNSAFE_DIRECT_KG_MUTATION",
+        "no governed relation endpoint validation"
+      ],
+      "source_specific": false,
+      "stage": "Relation extraction",
+      "stage_number": 12,
+      "status": "UNSAFE_TO_REUSE",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "Method",
+        "OperatorRevision",
+        "RepresentationType"
+      ],
+      "existing_implementation": [
+        "core/scientific_knowledge_conformance_models.py",
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "resolution service from extracted strings to existing identities"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/conformance_bundle.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "SoupX pilot reuses a hard-coded core identity slice"
+      ],
+      "source_specific": false,
+      "stage": "Method / Operator / Representation resolution",
+      "stage_number": 13,
+      "status": "PARTIAL",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "AtomicClaimRevision"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "general extractor"
+      ],
+      "owner": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_atomic_claims.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "claim text is hard-coded for SoupX"
+      ],
+      "source_specific": true,
+      "stage": "AtomicClaim extraction",
+      "stage_number": 14,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "AtomicClaimRevision.claim_type"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "automated type selection"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_atomic_claims.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "pilot assigns the type manually"
+      ],
+      "source_specific": false,
+      "stage": "Claim typing",
+      "stage_number": 15,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "ApplicabilityScope"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "general scope extractor"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/conformance_bundle.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "pilot scope is hard-coded"
+      ],
+      "source_specific": false,
+      "stage": "ApplicabilityScope extraction",
+      "stage_number": 16,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "SourceRevision.version",
+        "PackageRelease"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "PDF-grounded version and flavor extraction"
+      ],
+      "owner": "No general version/flavor extractor",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/evidence_gap_acquisition_pilot_v1_repaired/source_registry.json",
+          "purpose": ""
+        },
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/conformance_bundle.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "SoupX version is predetermined"
+      ],
+      "source_specific": true,
+      "stage": "Version / flavor extraction",
+      "stage_number": 17,
+      "status": "PARTIAL",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "EvidenceAssessment"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "generic assessment builder"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/evidence_assessments.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "one pilot assessment only"
+      ],
+      "source_specific": false,
+      "stage": "EvidenceAssessment creation",
+      "stage_number": 18,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "EvidenceAssessment.evidence_span_ids"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "bundle-level validation against materialized EvidenceSpan records"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/evidence_assessments.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "spans live outside ConformanceBundle"
+      ],
+      "source_specific": false,
+      "stage": "Claim → Evidence binding",
+      "stage_number": 19,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "ConformanceBundle"
+      ],
+      "existing_implementation": [
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "allowed external relation vocabulary validation for extracted candidates"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/conformance_bundle.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "EvidenceSpan records are external to the bundle"
+      ],
+      "source_specific": false,
+      "stage": "Ontology/schema validation",
+      "stage_number": 20,
+      "status": "IMPLEMENTED_REUSABLE",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "semantic fingerprint",
+        "claim revision ID"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "central identity service for every candidate type"
+      ],
+      "owner": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_atomic_claims.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "identity is claim-specific"
+      ],
+      "source_specific": false,
+      "stage": "Candidate identity creation",
+      "stage_number": 21,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "isolated candidate overlay"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "general append-only candidate store and transaction boundary"
+      ],
+      "owner": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_overlay_graph.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "pilot directory is write-once rather than a revisioned datastore"
+      ],
+      "source_specific": false,
+      "stage": "Candidate KG deposit",
+      "stage_number": 22,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "EvidenceChunk"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+        "engine/evidence_discovery_index.py",
+        "engine/hybrid_retrieval.py"
+      ],
+      "missing_capability": [
+        "production candidate retrieval gate"
+      ],
+      "owner": "engine/evidence_discovery_index.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/rag_index/evidence_chunks.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "validated only in an isolated retrieval_only index"
+      ],
+      "source_specific": false,
+      "stage": "Candidate RAG indexing/reuse",
+      "stage_number": 23,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "evidence gap lifecycle record"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "persisted governed transition service"
+      ],
+      "owner": "No authoritative EvidenceGap lifecycle owner",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/evidence_gap_lifecycle.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "status is duplicated across pilot artifacts"
+      ],
+      "source_specific": false,
+      "stage": "EvidenceGap resolution/update",
+      "stage_number": 24,
+      "status": "PARTIAL",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "ReviewDecisionSurface"
+      ],
+      "existing_implementation": [
+        "data_pipeline/build_candidate_knowledge_review_queue_v1.py"
+      ],
+      "missing_capability": [
+        "general queue service"
+      ],
+      "owner": "data_pipeline/build_candidate_knowledge_review_queue_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_review_queue_v1/review_queue.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "actions are descriptive and not executable"
+      ],
+      "source_specific": false,
+      "stage": "Admin Review Item creation",
+      "stage_number": 25,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "ReviewDecision"
+      ],
+      "existing_implementation": [
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "decision repository and transaction"
+      ],
+      "owner": "Model exists; persistence owner missing",
+      "persistent_artifacts": [],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "no decision is created by the review queue pilot"
+      ],
+      "source_specific": false,
+      "stage": "ReviewDecision persistence",
+      "stage_number": 26,
+      "status": "MISSING",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "promotion guard",
+        "legacy review TSV"
+      ],
+      "existing_implementation": [
+        "data_pipeline/build_candidate_knowledge_review_queue_v1.py",
+        "data_pipeline/apply_next_review_decisions.py",
+        "data_pipeline/promote_recovered_evidence.py"
+      ],
+      "missing_capability": [
+        "governed Scientific KG mutation handlers and immutable snapshot"
+      ],
+      "owner": "No Scientific KG lifecycle backend",
+      "persistent_artifacts": [],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "legacy mutators target a different evidence lifecycle",
+        "unsafe to expose as UI actions"
+      ],
+      "source_specific": false,
+      "stage": "Promote / Reject / Merge / Supersede backend",
+      "stage_number": 27,
+      "status": "UNSAFE_TO_REUSE",
+      "tool_specific": false
+    },
+    {
+      "data_models": [
+        "TraceContext",
+        "TraceCollector"
+      ],
+      "existing_implementation": [
+        "core/trace_context.py",
+        "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+        "data_pipeline/build_candidate_knowledge_review_queue_v1.py"
+      ],
+      "missing_capability": [
+        "explicit knowledge-evolution stage vocabulary"
+      ],
+      "owner": "core/trace_context.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/trace.jsonl",
+          "purpose": ""
+        },
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_review_queue_v1/trace.jsonl",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": true,
+      "risks": [
+        "operations use generic trace stages"
+      ],
+      "source_specific": false,
+      "stage": "Canonical Trace events",
+      "stage_number": 28,
+      "status": "IMPLEMENTED_PILOT",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "existing-knowledge inspection",
+        "candidate overlay"
+      ],
+      "existing_implementation": [
+        "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py"
+      ],
+      "missing_capability": [
+        "general structured before/after candidate diff"
+      ],
+      "owner": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "persistent_artifacts": [
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/candidate_overlay_graph.json",
+          "purpose": ""
+        },
+        {
+          "optional": false,
+          "path": "data/evaluation/candidate_knowledge_deposition_pilot_v1/summary.json",
+          "purpose": ""
+        }
+      ],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "current comparison is claim-specific"
+      ],
+      "source_specific": false,
+      "stage": "Before/After KG diff",
+      "stage_number": 29,
+      "status": "PARTIAL",
+      "tool_specific": true
+    },
+    {
+      "data_models": [
+        "SupersessionRecord"
+      ],
+      "existing_implementation": [
+        "core/scientific_knowledge_conformance_models.py"
+      ],
+      "missing_capability": [
+        "rollback store",
+        "supersession persistence and execution handler"
+      ],
+      "owner": "core/scientific_knowledge_conformance_models.py",
+      "persistent_artifacts": [],
+      "reusable_for_checkpoint_5": false,
+      "risks": [
+        "schema exists without lifecycle backend"
+      ],
+      "source_specific": false,
+      "stage": "Rollback / supersede support",
+      "stage_number": 30,
+      "status": "PARTIAL",
+      "tool_specific": false
+    }
+  ]
+}

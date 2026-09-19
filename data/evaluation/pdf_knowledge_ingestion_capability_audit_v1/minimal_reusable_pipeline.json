@@ -1,0 +1,61 @@
+{
+  "feasible_as_is": false,
+  "forbidden": [
+    "trusted mutation",
+    "canonical promotion",
+    "production retrieval eligibility",
+    "legacy Neo4j loader"
+  ],
+  "must_add_in_checkpoint_5": [
+    "generic local PDF registration adapter",
+    "formal SourceWork, SourceRevision, and SourceArtifact records or adapters",
+    "generic exact EvidenceSpan candidate generator",
+    "versioned candidate-only entity/relation/claim/scope extractor with mandatory span IDs",
+    "entity resolution and dedup service",
+    "structured before/after candidate diff",
+    "single candidate-only orchestration path"
+  ],
+  "reuse": [
+    {
+      "component": "data_pipeline/run_evidence_gap_acquisition_pilot_v1.py",
+      "condition": "extract into a generic adapter",
+      "step": "artifact hashing"
+    },
+    {
+      "component": "data_pipeline/build_source_registry.py",
+      "condition": "map to formal SourceWork and SourceRevision records",
+      "step": "source registry dedup policy"
+    },
+    {
+      "component": "data_pipeline/ingest_evidence_pdfs.py",
+      "condition": "force page-preserving path and record parser version",
+      "step": "PDF text extraction"
+    },
+    {
+      "component": "engine/source_corpus_v2.py",
+      "condition": "use for candidates without rebuilding production index",
+      "step": "section/chunk locator helpers"
+    },
+    {
+      "component": "core/scientific_knowledge_conformance_models.py",
+      "condition": "validate external EvidenceSpan bindings too",
+      "step": "strict Scientific KG validation"
+    },
+    {
+      "component": "data_pipeline/run_candidate_knowledge_deposition_pilot_v1.py",
+      "condition": "generalize beyond SoupX and preserve candidate-only boundary",
+      "step": "candidate identity and isolated deposit pattern"
+    },
+    {
+      "component": "engine/evidence_discovery_index.py",
+      "condition": "keep retrieval_only and recommendation_eligible=false",
+      "step": "local candidate RAG primitives"
+    },
+    {
+      "component": "core/trace_context.py",
+      "condition": "record each orchestration step",
+      "step": "trace"
+    }
+  ],
+  "target": "one local PDF → registered source → parsed text → span-bound structured candidates → validation → diff → isolated candidate deposit → trace"
+}
