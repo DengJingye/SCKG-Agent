@@ -1,0 +1,64 @@
+{
+  "campaign": "Independent Retrieval Validation v1",
+  "execution_policy": {
+    "dev_check_used_for_tuning": false,
+    "no_sut_index_kg_or_gold_changes_after_prepare": true,
+    "sealed_run_limit": 1,
+    "sealed_validation_used_for_tuning": false
+  },
+  "metric_policy": {
+    "abstention_proxy": "the retrieval API has no native abstain field; zero returned hits is the strict observable abstention proxy",
+    "evidence_correctness": "exact accepted chunk in top 10 for evidence-available queries; zero returned hits for expected-abstention queries",
+    "false_certainty_event": "expected_abstention is true and the retriever returns one or more candidate evidence hits",
+    "hit_at_k": "fraction of evidence-available parent queries with at least one exact accepted chunk at k",
+    "kg_pair": "A->C for BM25 and B->D for BM25+Dense; HELPED/HURT includes top-10 transition or first-gold-rank movement",
+    "mrr_at_10": "mean reciprocal rank of first exact accepted chunk within top 10 over evidence-available parent queries",
+    "sampling_unit": "parent scientific information need; accepted spans are OR alternatives and never independent samples"
+  },
+  "optional_governance_profile": "E_scikg_bm25_dense_governance",
+  "primary_profiles": [
+    "A_bm25",
+    "B_bm25_dense",
+    "C_scikg_bm25",
+    "D_scikg_bm25_dense"
+  ],
+  "profiles": [
+    {
+      "dense": false,
+      "governance": false,
+      "kg": false,
+      "profile_id": "A_bm25",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": false,
+      "profile_id": "B_bm25_dense",
+      "sparse": true
+    },
+    {
+      "dense": false,
+      "governance": false,
+      "kg": true,
+      "profile_id": "C_scikg_bm25",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": false,
+      "kg": true,
+      "profile_id": "D_scikg_bm25_dense",
+      "sparse": true
+    },
+    {
+      "dense": true,
+      "governance": true,
+      "kg": true,
+      "profile_id": "E_scikg_bm25_dense_governance",
+      "sparse": true
+    }
+  ],
+  "schema_version": "sckg-independent-retrieval-config-v1",
+  "top_k": 10
+}
