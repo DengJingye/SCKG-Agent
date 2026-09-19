@@ -122,100 +122,22 @@ def _install_streamlit_compatibility() -> None:
 
 _install_streamlit_compatibility()
 
-LANGGRAPH_AVAILABLE = importlib.util.find_spec("langgraph") is not None
-from core.reflection_memory import reflect_agent_run
-from core.privacy_policy import OutboundDisclosureService, PrivacyMode
-from core.settings import get_settings
-from core.tool_contract_registry import ToolContractRegistry
-from core.user_store import (
-    ApiConfigError,
-    clear_conversation,
-    create_session,
-    delete_session,
-    has_saved_api_config,
-    init_store,
-    list_sessions,
-    load_api_config,
-    load_conversation,
-    load_project_memory,
-    load_working_context,
-    save_encrypted_api_config,
-    save_message,
-    save_project_memory,
-    save_working_context,
-    rename_session,
-    set_session_pinned,
-)
-from engine.knowledge_graph_view import (
-    build_catalog_landscape_html,
-    build_decision_graph_neighborhood_view,
-    build_decision_graph_workspace_view,
-    build_knowledge_graph_html,
-    build_knowledge_graph_view,
-)
-from engine.decision_graph_query import DecisionGraphQuery
-from engine.action_bundle_retriever import ActionBundleRetriever
-from engine.evidence_graph_query import EvidenceGraphQuery
-from execution.environment_registry import EnvironmentRegistry
-from engine.workflow_decision import (
-    DEFAULT_WORKFLOW_CANDIDATE_TOOLS,
-    build_workflow_decision_response,
-)
-from observability.dashboard.services import (
-    AgentLoopDemoService,
-    DefenseDemoService,
-    EvidenceRecoveryService,
-    InterviewDemoService,
-    Phase6EvaluationService,
-    ReflectionService,
-    TraceService,
-)
-from observability.dashboard.ui_presenters import (
-    format_conversation_title,
-    normalize_ui_status,
-)
-
-
 st.set_page_config(
-    page_title="scKG-Atlas Agent",
+    page_title="scKG-Agent",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 if "current_view" not in st.session_state:
     st.session_state.current_view = "chat"
 
 
-st.markdown(
-    """
-<style>
+_BASE_UI_CSS = """
     :root {
         color-scheme: light;
     }
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    [data-testid="stHeader"] {
-        visibility: hidden !important;
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stDecoration"] {
-        display: none !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        max-height: 0 !important;
-        overflow: hidden !important;
-    }
-    [data-testid="stToolbar"] {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-    [data-testid="stAppDeployButton"] {
-        display: none !important;
-    }
-    [data-testid="stSidebarCollapseButton"],
     button[title="Open sidebar"],
     button[title="Close sidebar"],
     button[aria-label="Open sidebar"],
@@ -242,12 +164,11 @@ st.markdown(
         background: #f8f9fa;
         color: #141413;
     }
-    .block-container {
-        max-width: 940px;
-        padding-top: 0.9rem;
-        padding-bottom: 7rem;
-    }
-    h1, h2, h3, p, li {
+    h1,
+    h2,
+    h3,
+    p,
+    li {
         letter-spacing: 0;
     }
     .app-title {
@@ -260,33 +181,6 @@ st.markdown(
         color: #626260;
         font-size: 0.92rem;
         margin-bottom: 1.15rem;
-    }
-    .chat-app-header {
-        max-width: 820px;
-        margin: 0.35rem auto 1.7rem auto;
-        padding: 0.2rem 0;
-    }
-    .chat-app-kicker {
-        color: #cc785c;
-        font-size: 0.76rem;
-        font-weight: 650;
-        letter-spacing: 0;
-        margin-bottom: 0.25rem;
-    }
-    .chat-app-title {
-        color: #141413;
-        font-size: clamp(1.35rem, 1.8vw, 1.82rem);
-        font-weight: 620;
-        line-height: 1.2;
-        letter-spacing: 0;
-        margin: 0;
-    }
-    .chat-app-subtitle {
-        color: #6c6a64;
-        font-size: 0.94rem;
-        line-height: 1.55;
-        margin-top: 0.44rem;
-        max-width: 640px;
     }
     .status-chip {
         display: inline-block;
@@ -397,39 +291,32 @@ st.markdown(
     .managed-step.done {border-color: #b8dec8; background: #eef8f1;}
     .managed-step.ready {border-color: #95b7aa; background: #f5faf8;}
     .managed-step.stale {border-color: #ead29a; background: #fff7df;}
-    .managed-step.blocked, .managed-step.failed {border-color: #efb9b1; background: #fff1ef;}
+    .managed-step.blocked,
+    .managed-step.failed {border-color: #efb9b1; background: #fff1ef;}
     .quiet-note {
         color: #6b7280;
         font-size: 0.9rem;
     }
     @media (max-width: 760px) {
-        .data-workbench-intro {
+.data-workbench-intro {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .data-workbench-step:nth-child(2) {
+    .data-workbench-step:nth-child(2) {
             border-right: 0;
         }
-        .data-workbench-step:nth-child(-n + 2) {
+    .data-workbench-step:nth-child(-n + 2) {
             border-bottom: 1px solid #e7e4de;
         }
-        .managed-step-strip {
+    .managed-step-strip {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-    }
+}
     @media (max-width: 900px) {
-        section[data-testid="stSidebar"] {
-            transform: translateX(-100%);
-            position: fixed !important;
-        }
-        section[data-testid="stSidebar"][aria-expanded="true"] {
-            transform: translateX(0);
-        }
-        .chat-app-header,
-        .data-workbench-boundary,
-        .data-workbench-intro {
+.data-workbench-boundary,
+    .data-workbench-intro {
             max-width: 100%;
         }
-    }
+}
     .source-item {
         border-left: 3px solid #d8dee8;
         padding: 0.15rem 0 0.15rem 0.72rem;
@@ -441,31 +328,6 @@ st.markdown(
         color: #6b7280;
         font-size: 0.82rem;
     }
-    .user-chat-row {
-        display: flex;
-        justify-content: flex-end;
-        width: 100%;
-        margin: 0.65rem 0 0.85rem 0;
-    }
-    .user-chat-bubble {
-        max-width: min(72%, 620px);
-        background: #252523;
-        color: #faf9f5;
-        border-radius: 16px 16px 4px 16px;
-        padding: 0.72rem 0.9rem;
-        line-height: 1.55;
-        font-size: 0.96rem;
-        box-shadow: 0 1px 2px rgba(20, 20, 19, 0.08);
-        overflow-wrap: anywhere;
-        white-space: pre-wrap;
-    }
-    .user-chat-attachments {
-        color: #e8e0d2;
-        font-size: 0.84rem;
-        margin-top: 0.42rem;
-        border-top: 1px solid rgba(250, 249, 245, 0.18);
-        padding-top: 0.42rem;
-    }
     .graph-card {
         border: 1px solid #e3ded7;
         border-radius: 8px;
@@ -475,112 +337,6 @@ st.markdown(
     }
     .graph-card strong {
         font-size: 0.92rem;
-    }
-    .sidebar-brand {
-        text-align: center;
-        margin: 0.2rem 0 0.95rem;
-    }
-    .sidebar-brand img {
-        display: block;
-        width: min(132px, 76%);
-        max-height: 92px;
-        object-fit: contain;
-        height: auto;
-        margin: 0 auto;
-        border-radius: 8px;
-    }
-    .sidebar-brand-title {
-        font-size: 0.92rem;
-        font-weight: 650;
-        line-height: 1.2;
-        color: #252523;
-        margin: 0;
-    }
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"] {
-        background: #f8f9fa !important;
-        padding-top: 0.25rem !important;
-    }
-    [data-testid="stBottomBlockContainer"] > div {
-        background: transparent !important;
-    }
-    [data-testid="stChatInput"] {
-        max-width: 820px !important;
-        margin: 0 auto 0.78rem auto !important;
-        background: transparent !important;
-        border: 0 !important;
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-    }
-    [data-testid="stChatInput"] > div {
-        min-height: 72px !important;
-        background: #ffffff !important;
-        border: 1px solid #d3cec6 !important;
-        border-radius: 16px !important;
-        box-shadow: 0 8px 28px rgba(20, 20, 19, 0.06) !important;
-        overflow: visible !important;
-    }
-    [data-testid="stChatInput"] textarea {
-        min-height: 52px !important;
-        line-height: 1.45 !important;
-        background: #ffffff !important;
-        color: #252523 !important;
-    }
-    [data-testid="stChatInput"] textarea,
-    [data-testid="stChatInput"] textarea:focus,
-    [data-testid="stChatInput"] div,
-    [data-testid="stChatInput"] [contenteditable="true"] {
-        background-color: #ffffff !important;
-    }
-    [data-testid="stChatInput"] [data-baseweb="textarea"],
-    [data-testid="stChatInput"] [data-baseweb="base-input"],
-    [data-testid="stChatInput"] [data-baseweb="input"] {
-        background: #ffffff !important;
-    }
-    [data-testid="stChatInput"] button {
-        border-radius: 10px !important;
-    }
-    section[data-testid="stSidebar"] {
-        background: #f5f1ec;
-        border-right: 1px solid #e3ded7;
-        width: 300px !important;
-        min-width: 280px !important;
-        max-width: 320px !important;
-    }
-    [data-testid="stSidebar"] .block-container {
-        padding: 0.8rem 0.72rem 1.1rem;
-    }
-    .sidebar-section {
-        color: #7b7b78;
-        font-size: 0.68rem;
-        font-weight: 600;
-        margin: 0.75rem 0 0.22rem;
-        text-transform: uppercase;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button {
-        width: 100% !important;
-        min-height: 2rem !important;
-        height: auto !important;
-        border-radius: 8px !important;
-        padding: 0.34rem 0.5rem !important;
-        margin: 0.03rem 0 !important;
-        font-size: 0.84rem !important;
-        line-height: 1.22 !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        border: 1px solid transparent !important;
-        background: transparent !important;
-        color: #313130 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {
-        background: #ebe7e1 !important;
-        color: #111111 !important;
-        border-color: #e0d8ce !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button:focus {
-        box-shadow: none;
     }
     .sidebar-link-like {
         color: #313130 !important;
@@ -606,35 +362,6 @@ st.markdown(
     .compact-top {
         margin-bottom: 0.8rem;
     }
-    [data-testid="stSidebar"] details {
-        border: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSidebar"] details summary {
-        padding: 0.42rem 0.4rem !important;
-        border-radius: 8px !important;
-        font-size: 0.86rem !important;
-        color: #252523 !important;
-    }
-    [data-testid="stSidebar"] details summary:hover {
-        background: #ebe7e1 !important;
-    }
-    [data-testid="stSidebar"] details summary *,
-    [data-testid="stSidebar"] details summary svg {
-        color: #252523 !important;
-        fill: #626260 !important;
-    }
-    [data-testid="stSidebar"] hr {
-        margin: 0.75rem 0;
-    }
-    div[data-testid="stChatMessage"] {
-        background: transparent;
-        padding: 0.32rem 0 !important;
-    }
-    div[data-testid="stChatMessageContent"] {
-        line-height: 1.58;
-    }
     .chat-active {
         color: #111827;
         font-weight: 650;
@@ -642,13 +369,6 @@ st.markdown(
     .chat-muted {
         color: #475569;
     }
-    .followup-row div[data-testid="stButton"] button {
-        border-radius: 999px;
-        min-height: 2rem;
-        padding: 0.2rem 0.75rem;
-        font-size: 0.86rem;
-    }
-    /* v0.14 breathing-room visual reset inspired by awesome-design-md. */
     html,
     body,
     .stApp,
@@ -661,29 +381,16 @@ st.markdown(
         color: #172033 !important;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
     }
-    [data-testid="stHeader"] {
-        visibility: hidden !important;
-        background: transparent !important;
-        border: 0 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stToolbar"] {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-    [data-testid="stDecoration"] {
-        display: none !important;
-    }
-    .block-container {
-        max-width: 1280px !important;
-        padding-top: 2.2rem !important;
-        padding-bottom: 8.2rem !important;
-    }
-    h1, h2, h3, h4, p, li {
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    li {
         letter-spacing: 0 !important;
     }
-    p, li {
+    p,
+    li {
         line-height: 1.72 !important;
         margin-bottom: 1.05rem;
     }
@@ -707,31 +414,6 @@ st.markdown(
         padding: 0.85rem 1rem !important;
         color: #405168 !important;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.025);
-    }
-    .chat-app-header {
-        max-width: 840px !important;
-        margin: 1.1rem auto 2.25rem auto !important;
-        padding: 1.1rem 0.3rem 0.4rem !important;
-    }
-    .chat-app-kicker {
-        color: #7b8da8 !important;
-        font-size: 0.76rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 0.02em !important;
-        margin-bottom: 0.55rem !important;
-    }
-    .chat-app-title {
-        color: #172033 !important;
-        font-size: clamp(1.85rem, 3vw, 2.62rem) !important;
-        font-weight: 680 !important;
-        line-height: 1.13 !important;
-        margin-bottom: 0.82rem !important;
-    }
-    .chat-app-subtitle {
-        max-width: 720px !important;
-        color: #667085 !important;
-        font-size: 1.02rem !important;
-        line-height: 1.72 !important;
     }
     .status-chip {
         border-radius: 999px !important;
@@ -765,111 +447,6 @@ st.markdown(
         padding: 0.78rem 0.95rem !important;
         margin: 0.8rem 0 !important;
     }
-    .user-chat-bubble {
-        background: linear-gradient(135deg, #293241, #202938) !important;
-        color: #ffffff !important;
-        border-radius: 18px 18px 6px 18px !important;
-        padding: 0.82rem 1rem !important;
-        box-shadow: 0 8px 28px rgba(30, 41, 59, 0.12) !important;
-    }
-    div[data-testid="stChatMessage"] {
-        background: rgba(255, 255, 255, 0.54) !important;
-        border: 1px solid rgba(0, 0, 0, 0.035) !important;
-        border-radius: 18px !important;
-        padding: 0.85rem 1rem !important;
-        margin: 0.85rem auto !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.026) !important;
-    }
-    div[data-testid="stChatMessageAvatar"] {
-        filter: saturate(0.82);
-    }
-    section[data-testid="stSidebar"] {
-        background: rgba(247, 249, 252, 0.86) !important;
-        border-right: 1px solid rgba(0, 0, 0, 0.04) !important;
-        box-shadow: 8px 0 28px rgba(0, 0, 0, 0.025);
-    }
-    [data-testid="stSidebar"] .block-container {
-        padding: 1.1rem 0.95rem 1.35rem !important;
-    }
-    .sidebar-brand {
-        margin: 0.35rem 0 1.25rem !important;
-    }
-    .sidebar-brand img {
-        max-height: 80px !important;
-        box-shadow: none !important;
-    }
-    .sidebar-section {
-        color: #8a98aa !important;
-        font-size: 0.68rem !important;
-        letter-spacing: 0.04em !important;
-        margin: 1.1rem 0 0.45rem !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button {
-        min-height: 2.38rem !important;
-        border: 1px solid transparent !important;
-        border-radius: 14px !important;
-        background: transparent !important;
-        color: #293241 !important;
-        font-weight: 520 !important;
-        transition: background 140ms ease, transform 140ms ease, box-shadow 140ms ease !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {
-        background: rgba(255, 255, 255, 0.72) !important;
-        border-color: rgba(0, 0, 0, 0.04) !important;
-        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03) !important;
-        transform: translateY(-1px);
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"] {
-        background: #e7eef7 !important;
-        border-color: #cbd9e9 !important;
-        color: #173b63 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSidebar"] details {
-        border-radius: 16px !important;
-        background: rgba(255, 255, 255, 0.58) !important;
-        border: 1px solid rgba(0, 0, 0, 0.035) !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.025) !important;
-        margin-bottom: 0.72rem !important;
-    }
-    [data-testid="stSidebar"] details summary {
-        border-radius: 14px !important;
-        padding: 0.68rem 0.72rem !important;
-    }
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"] {
-        background: linear-gradient(180deg, rgba(248, 249, 250, 0), rgba(248, 249, 250, 0.94) 30%) !important;
-        padding-top: 1.2rem !important;
-    }
-    [data-testid="stChatInput"] {
-        max-width: 840px !important;
-    }
-    [data-testid="stChatInput"] > div {
-        min-height: 76px !important;
-        background: rgba(255, 255, 255, 0.86) !important;
-        border: 1px solid rgba(0, 0, 0, 0.055) !important;
-        border-radius: 22px !important;
-        box-shadow: 0 18px 48px rgba(22, 34, 51, 0.09) !important;
-        backdrop-filter: blur(12px);
-    }
-    [data-testid="stChatInput"] textarea,
-    [data-testid="stChatInput"] [data-baseweb="textarea"],
-    [data-testid="stChatInput"] [data-baseweb="base-input"],
-    [data-testid="stChatInput"] [data-baseweb="input"] {
-        background: transparent !important;
-        background-color: transparent !important;
-        color: #293241 !important;
-    }
-    [data-testid="stChatInput"] button {
-        border-radius: 16px !important;
-        transition: transform 140ms ease, box-shadow 140ms ease !important;
-    }
-    [data-testid="stChatInput"] button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08) !important;
-    }
-    .followup-row div[data-testid="stButton"] button,
     div[data-testid="stDownloadButton"] button {
         border-radius: 999px !important;
         border: 1px solid rgba(0, 0, 0, 0.055) !important;
@@ -878,17 +455,10 @@ st.markdown(
         box-shadow: 0 4px 22px rgba(0, 0, 0, 0.025) !important;
         transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease !important;
     }
-    .followup-row div[data-testid="stButton"] button:hover,
     div[data-testid="stDownloadButton"] button:hover {
         transform: translateY(-2px);
         background: #ffffff !important;
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06) !important;
-    }
-    div[data-testid="stExpander"] {
-        border: 1px solid rgba(0, 0, 0, 0.04) !important;
-        border-radius: 16px !important;
-        background: rgba(255, 255, 255, 0.58) !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.025) !important;
     }
     div[data-testid="stMetric"] {
         background: rgba(255, 255, 255, 0.62) !important;
@@ -896,163 +466,6 @@ st.markdown(
         border-radius: 16px !important;
         padding: 0.8rem 0.9rem !important;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.025) !important;
-    }
-    div[data-testid="stPopover"] > button,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"] {
-        width: 1.86rem !important;
-        min-width: 1.86rem !important;
-        max-width: 1.86rem !important;
-        height: 1.86rem !important;
-        min-height: 1.86rem !important;
-        max-height: 1.86rem !important;
-        padding: 0 !important;
-        border: 0 !important;
-        border-radius: 999px !important;
-        background: transparent !important;
-        color: #6b7280 !important;
-        box-shadow: none !important;
-        font-size: 1.08rem !important;
-        font-weight: 650 !important;
-        line-height: 1 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin: 0.24rem 0 0 0 !important;
-        transition: background 120ms ease, color 120ms ease !important;
-        overflow: hidden !important;
-    }
-    div[data-testid="stPopover"] > button p,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"] p {
-        font-size: 0 !important;
-        overflow: visible !important;
-    }
-    div[data-testid="stPopover"] > button p::after,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"] p::after {
-        content: "\\22EF";
-        font-size: 1.08rem !important;
-        line-height: 1 !important;
-    }
-    div[data-testid="stPopover"] > button:hover,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover {
-        background: rgba(31, 41, 55, 0.085) !important;
-        color: #172033 !important;
-        transform: none !important;
-        box-shadow: none !important;
-        border: 0 !important;
-    }
-    div[data-testid="stPopover"] > button:focus,
-    div[data-testid="stPopover"] > button:active,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:focus,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"]:active {
-        border: 0 !important;
-        box-shadow: none !important;
-        outline: none !important;
-        background: rgba(31, 41, 55, 0.11) !important;
-    }
-    div[data-testid="stPopover"] div[data-testid="stButton"] button {
-        justify-content: flex-start !important;
-        text-align: left !important;
-        border-radius: 10px !important;
-        min-height: 2.25rem !important;
-        background: transparent !important;
-        white-space: nowrap !important;
-    }
-    button[data-testid="stPopover"] > div > span[data-testid="stPopoverArrow"] {
-        display: none !important;
-    }
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"] svg,
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"] > div > div:last-child {
-        display: none !important;
-    }
-    div[data-testid="stPopover"] button[data-testid="stPopoverButton"] > div {
-        gap: 0 !important;
-        margin-right: 0 !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
-        gap: 0.18rem !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child {
-        min-width: 2.05rem !important;
-        max-width: 2.15rem !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child button {
-        width: 1.86rem !important;
-        min-width: 1.86rem !important;
-        max-width: 1.86rem !important;
-        height: 1.86rem !important;
-        min-height: 1.86rem !important;
-        padding: 0 !important;
-        border: 0 !important;
-        border-radius: 999px !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        overflow: hidden !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child button p {
-        font-size: 0 !important;
-        overflow: visible !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child button p::after {
-        content: "\\22EF";
-        color: #6b7280 !important;
-        font-size: 1.08rem !important;
-        line-height: 1 !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child button svg {
-        display: none !important;
-    }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:first-child,
-    [data-testid="stSidebar"] div[data-testid="stButton"],
-    [data-testid="stSidebar"] div[data-testid="stButton"] button,
-    [data-testid="stSidebar"] div[data-testid="stButton"] button > div {
-        min-width: 0 !important;
-        max-width: 100% !important;
-        overflow: hidden !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button {
-        overflow: hidden !important;
-        white-space: nowrap !important;
-        text-overflow: ellipsis !important;
-        word-break: normal !important;
-        overflow-wrap: normal !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button p {
-        display: block !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        overflow: hidden !important;
-        white-space: nowrap !important;
-        text-overflow: ellipsis !important;
-        word-break: normal !important;
-        overflow-wrap: normal !important;
-        margin: 0 !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] > div > button {
-        width: 1.86rem !important;
-        min-width: 1.86rem !important;
-        max-width: 1.86rem !important;
-        height: 1.86rem !important;
-        min-height: 1.86rem !important;
-        max-height: 1.86rem !important;
-        padding: 0 !important;
-        border: 0 !important;
-        border-radius: 999px !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        overflow: hidden !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] > div > button p {
-        font-size: 0 !important;
-        overflow: visible !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] > div > button p::after {
-        content: "\\22EF";
-        color: #6b7280 !important;
-        font-size: 1.08rem !important;
-        line-height: 1 !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] > div > button > div:last-child {
-        display: none !important;
     }
     .mvp-scope {
         border-left: 4px solid #4f7cac;
@@ -1067,18 +480,6 @@ st.markdown(
         margin-bottom: 0.35rem;
         color: #172033;
     }
-    @media (max-width: 760px) {
-        section[data-testid="stSidebar"] {
-            width: min(86vw, 310px) !important;
-            min-width: min(86vw, 280px) !important;
-            max-width: min(86vw, 310px) !important;
-        }
-        [data-testid="stSidebar"] .block-container {
-            padding-left: 0.72rem !important;
-            padding-right: 0.72rem !important;
-        }
-    }
-    /* Product shell v2: compact, neutral, and consistent across every workspace. */
     html,
     body,
     .stApp,
@@ -1090,44 +491,14 @@ st.markdown(
         background: #f6f7f9 !important;
         color: #18212f !important;
     }
-    .block-container {
-        max-width: 1320px !important;
-        padding: 1.25rem 2rem 7rem !important;
-    }
-    .chat-app-header,
-    .chat-app-header.compact-top {
-        max-width: none !important;
-        margin: 0 0 1rem !important;
-        padding: 0.15rem 0 0.9rem !important;
-        border-bottom: 1px solid #dbe1e8;
-    }
-    .chat-app-kicker {
-        color: #607086 !important;
-        font-size: 0.7rem !important;
-        font-weight: 700 !important;
-        letter-spacing: 0 !important;
-        margin: 0 0 0.3rem !important;
-        text-transform: uppercase;
-    }
-    .chat-app-title {
-        color: #172033 !important;
-        font-size: clamp(1.45rem, 2vw, 1.85rem) !important;
-        font-weight: 680 !important;
-        line-height: 1.18 !important;
-        margin: 0 !important;
-    }
-    .chat-app-subtitle {
-        max-width: 850px !important;
-        color: #687386 !important;
-        font-size: 0.9rem !important;
-        line-height: 1.55 !important;
-        margin: 0.38rem 0 0 !important;
-    }
-    p, li {
+    p,
+    li {
         line-height: 1.58 !important;
         margin-bottom: 0.65rem;
     }
-    h2, h3, h4 {
+    h2,
+    h3,
+    h4 {
         color: #1c2736 !important;
         margin-top: 1rem !important;
         margin-bottom: 0.55rem !important;
@@ -1139,17 +510,11 @@ st.markdown(
     .graph-card,
     .kg-panel,
     .sidebar-metric-card,
-    div[data-testid="stChatMessage"],
-    div[data-testid="stExpander"],
-    div[data-testid="stMetric"],
-    div[data-testid="stVerticalBlockBorderWrapper"] {
+    div[data-testid="stMetric"] {
         border-radius: 6px !important;
         box-shadow: none !important;
     }
-    div[data-testid="stVerticalBlockBorderWrapper"],
-    div[data-testid="stExpander"],
-    div[data-testid="stMetric"],
-    div[data-testid="stChatMessage"] {
+    div[data-testid="stMetric"] {
         background: #ffffff !important;
         border: 1px solid #dce2e9 !important;
     }
@@ -1157,11 +522,6 @@ st.markdown(
     .graph-card {
         background: #ffffff !important;
         border: 1px solid #dce2e9 !important;
-    }
-    .user-chat-bubble {
-        background: #273240 !important;
-        border-radius: 8px 8px 3px 8px !important;
-        box-shadow: none !important;
     }
     div[data-testid="stMetric"] {
         min-width: 0 !important;
@@ -1210,72 +570,6 @@ st.markdown(
         background: #ffffff !important;
         padding: 0.62rem 0.8rem !important;
     }
-    section[data-testid="stSidebar"] {
-        width: 268px !important;
-        min-width: 250px !important;
-        max-width: 285px !important;
-        background: #ffffff !important;
-        border-right: 1px solid #dce2e9 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSidebar"] .block-container {
-        padding: 0.75rem 0.68rem 1rem !important;
-    }
-    .sidebar-brand {
-        margin: 0.15rem 0 0.65rem !important;
-    }
-    .sidebar-brand img {
-        width: min(108px, 62%) !important;
-        max-height: 62px !important;
-        border-radius: 4px !important;
-    }
-    .sidebar-section {
-        color: #7b8798 !important;
-        font-size: 0.64rem !important;
-        letter-spacing: 0 !important;
-        margin: 0.72rem 0 0.2rem !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button {
-        min-height: 2.02rem !important;
-        border-radius: 5px !important;
-        padding: 0.32rem 0.48rem !important;
-        font-size: 0.82rem !important;
-        transition: background 100ms ease, border-color 100ms ease !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button:hover {
-        transform: none !important;
-        background: #f2f5f7 !important;
-        border-color: #dce2e9 !important;
-        box-shadow: none !important;
-    }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"] {
-        background: #e8f2f0 !important;
-        border-color: #bcd8d3 !important;
-        color: #165d58 !important;
-    }
-    [data-testid="stSidebar"] details {
-        border-radius: 6px !important;
-        background: #ffffff !important;
-        border: 1px solid #dce2e9 !important;
-        box-shadow: none !important;
-        margin-bottom: 0.45rem !important;
-    }
-    [data-testid="stBottom"],
-    [data-testid="stBottom"] > div,
-    [data-testid="stBottomBlockContainer"] {
-        background: #f6f7f9 !important;
-    }
-    [data-testid="stChatInput"] > div {
-        min-height: 68px !important;
-        background: #ffffff !important;
-        border: 1px solid #cfd7e1 !important;
-        border-radius: 8px !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-    }
-    [data-testid="stChatInput"] button {
-        border-radius: 6px !important;
-    }
     .workflow-stepper {
         display: grid;
         grid-template-columns: repeat(9, minmax(0, 1fr));
@@ -1302,66 +596,12 @@ st.markdown(
         margin-bottom: 0.2rem;
     }
     @media (max-width: 900px) {
-        .block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
-        .workflow-stepper { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .workflow-step { border-bottom: 1px solid #e4e8ed; }
-    }
+.workflow-stepper { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .workflow-step { border-bottom: 1px solid #e4e8ed; }
+}
     @media (max-width: 620px) {
-        section[data-testid="stSidebar"] {
-            width: min(88vw, 280px) !important;
-            min-width: min(88vw, 250px) !important;
-            max-width: min(88vw, 280px) !important;
-        }
-        .workflow-stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .chat-app-title { font-size: 1.38rem !important; }
-    }
-    /* Product shell v3: readable chat and stable single-line conversation rows. */
-    .research-chat-layout {
-        max-width: 850px;
-        margin: 0 auto;
-    }
-    .research-chat-layout.chat-app-header {
-        max-width: 850px !important;
-        margin: 0 auto 1.25rem !important;
-        padding: 0.25rem 0 0.85rem !important;
-    }
-    .research-chat-layout.chat-app-header .chat-app-title {
-        font-size: 1.55rem !important;
-    }
-    .research-chat-layout.chat-app-header .chat-app-subtitle {
-        max-width: 720px !important;
-    }
-    div[data-testid="stChatMessage"] {
-        max-width: 850px !important;
-        background: transparent !important;
-        border: 0 !important;
-        border-radius: 0 !important;
-        padding: 0.55rem 0 !important;
-        margin: 0.25rem auto 0.75rem !important;
-    }
-    div[data-testid="stChatMessageContent"] {
-        color: #20242c !important;
-        font-size: 0.96rem !important;
-        line-height: 1.62 !important;
-    }
-    div[data-testid="stChatMessageContent"] h2,
-    div[data-testid="stChatMessageContent"] h3 {
-        font-size: 1rem !important;
-        margin: 1rem 0 0.42rem !important;
-    }
-    .user-chat-row {
-        max-width: 850px;
-        margin: 0.35rem auto 0.8rem !important;
-    }
-    .user-chat-bubble {
-        max-width: min(76%, 650px) !important;
-        background: #eef0f2 !important;
-        color: #20242c !important;
-        border: 1px solid #e2e5e9 !important;
-        border-radius: 15px !important;
-        padding: 0.68rem 0.88rem !important;
-        line-height: 1.52 !important;
-    }
+.workflow-stepper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
     .algorithm-surface-title {
         max-width: 850px;
         margin: 0.85rem auto 0.45rem;
@@ -1403,110 +643,418 @@ st.markdown(
         font-size: 0.66rem;
         font-weight: 700;
     }
+    @media (max-width: 700px) {
+.algorithm-grid { grid-template-columns: 1fr; }
+}
+
+    /* Product shell: one width owner per surface. Wide workbenches remain wide. */
+    :root { --research-width: 850px; --workspace-gutter: 32px; }
+    [data-testid="stHeader"] {
+        background: transparent;
+        pointer-events: none;
+    }
+    [data-testid="stHeader"] button { pointer-events: auto; }
+    [data-testid="stDeployButton"], [data-testid="stAppDeployButton"],
+    [data-testid="stMainMenu"], [data-testid="stDecoration"] { display: none; }
+    [data-testid="stSidebarCollapseButton"] { display: flex; visibility: visible; }
+    .block-container {
+        max-width: 1320px;
+        padding: 1.25rem var(--workspace-gutter) 3rem;
+    }
+    /* :has keeps routing and Streamlit's wide workbench layout independent. */
+    .block-container:has(.research-chat-layout) {
+        max-width: calc(var(--research-width) + 2 * var(--workspace-gutter));
+    }
+    .chat-app-header {
+        margin: 0 0 0.35rem;
+        padding: 0.15rem 0 0.9rem;
+        border-bottom: 1px solid #dbe1e8;
+    }
+    .chat-app-kicker {
+        color: #607086;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+        text-transform: uppercase;
+    }
+    .chat-app-title {
+        color: #172033;
+        font-size: clamp(1.45rem, 2vw, 1.85rem);
+        font-weight: 680;
+        line-height: 1.2;
+    }
+    .chat-app-subtitle {
+        color: #687386;
+        font-size: 0.9rem;
+        line-height: 1.55;
+        margin-top: 0.4rem;
+        max-width: 850px;
+    }
+    .research-routing {
+        color: #687386;
+        font-size: 0.82rem;
+        line-height: 1.5;
+    }
+    .research-routing strong { color: #165d58; margin-right: 0.6rem; }
+    [data-testid="stMarkdownContainer"]:has(> .research-routing),
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { margin-bottom: 0; }
+    /* Native border=False containers must stay borderless. Only details own a frame. */
+    [data-testid="stExpander"] details {
+        border: 1px solid #dce2e9;
+        border-radius: 8px;
+        background: #fff;
+    }
+    [data-testid="stExpander"] summary p { margin: 0; font-size: 0.86rem; }
+    .user-chat-row {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+        margin: 0.6rem 0 0.4rem;
+    }
+    .user-chat-bubble {
+        max-width: min(88%, 740px);
+        background: #eaf1f1;
+        color: #20242c;
+        border: 1px solid #dce7e6;
+        border-radius: 14px 14px 4px 14px;
+        padding: 0.75rem 1rem;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+    .user-chat-attachments {
+        color: #687386;
+        font-size: 0.82rem;
+        margin-top: 0.4rem;
+        border-top: 1px solid #dce7e6;
+        padding-top: 0.4rem;
+    }
+    [data-testid="stChatMessage"] {
+        background: transparent;
+        border: 0;
+        padding: 0.5rem 0;
+        margin: 0;
+        min-width: 0;
+    }
+    [data-testid="stChatMessageContent"] {
+        min-width: 0;
+        color: #20242c;
+        line-height: 1.62;
+        overflow-wrap: anywhere;
+    }
+    [data-testid="stChatMessageContent"] h2,
+    [data-testid="stChatMessageContent"] h3 { font-size: 1.05rem; }
+    [data-testid="stChatMessageContent"] code { overflow-wrap: anywhere; }
+    /* Streamlit 1.37 sizes the inner input from a measured parent width.
+       Constrain that parent, and explicitly let the inner shell shrink with it. */
+    [data-testid="stBottom"], [data-testid="stBottom"] > div {
+        padding: 0;
+        background: transparent;
+    }
+    [data-testid="stBottomBlockContainer"] {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: calc(var(--research-width) + 2 * var(--workspace-gutter));
+        margin: 0 auto;
+        padding: 0.75rem var(--workspace-gutter) 1rem;
+        background: #f6f7f9;
+    }
     [data-testid="stChatInput"] {
-        max-width: 850px !important;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 0;
+        margin: 0;
+        background: transparent;
+        border: 0;
     }
     [data-testid="stChatInput"] > div {
-        border-radius: 17px !important;
-        border-color: #cdd3da !important;
-        box-shadow: 0 4px 18px rgba(24, 33, 47, 0.06) !important;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        min-height: 56px;
+        background: #fff;
+        border: 1px solid #cdd3da;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(24, 33, 47, 0.04);
     }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
-        width: 100% !important;
-        align-items: center !important;
-        gap: 0.12rem !important;
+    [data-testid="stChatInput"] [data-baseweb="textarea"],
+    [data-testid="stChatInput"] [data-baseweb="base-input"] {
+        min-width: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
     }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:first-child {
-        flex: 1 1 auto !important;
-        width: calc(100% - 2.15rem) !important;
+    [data-testid="stChatInput"] textarea {
+        min-height: 54px;
+        background: transparent;
+        color: #20242c;
+        line-height: 1.5;
     }
-    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child {
-        flex: 0 0 2rem !important;
-        width: 2rem !important;
-        min-width: 2rem !important;
-        max-width: 2rem !important;
+    [data-testid="stChatInput"]:focus-within > div {
+        border-color: #18766f;
+        box-shadow: 0 0 0 2px rgba(24, 118, 111, 0.12);
     }
-    [data-testid="stSidebar"] div[data-testid="stButton"] button,
-    [data-testid="stSidebar"] div[data-testid="stButton"] button p {
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        overflow-wrap: normal !important;
-        word-break: keep-all !important;
+    /* One composer surface, including attachments and the add button.
+       Match only the container that directly owns our marker (Streamlit 1.37). */
+    [data-testid="stVerticalBlockBorderWrapper"]:has(> div > [data-testid="stVerticalBlock"] > [data-testid="element-container"] .research-composer-marker) {
+        border: 1px solid #d6d3ce;
+        border-radius: 20px;
+        padding: 8px 12px;
+        background: #fff;
+        box-shadow: 0 3px 12px rgba(24, 33, 47, 0.04);
     }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] > button,
-    [data-testid="stSidebar"] div[data-testid="stPopover"] button[data-testid="stPopoverButton"] {
-        font-size: 1.15rem !important;
-        font-family: Arial, sans-serif !important;
-        letter-spacing: 0 !important;
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) {
+        gap: 4px;
     }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] button svg,
-    [data-testid="stSidebar"] div[data-testid="stPopover"] button [data-testid="stPopoverArrow"] {
-        display: none !important;
+    [data-testid="element-container"]:has(.research-composer-marker),
+    [data-testid="element-container"]:has(.research-upload-menu) { display: none; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) > [data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap;
+        align-items: end;
+        gap: 6px;
     }
-    [data-testid="stSidebar"] div[data-testid="stPopover"] button > div {
-        gap: 0 !important;
-        justify-content: center !important;
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+        flex: 0 0 38px;
+        min-width: 38px;
+        width: 38px;
+        padding-bottom: 8px;
     }
-    section[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
-        width: 100% !important;
-        align-items: center !important;
-        gap: 0.12rem !important;
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+        flex: 1 1 0;
+        min-width: 0;
+        width: 0;
     }
-    section[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:first-child {
-        min-width: 0 !important;
-        flex: 1 1 auto !important;
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) [data-testid="stChatInput"] > div {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
     }
-    section[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] > div:last-child {
-        flex: 0 0 1.9rem !important;
-        width: 1.9rem !important;
-        min-width: 1.9rem !important;
-        max-width: 1.9rem !important;
+    [data-testid="stVerticalBlockBorderWrapper"]:has(> div > [data-testid="stVerticalBlock"] > [data-testid="element-container"] .research-composer-marker):focus-within {
+        border-color: #9aada9;
     }
-    section[data-testid="stSidebar"] div[data-testid="stButton"] button,
-    section[data-testid="stSidebar"] div[data-testid="stButton"] button p {
-        min-width: 0 !important;
-        max-width: 100% !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        overflow-wrap: normal !important;
-        word-break: keep-all !important;
-        margin: 0 !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) [data-testid="stPopover"] button {
+        width: 38px;
+        height: 38px;
+        min-height: 38px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
     }
-    section[data-testid="stSidebar"] div[data-testid="stPopover"] > div > button {
-        width: 1.8rem !important;
-        min-width: 1.8rem !important;
-        max-width: 1.8rem !important;
-        height: 1.8rem !important;
-        min-height: 1.8rem !important;
-        padding: 0 !important;
-        border: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) [data-testid="stPopover"] button:hover { background: #f0efec; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) [data-testid="stPopover"] button p { font-size: 26px; margin: 0; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-composer-marker) [data-testid="stPopover"] button svg { display: none; }
+    .research-attachment-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 4px 0; }
+    .research-attachment-chip {
+        max-width: 100%; padding: 5px 10px; border: 1px solid #e7e5e0;
+        border-radius: 9px; background: #f7f7f5; font-size: 0.8rem;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    section[data-testid="stSidebar"] div[data-testid="stPopover"] button svg {
-        display: none !important;
+    [data-testid="element-container"]:has(.research-attachments-marker) { display: none; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-attachments-marker) > [data-testid="stHorizontalBlock"] { flex-wrap: nowrap; gap: 4px; align-items: center; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-attachments-marker) [data-testid="column"]:first-child { flex: 1 1 0; min-width: 0; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-attachments-marker) [data-testid="column"]:last-child { flex: 0 0 30px; min-width: 30px; }
+    [data-testid="stVerticalBlock"]:has(> [data-testid="element-container"] .research-attachments-marker) button { border: 0; padding: 0; min-height: 30px; width: 30px; background: transparent; }
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) {
+        box-sizing: border-box;
+        width: min(340px, calc(100vw - 32px));
+        min-width: 0;
+        max-height: min(560px, calc(100dvh - 32px));
+        overflow: auto;
+        padding: 12px;
+        border-radius: 14px;
     }
-    section[data-testid="stSidebar"] div[data-testid="stPopover"] button p {
-        width: auto !important;
-        text-align: center !important;
-        font-size: 1.1rem !important;
-        line-height: 1 !important;
-        overflow: visible !important;
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) [data-testid="stVerticalBlock"] { gap: 10px; }
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) [data-testid="stFileUploaderDropzone"] {
+        padding: 0; min-height: 40px; background: transparent;
     }
-    @media (max-width: 700px) {
-        .user-chat-bubble { max-width: 88% !important; }
-        .algorithm-grid { grid-template-columns: 1fr; }
-        div[data-testid="stChatMessageAvatar"] { display: none !important; }
-        div[data-testid="stChatMessageContent"] { width: 100% !important; }
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) [data-testid="stFileUploaderDropzoneInstructions"] { display: none; }
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) [data-testid="stFileUploaderDropzone"] button {
+        width: 100%; min-height: 40px; border-radius: 8px;
     }
-</style>
-""",
-    unsafe_allow_html=True,
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) [data-testid="stCaptionContainer"] p { font-size: 0.75rem; margin: 0; }
+    [data-testid="stPopoverBody"]:has(.research-upload-menu) [data-testid="stExpander"] details { border: 0; }
+    section[data-testid="stSidebar"] {
+        width: 288px !important; /* Native resizable sidebar uses an inline width. */
+        min-width: 288px;
+        max-width: 288px;
+        background: #fff;
+        border-right: 1px solid #dce2e9;
+    }
+    /* The native collapse translation uses the pre-CSS sidebar width. Remove
+       the collapsed panel from flow and translate its actual width. */
+    section[data-testid="stSidebar"][aria-expanded="false"] {
+        position: absolute !important;
+        transform: translateX(-100%);
+    }
+    [data-testid="stSidebarHeader"] { height: 2.75rem; padding: 0.45rem 1rem; }
+    [data-testid="stSidebarUserContent"] { padding: 0.25rem 1rem 1rem; }
+    [data-testid="stSidebarUserContent"] [data-testid="stVerticalBlock"] { gap: 0.35rem; }
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0 0 0.45rem;
+        min-height: 56px;
+    }
+    .sidebar-logo { width: 56px; height: 56px; overflow: hidden; flex-shrink: 0; }
+    .sidebar-brand img { width: 88px; height: 88px; max-width: none; margin: -16px; object-fit: contain; }
+    .sidebar-brand-title { font-size: 0.94rem; font-weight: 700; color: #172033; }
+    .sidebar-brand-subtitle { font-size: 0.68rem; color: #687386; }
+    .sidebar-section {
+        color: #7b8798;
+        font-size: 0.64rem;
+        font-weight: 650;
+        margin: 0;
+        padding: 0.55rem 0 0.15rem;
+        text-transform: uppercase;
+    }
+    [data-testid="stSidebar"] hr { margin: 0.65rem 0; }
+    [data-testid="stSidebar"] [data-testid="stButton"] button {
+        width: 100%;
+        min-height: 2.25rem;
+        padding: 0.35rem 0.5rem;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        background: transparent;
+        color: #313b49;
+        text-align: left;
+        justify-content: flex-start;
+        box-shadow: none;
+    }
+    [data-testid="stSidebar"] [data-testid="stButton"] button p {
+        font-size: 0.84rem;
+        line-height: 1.4;
+        margin: 0;
+        text-align: left;
+    }
+    [data-testid="stSidebar"] [data-testid="stButton"] button:hover { background: #f2f5f7; }
+    [data-testid="stSidebar"] [data-testid="stButton"] button[kind="primary"] {
+        background: #e8f2f0;
+        border-color: #bcd8d3;
+        color: #165d58;
+    }
+    [data-testid="stSidebar"] details { background: transparent; }
+    [data-testid="stSidebar"] details summary { padding: 0.45rem 0.5rem; }
+    /* Scope conversation columns to rows with a menu; settings columns remain usable. */
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:has([data-testid="stPopover"]) {
+        gap: 0.25rem;
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:has([data-testid="stPopover"]) > div:first-child {
+        min-width: 0;
+        flex: 1 1 0;
+    }
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:has([data-testid="stPopover"]) > div:last-child {
+        min-width: 32px;
+        max-width: 32px;
+        flex: 0 0 32px;
+    }
+    [data-testid="stSidebar"] [data-testid="stHorizontalBlock"]:has([data-testid="stPopover"]) [data-testid="stButton"] button p {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    [data-testid="stSidebar"] [data-testid="stPopover"] button {
+        width: 32px;
+        height: 32px;
+        min-height: 32px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+    [data-testid="stSidebar"] [data-testid="stPopover"] button p { font-size: 0; margin: 0; }
+    [data-testid="stSidebar"] [data-testid="stPopover"] button p::after {
+        content: "\\22EF";
+        font-size: 1.15rem;
+        color: #687386;
+    }
+    [data-testid="stSidebar"] [data-testid="stPopover"] button svg { display: none; }
+    [data-testid="stSidebar"] button:focus-visible {
+        outline: 2px solid #18766f;
+        outline-offset: 2px;
+    }
+    @media (max-width: 900px) { :root { --workspace-gutter: 20px; } }
+    @media (max-width: 640px) {
+        :root { --workspace-gutter: 16px; }
+        .block-container { padding-top: 3rem; }
+        section[data-testid="stSidebar"] {
+            width: min(88vw, 288px) !important;
+            min-width: min(88vw, 288px);
+            max-width: min(88vw, 288px);
+        }
+        .user-chat-bubble { max-width: 95%; }
+        [data-testid="stChatMessage"] { gap: 0.4rem; }
+        [data-testid="stChatMessageAvatarAssistant"] { width: 24px; height: 24px; }
+    }
+"""
+
+from observability.dashboard.research_shell import (
+    render_app_styles, summary_model, stage_html, information_html, render_plan_overview, render_reply_overview, current_workspace_plan,
 )
+render_app_styles(_BASE_UI_CSS, current_view=st.session_state.current_view)
+
+
+LANGGRAPH_AVAILABLE = importlib.util.find_spec("langgraph") is not None
+from core.reflection_memory import reflect_agent_run
+from core.privacy_policy import OutboundDisclosureService, PrivacyMode
+from core.settings import get_settings
+from core.tool_contract_registry import ToolContractRegistry
+from core.user_store import (
+    ApiConfigError,
+    clear_conversation,
+    create_session,
+    delete_session,
+    has_saved_api_config,
+    init_store,
+    list_sessions,
+    load_api_config,
+    load_conversation,
+    load_project_memory,
+    load_working_context,
+    save_encrypted_api_config,
+    save_message,
+    save_project_memory,
+    save_working_context,
+    rename_session,
+    set_session_pinned,
+)
+from engine.knowledge_graph_view import (
+    build_catalog_landscape_html,
+    build_decision_graph_neighborhood_view,
+    build_decision_graph_workspace_view,
+    build_knowledge_graph_html,
+    build_knowledge_graph_view,
+)
+from engine.decision_graph_query import DecisionGraphQuery
+from engine.action_bundle_retriever import ActionBundleRetriever
+from engine.evidence_graph_query import EvidenceGraphQuery
+from execution.environment_registry import EnvironmentRegistry
+from engine.workflow_decision import (
+    DEFAULT_WORKFLOW_CANDIDATE_TOOLS,
+    build_workflow_decision_response,
+)
+from observability.dashboard.services import (
+    AgentLoopDemoService,
+    DefenseDemoService,
+    InterviewDemoService,
+    Phase6EvaluationService,
+    ReflectionService,
+    TraceService,
+)
+from observability.dashboard.ui_presenters import (
+    format_conversation_title,
+    normalize_ui_status,
+)
+
+
 
 
 EXAMPLES = {
@@ -2067,18 +1615,16 @@ def _render_followups(
 ) -> None:
     if not suggestions:
         return
-    st.markdown("**你可以继续问：**")
-    st.markdown('<div class="followup-row">', unsafe_allow_html=True)
-    for idx, suggestion in enumerate(suggestions):
-        button_key = f"{key_prefix}_{idx}"
-        if st.button(suggestion, key=button_key):
-            st.session_state.pending_query = _contextualized_followup_query(
-                suggestion,
-                source_query=source_query,
-            )
-            st.session_state.pending_display_query = suggestion
-            st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.expander("继续追问", expanded=False):
+        for idx, suggestion in enumerate(suggestions):
+            button_key = f"{key_prefix}_{idx}"
+            if st.button(suggestion, key=button_key):
+                st.session_state.pending_query = _contextualized_followup_query(
+                    suggestion,
+                    source_query=source_query,
+                )
+                st.session_state.pending_display_query = suggestion
+                st.rerun()
 
 
 def _contextualized_followup_query(suggestion: str, *, source_query: str = "") -> str:
@@ -2300,6 +1846,182 @@ def _render_execution_handoff(state: Dict[str, Any], *, key: str) -> None:
         st.rerun()
 
 
+def _research_input_binding() -> Dict[str, Any]:
+    return dict(load_working_context(st.session_state.session_id).get("input_binding") or {})
+
+
+def _bind_research_input(binding: Dict[str, Any]) -> None:
+    from execution.research_input_binding import invalidate_delivery
+
+    if binding != _research_input_binding():
+        invalidate_delivery(st.session_state)
+        _reset_workspace_from_stage("source")
+    save_working_context(st.session_state.session_id, "input_binding", binding)
+    st.session_state.workspace_artifact_id = binding.get("artifact_id")
+    st.session_state.capability_workspace_artifact_id = binding.get("artifact_id")
+    st.session_state.capability_workspace_pending_artifact = binding.get("artifact_id")
+    handoff = dict(st.session_state.get("workspace_task_handoff") or {})
+    if handoff:
+        handoff["input_binding"] = binding
+        handoff["conversation_id"] = st.session_state.session_id
+        st.session_state.workspace_task_handoff = handoff
+
+
+def _research_composer_draft() -> Dict[str, Any]:
+    # Pending attachments belong to this browser session, never the saved task.
+    key = f"research_composer_draft_{st.session_state.session_id}"
+    return st.session_state.setdefault(key, {})
+
+
+def _stage_research_input(binding: Dict[str, Any]) -> None:
+    _research_composer_draft()["input_binding"] = dict(binding)
+
+
+def _render_research_input() -> None:
+    """Compact composer attachment menu; registration is not an execution grant."""
+    from execution.execution_ui_service import configured_local_user_id
+    from execution.research_input_binding import register_upload, register_sample, registered_input_options, select_registered_input, digest
+
+    user_id = configured_local_user_id()
+    execution = _execution_ui_backend()
+    session = st.session_state.session_id
+    with st.popover("＋", help="添加本地文件或选择系统样例"):
+        st.markdown('<span class="research-upload-menu"></span>', unsafe_allow_html=True)
+        generation = st.session_state.get(f"research_upload_generation_{session}", 0)
+        files = st.file_uploader(
+            "添加本地文件", type=None, accept_multiple_files=True, label_visibility="collapsed",
+            key=f"research_files_{session}_{generation}",
+            help="数据留在本机。.h5ad 可进入当前分析；文档和表格作为附件，不会自动当成 AnnData。",
+        )
+        data_files = [item for item in files or [] if item.name.lower().endswith(".h5ad")]
+        selection = data_files[0] if len(data_files) == 1 else None
+        if len(data_files) > 1:
+            choice = st.selectbox("本次分析哪份数据？", options=[None, *range(len(data_files))],
+                format_func=lambda i: "请选择，不自动合并" if i is None else
+                f"{data_files[i].name} · {hashlib.sha256(data_files[i].getvalue()).hexdigest()[:8]}",
+                key=f"research_upload_choice_{session}_{generation}")
+            if choice is not None:
+                selection = data_files[choice]
+        batch = [(item.name, hashlib.sha256(item.getvalue()).hexdigest()) for item in files or []]
+        signature = digest({"files": batch, "selected": selection.name if selection else None,
+                            "selected_sha": hashlib.sha256(selection.getvalue()).hexdigest() if selection else None})
+        working = _research_composer_draft()
+        st.session_state.workspace_input_pending = len(data_files) > 1 and selection is None
+        # Distinguish an explicit removal from an empty uploader after reload.
+        observed_key = f"research_observed_files_{session}_{generation}"
+        previous_files = st.session_state.get(observed_key, [])
+        if signature != working.get("attachment_batch_digest") and (files or previous_files):
+            try:
+                if selection is not None:
+                    binding = register_upload(execution.data_registry, user_id=user_id,
+                        filename=selection.name, content=selection.getvalue())
+                    _stage_research_input(binding)
+                elif len(data_files) > 1:
+                    # A new ambiguous data selection must not leave the previous
+                    # conversation input silently active, even after navigation.
+                    _stage_research_input({})
+                elif any(name.lower().endswith(".h5ad") for name in previous_files):
+                    _stage_research_input({})
+                documents = [item for item in files or [] if not item.name.lower().endswith(".h5ad")]
+                context = _summarize_uploaded_files(documents)
+                working["uploaded_context"] = context
+                working["attachment_batch_digest"] = signature
+                working["attachment_names"] = [item.name for item in files or []]
+                st.session_state[observed_key] = [item.name for item in files or []]
+                st.rerun()
+            except Exception as exc:
+                st.session_state.workspace_input_pending = True
+                st.error(execution.redact_text(str(exc)))
+        st.session_state[observed_key] = [item.name for item in files or []]
+        if st.session_state.workspace_input_pending:
+            st.info("请先选择本次分析的数据，避免用错文件。")
+        st.caption("可多选或拖入文件 · 上传不会运行分析")
+        with st.expander("更多来源与数据详情", expanded=False):
+            if st.button("使用系统样例 · 180 cells × 240 genes", key=f"research_sample_{session}"):
+                try:
+                    _stage_research_input(register_sample(execution.data_registry, user_id=user_id))
+                    st.session_state.workspace_input_pending = False
+                    st.session_state[f"research_upload_generation_{session}"] = generation + 1
+                    working["attachment_names"] = []
+                    working["uploaded_context"] = {}
+                    working["attachment_batch_digest"] = ""
+                    st.rerun()
+                except Exception as exc:
+                    st.error(execution.redact_text(str(exc)))
+            st.caption("已登记文件 / 大文件本地关联")
+            available, unavailable = registered_input_options(execution.data_registry, user_id=user_id)
+            by_id = {record.artifact_id: record for record, _ in available}
+            labels = {record.artifact_id: f"{name} · {record.size_bytes / (1024 * 1024):.1f} MB · {record.artifact_id[-8:]}"
+                      for record, name in available}
+            if unavailable:
+                st.caption(f"已隐藏 {len(unavailable)} 条无法直接访问的旧登记；可重新上传或关联本地路径。")
+            selected = st.selectbox("选择已登记文件", options=[None, *by_id],
+                format_func=lambda value: "请选择" if value is None else labels[value],
+                key=f"research_registered_{session}")
+            path = st.text_input("本地数据路径（仅限已授权目录，无需重复上传）", type="password",
+                key=f"research_associate_path_{session}")
+            if st.button("使用此文件", disabled=not (selected or path.strip()), key=f"research_associate_{session}"):
+                try:
+                    if selected and path.strip():
+                        raise ValueError("请选择一种方式：已登记文件或本地路径")
+                    record = execution.register_local_artifact(user_id=user_id, local_path=path.strip()) if path.strip() else by_id[selected]
+                    _stage_research_input(select_registered_input(execution.data_registry,
+                        artifact_id=record.artifact_id, user_id=user_id))
+                    st.session_state.workspace_input_pending = False
+                    st.session_state[f"research_upload_generation_{session}"] = generation + 1
+                    working["attachment_batch_digest"] = ""
+                    st.rerun()
+                except Exception as exc:
+                    st.error("暂时无法使用这份已登记文件。服务重启后，请重新选择本地文件以恢复访问。"
+                             if "re-authorized" in str(exc) else execution.redact_text(str(exc)))
+            binding = _research_composer_draft().get("input_binding") or {}
+            if binding:
+                st.caption("数据绑定详情")
+                st.json(binding)
+
+
+def _clear_research_attachments() -> None:
+    """Clear only the unsent draft; completed tasks keep their exact input identity."""
+    session = st.session_state.session_id
+    st.session_state.pop(f"research_composer_draft_{session}", None)
+    generation_key = f"research_upload_generation_{session}"
+    st.session_state[generation_key] = st.session_state.get(generation_key, 0) + 1
+    st.session_state.workspace_input_pending = False
+
+
+def _render_bound_input_card() -> None:
+    working = _research_composer_draft()
+    binding = working.get("input_binding") or {}
+    labels = []
+    if binding:
+        shape = binding.get("shape") or []
+        dimensions = f" · {shape[0]:,} cells × {shape[1]:,} genes" if len(shape) == 2 else ""
+        kind = "系统样例" if binding.get("source") == "explicit_demo" else "当前数据"
+        name = 'sample.h5ad' if binding.get('source') == 'explicit_demo' else binding['original_filename']
+        if re.fullmatch(r"[0-9a-f]{64}\.h5ad", name):
+            name = "已关联 AnnData（原文件名未记录）"
+        labels.append(f"{name}{dimensions} · {kind}")
+    documents = working.get("uploaded_context") or {}
+    labels.extend(str(item["file_name"]) for item in documents.get("files", []))
+    if not labels and st.session_state.get("workspace_input_pending"):
+        labels = ["待选择分析数据 · 点击 ＋"]
+    if not labels:
+        return
+    with st.container(border=False):
+        st.markdown('<span class="research-attachments-marker"></span>', unsafe_allow_html=True)
+        chips, clear = st.columns([12, 1])
+        with chips:
+            st.markdown('<div class="research-attachment-list">' + ''.join(
+                f'<span class="research-attachment-chip" title="{escape(label, quote=True)}">📎 {escape(label)}</span>'
+                for label in labels
+            ) + '</div>', unsafe_allow_html=True)
+        with clear:
+            if st.button("×", key=f"research_clear_attachments_{st.session_state.session_id}",
+                         help="移除全部附件（不删除原文件）"):
+                _clear_research_attachments()
+                st.rerun()
+
+
 def _workspace_handoff_payload(
     state: Dict[str, Any], *, source_query: str
 ) -> Dict[str, Any] | None:
@@ -2325,6 +2047,7 @@ def _workspace_handoff_payload(
         "parent_request_id": governed_handoff.get("parent_request_id"),
         "original_plan_id": governed_handoff.get("original_plan_id"),
         "conversation_id": st.session_state.session_id,
+        "input_binding": dict(state.get("ui_input_binding") or _research_input_binding()),
         "source_query": source_query.strip(),
         "task_family": task,
         "tool_name": tool_name,
@@ -2339,6 +2062,10 @@ def _workspace_handoff_payload(
         "preferred_method_ids": list(
             governed_handoff.get("preferred_method_ids") or []
         ),
+        **{name: governed_handoff[name] for name in (
+            "parameter_overrides", "batch_key", "enable_doublet_detection",
+            "exclude_predicted_doublets", "doublet_selection_hash", "enable_batch_integration"
+        ) if name in governed_handoff},
         "stepwise_preview_available": bool(
             governed_handoff.get("stepwise_preview_available")
         ),
@@ -2354,28 +2081,36 @@ def _render_workspace_handoff(
     payload = _workspace_handoff_payload(state, source_query=source_query)
     if payload is None:
         return
+    # The just-produced answer and its history render must share widget identity.
+    key = "workspace_handoff_" + hashlib.sha256(
+        f"{st.session_state.session_id}:{payload.get('handoff_id')}".encode()
+    ).hexdigest()[:20]
     st.markdown(
-        '<div class="algorithm-surface-title">从对话继续到数据验证</div>',
+        '<div class="algorithm-surface-title">下一步 · Stepwise Analysis</div>',
         unsafe_allow_html=True,
     )
     capability_mode = payload.get("notebook_strategy") == "capability_renderer"
+    stale_input = bool(state.get("ui_input_binding")) and state["ui_input_binding"] != _research_input_binding()
+    if stale_input:
+        st.warning("这条历史任务绑定的是另一份输入。请为当前数据重新发送计划请求，不能沿用旧交接。")
     st.caption(
-        "系统识别到一个已登记的 Capability Pack。对话中的任务、目标表示和计划会一并带入 Stepwise Analysis。"
+        "当前对话的数据会自动带入 Stepwise。先检查数据状态并准备计划，再由你确认执行。"
         if capability_mode
         else "系统识别到这是已资格化的 Doublet Detection workflow。对话中的任务、工具和计划会一并带入 Stepwise Analysis。"
     )
     action_cols = st.columns(2)
-    if action_cols[0].button(
+    if not payload.get("input_binding") and action_cols[0].button(
         "用版本化模拟数据准备 Notebook"
         if capability_mode
         else "用模拟数据在 JupyterLab 试跑",
         key=f"{key}_demo",
-        type="primary",
+        type="secondary",
         width="stretch",
     ):
         demo_payload = dict(payload)
         demo_payload["source_query"] = source_query.strip()
         demo_payload["fixture_type"] = "synthetic_engineering_demo"
+        demo_payload["input_binding"] = {}
         try:
             if capability_mode:
                 _activate_capability_demo_handoff(demo_payload)
@@ -2386,14 +2121,24 @@ def _render_workspace_handoff(
         except Exception as exc:
             st.error(_execution_ui_backend().redact_text(str(exc)))
     if action_cols[1].button(
-        "关联我的 .h5ad",
+        "进入 Stepwise · 使用当前数据" if payload.get("input_binding") else "进入 Stepwise · 关联我的 .h5ad",
         key=f"{key}_data",
+        type="primary",
         width="stretch",
+        disabled=bool(st.session_state.get("workspace_input_pending")) or stale_input,
     ):
+        from execution.research_input_binding import invalidate_delivery, planning_context
+        prior = st.session_state.get("workspace_task_handoff") or {}
+        if planning_context(prior, prior.get("input_binding") or {}, None) != planning_context(payload, payload.get("input_binding") or {}, None):
+            invalidate_delivery(st.session_state)
+            _reset_workspace_from_stage("source")
         st.session_state.workspace_task_handoff = payload
-        artifact_id = (state.get("execution_handoff") or {}).get("artifact_id")
-        if artifact_id:
-            st.session_state.workspace_artifact_id = artifact_id
+        binding = payload.get("input_binding") or {}
+        artifact_id = binding.get("artifact_id")
+        st.session_state.workspace_artifact_id = artifact_id
+        st.session_state.capability_workspace_artifact_id = artifact_id
+        st.session_state.capability_workspace_pending_artifact = artifact_id
+        st.session_state.pop("capability_workspace_selected_artifact", None)
         st.session_state.current_view = "data_preview"
         st.rerun()
 
@@ -2460,6 +2205,7 @@ def _activate_capability_demo_handoff(payload: Dict[str, Any]) -> None:
     st.session_state.workspace_artifact_id = artifact.artifact_id
     st.session_state.workspace_pending_selected_artifact = artifact.artifact_id
     st.session_state.capability_workspace_artifact_id = artifact.artifact_id
+    st.session_state.capability_workspace_pending_artifact = artifact.artifact_id
     st.session_state.pop("capability_workspace_result", None)
     st.session_state.workspace_task_handoff = dict(payload)
 
@@ -2473,6 +2219,9 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
     )
     from execution.execution_ui_service import configured_local_user_id
     from execution.runtime_pack_resolver import RuntimePackResolver
+    from execution.research_input_binding import (
+        authorize_uploaded_binding, digest, invalidate_delivery, planning_context, publish_delivery,
+    )
 
     execution = _execution_ui_backend()
     workspace = _capability_workspace_backend()
@@ -2480,6 +2229,13 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
     pack_id = str(payload.get("pack_id") or "")
     pack_version = str(payload.get("pack_version") or "")
     targets = [str(item) for item in payload.get("target_representations") or []]
+    if payload.get("conversation_id") != st.session_state.session_id:
+        st.error("交接属于另一对话，请从当前 Research 请求重新进入。")
+        return
+    if not payload.get("input_binding") and payload.get("fixture_type") != "synthetic_engineering_demo":
+        st.warning("此交接没有输入绑定。请先上传或明确选择 .h5ad；不会默认使用 synthetic。")
+        _render_research_input()
+        return
     st.markdown(
         '<div class="data-workbench-section-title">Capability workflow</div>'
         '<div class="data-workbench-section-copy">同一条链路完成数据画像、Representation 复用、DAG 与维护者模板 Notebook。页面不会自动执行代码。</div>',
@@ -2508,8 +2264,11 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
                     user_id=user_id,
                     local_path=local_path.strip(),
                 )
-                st.session_state.capability_workspace_artifact_id = artifact.artifact_id
-                st.session_state.pop("capability_workspace_result", None)
+                from execution.research_input_binding import validate_h5ad
+                shape = validate_h5ad(execution.data_registry.resolve_path(artifact.artifact_id, user_id=user_id))
+                _bind_research_input({"artifact_id": artifact.artifact_id, "sha256": artifact.sha256,
+                    "original_filename": Path(local_path.strip()).name, "source": "explicit_registered_selection",
+                    "owner_user_id": user_id, "shape": list(shape)})
                 st.success(f"已登记：{artifact.redacted_path}")
                 st.rerun()
             except Exception as exc:
@@ -2523,25 +2282,57 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
         item.artifact_id: f"{item.artifact_id} · {item.redacted_path}"
         for item in artifacts
     }
+    if "capability_workspace_pending_artifact" in st.session_state:
+        st.session_state.capability_workspace_selected_artifact = st.session_state.pop("capability_workspace_pending_artifact") or ""
     selected = st.selectbox(
         "当前 AnnData",
-        options=list(labels),
-        format_func=lambda value: labels[value],
+        options=["", *labels],
+        format_func=lambda value: labels.get(value, "请选择当前输入（无默认数据）"),
         index=(
-            list(labels).index(st.session_state.capability_workspace_artifact_id)
+            list(labels).index(st.session_state.capability_workspace_artifact_id) + 1
             if st.session_state.get("capability_workspace_artifact_id") in labels
             else 0
         ),
         key="capability_workspace_selected_artifact",
     )
     if st.session_state.get("capability_workspace_artifact_id") != selected:
-        st.session_state.capability_workspace_artifact_id = selected
-        st.session_state.pop("capability_workspace_result", None)
+        if selected:
+            record = execution.data_registry.get(selected, user_id=user_id)
+            _bind_research_input({"artifact_id": selected, "sha256": record.sha256,
+                "original_filename": record.redacted_path, "source": "explicit_registered_selection",
+                "owner_user_id": user_id})
+        else:
+            _bind_research_input({})
+        st.rerun()
+    if not selected:
+        st.info("请明确选择数据。")
+        return
+    binding = dict(payload.get("input_binding") or {})
+    if payload.get("fixture_type") == "synthetic_engineering_demo" and not binding:
+        record = execution.data_registry.get(selected, user_id=user_id)
+        binding = {"artifact_id": selected, "sha256": record.sha256,
+                   "source": "explicit_demo", "original_filename": record.redacted_path}
+    try:
+        if binding.get("artifact_id") != selected:
+            raise ValueError("handoff 与选择的输入不一致，请重新关联数据")
+        authorize_uploaded_binding(execution.data_registry, binding, user_id=user_id)
+    except Exception as exc:
+        st.error(execution.redact_text(str(exc)))
+        return
+    st.caption(f"本次输入：{binding.get('original_filename')} · {selected} · SHA-256 {binding['sha256']}")
     batch_key = st.text_input(
         "Batch metadata key（可选）",
-        value="batch",
+        value=str(payload.get("batch_key") or ""),
         key="capability_workspace_batch_key",
     )
+    context = planning_context(payload, binding, batch_key.strip())
+    context_hash = digest(context)
+    if st.session_state.get("capability_workspace_context_digest") != context_hash:
+        invalidate_delivery(st.session_state)
+        _reset_workspace_from_stage("source")
+        st.session_state.capability_workspace_context_digest = context_hash
+    st.caption("交接目标：" + ", ".join(targets) + "；方法约束：" + ", ".join(payload.get("preferred_method_ids") or []))
+    st.caption("以上为当前已结构化的计划约束；未在此列出的自然语言参数/要求需要澄清，不能视为已经应用。")
     if st.button(
         "生成数据画像、Workflow 与 Notebook",
         key="capability_workspace_prepare",
@@ -2574,12 +2365,19 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
                         payload.get("preferred_method_ids") or []
                     ),
                     batch_key=batch_key.strip() or None,
+                    **{name: payload[name] for name in (
+                        "parameter_overrides", "enable_doublet_detection", "exclude_predicted_doublets",
+                        "doublet_selection_hash", "enable_batch_integration"
+                    ) if name in payload},
                 ),
                 notebook_path=notebook_path,
             )
-            st.session_state.capability_workspace_result = prepared.model_dump(
-                mode="json"
-            )
+            if st.session_state.session_id != payload["conversation_id"] or not publish_delivery(
+                st.session_state, expected_context=context_hash, result=prepared.model_dump(mode="json")
+            ):
+                st.warning("旧请求已失效，结果未替换当前对话。")
+                return
+            st.session_state.capability_workspace_request_binding = context
             st.rerun()
         except Exception as exc:
             st.error(execution.redact_text(str(exc)))
@@ -2587,7 +2385,19 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
     result_payload = st.session_state.get("capability_workspace_result")
     if not result_payload:
         return
+    if st.session_state.get("capability_workspace_result_context") != context_hash:
+        return
     result = CapabilityWorkspaceResult.model_validate(result_payload)
+    st.download_button(
+        "下载数据绑定审计 JSON",
+        data=execution.redact_text(json.dumps({
+            "context_digest": context_hash,
+            "request_binding": st.session_state.get("capability_workspace_request_binding"),
+            "result": result_payload,
+        }, ensure_ascii=False, indent=2)),
+        file_name=f"{result.request_id}-binding.json", mime="application/json",
+        key="capability_workspace_download_binding",
+    )
     if result.status == "blocked":
         st.error("Workflow 被阻断：" + " · ".join(result.blockers))
         return
@@ -2626,8 +2436,25 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
             use_container_width=True,
             hide_index=True,
         )
+        from observability.workflow_plan_presentation import parameter_source_rows
+        with st.expander("参数来源与原文链接", expanded=True):
+            st.caption("上表 parameter_source 是来源类别，不是链接。下表展示原有来源记录；内部合同/项目规则不虚构外部原文。API 文档不证明本数据上的参数最优。")
+            source_rows = parameter_source_rows(plan.steps)
+            if source_rows:
+                for row in source_rows:
+                    if row["source_url"]:
+                        st.link_button(
+                            f"步骤 {row['step']} · {row['method']} · {row['parameter']}={row['value']}：打开原文",
+                            row["source_url"],
+                        )
+                st.dataframe(source_rows, hide_index=True, use_container_width=True,
+                             column_config={"source_url": st.column_config.LinkColumn(
+                                 "原文链接", display_text="打开原文")})
+            else:
+                st.caption("本计划没有登记参数来源；不生成推测性引用。")
     notebook = dict(result.notebook_artifact)
     notebook_path = Path(str(notebook.get("path") or ""))
+    st.caption(f"Plan：{plan.plan_id if plan else '无'} · Notebook：{notebook_path.name} · SHA-256：{notebook.get('sha256', '无')}")
     if notebook_path.is_file():
         notebook_cols = st.columns(2)
         notebook_cols[0].download_button(
@@ -2665,22 +2492,27 @@ def _render_capability_stepwise_workspace(payload: Dict[str, Any]) -> None:
                     original_plan_id=(plan.plan_id if plan is not None else None),
                 )
                 st.session_state.capability_workspace_jupyter_url = session.launch_url
+                st.session_state.capability_workspace_jupyter_binding = digest(
+                    [context_hash, result.request_id, notebook, plan.plan_id if plan else None])
                 st.session_state.capability_workspace_jupyter_trace_id = (
                     session.canonical_trace_id
                 )
             except Exception as exc:
                 st.error(execution.redact_text(str(exc)))
         launch_url = st.session_state.get("capability_workspace_jupyter_url")
-        if launch_url:
+        if launch_url and st.session_state.get("capability_workspace_jupyter_binding") == digest(
+            [context_hash, result.request_id, notebook, plan.plan_id if plan else None]
+        ):
             st.link_button(
                 "打开已启动的 JupyterLab",
                 launch_url,
                 use_container_width=True,
             )
 
-    st.warning(
-        "当前页面已完成 PLAN 与可编辑 Notebook 交付。全局 ExecutionPolicy=disabled，"
-        "因此不会对这份用户数据创建或运行 ExecutionRequest。"
+    st.info(
+        "已生成计划与 Notebook，尚不代表代码已执行。当前页面不创建受控 ExecutionRequest。"
+        "ExecutionPolicy=disabled 不阻止打开本地 JupyterLab；可通过现有 Notebook 开发渠道手动运行。"
+        "若出现 Jupyter 启动错误，它是独立的启动故障，不是该权限提示导致。"
     )
     latest = _latest_scanpy_journey_summary()
     if latest is None:
@@ -2818,7 +2650,25 @@ def _render_context_status(
         )
 
 
+def _render_response_details(state: Dict[str, Any]) -> None:
+    context = state.get("context_pack") or {}
+    build = state.get("runtime_build") or context.get("runtime_build") or {}
+    if build:
+        with st.expander("高级详情 · 运行版本", expanded=False):
+            st.json(build)
+
+
 def _render_response_runtime(state: Dict[str, Any]) -> None:
+    # Display links by stored source ID; never manufacture citations from titles.
+    from observability.research_source_links import source_links
+    links = source_links(state.get("references") or [],
+                         Path(__file__).parent / "data/indexes/source_documents_v2.jsonl")
+    if links:
+        with st.expander("原文链接与引用位置", expanded=False):
+            st.caption("打开登记来源；引用位置对应本地证据快照。链接本身不代表审核通过。")
+            for item in links:
+                st.link_button(f"[{item['index']}] {item['title']}", item["url"])
+                st.caption(item["locator"])
     mode = str(state.get("runtime_mode") or "degraded_local_fallback")
     context = state.get("context_pack") or {}
     semantic = context.get("semantic_parse") or {}
@@ -2838,14 +2688,10 @@ def _render_response_runtime(state: Dict[str, Any]) -> None:
             if item.get("status") == "completed" and item.get("tool_name")
         )
     )
-    build = state.get("runtime_build") or context.get("runtime_build") or {}
     response_intent = str(state.get("response_intent") or "")
     workflow_bundle = state.get("workflow_code_bundle") or {}
     workspace_handoff = state.get("workspace_handoff") or {}
     execution_handoff = state.get("execution_handoff") or {}
-    source_fingerprint = str(build.get("source_fingerprint") or "")
-    if source_fingerprint:
-        _render_chip(f"BUILD · {source_fingerprint[:10]}", "good")
     if (
         response_intent == "workflow"
         and workflow_bundle.get("smoke_tested")
@@ -2861,19 +2707,22 @@ def _render_response_runtime(state: Dict[str, Any]) -> None:
                 "does not have complete source-bound scientific evidence."
             )
         if str(execution_handoff.get("status") or "") == "not_requested":
-            _render_chip("EXECUTION NOT REQUESTED", "good")
+            st.caption("执行未请求 · 审批规则保持不变")
         return
     if (
         response_intent == "workflow"
         and workspace_handoff.get("status") == "available"
         and workspace_handoff.get("notebook_strategy") == "capability_renderer"
     ):
-        _render_chip("CAPABILITY WORKSPACE READY", "good")
-        _render_chip("DATA STATE INSPECTION REQUIRED", "warn")
+        st.markdown(
+            '<div class="research-routing"><strong>当前状态 · 工作区可交接</strong>'
+            '仍需检查真实数据状态，尚未完成分析。</div>',
+            unsafe_allow_html=True,
+        )
         if not state.get("references"):
             _render_chip("SCIENTIFIC EVIDENCE PARTIAL", "warn")
         if str(execution_handoff.get("status") or "") == "not_requested":
-            _render_chip("EXECUTION NOT REQUESTED", "good")
+            st.caption("执行未请求 · 审批规则保持不变")
         return
     if mode == "system_info_local":
         _render_chip("SYSTEM INFO · local deterministic answer", "good")
@@ -3929,81 +3778,9 @@ def _render_evidence_admin_panel() -> None:
         "证据与混合 RAG 管线状态",
         "查看 source chunks、PDF/HTML 获取状态、source registry、metadata mismatch 和 extraction failure。",
     )
-    service = EvidenceRecoveryService()
-    core = service.load_source_coverage()
-    literature = service.load_literature_source_coverage()
-    registry = service.load_source_registry_status()
-    chunks_path = get_settings().data_dir / "indexes" / "evidence_chunks.jsonl"
-    vector_metadata_path = get_settings().data_dir / "indexes" / "evidence_vector_metadata.json"
-    v2_coverage = _read_json_artifact(
-        get_settings().data_dir / "indexes" / "retrieval_coverage_v2.json"
-    )
-    chunk_count = sum(1 for _ in chunks_path.open("r", encoding="utf-8")) if chunks_path.exists() else 0
-    vector_metadata = _read_json_artifact(vector_metadata_path)
-    vector_count = int((vector_metadata.get("shape") or [0])[0]) if vector_metadata else 0
+    from observability.dashboard.evidence_panel import render_evidence_panel
 
-    core_summary = core.get("summary") or {}
-    literature_summary = literature.get("summary") or {}
-    acquisition = registry.get("acquisition_summary") or {}
-    extraction = registry.get("extraction_summary") or {}
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Evidence Chunks", chunk_count)
-    c2.metric("Dense Vectors", vector_count)
-    c3.metric("Core Source Coverage", _format_percent(v2_coverage.get("core_tool_source_coverage_rate", 0)))
-    c4.metric("Qualified Coverage", _format_percent(v2_coverage.get("qualified_tool_source_coverage_rate", 0)))
-    c5.metric("Quarantine", acquisition.get("candidate_quarantine_rows", 0))
-    st.info(
-        "当前主检索为 canonical task/entity normalization + KG hard filter + SQLite FTS5 BM25 + governance rerank。"
-        "本地 BAAI/bge-m3 是可删除的可选 model pack；未安装时自动回退，不调用云 embedding API。"
-    )
-    retrieval_eval = _read_json_artifact(
-        get_settings().data_dir / "evaluation" / "retrieval_eval_v2" / "summary.json"
-    )
-    kg_bm25 = (retrieval_eval.get("profiles") or {}).get("kg_bm25") or {}
-    if kg_bm25:
-        st.markdown("#### Retrieval Evaluation v2")
-        eval_cols = st.columns(6)
-        eval_cols[0].metric("Cases", retrieval_eval.get("case_count", 0))
-        eval_cols[1].metric("Recall@10", _format_percent(kg_bm25.get("recall_at_10", 0)))
-        eval_cols[2].metric("Precision@10", _format_percent(kg_bm25.get("precision_at_10", 0)))
-        eval_cols[3].metric("MRR", _format_percent(kg_bm25.get("mrr", 0)))
-        eval_cols[4].metric("p95", f"{kg_bm25.get('latency_p95_ms', 0):.1f} ms")
-        eval_cols[5].metric("False support", _format_percent(kg_bm25.get("false_support_rate", 0)))
-        st.caption(
-            f"KG+BM25 status: {kg_bm25.get('status', 'unknown')}. Dense and RAGAS remain optional and are reported as not_run when unavailable."
-        )
-
-    st.markdown("#### Core Tool Source Coverage")
-    rows = core.get("rows") or []
-    if rows:
-        st.dataframe(_safe_rows(rows), use_container_width=True)
-    else:
-        st.info("No core source coverage manifest found.")
-
-    st.markdown("#### Paper / Benchmark Source Coverage")
-    lit_rows = literature.get("rows") or []
-    if lit_rows:
-        st.dataframe(_safe_rows(lit_rows), use_container_width=True)
-    else:
-        st.info("No literature source coverage artifact found.")
-
-    st.markdown("#### Source Registry / Validation")
-    c6, c7, c8 = st.columns(3)
-    c6.metric("Source Records", acquisition.get("source_records", len(registry.get("registry_rows") or [])))
-    c7.metric("Text Sources", extraction.get("source_text_available", 0))
-    c8.metric("Extract Failures", extraction.get("pdf_extraction_failed", 0))
-    validation_rows = registry.get("validation_rows") or []
-    if validation_rows:
-        st.dataframe(_safe_rows(validation_rows), use_container_width=True)
-    with st.expander("PDF acquisition policy"):
-        st.markdown(
-            """
-- 自动：只做候选发现、开放 PDF/HTML 获取、标题/DOI 校验、抽取、入 source chunk index。
-- 手动：paywall、登录、metadata mismatch、PDF 抽取失败、题文不一致。
-- 下载后仍需检查：PDF/HTML title、DOI、source span、tool/source 映射、是否可晋升 formal evidence。
-- RAG chunk 永远只是 evidence discovery，不能直接改推荐排名。
-"""
-        )
+    render_evidence_panel(Path(__file__).resolve().parent, get_settings().data_dir)
 
 
 def _render_evaluation_admin_panel() -> None:
@@ -5081,6 +4858,8 @@ def _render_defense_demo_page() -> None:
 
 
 _BACKEND_IMPLEMENTATION_FILES = (
+    "agent/research_chat_service.py",
+    "execution/research_input_binding.py",
     "core/capability_composition_models.py",
     "core/capability_pack_models.py",
     "core/capability_pack_registry.py",
@@ -5137,7 +4916,7 @@ def _cached_research_agent_backend(implementation_digest: str):
         environment_registry=execution.environment_registry,
         orchestrator=execution.orchestrator,
     )
-    return ResearchChatService(parent_agent=parent)
+    return ResearchChatService(parent_agent=parent, data_registry=execution.data_registry)
 
 
 def _research_agent_backend():
@@ -5481,6 +5260,10 @@ _WORKSPACE_STATE_KEYS_BY_STAGE = {
 
 
 def _reset_workspace_from_stage(stage: str) -> None:
+    if stage in {"source", "profile", "preview", "notebook"}:
+        for key in list(st.session_state):
+            if key.startswith("workspace_jupyter"):
+                st.session_state.pop(key, None)
     for key in _WORKSPACE_STATE_KEYS_BY_STAGE.get(stage, ()):
         st.session_state.pop(key, None)
 
@@ -5553,6 +5336,8 @@ def _render_runtime_packs_page() -> None:
     st.caption(
         "Core app remains usable without these packs. Catalog/KG, local sparse retrieval, data registration and dry-run planning do not install tool environments."
     )
+    st.caption("Ready 是已发现可用环境的数量，不是 Logical size。Logical size 是文件逻辑字节数，allocated size 是磁盘分配量；两者都不是有效性评分。missing / 0 B 表示未发现该 pack 的已登记环境，不代表用户数据为空。单独模型资格化不等于 Runtime Pack 已安装；signature 仅指 manifest 验证。")
+    from observability.workflow_plan_presentation import runtime_probe_display
     st.dataframe(
         [
             {
@@ -5562,8 +5347,7 @@ def _render_runtime_packs_page() -> None:
                     item.tool_name
                     for item in manifests[probe.pack_id].supported_tools
                 ),
-                "state": str(probe.state),
-                "source": str(probe.source),
+                **runtime_probe_display(probe),
                 "logical size": _format_storage_size(probe.logical_size_bytes),
                 "allocated size": _format_storage_size(probe.physical_size_bytes),
                 "last used": probe.last_used_at.isoformat()[:19] if probe.last_used_at else "never",
@@ -6197,516 +5981,16 @@ def _render_restricted_execution_page() -> None:
         st.success("Anonymous feedback recorded.")
 
 
-def _render_sidebar_brand() -> None:
-    logo = get_settings().logo_path
-    if logo.exists():
-        suffix = logo.suffix.lower()
-        mime = "image/svg+xml" if suffix == ".svg" else "image/png"
-        encoded = base64.b64encode(logo.read_bytes()).decode("ascii")
-        logo_html = f'<img src="data:{mime};base64,{encoded}" alt="scKG Agent logo" />'
-        title_html = ""
-    else:
-        logo_html = ""
-        title_html = '<div class="sidebar-brand-title">scKG Agent</div>'
-    st.markdown(
-        f"""
-<div class="sidebar-brand">
-  {logo_html}
-  {title_html}
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-
-def _reset_chat() -> None:
-    st.session_state.messages = [
-        {
-            "role": "assistant",
-            "content": WELCOME_MESSAGE,
-        }
-    ]
-    st.session_state.pop("latest_state", None)
-
-
-def _load_session_messages(session_id: str) -> None:
-    stored = load_conversation(session_id, limit=80)
-    messages = [
-        {
-            "role": item["role"],
-            "content": item["content"],
-            "state": item.get("metadata", {}).get("state"),
-            "runtime": item.get("metadata", {}).get("runtime"),
-            "followups": item.get("metadata", {}).get("followups", []),
-            "source_query": item.get("metadata", {}).get("source_query", ""),
-        }
-        for item in stored
-    ]
-    if not messages:
-        messages = [{"role": "assistant", "content": WELCOME_MESSAGE}]
-    st.session_state.messages = messages
-
-
-def _ensure_session_state() -> None:
-    init_store()
-    if "session_id" not in st.session_state:
-        sessions = list_sessions(limit=1)
-        st.session_state.session_id = sessions[0]["session_id"] if sessions else create_session()
-    if "messages" not in st.session_state:
-        _load_session_messages(st.session_state.session_id)
-    if "current_view" not in st.session_state:
-        st.session_state.current_view = "chat"
-
-
-_ensure_session_state()
-
-
-def _switch_to_valid_session() -> None:
-    sessions = list_sessions(limit=1)
-    st.session_state.session_id = sessions[0]["session_id"] if sessions else create_session()
-    _load_session_messages(st.session_state.session_id)
-
-
-with st.sidebar:
-    _render_sidebar_brand()
-
-    nav_groups = [
-        (
-            "Workspace",
-            [
-                ("Research Workspace", "chat"),
-                ("Runs & Results", "execution_ui"),
-                ("Graph Explorer", "graph_explorer"),
-            ],
-        ),
-    ]
-    for section_label, section_items in nav_groups:
-        st.markdown(
-            f'<div class="sidebar-section">{escape(section_label)}</div>',
-            unsafe_allow_html=True,
-        )
-        for label, view_name in section_items:
-            is_current = st.session_state.current_view == view_name
-            if st.button(
-                label,
-                key=f"nav_{view_name}",
-                width="stretch",
-                type="primary" if is_current else "tertiary",
-            ):
-                st.session_state.current_view = view_name
-                st.rerun()
-
-    with st.expander("More", expanded=False):
-        secondary_nav = [
-            ("Legacy Agent Baseline", "agent_loop_demo"),
-            ("Knowledge Review", "knowledge_review"),
-            ("Defense Demo", "defense_demo"),
-            ("Evidence & RAG", "evidence_admin"),
-            ("Evaluation", "evaluation_admin"),
-            ("Runtime Packs", "runtime_packs"),
-            ("Memory", "memory_admin"),
-            ("Architecture", "architecture_admin"),
-        ]
-        for label, view_name in secondary_nav:
-            if st.button(
-                label,
-                key=f"nav_{view_name}",
-                width="stretch",
-                type="primary" if st.session_state.current_view == view_name else "tertiary",
-            ):
-                st.session_state.current_view = view_name
-                st.rerun()
-
-    if st.session_state.current_view in {"home", "chat"}:
-        st.divider()
-        st.markdown('<div class="sidebar-section">Conversations</div>', unsafe_allow_html=True)
-        if st.button("+ New chat", width="stretch"):
-            st.session_state.session_id = create_session()
-            _load_session_messages(st.session_state.session_id)
-            st.session_state.current_view = "chat"
-            st.rerun()
-
-        sessions = list_sessions(limit=30)
-        st.markdown('<div class="sidebar-section">Recent</div>', unsafe_allow_html=True)
-        if sessions:
-            for session_index, item in enumerate(sessions[:10], start=1):
-                is_current = item["session_id"] == st.session_state.session_id
-                title = format_conversation_title(
-                    item.get("title"), item["session_id"], limit=34
-                )
-                row_cols = st.columns([5, 1], gap="small", vertical_alignment="center")
-                with row_cols[0]:
-                    if st.button(
-                        title,
-                        key=f"session_{item['session_id']}",
-                        width="stretch",
-                        type="primary" if is_current else "tertiary",
-                    ):
-                        if item["session_id"] != st.session_state.session_id:
-                            st.session_state.session_id = item["session_id"]
-                            _load_session_messages(item["session_id"])
-                        st.session_state.current_view = "chat"
-                        st.rerun()
-                with row_cols[1]:
-                    with st.popover(
-                        f"More actions for chat {session_index}",
-                        type="tertiary",
-                        width="content",
-                    ):
-                        if st.button(
-                            "Pin chat" if not item.get("pinned") else "Unpin chat",
-                            key=f"pin_{item['session_id']}",
-                            width="stretch",
-                            type="tertiary",
-                        ):
-                            set_session_pinned(item["session_id"], not bool(item.get("pinned")))
-                            st.rerun()
-                        rename_value = st.text_input(
-                            "Rename conversation",
-                            value=title,
-                            key=f"rename_title_{item['session_id']}",
-                        )
-                        if st.button(
-                            "Save name",
-                            key=f"rename_save_{item['session_id']}",
-                            width="stretch",
-                            disabled=not rename_value.strip() or rename_value.strip() == title,
-                        ):
-                            rename_session(item["session_id"], rename_value.strip())
-                            st.rerun()
-                        st.divider()
-                        delete_confirmed = st.checkbox(
-                            "Confirm deletion",
-                            key=f"delete_check_{item['session_id']}",
-                        )
-                        if st.button(
-                            "Delete conversation",
-                            key=f"delete_{item['session_id']}",
-                            width="stretch",
-                            disabled=not delete_confirmed,
-                        ):
-                            deleting_current = item["session_id"] == st.session_state.session_id
-                            delete_session(item["session_id"])
-                            if deleting_current:
-                                _switch_to_valid_session()
-                            st.session_state.current_view = "chat"
-                            st.rerun()
-        else:
-            st.markdown('<div class="chat-list-note">No saved chats yet.</div>', unsafe_allow_html=True)
-
-        if st.button("Clear current chat", width="stretch"):
-            clear_conversation(st.session_state.session_id)
-            _load_session_messages(st.session_state.session_id)
-            st.session_state.current_view = "chat"
-            st.rerun()
-
-    st.divider()
-    with st.expander("Settings", expanded=False):
-        saved_config = has_saved_api_config()
-        if saved_config:
-            _render_chip("saved API config", "good")
-        if st.session_state.get("user_api_config"):
-            _render_chip("API key unlocked", "good")
-        elif saved_config:
-            _render_chip("API config saved but locked", "warn")
-
-        with st.container():
-            st.markdown("**User API key**")
-            st.caption(
-                "API key 保存后不会再次显示。请自行设置一个本地加密口令；完整刷新页面后，"
-                "只需重新输入该口令并点击“解锁已保存配置”，不需要再次粘贴 API key。"
-            )
-            settings = get_settings()
-            api_base = st.text_input("API base", value=settings.chat_api_base)
-            model_name = st.text_input(
-                "Model name",
-                value=str(settings.model_name or settings.extract_model),
-            )
-            api_key = st.text_input(
-                "API key",
-                type="password",
-                placeholder="Only needed when saving or replacing the key",
-            )
-            passphrase = st.text_input(
-                "本地加密口令（由你自己设置）",
-                type="password",
-                placeholder="建议至少 8 位；它不是 API key，也不是 DeepSeek 密码",
-                help=(
-                    "该口令只用于在本机加密和解锁 API key，系统不会保存口令本身。"
-                    "请自行记住；忘记后需要用 API key 重新保存配置。"
-                ),
-            )
-            save_cols = st.columns(2)
-            if save_cols[0].button(
-                "加密保存并解锁",
-                width="stretch",
-                disabled=not api_key or not passphrase,
-            ):
-                try:
-                    save_encrypted_api_config(
-                        "openai_compatible",
-                        api_base,
-                        model_name,
-                        api_key,
-                        passphrase,
-                    )
-                    st.session_state.user_api_config = {
-                        "provider": "openai_compatible",
-                        "api_base": api_base,
-                        "model_name": model_name,
-                        "api_key": api_key,
-                    }
-                    st.success("API config saved encrypted and unlocked for this session.")
-                    st.info(
-                        "还需在下方显式勾选“本会话启用 DeepSeek”，之后普通问答才会真正调用外部模型。"
-                    )
-                except Exception as exc:
-                    st.error(f"Could not save config: {exc}")
-            if save_cols[1].button(
-                "解锁已保存配置",
-                width="stretch",
-                disabled=not saved_config or not passphrase,
-            ):
-                try:
-                    st.session_state.user_api_config = load_api_config(passphrase)
-                    st.success("API config unlocked for this session.")
-                except ApiConfigError as exc:
-                    st.error(str(exc))
-
-        privacy_mode = st.selectbox(
-            "Privacy mode",
-            options=[
-                PrivacyMode.STRICT_OFFLINE.value,
-                PrivacyMode.LOCAL_HYBRID.value,
-                PrivacyMode.CLOUD_ASSISTED.value,
-            ],
-            index=1,
-            format_func=lambda value: {
-                PrivacyMode.STRICT_OFFLINE.value: "STRICT_OFFLINE",
-                PrivacyMode.LOCAL_HYBRID.value: "LOCAL_HYBRID (default)",
-                PrivacyMode.CLOUD_ASSISTED.value: "CLOUD_ASSISTED",
-            }[value],
-            help="矩阵、barcode、完整路径和上传文件不会外发。STRICT_OFFLINE 禁止全部外部模型调用。",
-        )
-        offline_llm = privacy_mode == PrivacyMode.STRICT_OFFLINE.value
-        env_llm_configured = bool(
-            (settings.deepseek_api_key or settings.openai_api_key)
-            and settings.model_name
-        )
-        run_live = st.checkbox(
-            "本会话启用 DeepSeek（发送脱敏后的问题与受控上下文）",
-            value=False,
-            key="research_external_reasoning_consent",
-            disabled=(
-                offline_llm
-                or not (
-                    bool(st.session_state.get("user_api_config"))
-                    or env_llm_configured
-                )
-            ),
-            help="一次授权后本会话持续生效。每次请求仍生成 disclosure hash；矩阵、barcode、完整路径与上传文件不会发送。",
-        )
-        st.caption(
-            "DeepSeek 使用条件：保存并解锁配置；Privacy mode 不是 STRICT_OFFLINE；"
-            "然后勾选上面的本会话授权。保存 key 本身不等于允许外发。"
-        )
-        if saved_config and not st.session_state.get("user_api_config"):
-            st.warning("配置已保存但当前页面尚未解锁：输入本地加密口令并点击“解锁已保存配置”。")
-        elif st.session_state.get("user_api_config") and not run_live and not offline_llm:
-            st.warning("配置已解锁，但 DeepSeek 尚未启用；普通问题仍不会调用 LLM。")
-        if privacy_mode == PrivacyMode.LOCAL_HYBRID.value:
-            st.caption(
-                "KG、检索、Profiler、Router、合同和验证保持本地；启用后 DeepSeek 只处理脱敏问题与 governed context。"
-            )
-        show_sources = st.checkbox("Show retrieval diagnostics", value=False)
-        attach_workflow_card = st.checkbox(
-            "Attach workflow decision card",
-            value=False,
-            help="只在明确请求 workflow 时附加高级 plan-only 决策卡。",
-        )
-        debug_visible = st.checkbox("Show raw debug state", value=False)
-
-    if st.session_state.current_view in {"home", "chat"}:
-        _render_context_status(offline_llm=offline_llm, run_live=run_live)
-
-    if st.session_state.current_view in {"home", "chat"}:
-        memory_surface = st.expander("Project memory", expanded=False)
-    else:
-        memory_surface = None
-
-    if memory_surface is not None:
-      with memory_surface:
-        memory = load_project_memory()
-        species = st.text_input("Common species", value=str(memory.get("species", "")))
-        platform = st.text_input("Common platform", value=str(memory.get("platform", "")))
-        strictness = st.selectbox(
-            "Recommendation style",
-            ["conservative", "balanced", "exploratory"],
-            index=["conservative", "balanced", "exploratory"].index(
-                str(memory.get("strictness", "conservative"))
-                if str(memory.get("strictness", "conservative")) in {"conservative", "balanced", "exploratory"}
-                else "conservative"
-            ),
-        )
-        if st.button("Save memory", width="stretch"):
-            if species:
-                save_project_memory("species", species, "user")
-            if platform:
-                save_project_memory("platform", platform, "user")
-            save_project_memory("strictness", strictness, "user")
-            st.success("Project memory saved.")
-
-        selected_example = st.selectbox("Example query", ["Custom", *EXAMPLES.keys()])
-        if selected_example != "Custom" and st.button("Use example", width="stretch"):
-            st.session_state.pending_query = EXAMPLES[selected_example]
-            st.session_state.current_view = "chat"
-            st.rerun()
-
-
-if st.session_state.current_view in {"home", "chat", "data_preview"}:
-    data_preview_view = st.session_state.current_view == "data_preview"
-    pending_workspace_artifact = st.session_state.pop(
-        "workspace_pending_selected_artifact", None
-    )
-    if pending_workspace_artifact:
-        st.session_state.workspace_artifact_id = pending_workspace_artifact
-        st.session_state.workspace_selected_artifact = pending_workspace_artifact
-    workspace_title = "Stepwise Analysis" if data_preview_view else "Research Workspace"
-    workspace_subtitle = (
-        "承接 Research Chat 已确认的任务，逐步检查数据、参数、代码、审批、运行与结果；Notebook 是同一受控步骤的可复现影子。"
-        if data_preview_view
-        else "直接描述科研问题。系统会逐条识别问答、工作流或运行意图；执行仍由授权、合同和验证后端控制。"
-    )
-    st.markdown(
-        f"""
-<div class="research-chat-layout chat-app-header">
-  <div class="chat-app-kicker">scKG governed Parent Agent</div>
-  <div class="chat-app-title">{workspace_title}</div>
-  <div class="chat-app-subtitle">{workspace_subtitle}</div>
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-
-    agent_mode = None
-    run_artifact_id = None
-    run_requested_tool = None
-    if not data_preview_view:
-        _render_chip("AUTO intent routing", "good")
-        st.caption("模式只由当前消息与明确的省略型追问决定，不会粘住后续对话。")
-        with st.expander("Optional execution context", expanded=False):
-            from execution.execution_ui_service import configured_local_user_id
-
-            local_user_id = configured_local_user_id()
-            run_artifacts = _execution_ui_backend().list_artifacts(user_id=local_user_id)
-            if run_artifacts:
-                attach_run_context = st.checkbox(
-                    "Attach a registered artifact when this message requests execution",
-                    value=False,
-                    key="research_attach_run_context",
-                )
-                run_cols = st.columns([3, 2])
-                artifact_labels = {
-                    item.artifact_id: f"{item.artifact_id} · {item.redacted_path}"
-                    for item in run_artifacts
-                }
-                selected_artifact_id = run_cols[0].selectbox(
-                    "Registered data",
-                    options=list(artifact_labels),
-                    format_func=lambda value: artifact_labels[value],
-                    key="research_run_artifact",
-                )
-                selected_tool = run_cols[1].selectbox(
-                    "Qualified tool",
-                    options=["Auto", "Scrublet", "scDblFinder", "Harmony", "Scanorama"],
-                    key="research_run_tool",
-                )
-                if attach_run_context:
-                    run_artifact_id = selected_artifact_id
-                    run_requested_tool = None if selected_tool == "Auto" else selected_tool
-                st.caption(
-                    "附加数据只提供执行上下文；明确审批与启动仍在 Runs & Results 中进行。"
-                )
-            else:
-                st.info(
-                    "当前本地用户尚无已登记数据。执行请求会返回登记要求，并保持 ExecutionRequest=0。"
-                )
-    else:
-        task_handoff = st.session_state.get("workspace_task_handoff")
-        if task_handoff:
-            st.markdown(
-                f"""
-<div class="data-workbench-boundary">
-<strong>来自当前 Research Chat</strong><br>
-任务：<code>{escape(str(task_handoff.get('task_family') or 'unknown'))}</code> ·
-工具：<code>{escape(str(task_handoff.get('tool_name') or 'unknown'))}</code> ·
-来源问题：{escape(str(task_handoff.get('source_query') or ''))}
-</div>
-""",
-                unsafe_allow_html=True,
-            )
-            task_action_cols = st.columns([1, 3])
-            if task_action_cols[0].button(
-                "返回对话",
-                key="workspace_return_to_chat",
-                width="stretch",
-            ):
-                st.session_state.current_view = "chat"
-                st.rerun()
-            task_action_cols[1].caption(
-                "本页只执行该对话确定的任务；更换任务或算法请回到 Research Chat。"
-            )
-        else:
-            st.warning(
-                "当前没有来自对话的分析任务。下面仅是 Scrublet Preview 演示，不代表 Agent 已根据你的问题选择了算法。"
-            )
-            if st.button(
-                "使用 Scrublet 演示任务",
-                key="workspace_use_demo_handoff",
-            ):
-                st.session_state.workspace_task_handoff = {
-                    "handoff_id": f"demo-{uuid.uuid4().hex}",
-                    "conversation_id": st.session_state.session_id,
-                    "source_query": "本地 Scrublet Preview 演示",
-                    "task_family": "doublet_detection",
-                    "tool_name": "Scrublet",
-                    "agent_mode": "PLAN",
-                    "plan_id": None,
-                    "notebook_strategy": "fixed_shadow",
-                    "stepwise_preview_available": True,
-                    "created_at": datetime.now(timezone.utc).isoformat(),
-                }
-                st.rerun()
-        st.markdown(
-            """
-<div class="data-workbench-intro">
-  <div class="data-workbench-step"><span>步骤 1</span><strong>承接任务与数据</strong></div>
-  <div class="data-workbench-step"><span>步骤 2</span><strong>检查数据画像</strong></div>
-  <div class="data-workbench-step"><span>步骤 3</span><strong>准备 Preview</strong></div>
-  <div class="data-workbench-step"><span>步骤 4</span><strong>审批、运行与验证</strong></div>
-</div>
-<div class="data-workbench-boundary">
-这里承接对话中已经确认的分析任务。先用只读小样本检查数据、代码和环境，再由你决定是否在本机逐步运行；源文件不会被修改。
-</div>
-""",
-            unsafe_allow_html=True,
-        )
-
-    capability_stepwise_handoff = st.session_state.get("workspace_task_handoff") or {}
-    if (
-        data_preview_view
-        and capability_stepwise_handoff.get("notebook_strategy")
-        == "capability_renderer"
-    ):
-        _render_capability_stepwise_workspace(capability_stepwise_handoff)
-        st.stop()
-
+def _render_legacy_preview_workbench(*, data_preview_view: bool) -> None:
+    """Render only on the explicit Stepwise route, never during chat reruns."""
     workflow_container = (
         st.container(border=False)
         if data_preview_view
-        else st.expander("Data & Preview workflow", expanded=False)
+        else st.expander("数据与逐步分析 · 高级工作台", expanded=False)
     )
     with workflow_container:
+        if not data_preview_view:
+            st.markdown('<span class="research-advanced-workbench"></span>', unsafe_allow_html=True)
         from execution.execution_ui_service import (
             configured_local_user_id,
             local_preview_allowance_can_be_reissued,
@@ -6751,13 +6035,12 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
             prepared_path = st.selectbox(
                 "可用的本地数据",
                 options=prepared_files,
+                index=None,
                 format_func=lambda value: value.name,
                 key="workspace_prepared_path",
                 help="这里只列出维护者已批准文件夹中的本地文件。",
             )
-            st.caption(
-                "首次体验建议使用 scrublet_preview_demo.h5ad，然后点击下方主按钮。"
-            )
+            st.caption("仅在明确选择文件并登记后使用；不自动选择演示数据。")
         custom_path_container = (
             st.expander("使用其他 approved .h5ad", expanded=not bool(prepared_files))
             if data_preview_view
@@ -6788,6 +6071,11 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                 artifact = execution_service.register_local_artifact(
                     user_id=workspace_user_id, local_path=str(registration_path)
                 )
+                from execution.research_input_binding import validate_h5ad
+                shape = validate_h5ad(execution_service.data_registry.resolve_path(artifact.artifact_id, user_id=workspace_user_id))
+                _bind_research_input({"artifact_id": artifact.artifact_id, "sha256": artifact.sha256,
+                    "original_filename": registration_path.name, "source": "explicit_registered_selection",
+                    "owner_user_id": workspace_user_id, "shape": list(shape)})
                 st.session_state.workspace_artifact_id = artifact.artifact_id
                 st.session_state.workspace_selected_artifact = artifact.artifact_id
                 for key in (
@@ -6810,6 +6098,11 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                 st.error(execution_service.redact_text(str(exc)))
 
         workspace_artifacts = execution_service.list_artifacts(user_id=workspace_user_id)
+        # The legacy preview must not silently attach the registry's first item.
+        bound_id = ((active_workspace_task or {}).get("input_binding") or _research_input_binding()).get("artifact_id")
+        if (active_workspace_task or {}).get("fixture_type") == "synthetic_engineering_demo":
+            bound_id = st.session_state.get("workspace_artifact_id")
+        workspace_artifacts = [item for item in workspace_artifacts if item.artifact_id == bound_id]
         if workspace_artifacts:
             if data_preview_view:
                 st.markdown(
@@ -7725,6 +7018,572 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
         else:
             st.caption("Choose a dataset above to begin. No data has been registered for this local user yet.")
 
+
+
+def _render_sidebar_brand() -> None:
+    logo = get_settings().logo_path
+    if logo.exists():
+        suffix = logo.suffix.lower()
+        mime = "image/svg+xml" if suffix == ".svg" else "image/png"
+        encoded = base64.b64encode(logo.read_bytes()).decode("ascii")
+        logo_html = f'<span class="sidebar-logo"><img src="data:{mime};base64,{encoded}" alt="scKG Agent logo" /></span>'
+        title_html = (
+            '<div><div class="sidebar-brand-title">scKG Agent</div>'
+            '<div class="sidebar-brand-subtitle">Evidence-governed research</div></div>'
+        )
+    else:
+        logo_html = ""
+        title_html = '<div class="sidebar-brand-title">scKG Agent</div>'
+    st.markdown(
+        f"""
+<div class="sidebar-brand">
+  {logo_html}
+  {title_html}
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_research_shell(*, offline: bool) -> None:
+    sessions = list_sessions(limit=1000)
+    session = next((item for item in sessions if item["session_id"] == st.session_state.session_id), {})
+    model = summary_model(st.session_state.messages, _research_input_binding())
+    prepared_plan = current_workspace_plan(st.session_state, model["state"])
+    if prepared_plan:
+        model["plan"] = prepared_plan
+        model["outputs"] = [str(item.get("artifact_type") or item.get("artifact_id") or "")
+                            for item in prepared_plan.get("expected_outputs", [])]
+    runtime_label = "本地模式 · 外部模型关闭" if offline else str(
+        (st.session_state.get("user_api_config") or {}).get("model_name") or get_settings().model_name or "外部模型已启用")
+    details = information_html(model, session, runtime_label)
+    with st.container():
+        st.markdown('<span class="shell-toolbar-marker"></span>', unsafe_allow_html=True)
+        menu = st.columns(4)
+        with menu[0].popover("文档", use_container_width=True):
+            st.markdown("**使用指南**")
+            st.markdown("1. 通过输入框内的 **＋** 选择文件。\n2. 描述问题，或要求生成分析计划。\n3. 进入 **Stepwise** 检查数据与计划。\n4. 确认参数与审批后，执行并查看结果。")
+            st.caption("ASK：咨询 · PLAN：准备计划 · RUN：提出执行请求。模式本身不代表已运行。")
+        with menu[1].popover("数据", use_container_width=True):
+            st.markdown("**当前任务数据**")
+            binding = model["binding"]
+            st.write(binding.get("original_filename") or "尚未绑定数据")
+            st.caption("选择新文件请使用输入框内的 ＋。发送后，文件会归入任务，输入框附件会清空。")
+            if st.button("打开数据与运行工作台", key="shell_datasets"):
+                st.session_state.current_view = "execution_ui"
+                st.rerun()
+        with menu[2].popover("工具", use_container_width=True):
+            for label, view in [("Research 对话", "chat"), ("运行与结果", "execution_ui"), ("知识图谱", "graph_explorer"), ("证据与文献", "evidence_admin")]:
+                if st.button(label, key=f"shell_nav_{view}"):
+                    st.session_state.current_view = view
+                    st.rerun()
+        with menu[3].popover("详情", use_container_width=True):
+            st.markdown(details, unsafe_allow_html=True)
+            title = st.text_input("会话标题", value=session.get("title") or "新对话", key=f"shell_title_{st.session_state.session_id}")
+            if st.button("保存标题", key="shell_rename", disabled=not title.strip()):
+                rename_session(st.session_state.session_id, title.strip())
+                st.rerun()
+    st.markdown('<aside class="research-info-rail" aria-label="当前任务详情">' + details + '</aside>', unsafe_allow_html=True)
+    title = session.get("title") or "新对话"
+    if title == "New research chat":
+        title = "新对话"
+    st.markdown('<div class="research-chat-layout research-conversation-header">'
+                f'<h1 title="{escape(title)}">{escape(title)}</h1>{stage_html(model["mode"])}</div>', unsafe_allow_html=True)
+
+
+def _reset_chat() -> None:
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "content": WELCOME_MESSAGE,
+        }
+    ]
+    st.session_state.pop("latest_state", None)
+
+
+def _load_session_messages(session_id: str) -> None:
+    from execution.research_input_binding import switch_conversation
+    switch_conversation(st.session_state, session_id)
+    stored = load_conversation(session_id, limit=80)
+    messages = [
+        {
+            "role": item["role"],
+            "content": item["content"],
+            "state": item.get("metadata", {}).get("state"),
+            "runtime": item.get("metadata", {}).get("runtime"),
+            "followups": item.get("metadata", {}).get("followups", []),
+            "source_query": item.get("metadata", {}).get("source_query", ""),
+        }
+        for item in stored
+    ]
+    if not messages:
+        messages = [{"role": "assistant", "content": WELCOME_MESSAGE}]
+    st.session_state.messages = messages
+
+
+def _ensure_session_state() -> None:
+    init_store()
+    if "session_id" not in st.session_state:
+        sessions = list_sessions(limit=1)
+        st.session_state.session_id = sessions[0]["session_id"] if sessions else create_session()
+    if "messages" not in st.session_state:
+        _load_session_messages(st.session_state.session_id)
+    if "current_view" not in st.session_state:
+        st.session_state.current_view = "chat"
+
+
+_ensure_session_state()
+from execution.research_input_binding import switch_conversation
+switch_conversation(st.session_state, st.session_state.session_id)
+
+
+def _switch_to_valid_session() -> None:
+    sessions = list_sessions(limit=1)
+    st.session_state.session_id = sessions[0]["session_id"] if sessions else create_session()
+    _load_session_messages(st.session_state.session_id)
+
+
+with st.sidebar:
+    if st.session_state.current_view not in {"home", "chat"}:
+        _render_sidebar_brand()
+
+    if st.session_state.current_view in {"home", "chat"}:
+        with st.container():
+            st.markdown('<span class="new-conversation-marker"></span>', unsafe_allow_html=True)
+            new_chat_clicked = st.button("＋ 新建对话", width="stretch", type="primary")
+        if new_chat_clicked:
+            st.session_state.session_id = create_session()
+            _load_session_messages(st.session_state.session_id)
+            st.session_state.current_view = "chat"
+            st.rerun()
+
+        from observability.dashboard.research_shell import conversation_group
+        search = st.text_input("搜索对话", placeholder="搜索对话…", label_visibility="collapsed", key="conversation_search")
+        sessions = list_sessions(limit=100)
+        sessions = [item for item in sessions if search.casefold() in str(item.get("title") or "").casefold()]
+        previous_group = None
+        if sessions:
+            for session_index, item in enumerate(sessions[:30], start=1):
+                group = conversation_group(item)
+                if group != previous_group:
+                    st.markdown(f'<div class="sidebar-section">{group}</div>', unsafe_allow_html=True)
+                    previous_group = group
+                is_current = item["session_id"] == st.session_state.session_id
+                title = format_conversation_title(
+                    "新对话" if item.get("title") == "New research chat" else item.get("title"), item["session_id"],
+                    limit=max(34, len(str(item.get("title") or ""))),
+                )
+                row_cols = st.columns([5, 1], gap="small", vertical_alignment="center")
+                with row_cols[0]:
+                    if st.button(
+                        "◯  " + title,
+                        help=datetime.fromtimestamp(item["updated_at"]).astimezone().strftime("%Y-%m-%d %H:%M"),
+                        key=f"session_{item['session_id']}",
+                        width="stretch",
+                        type="primary" if is_current else "tertiary",
+                    ):
+                        if item["session_id"] != st.session_state.session_id:
+                            st.session_state.session_id = item["session_id"]
+                            _load_session_messages(item["session_id"])
+                        st.session_state.current_view = "chat"
+                        st.rerun()
+                with row_cols[1]:
+                    with st.popover(
+                        f"More actions for chat {session_index}: {title}",
+                        type="tertiary",
+                        width="content",
+                    ):
+                        st.markdown("**完整对话标题**")
+                        st.write(title)
+                        if st.button(
+                            "Pin chat" if not item.get("pinned") else "Unpin chat",
+                            key=f"pin_{item['session_id']}",
+                            width="stretch",
+                            type="tertiary",
+                        ):
+                            set_session_pinned(item["session_id"], not bool(item.get("pinned")))
+                            st.rerun()
+                        rename_value = st.text_input(
+                            "Rename conversation",
+                            value=title,
+                            key=f"rename_title_{item['session_id']}",
+                        )
+                        if st.button(
+                            "Save name",
+                            key=f"rename_save_{item['session_id']}",
+                            width="stretch",
+                            disabled=not rename_value.strip() or rename_value.strip() == title,
+                        ):
+                            rename_session(item["session_id"], rename_value.strip())
+                            st.rerun()
+                        st.divider()
+                        delete_confirmed = st.checkbox(
+                            "Confirm deletion",
+                            key=f"delete_check_{item['session_id']}",
+                        )
+                        if st.button(
+                            "Delete conversation",
+                            key=f"delete_{item['session_id']}",
+                            width="stretch",
+                            disabled=not delete_confirmed,
+                        ):
+                            deleting_current = item["session_id"] == st.session_state.session_id
+                            delete_session(item["session_id"])
+                            if deleting_current:
+                                _switch_to_valid_session()
+                            st.session_state.current_view = "chat"
+                            st.rerun()
+        else:
+            st.markdown('<div class="chat-list-note">没有匹配的会话。</div>', unsafe_allow_html=True)
+
+        if st.button("清空当前会话", width="stretch"):
+            clear_conversation(st.session_state.session_id)
+            _load_session_messages(st.session_state.session_id)
+            st.session_state.current_view = "chat"
+            st.rerun()
+
+    if st.session_state.current_view in {"home", "chat"}:
+        st.markdown('<div class="sidebar-section">示例提问 · 点击发送</div>', unsafe_allow_html=True)
+        for idx, question in enumerate([
+            "如何分析 PBMC3k 数据？",
+            "比较不同的细胞注释工具",
+            "单细胞与空间转录组整合",
+        ]):
+            if st.button("◯  " + question, key=f"shell_example_{idx}", width="stretch"):
+                st.session_state.pending_query = question
+                st.rerun()
+
+    with st.expander("工作台与管理", expanded=False):
+        nav_groups = [
+            (
+                "工作台",
+                [
+                    ("Research Workspace", "chat"),
+                    ("Runs & Results", "execution_ui"),
+                    ("Graph Explorer", "graph_explorer"),
+                ],
+            ),
+        ]
+        for section_label, section_items in nav_groups:
+            st.markdown(
+                f'<div class="sidebar-section">{escape(section_label)}</div>',
+                unsafe_allow_html=True,
+            )
+            for label, view_name in section_items:
+                is_current = st.session_state.current_view == view_name
+                if st.button(
+                    label,
+                    key=f"nav_{view_name}",
+                    width="stretch",
+                    type="primary" if is_current else "tertiary",
+                ):
+                    st.session_state.current_view = view_name
+                    st.rerun()
+
+        with st.container():
+            secondary_nav = [
+                ("Legacy Agent Baseline", "agent_loop_demo"),
+                ("Knowledge Review", "knowledge_review"),
+                ("Defense Demo", "defense_demo"),
+                ("Evidence & RAG", "evidence_admin"),
+                ("Evaluation", "evaluation_admin"),
+                ("Runtime Packs", "runtime_packs"),
+                ("Memory", "memory_admin"),
+                ("Architecture", "architecture_admin"),
+            ]
+            for label, view_name in secondary_nav:
+                if st.button(
+                    label,
+                    key=f"nav_{view_name}",
+                    width="stretch",
+                    type="primary" if st.session_state.current_view == view_name else "tertiary",
+                ):
+                    st.session_state.current_view = view_name
+                    st.rerun()
+
+
+    st.divider()
+    with st.expander("Settings", expanded=False):
+        saved_config = has_saved_api_config()
+        if saved_config:
+            _render_chip("saved API config", "good")
+        if st.session_state.get("user_api_config"):
+            _render_chip("API key unlocked", "good")
+        elif saved_config:
+            _render_chip("API config saved but locked", "warn")
+
+        with st.container():
+            st.markdown("**User API key**")
+            st.caption(
+                "API key 保存后不会再次显示。请自行设置一个本地加密口令；完整刷新页面后，"
+                "只需重新输入该口令并点击“解锁已保存配置”，不需要再次粘贴 API key。"
+            )
+            settings = get_settings()
+            api_base = st.text_input("API base", value=settings.chat_api_base)
+            model_name = st.text_input(
+                "Model name",
+                value=str(settings.model_name or settings.extract_model),
+            )
+            api_key = st.text_input(
+                "API key",
+                type="password",
+                placeholder="Only needed when saving or replacing the key",
+            )
+            passphrase = st.text_input(
+                "本地加密口令（由你自己设置）",
+                type="password",
+                placeholder="建议至少 8 位；它不是 API key，也不是 DeepSeek 密码",
+                help=(
+                    "该口令只用于在本机加密和解锁 API key，系统不会保存口令本身。"
+                    "请自行记住；忘记后需要用 API key 重新保存配置。"
+                ),
+            )
+            save_cols = st.columns(2)
+            if save_cols[0].button(
+                "加密保存并解锁",
+                width="stretch",
+                disabled=not api_key or not passphrase,
+            ):
+                try:
+                    save_encrypted_api_config(
+                        "openai_compatible",
+                        api_base,
+                        model_name,
+                        api_key,
+                        passphrase,
+                    )
+                    st.session_state.user_api_config = {
+                        "provider": "openai_compatible",
+                        "api_base": api_base,
+                        "model_name": model_name,
+                        "api_key": api_key,
+                    }
+                    st.success("API config saved encrypted and unlocked for this session.")
+                    st.info(
+                        "还需在下方显式勾选“本会话启用 DeepSeek”，之后普通问答才会真正调用外部模型。"
+                    )
+                except Exception as exc:
+                    st.error(f"Could not save config: {exc}")
+            if save_cols[1].button(
+                "解锁已保存配置",
+                width="stretch",
+                disabled=not saved_config or not passphrase,
+            ):
+                try:
+                    st.session_state.user_api_config = load_api_config(passphrase)
+                    st.success("API config unlocked for this session.")
+                except ApiConfigError as exc:
+                    st.error(str(exc))
+
+        privacy_mode = st.selectbox(
+            "Privacy mode",
+            options=[
+                PrivacyMode.STRICT_OFFLINE.value,
+                PrivacyMode.LOCAL_HYBRID.value,
+                PrivacyMode.CLOUD_ASSISTED.value,
+            ],
+            index=1,
+            format_func=lambda value: {
+                PrivacyMode.STRICT_OFFLINE.value: "STRICT_OFFLINE",
+                PrivacyMode.LOCAL_HYBRID.value: "LOCAL_HYBRID (default)",
+                PrivacyMode.CLOUD_ASSISTED.value: "CLOUD_ASSISTED",
+            }[value],
+            help="矩阵、barcode、完整路径和上传文件不会外发。STRICT_OFFLINE 禁止全部外部模型调用。",
+        )
+        offline_llm = privacy_mode == PrivacyMode.STRICT_OFFLINE.value
+        env_llm_configured = bool(
+            (settings.deepseek_api_key or settings.openai_api_key)
+            and settings.model_name
+        )
+        run_live = st.checkbox(
+            "本会话启用 DeepSeek（发送脱敏后的问题与受控上下文）",
+            value=False,
+            key="research_external_reasoning_consent",
+            disabled=(
+                offline_llm
+                or not (
+                    bool(st.session_state.get("user_api_config"))
+                    or env_llm_configured
+                )
+            ),
+            help="一次授权后本会话持续生效。每次请求仍生成 disclosure hash；矩阵、barcode、完整路径与上传文件不会发送。",
+        )
+        st.caption(
+            "DeepSeek 使用条件：保存并解锁配置；Privacy mode 不是 STRICT_OFFLINE；"
+            "然后勾选上面的本会话授权。保存 key 本身不等于允许外发。"
+        )
+        if saved_config and not st.session_state.get("user_api_config"):
+            st.warning("配置已保存但当前页面尚未解锁：输入本地加密口令并点击“解锁已保存配置”。")
+        elif st.session_state.get("user_api_config") and not run_live and not offline_llm:
+            st.warning("配置已解锁，但 DeepSeek 尚未启用；普通问题仍不会调用 LLM。")
+        if privacy_mode == PrivacyMode.LOCAL_HYBRID.value:
+            st.caption(
+                "KG、检索、Profiler、Router、合同和验证保持本地；启用后 DeepSeek 只处理脱敏问题与 governed context。"
+            )
+        show_sources = st.checkbox("Show retrieval diagnostics", value=False)
+        attach_workflow_card = st.checkbox(
+            "Attach workflow decision card",
+            value=False,
+            help="只在明确请求 workflow 时附加高级 plan-only 决策卡。",
+        )
+        debug_visible = st.checkbox("Show raw debug state", value=False)
+
+    if st.session_state.current_view in {"home", "chat"}:
+        with st.expander("连接与运行状态", expanded=False):
+            _render_context_status(offline_llm=offline_llm, run_live=run_live)
+
+    if st.session_state.current_view in {"home", "chat"}:
+        memory_surface = st.expander("Project memory", expanded=False)
+    else:
+        memory_surface = None
+
+    if memory_surface is not None:
+      with memory_surface:
+        memory = load_project_memory()
+        species = st.text_input("Common species", value=str(memory.get("species", "")))
+        platform = st.text_input("Common platform", value=str(memory.get("platform", "")))
+        strictness = st.selectbox(
+            "Recommendation style",
+            ["conservative", "balanced", "exploratory"],
+            index=["conservative", "balanced", "exploratory"].index(
+                str(memory.get("strictness", "conservative"))
+                if str(memory.get("strictness", "conservative")) in {"conservative", "balanced", "exploratory"}
+                else "conservative"
+            ),
+        )
+        if st.button("Save memory", width="stretch"):
+            if species:
+                save_project_memory("species", species, "user")
+            if platform:
+                save_project_memory("platform", platform, "user")
+            save_project_memory("strictness", strictness, "user")
+            st.success("Project memory saved.")
+
+        selected_example = st.selectbox("Example query", ["Custom", *EXAMPLES.keys()])
+        if selected_example != "Custom" and st.button("Use example", width="stretch"):
+            st.session_state.pending_query = EXAMPLES[selected_example]
+            st.session_state.current_view = "chat"
+            st.rerun()
+
+
+if st.session_state.current_view in {"home", "chat", "data_preview"}:
+    data_preview_view = st.session_state.current_view == "data_preview"
+    pending_workspace_artifact = st.session_state.pop(
+        "workspace_pending_selected_artifact", None
+    )
+    if pending_workspace_artifact:
+        st.session_state.workspace_artifact_id = pending_workspace_artifact
+        st.session_state.workspace_selected_artifact = pending_workspace_artifact
+    workspace_title = "Stepwise Analysis" if data_preview_view else "Research Workspace"
+    workspace_subtitle = (
+        "承接 Research Chat 已确认的任务，逐步检查数据、参数、代码、审批、运行与结果；Notebook 是同一受控步骤的可复现影子。"
+        if data_preview_view
+        else "直接描述科研问题。系统会逐条识别问答、工作流或运行意图；执行仍由授权、合同和验证后端控制。"
+    )
+    if data_preview_view:
+        st.markdown(
+            f"""
+    <div class="{'chat-app-header' if data_preview_view else 'research-chat-layout chat-app-header'}">
+      <div class="chat-app-kicker">scKG governed Parent Agent</div>
+      <div class="chat-app-title">{workspace_title}</div>
+      <div class="chat-app-subtitle">{workspace_subtitle}</div>
+    </div>
+    """,
+            unsafe_allow_html=True,
+        )
+    else:
+        _render_research_shell(offline=offline_llm or not run_live)
+
+    agent_mode = None
+    run_artifact_id = None
+    run_requested_tool = None
+    if not data_preview_view:
+        st.markdown(
+            '<div class="research-routing"><strong>AUTO · 自动识别意图</strong>'
+            '逐条识别当前问题；数据授权与执行审批仍需单独确认。</div>',
+            unsafe_allow_html=True,
+        )
+        from execution.execution_ui_service import configured_local_user_id
+        from execution.research_input_binding import authorize_uploaded_binding
+        local_user_id = configured_local_user_id()
+    else:
+        task_handoff = st.session_state.get("workspace_task_handoff")
+        if task_handoff:
+            st.markdown(
+                f"""
+<div class="data-workbench-boundary">
+<strong>来自当前 Research Chat</strong><br>
+任务：<code>{escape(str(task_handoff.get('task_family') or 'unknown'))}</code> ·
+工具：<code>{escape(str(task_handoff.get('tool_name') or 'unknown'))}</code> ·
+来源问题：{escape(str(task_handoff.get('source_query') or ''))}
+</div>
+""",
+                unsafe_allow_html=True,
+            )
+            task_action_cols = st.columns([1, 3])
+            if task_action_cols[0].button(
+                "返回对话",
+                key="workspace_return_to_chat",
+                width="stretch",
+            ):
+                st.session_state.current_view = "chat"
+                st.rerun()
+            task_action_cols[1].caption(
+                "本页只执行该对话确定的任务；更换任务或算法请回到 Research Chat。"
+            )
+        else:
+            st.warning(
+                "当前没有来自对话的分析任务。下面仅是 Scrublet Preview 演示，不代表 Agent 已根据你的问题选择了算法。"
+            )
+            if st.button(
+                "使用 Scrublet 演示任务",
+                key="workspace_use_demo_handoff",
+            ):
+                st.session_state.workspace_task_handoff = {
+                    "handoff_id": f"demo-{uuid.uuid4().hex}",
+                    "conversation_id": st.session_state.session_id,
+                    "source_query": "本地 Scrublet Preview 演示",
+                    "task_family": "doublet_detection",
+                    "tool_name": "Scrublet",
+                    "agent_mode": "PLAN",
+                    "plan_id": None,
+                    "notebook_strategy": "fixed_shadow",
+                    "stepwise_preview_available": True,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }
+                st.rerun()
+        st.markdown(
+            """
+<div class="data-workbench-intro">
+  <div class="data-workbench-step"><span>步骤 1</span><strong>承接任务与数据</strong></div>
+  <div class="data-workbench-step"><span>步骤 2</span><strong>检查数据画像</strong></div>
+  <div class="data-workbench-step"><span>步骤 3</span><strong>准备 Preview</strong></div>
+  <div class="data-workbench-step"><span>步骤 4</span><strong>审批、运行与验证</strong></div>
+</div>
+<div class="data-workbench-boundary">
+这里承接对话中已经确认的分析任务。先用只读小样本检查数据、代码和环境，再由你决定是否在本机逐步运行；源文件不会被修改。
+</div>
+""",
+            unsafe_allow_html=True,
+        )
+
+    capability_stepwise_handoff = st.session_state.get("workspace_task_handoff") or {}
+    if (
+        data_preview_view
+        and capability_stepwise_handoff.get("notebook_strategy")
+        == "capability_renderer"
+    ):
+        _render_capability_stepwise_workspace(capability_stepwise_handoff)
+        st.stop()
+
+    if data_preview_view and not capability_stepwise_handoff:
+        st.info("请从当前对话的 Research 任务进入 Stepwise；不会继承另一对话的数据或计划。")
+        _render_research_input()
+        st.stop()
+
+    if data_preview_view:
+        _render_legacy_preview_workbench(data_preview_view=True)
+
     if data_preview_view:
         st.stop()
 
@@ -7732,9 +7591,23 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
         if message.get("role") == "user":
             _render_user_message(message.get("content", ""))
             continue
-        with st.chat_message("assistant"):
+        if message.get("content") == WELCOME_MESSAGE and not message.get("state"):
+            st.markdown('<div class="research-welcome"><div class="welcome-symbol">✧</div>'
+                        '<h2>从一个科研问题开始</h2><p>探索方法、准备分析计划，让每一步都有据可循。</p></div>', unsafe_allow_html=True)
+            continue
+        with st.chat_message("assistant", avatar="🔬"):
+            title_id = ' id="research-latest-reply"' if message_index == len(st.session_state.messages) - 1 else ''
+            st.markdown(f'<div{title_id}><strong>scKG-Agent</strong></div>', unsafe_allow_html=True)
+            if isinstance(message.get("state"), dict):
+                render_reply_overview(message["state"])
             _render_assistant_report(message.get("content", ""))
             if message.get("state") and isinstance(message.get("state"), dict):
+                if "WorkflowPlan" not in message.get("content", ""):
+                    display_state = dict(message["state"])
+                    prepared_plan = current_workspace_plan(st.session_state, display_state)
+                    if prepared_plan:
+                        display_state["workflow_plan"] = prepared_plan
+                    render_plan_overview(display_state)
                 _render_response_runtime(message["state"])
                 _render_algorithm_surface(message["state"])
                 _render_execution_handoff(
@@ -7746,6 +7619,7 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                     source_query=str(message.get("source_query") or ""),
                     key=f"history_workspace_{st.session_state.session_id}_{message_index}",
                 )
+                _render_response_details(message["state"])
             if (
                 show_sources
                 and message.get("state")
@@ -7770,234 +7644,301 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                     key_prefix=message_key,
                     source_query=message.get("source_query", ""),
                 )
+            if message_index == len(st.session_state.messages) - 1 and message.get("state"):
+                st.download_button(
+                    "Download report", data=message.get("content", ""),
+                    file_name="scKG_Agent_Report.md", mime="text/markdown",
+                    key=f"history_report_{st.session_state.session_id}_{message_index}",
+                )
 
     default_query = st.session_state.pop("pending_query", "")
     default_display_query = st.session_state.pop("pending_display_query", "")
-    submission = st.chat_input(
-        "描述你的分析需求，或拖入 TXT/MD/CSV/TSV/JSON/JSONL/PDF...",
-        accept_file="multiple",
-        file_type=["txt", "md", "csv", "tsv", "json", "jsonl", "pdf"],
-        height=68,
-    )
+    # Reserve the reply position before the composer, including the live turn.
+    live_response = st.container()
+    # Keep Streamlit's native input/uploader events, inside one visual composer.
+    with st.container(border=True):
+        st.markdown('<span class="research-composer-marker"></span>', unsafe_allow_html=True)
+        attachment_preview = st.empty()
+        attachment_col, composer_col = st.columns([1, 14])
+        # Render the text widget before uploader-triggered reruns so Streamlit
+        # keeps the mounted input (and the user's unsent draft) during upload.
+        with composer_col:
+            submission = st.chat_input(
+                "描述科研问题或下一步需求…",
+                height=68,
+                disabled=bool(st.session_state.get("workspace_input_pending")),
+            )
+        with attachment_col:
+            _render_research_input()
+        with attachment_preview.container():
+            _render_bound_input_card()
+        st.markdown('<div class="composer-hint">＋ 添加文件 · Enter 发送 · Shift + Enter 换行</div>', unsafe_allow_html=True)
+    if st.session_state.pop("research_scroll_latest", False):
+        # The native input is nested to keep attachments together. Restore chat
+        # scrolling after a completed turn without moving the fixed composer.
+        components.html("""<script>
+        const showReply = () => window.parent.document
+          .getElementById('research-latest-reply')?.scrollIntoView({block:'start'});
+        requestAnimationFrame(() => requestAnimationFrame(showReply));
+        </script>""", height=0)
     query, submitted_files = _chat_input_parts(submission)
     if default_query and not query and not submitted_files:
         query = default_query
 
-    if query or submitted_files:
-        upload_context = _summarize_uploaded_files(submitted_files)
-        if upload_context:
-            save_working_context(st.session_state.session_id, "uploaded_context", upload_context)
-            st.session_state.uploaded_context = upload_context
-
-        display_query = default_display_query or _format_user_display_query(query, submitted_files)
-        if submitted_files and not query:
-            query = "请先读取我上传的文件上下文，概括字段/内容，并说明这些内容能怎样辅助后续推荐。"
-        st.session_state.messages.append({"role": "user", "content": display_query})
-        save_message(
-            st.session_state.session_id,
-            "user",
-            display_query,
-            metadata={"actual_query": query} if display_query != query else {},
-        )
-        _render_user_message(display_query)
-
-        with st.chat_message("assistant"):
-            project_memory = load_project_memory()
-            working_context = load_working_context(st.session_state.session_id)
-            uploaded_context = (
-                st.session_state.get("uploaded_context")
-                or working_context.get("uploaded_context")
-                or {}
+    with live_response:
+        if query or submitted_files:
+            request_conversation_id = st.session_state.session_id
+            request_draft = dict(_research_composer_draft())
+            request_input_binding = dict(request_draft.get("input_binding") or _research_input_binding())
+            request_uploaded_context = dict(
+                (request_draft.get("uploaded_context") if request_draft
+                 else load_working_context(st.session_state.session_id).get("uploaded_context")) or {}
             )
+            if request_input_binding:
+                try:
+                    authorize_uploaded_binding(_execution_ui_backend().data_registry, request_input_binding, user_id=local_user_id)
+                    run_artifact_id = request_input_binding["artifact_id"]
+                except Exception as exc:
+                    st.error("这份数据暂时无法访问，请通过 ＋ 重新选择文件。" +
+                             _execution_ui_backend().redact_text(str(exc)))
+                    st.stop()
+            if request_draft.get("input_binding"):
+                _bind_research_input(request_input_binding)
+            _clear_research_attachments()
+            attachment_preview.empty()
+            request_ui_token = uuid.uuid4().hex
+            st.session_state.workspace_research_request_token = request_ui_token
+            from execution.research_input_binding import invalidate_delivery
+            invalidate_delivery(st.session_state)
+            _reset_workspace_from_stage("source")
+            st.session_state.pop("workspace_task_handoff", None)
+            upload_context = _summarize_uploaded_files(submitted_files)
+            if upload_context:
+                request_uploaded_context = upload_context
+            # Saved task context supports follow-ups; only the composer draft is cleared.
+            save_working_context(st.session_state.session_id, "uploaded_context", request_uploaded_context)
 
-            if _is_time_query(query):
-                report = _time_reply()
-                followups = [
-                    "我想做一个单细胞分析任务，你需要哪些信息？",
-                    "帮我解释一下这个系统的证据边界。",
-                    "打开图谱后我应该怎么看工具和证据关系？",
-                ]
-                state = None
-                elapsed = 0.0
-                _render_assistant_report(report)
-                live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
-                _render_followups(followups, key_prefix=live_key, source_query=query)
-            elif _is_greeting_query(query):
-                report = _greeting_reply(project_memory)
-                followups = _greeting_followups()
-                state = None
-                elapsed = 0.0
-                _render_assistant_report(report)
-                live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
-                _render_followups(followups, key_prefix=live_key, source_query=query)
-            elif submitted_files and query.startswith("请先读取我上传的文件上下文"):
-                report = _upload_preview_text(upload_context) or "我没有读到可解析的上传文件。"
-                followups = [
-                    "基于这个文件，我需要补充哪些字段才能做工具推荐？",
-                    "请根据上传表格判断更像哪类单细胞分析任务。",
-                    "这些文件内容能不能作为 evidence？",
-                ]
-                state = None
-                elapsed = 0.0
-                _render_assistant_report(report)
-                live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
-                _render_followups(followups, key_prefix=live_key, source_query=query)
-            else:
-                started = time.perf_counter()
-                with st.status("Running evidence-governed analysis", expanded=False) as status:
-                    try:
-                        runtime_config = dict(
-                            st.session_state.get("user_api_config") or {}
-                        )
-                        live_query = query
-                        live_conversation = _conversation_context(
-                            st.session_state.messages[:-1]
-                        )
-                        live_memory = project_memory
-                        live_uploads = uploaded_context
-                        if run_live and not offline_llm:
-                            disclosure_service = _outbound_disclosure_backend()
-                            sanitized = disclosure_service.prepare(
-                                {
-                                    "query": query,
-                                    "conversation_context": live_conversation,
-                                    "project_memory": project_memory,
-                                    "uploaded_context": uploaded_context,
-                                },
-                                purpose="research_chat_reasoning",
-                                provider=str(
-                                    runtime_config.get("api_base")
-                                    or get_settings().chat_api_base
-                                ),
+            display_query = default_display_query or _format_user_display_query(query, submitted_files)
+            if submitted_files and not query:
+                query = "请先读取我上传的文件上下文，概括字段/内容，并说明这些内容能怎样辅助后续推荐。"
+            attachment_names = list(request_draft.get("attachment_names") or [])
+            if request_draft.get("input_binding"):
+                name = request_input_binding.get("original_filename", "sample.h5ad")
+                if name not in attachment_names:
+                    attachment_names.insert(0, name)
+            if attachment_names:
+                display_query += "\n\n附件：" + "、".join(attachment_names)
+            st.session_state.messages.append({"role": "user", "content": display_query})
+            save_message(
+                st.session_state.session_id,
+                "user",
+                display_query,
+                metadata={"actual_query": query} if display_query != query else {},
+            )
+            _render_user_message(display_query)
+
+            with st.chat_message("assistant"):
+                project_memory = load_project_memory()
+                uploaded_context = request_uploaded_context
+
+                if _is_time_query(query):
+                    report = _time_reply()
+                    followups = [
+                        "我想做一个单细胞分析任务，你需要哪些信息？",
+                        "帮我解释一下这个系统的证据边界。",
+                        "打开图谱后我应该怎么看工具和证据关系？",
+                    ]
+                    state = None
+                    elapsed = 0.0
+                    _render_assistant_report(report)
+                    live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
+                    _render_followups(followups, key_prefix=live_key, source_query=query)
+                elif _is_greeting_query(query):
+                    report = _greeting_reply(project_memory)
+                    followups = _greeting_followups()
+                    state = None
+                    elapsed = 0.0
+                    _render_assistant_report(report)
+                    live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
+                    _render_followups(followups, key_prefix=live_key, source_query=query)
+                elif submitted_files and query.startswith("请先读取我上传的文件上下文"):
+                    report = _upload_preview_text(upload_context) or "我没有读到可解析的上传文件。"
+                    followups = [
+                        "基于这个文件，我需要补充哪些字段才能做工具推荐？",
+                        "请根据上传表格判断更像哪类单细胞分析任务。",
+                        "这些文件内容能不能作为 evidence？",
+                    ]
+                    state = None
+                    elapsed = 0.0
+                    _render_assistant_report(report)
+                    live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
+                    _render_followups(followups, key_prefix=live_key, source_query=query)
+                else:
+                    started = time.perf_counter()
+                    with st.status("Running evidence-governed analysis", expanded=False) as status:
+                        try:
+                            runtime_config = dict(
+                                st.session_state.get("user_api_config") or {}
                             )
-                            consent = disclosure_service.grant(
-                                disclosure_hash=sanitized.disclosure.disclosure_hash,
-                                session_id=st.session_state.session_id,
-                                scope="session",
+                            live_query = query
+                            live_conversation = _conversation_context(
+                                st.session_state.messages[:-1]
                             )
-                            authorization = disclosure_service.authorize(
-                                mode=PrivacyMode(privacy_mode),
-                                disclosure_hash=sanitized.disclosure.disclosure_hash,
-                                session_id=st.session_state.session_id,
-                                consent_id=consent.consent_id,
-                            )
-                            if not authorization.allowed:
-                                raise PermissionError(
-                                    ";".join(authorization.reasons)
+                            live_memory = project_memory
+                            live_uploads = uploaded_context
+                            if run_live and not offline_llm:
+                                disclosure_service = _outbound_disclosure_backend()
+                                sanitized = disclosure_service.prepare(
+                                    {
+                                        "query": query,
+                                        "conversation_context": live_conversation,
+                                        "project_memory": project_memory,
+                                        "uploaded_context": uploaded_context,
+                                    },
+                                    purpose="research_chat_reasoning",
+                                    provider=str(
+                                        runtime_config.get("api_base")
+                                        or get_settings().chat_api_base
+                                    ),
                                 )
-                            live_query = str(sanitized.payload.get("query", ""))
-                            live_conversation = list(
-                                sanitized.payload.get("conversation_context", [])
+                                consent = disclosure_service.grant(
+                                    disclosure_hash=sanitized.disclosure.disclosure_hash,
+                                    session_id=st.session_state.session_id,
+                                    scope="session",
+                                )
+                                authorization = disclosure_service.authorize(
+                                    mode=PrivacyMode(privacy_mode),
+                                    disclosure_hash=sanitized.disclosure.disclosure_hash,
+                                    session_id=st.session_state.session_id,
+                                    consent_id=consent.consent_id,
+                                )
+                                if not authorization.allowed:
+                                    raise PermissionError(
+                                        ";".join(authorization.reasons)
+                                    )
+                                live_query = str(sanitized.payload.get("query", ""))
+                                live_conversation = list(
+                                    sanitized.payload.get("conversation_context", [])
+                                )
+                                live_memory = dict(
+                                    sanitized.payload.get("project_memory", {})
+                                )
+                                live_uploads = {}
+                                runtime_config.update(
+                                    {
+                                        "privacy_authorized": True,
+                                        "outbound_authorized": True,
+                                        "privacy_mode": privacy_mode,
+                                        "disclosure_hash": sanitized.disclosure.disclosure_hash,
+                                    }
+                                )
+                            state = _run_agent(
+                                live_query,
+                                offline_llm=(offline_llm or not run_live),
+                                agent_mode=agent_mode,
+                                user_id=(
+                                    local_user_id
+                                    if run_artifact_id
+                                    else "local-research-user"
+                                ),
+                                conversation_id=st.session_state.session_id,
+                                artifact_id=run_artifact_id,
+                                requested_tool=run_requested_tool,
+                                conversation_context=live_conversation,
+                                project_memory=live_memory,
+                                uploaded_context=live_uploads,
+                                user_runtime_config=runtime_config,
                             )
-                            live_memory = dict(
-                                sanitized.payload.get("project_memory", {})
-                            )
-                            live_uploads = {}
-                            runtime_config.update(
-                                {
-                                    "privacy_authorized": True,
-                                    "outbound_authorized": True,
-                                    "privacy_mode": privacy_mode,
-                                    "disclosure_hash": sanitized.disclosure.disclosure_hash,
-                                }
-                            )
-                        state = _run_agent(
-                            live_query,
-                            offline_llm=(offline_llm or not run_live),
-                            agent_mode=agent_mode,
-                            user_id=(
-                                local_user_id
-                                if run_artifact_id
-                                else "local-research-user"
-                            ),
-                            conversation_id=st.session_state.session_id,
-                            artifact_id=run_artifact_id,
-                            requested_tool=run_requested_tool,
-                            conversation_context=live_conversation,
-                            project_memory=live_memory,
-                            uploaded_context=live_uploads,
-                            user_runtime_config=runtime_config,
-                        )
-                        if (
-                            attach_workflow_card
-                            and state.get("response_intent") == "workflow"
-                        ):
-                            state["workflow_decision"] = _attach_workflow_decision(
-                                query=query,
-                                state=state,
-                                project_memory=project_memory,
-                            )
-                        status.update(label="Analysis complete", state="complete")
-                    except Exception as exc:
-                        state = {
-                            "final_report": f"Execution failed: {exc}",
-                            "error_message": str(exc),
-                            "hallucination_audit": {},
-                            "context_pack": {},
-                        }
-                        status.update(label="Analysis failed", state="error")
+                            if (st.session_state.session_id != request_conversation_id
+                                or _research_input_binding() != request_input_binding
+                                or st.session_state.get("workspace_research_request_token") != request_ui_token):
+                                st.warning("请求期间数据或对话已改变；旧响应未发布到当前上下文。")
+                                st.stop()
+                            state["ui_input_binding"] = request_input_binding
+                            if (
+                                attach_workflow_card
+                                and state.get("response_intent") == "workflow"
+                            ):
+                                state["workflow_decision"] = _attach_workflow_decision(
+                                    query=query,
+                                    state=state,
+                                    project_memory=project_memory,
+                                )
+                            status.update(label="本轮答复已生成", state="complete")
+                        except Exception as exc:
+                            state = {
+                                "final_report": f"Execution failed: {exc}",
+                                "error_message": str(exc),
+                                "hallucination_audit": {},
+                                "context_pack": {},
+                            }
+                            status.update(label="Analysis failed", state="error")
 
-                elapsed = time.perf_counter() - started
-                report = _clean_report(state.get("final_report", "") or "No report was generated.")
-                followups = _suggest_followups(state, query)
-                save_working_context(
-                    st.session_state.session_id,
-                    "last_constraints",
-                    _constraints(state),
-                )
-                save_working_context(
-                    st.session_state.session_id,
-                    "last_recommended_tools",
-                    [tool.get("tool_name") for tool in _ranked_tools(state)],
-                )
-                _render_assistant_report(report)
-                _render_response_runtime(state)
-                _render_algorithm_surface(state)
-                _render_execution_handoff(
-                    state,
-                    key=f"live_handoff_{st.session_state.session_id}_{int(time.time() * 1000)}",
-                )
-                _render_workspace_handoff(
-                    state,
-                    source_query=query,
-                    key=f"live_workspace_{st.session_state.session_id}_{int(time.time() * 1000)}",
-                )
-                if show_sources:
-                    _render_sources_and_caveats(state, runtime=elapsed, show_debug=debug_visible)
-                if attach_workflow_card and state.get("workflow_decision"):
-                    _render_workflow_decision_card(state["workflow_decision"])
-                live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
-                _render_followups(followups, key_prefix=live_key, source_query=query)
+                    elapsed = time.perf_counter() - started
+                    report = _clean_report(state.get("final_report", "") or "No report was generated.")
+                    followups = _suggest_followups(state, query)
+                    save_working_context(
+                        st.session_state.session_id,
+                        "last_constraints",
+                        _constraints(state),
+                    )
+                    save_working_context(
+                        st.session_state.session_id,
+                        "last_recommended_tools",
+                        [tool.get("tool_name") for tool in _ranked_tools(state)],
+                    )
+                    _render_assistant_report(report)
+                    _render_response_runtime(state)
+                    _render_algorithm_surface(state)
+                    _render_execution_handoff(
+                        state,
+                        key=f"live_handoff_{st.session_state.session_id}_{int(time.time() * 1000)}",
+                    )
+                    _render_workspace_handoff(
+                        state,
+                        source_query=query,
+                        key=f"live_workspace_{st.session_state.session_id}_{int(time.time() * 1000)}",
+                    )
+                    _render_response_details(state)
+                    if show_sources:
+                        _render_sources_and_caveats(state, runtime=elapsed, show_debug=debug_visible)
+                    if attach_workflow_card and state.get("workflow_decision"):
+                        _render_workflow_decision_card(state["workflow_decision"])
+                    live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
+                    _render_followups(followups, key_prefix=live_key, source_query=query)
 
-                st.download_button(
-                    "Download report",
-                    data=report,
-                    file_name="scKG_Agent_Report.md",
-                    mime="text/markdown",
-                    width="content",
-                )
+                    st.download_button(
+                        "Download report",
+                        data=report,
+                        file_name="scKG_Agent_Report.md",
+                        mime="text/markdown",
+                        width="content",
+                    )
 
-        st.session_state.latest_state = state
-        assistant_message = {
-            "role": "assistant",
-            "content": report,
-            "state": state,
-            "runtime": elapsed,
-            "followups": followups,
-            "source_query": query,
-        }
-        st.session_state.messages.append(assistant_message)
-        save_message(
-            st.session_state.session_id,
-            "assistant",
-            report,
-            metadata={
+            st.session_state.latest_state = state
+            assistant_message = {
+                "role": "assistant",
+                "content": report,
                 "state": state,
                 "runtime": elapsed,
                 "followups": followups,
                 "source_query": query,
-            },
-        )
+            }
+            st.session_state.messages.append(assistant_message)
+            save_message(
+                st.session_state.session_id,
+                "assistant",
+                report,
+                metadata={
+                    "state": state,
+                    "runtime": elapsed,
+                    "followups": followups,
+                    "source_query": query,
+                },
+            )
+            st.session_state.research_scroll_latest = True
+            st.rerun()
+
 elif st.session_state.current_view == "graph_explorer":
     _render_graph_explorer_page()
 elif st.session_state.current_view == "knowledge_review":

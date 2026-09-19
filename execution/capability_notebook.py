@@ -74,6 +74,18 @@ class GenericNotebookCompiler:
             renderer_id = step.notebook_renderer_id or ""
             renderers.setdefault(renderer_id, self.renderer_registry.get(renderer_id))
         context = dict(notebook_context or {})
+        reused_targets = [
+            output.artifact_id for output in plan.expected_outputs
+            if f"reuse:{output.artifact_id}" in plan.planning_warnings
+        ]
+        context["reused_target_representations"] = reused_targets
+        if not plan.steps:
+            # A reuse-only plan still needs the registered renderer to deliver
+            # inspection cells. This does not schedule a new scientific action.
+            for step in step_contracts.values():
+                if any(output.representation_id in reused_targets for output in step.produces):
+                    renderer_id = step.notebook_renderer_id or ""
+                    renderers.setdefault(renderer_id, self.renderer_registry.get(renderer_id))
         context["plan_id"] = plan.plan_id
         context["planned_operations"] = [step_contracts[node.operation].operation for node in plan.steps]
         context.setdefault("notebook_path", str(output_path))
@@ -86,6 +98,7 @@ class GenericNotebookCompiler:
             ),
         )
         for renderer in renderers.values():
+            languages.add(getattr(renderer, "language_name", "python"))
             bootstrap = getattr(renderer, "bootstrap", None)
             if callable(bootstrap):
                 cells.extend(bootstrap(context))
@@ -227,7 +240,13 @@ def _parameter_provenance_lines(values: list[Any]) -> list[str]:
         origin = str(payload.get("origin_type") or "unknown")
         source_id = str(payload.get("source_id") or "reviewed_contract")
         policy = str(payload.get("policy_rule_id") or "")
-        explanation = f"`{parameter_name}={rendered_value}` — `{origin}` from `{source_id}`"
+        source_link = (
+            f"[参数来源原文](<{source_id}>)"
+            if source_id.startswith(("https://", "http://"))
+            and not any(character in source_id for character in "<>\n\r")
+            else f"`{source_id}`"
+        )
+        explanation = f"`{parameter_name}={rendered_value}` — `{origin}` from {source_link}"
         if policy:
             explanation += f"; rule `{policy}`"
         lines.append(f"- {explanation}")

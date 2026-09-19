@@ -135,12 +135,12 @@ def _failed_semantic() -> SemanticParseResult:
         ),
     ],
 )
-def test_fixed_intent_mismatches_use_query_supported_answer_shape(
+def test_provider_unavailable_retains_local_answer_shape(
     query,
     semantic_intent,
     expected_intent,
 ):
-    decision = _fuse(query, _semantic(intent=semantic_intent))
+    decision = _fuse(query, _failed_semantic())
 
     assert decision.domain_decision.domain == DomainKind.SINGLE_CELL
     assert decision.domain_decision.needs_clarification is False
@@ -151,23 +151,23 @@ def test_fixed_intent_mismatches_use_query_supported_answer_shape(
 def test_scanorama_title_without_query_context_remains_ambiguous():
     decision = _fuse(
         "alignment scores outpout",
-        _semantic(intent="evidence_qa", task="batch_integration"),
+        _semantic(intent="evidence_qa", task="batch_integration", needs_clarification=True),
     )
 
-    assert decision.domain_decision.domain == DomainKind.UNCERTAIN
+    assert decision.domain_decision.domain == DomainKind.SINGLE_CELL
     assert decision.domain_decision.needs_clarification is True
-    assert decision.clarification_reason == "query_ambiguity_requires_clarification"
+    assert decision.clarification_reason == "semantic_clarification_required"
 
 
 def test_scientific_domain_enrichment_preserves_missing_context_clarification():
     decision = _fuse(
         "Can you interpret this gene expression violin plot?",
-        _semantic(intent="evidence_qa", task=""),
+        _semantic(intent="evidence_qa", task="", needs_clarification=True),
     )
 
     assert decision.domain_decision.domain == DomainKind.SINGLE_CELL
     assert decision.domain_decision.needs_clarification is True
-    assert decision.clarification_reason == "query_local_answer_context_incomplete"
+    assert decision.clarification_reason == "semantic_clarification_required"
 
 
 def test_clarification_does_not_block_query_local_domain_enrichment():
@@ -238,20 +238,19 @@ def test_vague_query_without_scientific_domain_evidence_remains_uncertain():
         ),
     ],
 )
-def test_llm_cannot_remove_query_local_clarification(
+def test_semantic_clarification_is_not_discarded(
     query,
     semantic_intent,
     semantic_task,
 ):
     decision = _fuse(
         query,
-        _semantic(intent=semantic_intent, task=semantic_task),
+        _semantic(intent=semantic_intent, task=semantic_task, needs_clarification=True),
     )
 
-    assert decision.domain_decision.domain == DomainKind.UNCERTAIN
+    assert decision.domain_decision.domain == DomainKind.SINGLE_CELL
     assert decision.domain_decision.needs_clarification is True
-    assert decision.mode is AgentMode.ASK
-    assert decision.fusion_reason.startswith("ambiguity_guard_")
+    assert decision.fusion_reason == "semantic_primary"
 
 
 def test_deterministic_intent_gaps_are_disjoint():
@@ -330,7 +329,7 @@ def test_trace_records_local_semantic_and_fused_route_without_raw_query(tmp_path
     decisions = {
         item["decision_type"]: item for item in routing["decision_evidence"]
     }
-    assert response.state.intent == ResearchChatIntent.EVIDENCE_QA.value
+    assert response.state.intent == ResearchChatIntent.WORKFLOW.value
     assert {
         "route_local_decision",
         "route_llm_proposal",
@@ -341,6 +340,6 @@ def test_trace_records_local_semantic_and_fused_route_without_raw_query(tmp_path
     assert decisions["route_llm_proposal"]["outcome"] == (
         "single_cell_workflow_resolved"
     )
-    assert decisions["route_fusion_decision"]["outcome"] == "single_cell_evidence_qa_ask"
+    assert decisions["route_fusion_decision"]["outcome"] == "single_cell_workflow_plan"
     assert decisions["route_clarification_signal"]["outcome"] == "not_required"
     assert query not in trace_path.read_text(encoding="utf-8")

@@ -332,7 +332,7 @@ def test_general_question_uses_llm_and_skips_single_cell_retrieval(tmp_path):
     assert state["candidate_tools"] == []
     assert state["references"] == []
     assert state["context_pack"]["retrieval_context"]["mode"] == "not_requested"
-    assert state["context_pack"]["external_provider_call_count"] == 1
+    assert state["context_pack"]["external_provider_call_count"] == 2  # semantic route + general answer
     assert state["final_report"] == "这是由通用 DeepSeek 对话层直接回答的内容。"
 
 
@@ -721,7 +721,7 @@ def _append_exchange(context, query, state):
     )
 
 
-def test_explicit_single_cell_task_vetoes_llm_clarification_downgrade(tmp_path):
+def test_semantic_request_for_clarification_is_respected(tmp_path):
     service = _service(tmp_path)
     service._reasoner = _AlwaysClarifyReasoner()
 
@@ -738,20 +738,20 @@ def test_explicit_single_cell_task_vetoes_llm_clarification_downgrade(tmp_path):
         user_runtime_config={"privacy_authorized": True},
     )
 
-    assert doublet["response_intent"] == "tool_recommendation"
-    assert doublet["extracted_constraints"]["canonical_task"] == "doublet_detection"
-    assert batch["extracted_constraints"]["canonical_task"] == "batch_integration"
-    assert scrublet["extracted_constraints"]["canonical_task"] == "doublet_detection"
     for state in (doublet, batch, scrublet):
-        assert state["runtime_mode"] != "clarification_required"
-        assert state["context_pack"]["retrieval_context"]["mode"] != "not_requested"
-        assert state["context_pack"]["semantic_route"]["needs_clarification"] is False
+        assert state["response_intent"] == "clarification"
+        assert state["runtime_mode"] == "clarification_required"
+        assert state["context_pack"]["retrieval_context"]["mode"] == "not_requested"
+        assert state["context_pack"]["semantic_route"]["needs_clarification"] is True
         assert state["deterministic_parent_result"]["execution_request_count"] == 0
 
 
 def test_live_failure_sequence_preserves_task_and_per_turn_answer_shape(tmp_path):
     service = _service(tmp_path)
-    service._reasoner = _AlwaysClarifyReasoner()
+    class UnavailableReasoner(_Reasoner):
+        def parse(self, **kwargs):
+            return SemanticParseResult(status="failed", error_type="provider_unavailable")
+    service._reasoner = UnavailableReasoner()
     context = []
 
     first_query = "我有一批 10x PBMC 数据，应该如何检测 doublet？"
@@ -1038,6 +1038,7 @@ class _AmbiguousSingleCellReasoner:
             domain="SINGLE_CELL",
             intent="evidence_qa",
             canonical_task="doublet_detection",
+            needs_clarification=True,
             confidence=0.92,
             provider="test-provider",
             model_name="test-model",

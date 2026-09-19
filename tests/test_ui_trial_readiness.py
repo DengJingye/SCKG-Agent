@@ -13,17 +13,17 @@ from observability.dashboard.ui_presenters import (
 )
 
 
-def test_recent_conversation_titles_are_readable_and_css_forbids_character_wrap():
+def test_recent_conversation_titles_and_scoped_layout_are_readable():
     assert format_conversation_title("a" * 24, "a" * 24) == "Chat aaaaaaaa"
     title = format_conversation_title("A very long research conversation " * 3, "session", limit=34)
     assert len(title) <= 34
     assert title.endswith("...")
     source = (PROJECT_ROOT / "app.py").read_text(encoding="utf-8")
-    assert "white-space: nowrap !important" in source
-    assert "text-overflow: ellipsis !important" in source
-    assert "overflow-wrap: normal !important" in source
-    assert source.index("nav_groups = [") < source.index('if st.button("+ New chat"')
-    assert "Product shell v2" in source
+    assert "-webkit-line-clamp: 2" in source
+    assert "完整对话标题" in source
+    assert '.block-container:has(.research-chat-layout)' in source
+    assert source.index('st.button("＋ 新建对话"') < source.index("nav_groups = [")
+    assert "one width owner per surface" in source
     assert "workflow-stepper" in source
     assert "_invisible_widget_key" not in source
     assert "More actions for chat" in source

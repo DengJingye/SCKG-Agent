@@ -376,8 +376,10 @@ class ResearchChatService:
         dense_default_enabled: Optional[bool] = None,
         evaluation_retrieval_profile: Optional[str] = None,
         trace_collector: Optional[TraceCollector] = None,
+        data_registry: Any = None,
     ) -> None:
         self.retrieval = retrieval or HybridRetrievalService()
+        self._data_registry = data_registry
         self._parent_agent = parent_agent
         self._audited_parent: Optional[AuditedParentAgent] = (
             AuditedParentAgent(parent_agent)
@@ -637,11 +639,16 @@ class ResearchChatService:
                 run_started=run_started,
             )
         reasoner = self._reasoner or ExternalResearchReasoner()
-        explicit_task = _task_for_query(query)
+        bound_operator_task = self._bound_operator_task(request)
+        explicit_task = bound_operator_task or _task_for_query(query)
         inheritable_task = (
             _task_from_context(context) if _can_inherit_task(query) else None
         )
-        local_intent = _classify_intent(query)
+        local_intent = (
+            ResearchChatIntent.WORKFLOW
+            if bound_operator_task and _embedding_analysis_request(query)
+            else _classify_intent(query)
+        )
         preliminary_mode = _resolve_mode(
             query,
             intent=local_intent,
@@ -701,25 +708,65 @@ class ResearchChatService:
                 conversation_state=conversation_state,
             )
         semantic_parse = SemanticParseResult(status="not_requested")
+        analysis_context = self._semantic_analysis_context(request)
         if (
             runtime_config.get("privacy_authorized")
+            and runtime_config.get("privacy_mode") != "strict_offline"
             and hasattr(reasoner, "parse")
-            and not (
-                domain_decision.domain == DomainKind.GENERAL.value
-                and domain_decision.confidence >= 0.9
-            )
         ):
             semantic_parse = reasoner.parse(
                 query=_latest_followup_text(query),
                 conversation_context=context,
-                canonical_tasks=[item.task_id for item in CANONICAL_TASKS],
+                canonical_tasks=list(dict.fromkeys(
+                    [item.task_id for item in CANONICAL_TASKS]
+                    + [item["task_family"] for item in analysis_context["capabilities"]]
+                )),
                 runtime_config=runtime_config,
+                capability_context=analysis_context,
             )
         semantic_task = (
-            canonical_task(semantic_parse.canonical_task)
+            next((item for item in CANONICAL_TASKS if item.task_id == semantic_parse.canonical_task), None)
             if semantic_parse.status == "ready" and semantic_parse.canonical_task
             else None
         )
+        resolved_capability_request = None
+        if semantic_parse.status == "ready" and semantic_task is None:
+            family = next((item for item in analysis_context["capabilities"]
+                           if item["task_family"] == semantic_parse.canonical_task), None)
+            if family:
+                semantic_task = _RegisteredCapabilityTask(task_id=family["task_family"], label=family["pack_id"])
+        if semantic_parse.status == "ready" and semantic_parse.capability_request is not None:
+            proposed = semantic_parse.capability_request
+            registered = next((item for item in analysis_context["capabilities"]
+                               if item["pack_id"] == proposed.pack_id), None)
+            valid_targets = {row["id"] for row in registered["outputs"]} if registered else set()
+            if not registered or not set(proposed.target_representations) <= valid_targets:
+                semantic_parse = semantic_parse.model_copy(update={
+                    "needs_clarification": True,
+                    "clarification_question": "所请求的分析目标尚未匹配到已登记能力，请明确希望得到的结果；我不会用其他分析替代。",
+                })
+            elif not analysis_context["input_registered"]:
+                semantic_parse = semantic_parse.model_copy(update={
+                    "needs_clarification": True,
+                    "clarification_question": "请先通过 ＋ 上传或选择本次分析的数据，再为这份数据生成计划。",
+                })
+            elif semantic_parse.intent in {"workflow", "execution"}:
+                resolved_capability_request = proposed.model_dump(mode="json")
+                semantic_task = _RegisteredCapabilityTask(
+                    task_id=registered["task_family"], label=registered["pack_id"])
+        if (semantic_parse.status == "ready" and semantic_parse.intent in {"workflow", "execution"}
+                and analysis_context["input_registered"]
+                and semantic_parse.canonical_task in {item["task_family"] for item in analysis_context["capabilities"]}
+                and resolved_capability_request is None and not semantic_parse.needs_clarification):
+            semantic_parse = semantic_parse.model_copy(update={
+                "needs_clarification": True,
+                "clarification_question": "已识别为分析请求，但还没有明确本次要交付的结果。请说明目标；我不会自动套用整套默认流程。",
+            })
+        if resolved_capability_request and semantic_parse.constraints:
+            semantic_parse = semantic_parse.model_copy(update={
+                "needs_clarification": True,
+                "clarification_question": "已识别分析目标和附加约束，但这些约束尚未绑定到计划参数。请先确认具体参数；不会按默认值忽略你的要求。",
+            })
         semantic_context_task = (
             semantic_task
             if semantic_task is not None
@@ -800,9 +847,12 @@ class ResearchChatService:
             )
         if _contains_incompatible_task_marker(query):
             semantic_task = None
-        task = explicit_task or inheritable_task or semantic_task
+        semantic_primary = route_fusion.semantic_intent_accepted
+        task = (semantic_task or explicit_task or inheritable_task) if semantic_primary else (explicit_task or inheritable_task or semantic_task)
         task_source = (
-            "explicit_query"
+            "semantic_parser"
+            if semantic_primary and semantic_task
+            else "explicit_query"
             if explicit_task
             else "elliptical_followup"
             if inheritable_task
@@ -1414,6 +1464,7 @@ class ResearchChatService:
                 exclude={"content"},
             ),
             "semantic_parse": semantic_parse.model_dump(mode="json"),
+            "resolved_capability_request": resolved_capability_request if semantic_primary else None,
             "research_tool_plan": tool_plan.model_dump(mode="json"),
             "research_tool_observations": [
                 item.model_dump(mode="json")
@@ -1853,6 +1904,17 @@ class ResearchChatService:
                     parent.get("execution_request_count") or 0
                 ),
             )
+            requested_embeddings = _embedding_targets(request.query)
+            if (request.artifact_id and requested_embeddings
+                    and capability_handoff.get("target_representations") == requested_embeddings):
+                display_targets = " / ".join(target.upper() for target in requested_embeddings)
+                direct_answer = (
+                    f"已识别你的请求：**对当前绑定的数据做 {display_targets} 分析 / 绘图**。\n\n"
+                    "点击下方「进入 Stepwise」，会自动使用这份数据检查现有表示："
+                    f"若已有有效 {display_targets}，就复用；否则由现有 Planner 安排所需前置步骤，生成 Notebook。"
+                    "不会额外安排聚类或细胞注释。\n\n"
+                    "**现在尚未执行计算**；运行仍需通过现有 Notebook / 执行确认入口。"
+                )
             answerability = AnswerabilityDecision(
                 verdict="ANSWER_VERIFIED",
                 reason_codes=["capability_workspace_handoff_available"],
@@ -2067,6 +2129,65 @@ class ResearchChatService:
             )
         governed.extend(by_name.values())
         return governed[:8]
+
+    def _semantic_analysis_context(self, request: ResearchAgentRequest) -> dict[str, Any]:
+        """Server-owned, metadata-only capability menu; no paths, IDs or matrices."""
+        registered = False
+        if self._data_registry is not None and request.artifact_id:
+            try:
+                registered = self._data_registry.get(
+                    request.artifact_id, user_id=request.user_id).artifact_type == "AnnData"
+            except (KeyError, ValueError, PermissionError):
+                pass
+        capabilities = []
+        for pack in self._research_tools.capability_packs.load_all():
+            if not any(str(value).endswith("planning_ready") for value in self._research_tools.capability_packs.gate(pack).readiness):
+                continue
+            titles = {item.capability_id: item.title for item in pack.capabilities}
+            outputs = {}
+            for method in pack.methods:
+                for output in method.produces:
+                    outputs[output.representation_id] = {
+                        "id": output.representation_id,
+                        "description": titles.get(method.capability_id, method.method_id),
+                    }
+            capabilities.append({"pack_id": pack.pack_id,
+                "task_family": pack.task_families[0], "outputs": list(outputs.values())})
+        return {"input_registered": registered, "input_kind": "AnnData" if registered else None,
+                "capabilities": capabilities}
+
+    def _bound_operator_task(self, request: ResearchAgentRequest) -> Any:
+        """A registered AnnData supplies context, not execution authorization.
+
+        Embeddings are also used outside biology: neither the acronym alone nor an
+        arbitrary artifact ID is a single-cell anchor. Resolve the owned input
+        and the existing pack; do not invent a canonical scientific task.
+        """
+        targets = _embedding_targets(request.query)
+        if not targets or self._data_registry is None or not request.artifact_id:
+            return None
+        if _contains_incompatible_task_marker(request.query) or any(
+            word in request.query.casefold() for word in ("股票", "金融", "finance", "stock price")
+        ):
+            return None
+        try:
+            record = self._data_registry.get(request.artifact_id, user_id=request.user_id)
+        except (KeyError, ValueError, PermissionError):
+            return None
+        if record.artifact_type != "AnnData":
+            return None
+        for pack in self._research_tools.capability_packs.load_all():
+            if pack.pack_id != "scanpy_core":
+                continue
+            if not any(str(value).endswith("planning_ready") for value in self._research_tools.capability_packs.gate(pack).readiness):
+                continue
+            producer = next((method for method in pack.methods if any(
+                output.representation_id in targets for output in method.produces
+            )), None)
+            if producer is not None:
+                capability = next(item for item in pack.capabilities if item.capability_id == producer.capability_id)
+                return _RegisteredCapabilityTask(task_id=capability.task_family, label=capability.title)
+        return None
 
     def _plan_if_requested(
         self,
@@ -2614,9 +2735,44 @@ def _query_local_intent_reason(
     return ""
 
 
+@dataclass(frozen=True)
+class _RegisteredCapabilityTask:
+    """Pack task context, not a new canonical ontology record."""
+    task_id: str
+    label: str
+
+
+def _mentions_pca(text: str) -> bool:
+    return bool(re.search(r"(?<![a-z0-9_])pca(?![a-z0-9_])|主成分分析", text.casefold()))
+
+
+def _embedding_targets(text: str) -> list[str]:
+    """Explicit names of existing Scanpy embedding outputs, not new methods."""
+    text = _latest_followup_text(text).casefold()
+    targets = ["pca"] if _mentions_pca(text) else []
+    if re.search(r"(?<![a-z0-9_])umap(?![a-z0-9_])", text):
+        targets.append("umap")
+    return targets
+
+
+def _embedding_analysis_request(text: str) -> bool:
+    text = _latest_followup_text(text).casefold()
+    if not _embedding_targets(text):
+        return False
+    if any(word in text for word in ("是什么", "为什么", "怎么", "如何", "需要什么", "解释", "原理", "介绍", "比较", "理解", "不要", "不做", "别画", "不画", "don't", "do not", "what", "why", "how", "require", "explain", "compare")):
+        return False
+    return bool(re.search(r"帮我|请.*(?:做|计算|分析|画|绘制)|做一下|计算|画一下|绘制|\b(?:run|perform|compute|do|plot|draw|visualize)\b", text))
+
+
+def _pca_analysis_request(text: str) -> bool:
+    return _mentions_pca(text) and _embedding_analysis_request(text)
+
+
 def _has_workflow_intent_signal(text: str) -> bool:
     """Recognize explicit workflow deliverables without inferring task semantics."""
 
+    if _embedding_analysis_request(text):
+        return True
     if any(
         marker in text
         for marker in (
@@ -3242,6 +3398,8 @@ def _clarification_result(
         "- 你遇到的具体现象，例如矩阵状态、UMAP 分离或 marker 混合。\n\n"
         "在任务确认前，我不会检索随机工具、生成可执行计划或创建 ExecutionRequest。"
     )
+    if semantic_parse.clarification_question:
+        report = (semantic_parse.clarification_question + "\n\n尚未生成或执行分析；请确认后继续。")
     context_pack = _non_scientific_context_pack(
         route="clarification_required",
         reason=domain_decision.reason,
@@ -3566,7 +3724,26 @@ def _fuse_research_route(
     inheritable_task: Any,
     semantic_context_task: Any,
 ) -> _RouteFusionDecision:
-    """Fuse local and LLM proposals without allowing unsupported certainty."""
+    """Semantic understanding is primary; deterministic checks retain authority."""
+
+    if (semantic_parse.status == "ready" and _semantic_intent(semantic_parse.intent) is not None
+            and (semantic_parse.confidence >= 0.6 or semantic_parse.needs_clarification)):
+        intent = _semantic_intent(semantic_parse.intent)
+        clarify = (semantic_parse.needs_clarification
+                   or semantic_parse.domain == "UNCERTAIN" or semantic_parse.confidence < 0.6)
+        return _RouteFusionDecision(
+            domain_decision=DomainDecision(domain="UNCERTAIN" if clarify and semantic_parse.domain == "GENERAL" else semantic_parse.domain,
+                confidence=semantic_parse.confidence, source="semantic_parser",
+                reason="semantic_primary", needs_clarification=clarify),
+            intent=intent,
+            mode=_resolve_mode(query, intent=intent, requested_mode=requested_mode,
+                               semantic=semantic_parse),
+            local_intent_reason=_query_local_intent_reason(query, local_intent) or "default_local_answer_shape",
+            semantic_intent_reason="validated_semantic_primary",
+            semantic_intent_accepted=True,
+            clarification_reason="semantic_clarification_required" if clarify else "semantic_request_resolved",
+            fusion_reason="semantic_primary",
+        )
 
     governed_task_anchor = explicit_task or inheritable_task or semantic_context_task
     scientific_proposition = _query_local_scientific_proposition(query)
@@ -4334,7 +4511,7 @@ def _task_from_context(context: Iterable[dict[str, Any]]) -> Any:
                 if isinstance(state, dict):
                     task_id = str(state.get("confirmed_task") or "")
         if task_id:
-            task = canonical_task(task_id)
+            task = next((item for item in CANONICAL_TASKS if item.task_id == task_id), None)
             if task is not None:
                 return task
         task = _task_for_query(str(message.get("content") or ""))
@@ -5984,13 +6161,22 @@ def _capability_workspace_handoff(
         }
         return bool(task_terms and task_terms.intersection(searchable))
 
-    matched = next((candidate for candidate in candidates if matches_task(candidate)), None)
+    semantic_request = context_pack.get("resolved_capability_request")
+    matched = next((candidate for candidate in candidates
+                    if candidate[0].get("pack_id") == semantic_request["pack_id"]), None) if semantic_request else next(
+                        (candidate for candidate in candidates if matches_task(candidate)), None)
     if matched is None:
         return None
     capability, targets = matched
     preferred_method_ids: list[str] = []
     query_key = query.casefold()
     pack_id = str(capability.get("pack_id") or "")
+    if semantic_request:
+        targets = list(semantic_request["target_representations"])
+    elif pack_id == "scanpy_core" and _embedding_analysis_request(query):
+        # Restrict the requested terminal state, not the compiler's scientific
+        # prerequisites. Reuse vs computation remains the existing planner's job.
+        targets = _embedding_targets(query)
     if pack_id == "scanpy_core" and re.search(r"(?<![a-z])scale(?![a-z])", query_key):
         explicitly_requires_scale = any(
             phrase in query_key

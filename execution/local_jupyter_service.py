@@ -110,7 +110,7 @@ class LocalJupyterService:
         expected_sha256: str,
         runtime_python: Path,
         runtime_pack_id: str,
-        timeout_seconds: float = 15.0,
+        timeout_seconds: float = 60.0,
         request_id: str | None = None,
         parent_trace_id: str | None = None,
         handoff_id: str | None = None,
@@ -236,6 +236,10 @@ class LocalJupyterService:
             f"--IdentityProvider.token={token}",
         ]
         environment = os.environ.copy()
+        # A new server must not restore unrelated tabs/kernels from a previous
+        # server's default JupyterLab workspace. Keep the editor workspace local
+        # to this exact notebook/runtime binding; do not alter global settings.
+        environment["JUPYTERLAB_WORKSPACES_DIR"] = str(session_dir / "lab-workspaces")
         prior_jupyter_path = environment.get("JUPYTER_PATH")
         environment["JUPYTER_PATH"] = (
             f"{self.kernel_data_root}{os.pathsep}{prior_jupyter_path}"
@@ -269,7 +273,10 @@ class LocalJupyterService:
             time.sleep(0.1)
         else:
             _terminate_process(process)
-            raise TimeoutError("local JupyterLab did not become ready")
+            raise TimeoutError(
+                f"local JupyterLab did not become ready within {timeout_seconds:g}s; "
+                f"inspect sessions/{session_key}/jupyter.log (ExecutionPolicy is unrelated)"
+            )
         if not _process_running(process) or not self.readiness_probe(status_url):
             _terminate_process(process)
             raise RuntimeError(

@@ -79,8 +79,8 @@ SCANPY_CORE_DIAGNOSTICS = {
     ),
     "umap": (
         "batch_key = BATCH_KEY if BATCH_KEY and BATCH_KEY in adata.obs.columns else None\n"
-        "color_keys = ['leiden'] + ([batch_key] if batch_key else [])\n"
-        "sc.pl.umap(adata, color=color_keys, frameon=False, show=False)\n"
+        "color_keys = (['leiden'] if 'leiden' in adata.obs.columns else []) + ([batch_key] if batch_key else [])\n"
+        "sc.pl.umap(adata, color=color_keys or None, frameon=False, show=False)\n"
         "fig = plt.gcf()\n"
         "sckg_save_and_display(fig, '05_umap_clusters_and_batch.png')"
     ),
@@ -137,7 +137,7 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
                 f"application_python={json.dumps(sys.executable)}, "
                 f"plan_id={json.dumps(str(context.get('plan_id', 'unknown')))})\n"
             )
-        return [
+        cells = [
             {
                 "cell_type": "markdown",
                 "id": "scanpy-core-setup-description",
@@ -157,6 +157,44 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
                 "source": source,
             },
         ]
+        if "pca" in context.get("reused_target_representations", []):
+            cells.extend([
+                {"cell_type": "markdown", "id": "reused-pca-description", "metadata": {},
+                 "source": "## Inspect existing PCA (no recomputation)\n\nThe planner reused the registered PCA representation. These plots describe the existing embedding; they do not establish biological identities."},
+                {"cell_type": "code", "id": "reused-pca-inspection", "metadata": {},
+                 "execution_count": None, "outputs": [], "source": (
+                    "pca_coordinates = np.asarray(adata.obsm['X_pca'])\n"
+                    "assert pca_coordinates.shape[0] == adata.n_obs, 'PCA observation mismatch'\n"
+                    "assert pca_coordinates.ndim == 2 and pca_coordinates.shape[1] >= 2, 'PCA needs two components for this plot'\n"
+                    "assert np.isfinite(pca_coordinates).all(), 'Non-finite PCA coordinates'\n"
+                    "print(f'Reusing PCA: {pca_coordinates.shape}; no PCA recomputation')\n"
+                    "fig, ax = plt.subplots(figsize=(6, 5))\n"
+                    "ax.scatter(pca_coordinates[:, 0], pca_coordinates[:, 1], s=5, alpha=0.65)\n"
+                    "ax.set(xlabel='PC1', ylabel='PC2', title='Existing PCA (unlabelled)')\n"
+                    "sckg_save_and_display(fig, 'existing_pca_scatter.png')\n"
+                    "if 'variance_ratio' in adata.uns.get('pca', {}):\n"
+                    "    sc.pl.pca_variance_ratio(adata, n_pcs=min(30, len(adata.uns['pca']['variance_ratio'])), log=True, show=False)\n"
+                    "    sckg_save_and_display(plt.gcf(), 'existing_pca_variance.png')\n"
+                    "else:\n"
+                    "    print('PCA variance ratios unavailable; not inferred from the coordinates.')\n"
+                 )},
+            ])
+        if "umap" in context.get("reused_target_representations", []):
+            cells.extend([
+                {"cell_type": "markdown", "id": "reused-umap-description", "metadata": {},
+                 "source": "## Inspect existing UMAP (no recomputation)\n\nThe planner reused the registered embedding. This unlabelled plot does not infer cell identities."},
+                {"cell_type": "code", "id": "reused-umap-inspection", "metadata": {},
+                 "execution_count": None, "outputs": [], "source": (
+                    "umap_coordinates = np.asarray(adata.obsm['X_umap'])\n"
+                    "assert umap_coordinates.ndim == 2 and umap_coordinates.shape[1] >= 2, 'UMAP needs two components for this plot'\n"
+                    "assert umap_coordinates.shape[0] == adata.n_obs, 'UMAP observation mismatch'\n"
+                    "assert np.isfinite(umap_coordinates).all(), 'Non-finite UMAP coordinates'\n"
+                    "print(f'Reusing UMAP: {umap_coordinates.shape}; no UMAP recomputation')\n"
+                    "sc.pl.umap(adata, color=None, frameon=False, show=False)\n"
+                    "sckg_save_and_display(plt.gcf(), 'existing_umap.png')\n"
+                 )},
+            ])
+        return cells
 
     def render(self, step, parameters, *, parameter_provenance=None):
         cells = super().render(

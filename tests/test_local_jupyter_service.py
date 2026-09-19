@@ -83,6 +83,9 @@ def test_jupyter_uses_localhost_fixed_argv_and_existing_runtime(tmp_path):
     assert "--FileContentsManager.allow_hidden=True" in argv
     assert all("install" not in value.casefold() for value in argv)
     assert kwargs["shell"] is False
+    assert kwargs["env"]["JUPYTERLAB_WORKSPACES_DIR"] == str(
+        tmp_path / "state" / "sessions" / session.session_id / "lab-workspaces"
+    )
     assert session.launch_url.startswith("http://127.0.0.1:18888/lab/tree/")
     kernel = json.loads(
         (
@@ -149,3 +152,49 @@ def test_jupyter_blocks_escape_hash_change_and_untrusted_notebook(tmp_path):
             runtime_python=runtime_python,
             runtime_pack_id="doublet-python",
         )
+
+
+def test_slow_start_is_not_killed_at_old_fifteen_second_limit(tmp_path, monkeypatch):
+    import execution.local_jupyter_service as module
+    clock = [0.0]
+    monkeypatch.setattr(module.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(module.time, "sleep", lambda seconds: clock.__setitem__(0, clock[0] + seconds))
+    notebook = tmp_path / "workspace" / "slow.ipynb"
+    digest = _trusted_notebook(notebook)
+    service = LocalJupyterService(
+        allowed_workspace_root=notebook.parent, state_root=tmp_path / "state",
+        server_python=_executable(tmp_path / "server" / "python"),
+        process_launcher=lambda *a, **k: _Process(),
+        readiness_probe=lambda url: clock[0] >= 20,
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
+    )
+    session = service.start(owner_user_id="alice", notebook_path=notebook,
+                            expected_sha256=digest, runtime_python=service.server_python,
+                            runtime_pack_id="doublet-python")
+    assert session.running and 20 <= clock[0] < 60
+
+
+def test_timeout_remains_bounded_and_does_not_leak_token(tmp_path, monkeypatch):
+    import execution.local_jupyter_service as module
+    clock = [0.0]
+    terminated = []
+    monkeypatch.setattr(module.time, "monotonic", lambda: clock[0])
+    monkeypatch.setattr(module.time, "sleep", lambda seconds: clock.__setitem__(0, clock[0] + seconds))
+    monkeypatch.setattr(module, "_terminate_process", lambda process: terminated.append(process))
+    notebook = tmp_path / "workspace" / "blocked.ipynb"
+    digest = _trusted_notebook(notebook)
+    service = LocalJupyterService(
+        allowed_workspace_root=notebook.parent, state_root=tmp_path / "state",
+        server_python=_executable(tmp_path / "server" / "python"),
+        process_launcher=lambda *a, **k: _Process(), readiness_probe=lambda url: False,
+        token_factory=lambda: "do-not-disclose-this-token",
+        trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
+    )
+    with pytest.raises(TimeoutError) as error:
+        service.start(owner_user_id="alice", notebook_path=notebook,
+                      expected_sha256=digest, runtime_python=service.server_python,
+                      runtime_pack_id="doublet-python", timeout_seconds=1)
+    assert "within 1s" in str(error.value) and "jupyter.log" in str(error.value)
+    assert "do-not-disclose" not in str(error.value)
+    assert len(terminated) == 1
+    assert not list((tmp_path / "state").rglob("session.json"))
