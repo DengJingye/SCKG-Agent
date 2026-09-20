@@ -41,6 +41,15 @@ claim or perform production KG migration.
   DOM/selection identities. `consumes` and `produces` remain separately visible
   and inspectable.
 
+## 5D.2 final migration-boundary closure
+
+The frozen `v1_v2_mapping_draft.json` contract now requires both
+`status=NON_EXECUTABLE_DRAFT` and an actual JSON boolean
+`migration_implemented=false`. `true`, a missing field, string `"false"`, and
+integer `0` all fail closed even if the manifest hash is recomputed to match the
+tampered artifact. This validates the frozen design contract; it does not add a
+migration mechanism or workflow.
+
 ## Integrity boundary
 
 `OntologyManagerReadOnlyService` verifies the exact 12 manifest-listed artifact
@@ -68,8 +77,8 @@ deferred/disposition items, and four compatibility concepts whose disposition is
 
 ## Verification
 
-- 5D.1 service/UI plus existing Scientific KG Admin and Candidate Studio:
-  `43 passed`.
+- 5D.2 service/UI plus existing Scientific KG Admin and Candidate Studio:
+  `49 passed`.
 - Frozen ontology functional contracts compatible with an approved Admin
   extension: `131 passed, 12 deselected`.
 - Research Chat ask/run and UI rerun smoke tests: `3 passed`.
@@ -91,4 +100,4 @@ viewer. Extension and deferred types have no core edges unless the frozen core
 registry defines one. No Review Queue, ReviewDecision control, promotion,
 candidate staging, migration, or mutation action exists in this checkpoint.
 
-Next recommended action: `STOP_FOR_QA_RECHECK`.
+Next recommended action: `STOP_FOR_FINAL_QA`.

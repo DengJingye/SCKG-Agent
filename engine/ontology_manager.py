@@ -169,6 +169,12 @@ class OntologyManagerReadOnlyService:
             raise OntologyIntegrityError(
                 "frozen ontology artifact design boundary mismatch: v1_v2_mapping_draft.json"
             )
+        migration_implemented = self._mapping_registry.get("migration_implemented")
+        if type(migration_implemented) is not bool or migration_implemented is not False:
+            raise OntologyIntegrityError(
+                "frozen ontology migration_implemented boundary mismatch: "
+                "v1_v2_mapping_draft.json"
+            )
 
         objects = self._require_rows(self._objects_registry, "objects", "object registry")
         links = self._require_rows(self._links_registry, "links", "link registry")

@@ -41,11 +41,17 @@ def _sandbox(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def _rewrite_artifact_and_manifest(
-    frozen: Path, name: str, update: dict[str, object]
+    frozen: Path,
+    name: str,
+    update: dict[str, object],
+    *,
+    remove: set[str] | None = None,
 ) -> None:
     artifact_path = frozen / name
     artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
     artifact.update(update)
+    for key in remove or set():
+        artifact.pop(key, None)
     artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
     manifest_path = frozen / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -213,6 +219,50 @@ def test_all_json_design_boundaries_fail_closed_even_with_updated_hash(
     _rewrite_artifact_and_manifest(frozen, name, update)
 
     with pytest.raises(OntologyIntegrityError, match=name):
+        _service(root)
+
+
+def test_valid_frozen_mapping_migration_boundary_loads() -> None:
+    service = _service()
+
+    assert service.integrity()["status"] == "VERIFIED"
+    assert service.overview()["production_migration"] is False
+
+
+@pytest.mark.parametrize(
+    ("value", "remove_field"),
+    [
+        (True, False),
+        ("false", False),
+        (0, False),
+        (None, True),
+    ],
+    ids=["true", "string-false", "integer-zero", "missing"],
+)
+def test_mapping_migration_boundary_fails_closed_with_recomputed_hash(
+    tmp_path: Path, value: object, remove_field: bool
+) -> None:
+    root, frozen = _sandbox(tmp_path)
+    _rewrite_artifact_and_manifest(
+        frozen,
+        "v1_v2_mapping_draft.json",
+        {} if remove_field else {"migration_implemented": value},
+        remove={"migration_implemented"} if remove_field else None,
+    )
+
+    with pytest.raises(OntologyIntegrityError, match="migration_implemented"):
+        _service(root)
+
+
+def test_mapping_status_boundary_fails_closed_with_recomputed_hash(tmp_path: Path) -> None:
+    root, frozen = _sandbox(tmp_path)
+    _rewrite_artifact_and_manifest(
+        frozen,
+        "v1_v2_mapping_draft.json",
+        {"status": "MIGRATION_READY"},
+    )
+
+    with pytest.raises(OntologyIntegrityError, match="design boundary mismatch"):
         _service(root)
 
 
