@@ -1,0 +1,224 @@
+{
+  "answer_hash": "77247c7046436384ccfdcd38f7fce431edce4e9c5ec6ee435a532ea026506dea",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_58fcbd77a1ea4f6b9367d952bc09cd38",
+  "case_id": "eval-K06-soupx-adjust-order-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 1992,
+  "latency_ms": 5467.641166003887,
+  "observed": {
+    "answer": "**ambient RNA removal 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+    "lane": "legacy_kg",
+    "product_status": "BLOCKED",
+    "provider_calls": 1,
+    "runtime_mode": "external_semantic_with_deterministic_governance"
+  },
+  "output_tokens": 447,
+  "repetition": 2,
+  "run_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r2",
+      "created_at": "2026-09-20T21:47:13.142839+00:00",
+      "finished_at": "2026-09-20T21:47:18.606620+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "UNIFIED_AGENT_TRACE",
+          "target_id": "agent-trace:87f9846d6f194f9b8cc7",
+          "target_type": "unified_agent_trace"
+        },
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:88a5151a3c39d6b3",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r2",
+      "root_span_id": "span_c875b6b283bb4a6fa3f669a3f45efd2c",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_request_outcome",
+              "outcome": "blocked",
+              "reason_code": "research_request_blocked",
+              "record_ref": null,
+              "rule_version": "research_outcome_v0"
+            }
+          ],
+          "duration_ms": 5463.65,
+          "ended_at": "2026-09-20T21:47:18.606620+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_c875b6b283bb4a6fa3f669a3f45efd2c",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:47:13.142868+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_58fcbd77a1ea4f6b9367d952bc09cd38"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_execution_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_workflow_run",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_run",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "ambient_rna_removal",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3500.099,
+          "ended_at": "2026-09-20T21:47:16.674098+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_c875b6b283bb4a6fa3f669a3f45efd2c",
+          "sequence": 2,
+          "span_id": "span_9a524725a3e3412d843a5422e8f4a59c",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:47:13.173933+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_58fcbd77a1ea4f6b9367d952bc09cd38"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 1,
+            "source_bound_count": 1,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:legacy_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 952.761,
+          "ended_at": "2026-09-20T21:47:17.628160+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "publication:CAND_PUB_SoupX_5218c8e163d7",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_c875b6b283bb4a6fa3f669a3f45efd2c",
+          "sequence": 3,
+          "span_id": "span_04df30d3840a43bbb0b6d81e5abd163d",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:47:16.675384+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_58fcbd77a1ea4f6b9367d952bc09cd38"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "execution_request_count": 0
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "planning_result",
+              "outcome": "blocked",
+              "reason_code": "evidence_recovery",
+              "record_ref": null,
+              "rule_version": "research_planning_v0"
+            }
+          ],
+          "duration_ms": 977.277,
+          "ended_at": "2026-09-20T21:47:18.605533+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "plan_if_requested",
+          "output_refs": [],
+          "parent_span_id": "span_c875b6b283bb4a6fa3f669a3f45efd2c",
+          "sequence": 4,
+          "span_id": "span_a2065f24dad54a7eac6b058289835a49",
+          "stage": "PLANNING",
+          "started_at": "2026-09-20T21:47:17.628239+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_58fcbd77a1ea4f6b9367d952bc09cd38"
+        }
+      ],
+      "status": "BLOCKED",
+      "trace_id": "trace_58fcbd77a1ea4f6b9367d952bc09cd38",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

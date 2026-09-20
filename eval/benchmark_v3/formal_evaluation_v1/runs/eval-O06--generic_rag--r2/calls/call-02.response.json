@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入尚未绑定，测量数据不可用，因此无法对具体数据执行状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后又对参考数据做了子集化”，这属于用户提供的上下文事实，不能据此推断 MapQuery 的失败机制。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提供的存储降维模型状态为“存在但未检查”，因此无法确认其内容是否与子集化后的参考数据一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"当前科学知识库中没有关于 MapQuery 在 RunUMAP 后子集化参考数据这一具体场景的直接陈述，因此不能把标题中的“BUG”当作已证实的根因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"检索到的 Harmony 文献提到其校正步骤假设数据正交且服从正态分布，但这是 Harmony 的机制性说明，与 MapQuery 的参考子集化问题没有直接对应关系。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Caveat. This section assumes the modeled data are orthogonal and each normally distributed. This is not true for the L2391 normalized data used in spherical clustering.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"在缺乏具体数据绑定和模型内容检查的情况下，无法给出有界解释；需要先确认存储的降维模型是否与子集化后的参考数据匹配。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"存储的降维模型是否与子集化后的参考数据在样本 ID 上完全匹配？\",\n    \"missing_field\": \"stored_reduction_model_sample_ids\",\n    \"why_needed\": \"只有确认模型中的样本 ID 与子集化后的参考数据一致，才能判断 MapQuery 的异常是否源于模型与数据不匹配。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940831,
+  "id": "fe186d47-3b89-4cfd-a380-95f167e97ad8",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 581,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2176,
+    "prompt_cache_miss_tokens": 1148,
+    "prompt_tokens": 3324,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2176
+    },
+    "total_tokens": 3905
+  }
+}

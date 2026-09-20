@@ -1,0 +1,178 @@
+{
+  "answer_hash": "295091143075d873411bb28925f8eeedacd6dbaa7b45a55fa1235d5a4af0ab53",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_f14278b88eb849cebe2b79960da16890",
+  "case_id": "eval-K09-mofaplus-alignment-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 4376,
+  "latency_ms": 9259.259832993848,
+  "observed": {
+    "answer": "你提供的：cell_identity_link=none（语义上未提供）；view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的典型用法要求各 view 的样本（细胞）能够按同一细胞身份对齐，即每个细胞在多个组学中都有对应测量。\n\n因此当前没有证据表明存在跨 view 的细胞身份对应关系。\n\n在缺少细胞身份链接的情况下，MOFA+ 无法将两个 view 的测量归并到同一细胞，因此不能直接按标准方式学习跨模态因子。\n\n如果两个 cohort 的细胞并非同一批细胞，即使细胞类型相似，也不能视为匹配样本；MOFA+ 需要的是样本级匹配，而不是群体级相似。\n\n当前没有检索到关于 MOFA+ 在无细胞身份链接、跨 cohort 场景下适用性的直接科学陈述，因此无法给出基于证据的适用性结论。\n\n两个 view 是否共享同一组细胞身份（例如通过细胞条形码或共同细胞 ID 可匹配）？",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 845,
+  "repetition": 2,
+  "run_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r2",
+      "created_at": "2026-09-20T21:44:48.042243+00:00",
+      "finished_at": "2026-09-20T21:44:57.296439+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:70ef3aa931896bc0",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r2",
+      "root_span_id": "span_766a57f4fd75413eb24362ddd3cc31fd",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 9253.993,
+          "ended_at": "2026-09-20T21:44:57.296439+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_766a57f4fd75413eb24362ddd3cc31fd",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:44:48.042277+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_f14278b88eb849cebe2b79960da16890"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "single_cell_entity_or_tool_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "multimodal_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3267.552,
+          "ended_at": "2026-09-20T21:44:51.344188+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_766a57f4fd75413eb24362ddd3cc31fd",
+          "sequence": 2,
+          "span_id": "span_6148298c106f430e805d5f86a979a908",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:44:48.076539+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_f14278b88eb849cebe2b79960da16890"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 1191.274,
+          "ended_at": "2026-09-20T21:44:52.536823+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_766a57f4fd75413eb24362ddd3cc31fd",
+          "sequence": 3,
+          "span_id": "span_f73f7793db304dd3a989af0a5fc11d80",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:44:51.345525+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_f14278b88eb849cebe2b79960da16890"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_f14278b88eb849cebe2b79960da16890",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

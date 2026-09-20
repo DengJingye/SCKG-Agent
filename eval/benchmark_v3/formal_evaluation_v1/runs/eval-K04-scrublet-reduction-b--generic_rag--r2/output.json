@@ -1,0 +1,1149 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [
+    {
+      "best_for": "Python/Scanpy 流程中的 10x droplet scRNA-seq；建议按独立上样批次运行。",
+      "caveats": [
+        "同型 doublet 或连续细胞状态较难识别。",
+        "多样本应按 capture/sample 分别运行，并结合模拟 doublet score 分布检查阈值。",
+        "expected doublet rate 仍需结合 10x 上样量与实验设计核对。"
+      ],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "非负 raw UMI count matrix",
+      "mechanism": "模拟人工 doublet，并在降维后的近邻空间中计算 doublet score。",
+      "output": "每个细胞的 doublet score 与预测标签",
+      "readiness": "decision_ready",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "Scrublet"
+    }
+  ],
+  "answerability": {
+    "reason_codes": [
+      "source_bound_context_with_optional_model_knowledge"
+    ],
+    "unverified_model_knowledge_allowed": true,
+    "verdict": "ANSWER_DUAL_LAYER",
+    "verified_context_available": true
+  },
+  "candidate_tools": [
+    "Scrublet"
+  ],
+  "canonical_trace_id": "trace_c0539a893f814465b360a23893409125",
+  "claim_audit": {
+    "caution_context": [],
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [],
+    "claims": [
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "none",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "当 mean_center=false 且 normalize_variance=true 时，数据未中心化但进行了方差归一化，这会影响 PCA 的计算结果，因为 PCA 通常假设数据已中心化。",
+        "claim_type": "non_scientific",
+        "governance_action": "keep",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "verified_claims": [],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [
+        {
+          "citations": [],
+          "claim_id": "answer-1",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-2",
+          "context_authority": {
+            "user:mean_center": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:mean_center"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：mean_center=false。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-3",
+          "context_authority": {
+            "user:normalize_variance": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:normalize_variance"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：normalize_variance=true。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-4",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-5",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "当 mean_center=false 且 normalize_variance=true 时，数据未中心化但进行了方差归一化，这会影响 PCA 的计算结果，因为 PCA 通常假设数据已中心化。"
+        }
+      ],
+      "kg_facts_used": [],
+      "knowledge_sources": [
+        "MODEL_KNOWLEDGE",
+        "USER_PROVIDED_FACT"
+      ],
+      "references": [],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": false,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "source_bound_context_with_optional_model_knowledge"
+      ],
+      "unverified_model_knowledge_allowed": true,
+      "verdict": "ANSWER_DUAL_LAYER",
+      "verified_context_available": true
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=doublet_detection;task_source=semantic_parser;semantic=ready",
+        "elapsed_ms": 3208.021,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "deterministic task/claim normalization",
+        "elapsed_ms": 4.292,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "candidate_tools=1",
+        "elapsed_ms": 0.006,
+        "stage": "kg_filter",
+        "status": "skipped"
+      },
+      {
+        "detail": "hits=44",
+        "elapsed_ms": 12.32,
+        "stage": "bm25",
+        "status": "completed"
+      },
+      {
+        "detail": "status=not_requested;hits=0",
+        "elapsed_ms": 0.002,
+        "stage": "dense_encode",
+        "status": "skipped"
+      },
+      {
+        "detail": "fused=44;reranked=44",
+        "elapsed_ms": 0.033,
+        "stage": "fusion",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.009,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=ready",
+        "elapsed_ms": 3894.101,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "doublet_detection",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "Scrublet"
+      ],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {
+        "mean_center": "false (user: mean_center=false)",
+        "normalize_variance": "true (user: normalize_variance=true)",
+        "version": "Scrublet 0.2.3 (user: version=Scrublet 0.2.3)"
+      }
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 2,
+    "external_reasoning": {
+      "answer_claims": [
+        {
+          "citations": [],
+          "claim_id": "answer-1",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-2",
+          "context_authority": {
+            "user:mean_center": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:mean_center"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：mean_center=false。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-3",
+          "context_authority": {
+            "user:normalize_variance": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:normalize_variance"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：normalize_variance=true。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-4",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-5",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "当 mean_center=false 且 normalize_variance=true 时，数据未中心化但进行了方差归一化，这会影响 PCA 的计算结果，因为 PCA 通常假设数据已中心化。"
+        }
+      ],
+      "error_type": "",
+      "input_tokens": 2559,
+      "latency_ms": 3887.9001659952337,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": 516,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 1,
+      "status": "ready",
+      "support_check": {
+        "precheck_rejected_segment_count": 1,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    "grounded_answer_audit": {
+      "caution_context": [],
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [],
+      "claims": [
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "none",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "当 mean_center=false 且 normalize_variance=true 时，数据未中心化但进行了方差归一化，这会影响 PCA 的计算结果，因为 PCA 通常假设数据已中心化。",
+          "claim_type": "non_scientific",
+          "governance_action": "keep",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "verified_claims": [],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "llm-tool-1",
+        "latency_ms": 19.791,
+        "payload": {
+          "answerability": null,
+          "chunk_ids": [
+            "sourcev2:111374ebeb154e8b9052",
+            "sourcev2:e71367199a6433c6b472",
+            "sourcev2:195df6b9c3e59909fa13",
+            "sourcev2:d2a5e17df6e45c6abf96",
+            "sourcev2:765dd15eb33e24dd1929"
+          ],
+          "mode": "bm25",
+          "query": "Scrublet 0.2.3 scrub_doublets dimensionality reduction path with mean_center=false and normalize_variance=true"
+        },
+        "result_count": 5,
+        "source_bound_count": 5,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "doublet_detection",
+          "claim_types": [
+            "mechanism",
+            "parameter",
+            "caveat"
+          ],
+          "query": "Scrublet 0.2.3 scrub_doublets dimensionality reduction path with mean_center=false and normalize_variance=true",
+          "reason": "User asks which dimensionality reduction path is used given specific parameter values in Scrublet 0.2.3. Need evidence about parameter semantics and their effect on the reduction method.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "Scrublet"
+          ],
+          "top_k": 5
+        }
+      ],
+      "rationale": "LLM proposed bounded read-only tools; local policy normalized the plan.",
+      "source": "semantic_parser"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:mean_center",
+          "field": "mean_center",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "mean_center=false",
+          "value": "false"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:normalize_variance",
+          "field": "normalize_variance",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "normalize_variance=true",
+          "value": "true"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:version",
+          "field": "version",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "version=Scrublet 0.2.3",
+          "value": "Scrublet 0.2.3"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "doublet_detection",
+      "current_user_reported_context": {
+        "mean_center": "false (user: mean_center=false)",
+        "normalize_variance": "true (user: normalize_variance=true)",
+        "version": "Scrublet 0.2.3 (user: version=Scrublet 0.2.3)"
+      },
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "density (Panel C) AUC 0.81 0.77 0.88 0.91 0.93 0.87 Doublet score threshold Precision [TP/(TP+FP] Recall [TP/(TP+FN)] Threshold from (D) Predicted recall, D Observed recall Precision C Figure 4.",
+          "claim_type": "parameter",
+          "index": 1,
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "SRCV2_1b2e3f0f98997cb3",
+          "source_span": "page:8;section:S + Tc;paragraph:18-19",
+          "source_span_id": "sourcev2:765dd15eb33e24dd1929",
+          "support_claim_types": [
+            "parameter"
+          ],
+          "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+          "tool_name": "Scrublet"
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "In Scrublet 0.2.3, when calling scrub_doublets with mean_center=false and normalize_variance=true, which dimensionality reduction path (e.g., PCA vs. TruncatedSVD) is used? Explain parameter semantics only.",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": false,
+        "approved_kg_sha256": null,
+        "assessments": [],
+        "caution_context": [],
+        "coverage": "no_direct_statement",
+        "facts": [],
+        "gaps": [],
+        "identity": "Legacy / candidate evidence",
+        "legacy_kg_consulted": null,
+        "output_ports": [],
+        "reference_links": {},
+        "snapshot_id": null
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:generic_rag",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": null,
+      "governance_leakage_count": 0,
+      "latency_ms": 17.433,
+      "mode": "bm25",
+      "pipeline": [
+        "query_classification",
+        "canonical_task_normalization",
+        "kg_filter_skipped",
+        "sqlite_fts5_bm25",
+        "local_dense_skipped",
+        "rrf_fusion",
+        "governance_rerank_skipped",
+        "tool_contract_gate_skipped",
+        "retrieval_context_only"
+      ],
+      "scientific_evidence": null,
+      "snippets": [
+        {
+          "chunk_id": "sourcev2:111374ebeb154e8b9052",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "**S**ingle-**C**ell **R**emover of Do**ublet**s Python code for identifying doublets in single-cell RNA-seq data. For details and validation of the method, see our paper in [Cell Systems](https://www.sciencedirect.com/science/article/pii/S2405471218304745) or the preprint on [bioRxiv](https://www.biorxiv.org/content/early/2018/07/09/357368). For a typical workflow, including interpretation of predicted doublet scores, see the example [notebook](./examples/scrublet_basics.ipynb). Given a raw (unnormalized) UMI counts matrix `counts_matrix` with cells as rows and genes as columns, calculate a doublet score for each cell: ```python import scrublet as scr scrub = scr.Scrublet(counts_matrix) doublet_scores, predicted_doublets = scrub.scrub_doublets() ``` `scr.scrub_doublets()` simulates doublets from the observed data and uses a k-nearest-neighbor classifier to calculate a continuous `doub...",
+          "claim_type": "parameter",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_b7109f89611a4334",
+          "relevance_score": 0.01639344,
+          "source_bound": true,
+          "source_id": "SRCV2_b7109f89611a4334",
+          "source_span": "section:Scrublet;paragraph:1-5",
+          "task": "doublet_detection",
+          "title": "Scrublet official GitHub README",
+          "tool_name": "Scrublet"
+        },
+        {
+          "chunk_id": "sourcev2:e71367199a6433c6b472",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "differences between human and mouse genomic sequence pro- vide an independent way to detect doublets ( Klein et al., 2015; Macosko et al., 2015 ). We deﬁned a partial ground truth on doublet identity according to whether a cell barcode associates with transcripts from both species (a doublet) or just one species (Figure 3B). Because doublets arising from the encapsulation of two human or two mouse cells cannot be identiﬁed as such, we expected our doublet detector to correctly predict all ground truth labeled doublets, since they arise from distinct human and mouse cell types and should thus be neotypic. After hiding species labels and restricting to orthologous genes ( Figure 3 C), Scrublet estimated the detectable doublet fraction at f D = 54%, close to the 50% expected for cross-spe- cies doublets given equal input of mouse and human cells (Figure 3 D). Furthermore, the detector ac...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_1b2e3f0f98997cb3",
+          "relevance_score": 0.01612903,
+          "source_bound": true,
+          "source_id": "SRCV2_1b2e3f0f98997cb3",
+          "source_span": "page:6;section:284 Cell Systems 8, 281–291, April 24, 2019;paragraph:11",
+          "task": "doublet_detection",
+          "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+          "tool_name": "Scrublet"
+        },
+        {
+          "chunk_id": "sourcev2:195df6b9c3e59909fa13",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Figure 2. Application of Scrublet to Simulated Data (A) Schematic summary of simulations for testing Scrublet. d, inter-cluster variance; s, intra-cluster variance; n1, size of larger cluster; n2, size of smaller cluster; h, inter-branch variance. See STAR Methods for full simulation details. (B) Evaluation of doublet detector performance for varying numbers of clusters and cluster separation. After thresholding doublet scores based on t he simulated doublet rate (5%), the recall (true positive rate) was measured using all doublets (left) or between-cluster doublets only (right). Points and error bars are the mean and standard deviation of 10 independent simulations, respectively. (C) Evaluation of doublet detector performance for two clusters with varying degrees of cluster size asymmetry. Panels and error bars as in (B). (D) Evaluation of doublet detector performance for a branching...",
+          "claim_type": "failure_mode",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_1b2e3f0f98997cb3",
+          "relevance_score": 0.01587302,
+          "source_bound": true,
+          "source_id": "SRCV2_1b2e3f0f98997cb3",
+          "source_span": "page:5;section:E F;paragraph:10-11",
+          "task": "doublet_detection",
+          "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+          "tool_name": "Scrublet"
+        },
+        {
+          "chunk_id": "sourcev2:d2a5e17df6e45c6abf96",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "while singlet states changed little or decreased ( Figure 5D). This test again suggests that the doublet detector correctly iden- tiﬁes neotypic doublets. We used this dataset to demonstrate that removal of doublets can improve the quality of downstream analyses, such as iden- tiﬁcation of genes expressed in a cell type-speciﬁc manner. We identiﬁed cell type-speciﬁc marker genes in the PBMC-8k dataset before and after excluding Scrublet-predicted doublets. Doublet removal resulted in marked increases in the number of highly speciﬁc genes detected for B cells, T cells, and mono- cytes ( Figures S4 E and S4F) since many doublets also ex- pressed these genes at relatively high levels. Prediction of Doublets in a Cell State Continuum The above examples demonstrate Scrublet’s ability to correctly identify neotypic doublets from datasets consisting of distinct cell types. In a ﬁnal example,...",
+          "claim_type": "output",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_1b2e3f0f98997cb3",
+          "relevance_score": 0.015625,
+          "source_bound": true,
+          "source_id": "SRCV2_1b2e3f0f98997cb3",
+          "source_span": "page:9;section:S + Tc;paragraph:19",
+          "task": "differential_expression",
+          "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+          "tool_name": "Scrublet"
+        },
+        {
+          "chunk_id": "sourcev2:765dd15eb33e24dd1929",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "S + Local TC True doub. density (Panel C) AUC 0.81 0.77 0.88 0.91 0.93 0.87 Doublet score threshold Precision [TP/(TP+FP] Recall [TP/(TP+FN)] Threshold from (D) Predicted recall, D Observed recall Precision C Figure 4. Doublet Prediction for Blood Cells from Eight Genotyped Human Donors (A) Schematic overview of genotyped cell mixing experiment. (B) Force-directed graph layout of the proﬁled cells. Black points indicate ground truth doublets identiﬁed by Demuxlet as barcodes associated with poly- morphisms from more than one individual ( Kang et al., 2018 ). (C) Force-directed graph layout of ground truth doublet score, deﬁned as the fraction of a cell’s neighbors that are mixed genotyped doublets. (D) Application of Scrublet to the transcriptomic data. After calculating doublet scores (i), the histogram of scores for simulated doublets was use d to determine a threshold for detection...",
+          "claim_type": "parameter",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_1b2e3f0f98997cb3",
+          "relevance_score": 0.01538462,
+          "source_bound": true,
+          "source_id": "SRCV2_1b2e3f0f98997cb3",
+          "source_span": "page:8;section:S + Tc;paragraph:18-19",
+          "task": "doublet_detection",
+          "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+          "tool_name": "Scrublet"
+        }
+      ],
+      "stage_timings": [
+        {
+          "detail": "deterministic task/claim normalization",
+          "elapsed_ms": 4.292,
+          "stage": "intent",
+          "status": "completed"
+        },
+        {
+          "detail": "candidate_tools=1",
+          "elapsed_ms": 0.006,
+          "stage": "kg_filter",
+          "status": "skipped"
+        },
+        {
+          "detail": "hits=44",
+          "elapsed_ms": 12.32,
+          "stage": "bm25",
+          "status": "completed"
+        },
+        {
+          "detail": "status=not_requested;hits=0",
+          "elapsed_ms": 0.002,
+          "stage": "dense_encode",
+          "status": "skipped"
+        },
+        {
+          "detail": "fused=44;reranked=44",
+          "elapsed_ms": 0.033,
+          "stage": "fusion",
+          "status": "completed"
+        }
+      ]
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 58877,
+      "process_started_at": "2026-09-20T21:44:17.258419Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "doublet_detection",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.95,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "SINGLE_CELL",
+      "error_type": "",
+      "input_tokens": 2012,
+      "intent": "evidence_qa",
+      "latency_ms": 3086.7747080046684,
+      "model_name": "deepseek-v4-pro",
+      "needs_clarification": false,
+      "output_tokens": 394,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "requested_tools": [],
+      "retrieval_query": "In Scrublet 0.2.3, when calling scrub_doublets with mean_center=false and normalize_variance=true, which dimensionality reduction path (e.g., PCA vs. TruncatedSVD) is used? Explain parameter semantics only.",
+      "status": "ready",
+      "task_switch": false,
+      "tool_calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "doublet_detection",
+          "claim_types": [
+            "mechanism",
+            "parameter",
+            "caveat"
+          ],
+          "query": "Scrublet 0.2.3 scrub_doublets dimensionality reduction path with mean_center=false and normalize_variance=true",
+          "reason": "User asks which dimensionality reduction path is used given specific parameter values in Scrublet 0.2.3. Need evidence about parameter semantics and their effect on the reduction method.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "Scrublet"
+          ],
+          "top_k": 5
+        }
+      ],
+      "user_reported_context": {
+        "mean_center": "false (user: mean_center=false)",
+        "normalize_variance": "true (user: normalize_variance=true)",
+        "version": "Scrublet 0.2.3 (user: version=Scrublet 0.2.3)"
+      }
+    },
+    "semantic_route": {
+      "confidence": 0.95,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "semantic_primary",
+      "source": "semantic_parser"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 7123.022,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "eval-K04-scrublet-reduction-b--generic_rag--r2",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "doublet_detection",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [
+      "claim-001"
+    ],
+    "last_plan_id": null,
+    "referenced_tools": [
+      "Scrublet"
+    ],
+    "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "state_epoch": 0,
+    "user_reported_context": {
+      "mean_center": "false (user: mean_center=false)",
+      "normalize_variance": "true (user: normalize_variance=true)",
+      "version": "Scrublet 0.2.3 (user: version=Scrublet 0.2.3)"
+    }
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "EVIDENCE_QA",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "EVIDENCE_QA",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "doublet_detection",
+    "modality": "scRNA-seq",
+    "task": "doublet_detection"
+  },
+  "final_report": "你提供的：mean_center=false。\n\n你提供的：normalize_variance=true。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。\n\nScrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。\n\n当 mean_center=false 且 normalize_variance=true 时，数据未中心化但进行了方差归一化，这会影响 PCA 的计算结果，因为 PCA 通常假设数据已中心化。",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [
+    {
+      "authority": "source_bound",
+      "claim_text": "density (Panel C) AUC 0.81 0.77 0.88 0.91 0.93 0.87 Doublet score threshold Precision [TP/(TP+FP] Recall [TP/(TP+FN)] Threshold from (D) Predicted recall, D Observed recall Precision C Figure 4.",
+      "claim_type": "parameter",
+      "exact_excerpt": "S + Local TC True doub. density (Panel C) AUC 0.81 0.77 0.88 0.91 0.93 0.87 Doublet score threshold Precision [TP/(TP+FP] Recall [TP/(TP+FN)] Threshold from (D) Predicted recall, D Observed recall Precision C Figure 4. Doublet Prediction for Blood Cells from Eight Genotyped Human Donors (A) Schematic overview of genotyped cell mixing experiment. (B) Force-directed graph layout of the proﬁled cells. Black points indicate ground truth doublets identiﬁed by Demuxlet as barcodes associated with poly- morphisms from more than one individual ( Kang et al., 2018 ). (C) Force-directed graph layout of ground truth doublet score, deﬁned as the fraction of a cell’s neighbors that are mixed genotyped doublets. (D) Application of Scrublet to the transcriptomic data. After calculating doublet scores (i), the histogram of scores for simulated doublets was use d to determine a threshold for detection of neotypic doublets (ii). Applying this threshold to observed cell barcodes (iii) yielded doublet predictions for each tra nscriptome (iv). f D, predicted detectable doublet rate. See also Figure S3. (legend continued on next page) Cell Systems 8, 281–291, April 24, 2019 287\n\nwhile singlet states changed little or decreased ( Figure 5D). This test again suggests that the doublet detector correctly iden- tiﬁes neotypic doublets. We used this dataset to demonstrate that removal of doublets can improve the quality of downstream analyses, such as iden- tiﬁcation of genes expressed in a cell type-speciﬁc manner. We identiﬁed cell type-speciﬁc marker genes in the PBMC-8k dataset before and after excluding Scrublet-predicted doublets. Doublet removal resulted in marked increases in the number of highly speciﬁc genes detected for B cells, T cells, and mono- cytes ( Figures S4 E and S4F) since many doublets also ex- pressed these genes at relatively high levels. Prediction of Doublets in a Cell State Continuum The above examples demonstrate Scrublet’s ability to correctly identify neotypic doublets from datasets consisting of distinct cell types. In a ﬁnal example, we applied it to a continuum of cell states by analyzing transcriptomes of KIT+ hematopoietic progenitors from the mouse bone marrow ( Tusi et al., 2018)( Fig- ure 6A). These cells form a continuum from multipotent progen- (E) Comparison of Scrublet to the ground truth doublet score, colored by genotype-based doublet labels (singlets, gray; doublets, black). (F) Comparison of detectable doublet fraction (solid black line) and actual recall (dashed black line) for a range of doublet score thresholds and the corresponding precision (red line). TP, true positive; FN, false negative; FP, false positive. (G) Alternative doublet prediction based on co-expression of marker genes of distinct cell types. Upper: force-directed graph layout with cells col ored by marker overlap score. Lower: histograms of marker overlap score for ground truth singlets (gray) and doublets (red). (H) Alternative doublet prediction based total transcript counts. Upper: force-directed graph layout with cells colored by total counts. Lower: hi stograms of total counts for ground truth singlets (gray) and doublets (red). (I) ROC curves (upper) and AUC scores (lower) for various doublet prediction methods. ‘‘S+TC’’ and ‘‘S+Local TC’’ are linear combinations of the Scrublet score and total counts or the Scrublet score and total counts relative to neighboring cells, respectively (see STAR Methods for details).",
+      "index": 1,
+      "kg_statements": [],
+      "knowledge_source": "RETRIEVAL_GROUNDED",
+      "selected_for_claim_types": [
+        "parameter"
+      ],
+      "source_bound": true,
+      "source_id": "SRCV2_1b2e3f0f98997cb3",
+      "source_span": "page:8;section:S + Tc;paragraph:18-19",
+      "source_span_id": "sourcev2:765dd15eb33e24dd1929",
+      "source_type": "source_document",
+      "support_claim_types": [
+        "parameter"
+      ],
+      "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+      "tool_name": "Scrublet"
+    }
+  ],
+  "request_id": "eval-K04-scrublet-reduction-b--generic_rag--r2",
+  "response_intent": "evidence_qa",
+  "retrieval_results": [
+    {
+      "chunk_id": "sourcev2:111374ebeb154e8b9052",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "**S**ingle-**C**ell **R**emover of Do**ublet**s Python code for identifying doublets in single-cell RNA-seq data. For details and validation of the method, see our paper in [Cell Systems](https://www.sciencedirect.com/science/article/pii/S2405471218304745) or the preprint on [bioRxiv](https://www.biorxiv.org/content/early/2018/07/09/357368). For a typical workflow, including interpretation of predicted doublet scores, see the example [notebook](./examples/scrublet_basics.ipynb). Given a raw (unnormalized) UMI counts matrix `counts_matrix` with cells as rows and genes as columns, calculate a doublet score for each cell: ```python import scrublet as scr scrub = scr.Scrublet(counts_matrix) doublet_scores, predicted_doublets = scrub.scrub_doublets() ``` `scr.scrub_doublets()` simulates doublets from the observed data and uses a k-nearest-neighbor classifier to calculate a continuous `doub...",
+      "claim_type": "parameter",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_b7109f89611a4334",
+      "relevance_score": 0.01639344,
+      "source_bound": true,
+      "source_id": "SRCV2_b7109f89611a4334",
+      "source_span": "section:Scrublet;paragraph:1-5",
+      "task": "doublet_detection",
+      "title": "Scrublet official GitHub README",
+      "tool_name": "Scrublet"
+    },
+    {
+      "chunk_id": "sourcev2:e71367199a6433c6b472",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "differences between human and mouse genomic sequence pro- vide an independent way to detect doublets ( Klein et al., 2015; Macosko et al., 2015 ). We deﬁned a partial ground truth on doublet identity according to whether a cell barcode associates with transcripts from both species (a doublet) or just one species (Figure 3B). Because doublets arising from the encapsulation of two human or two mouse cells cannot be identiﬁed as such, we expected our doublet detector to correctly predict all ground truth labeled doublets, since they arise from distinct human and mouse cell types and should thus be neotypic. After hiding species labels and restricting to orthologous genes ( Figure 3 C), Scrublet estimated the detectable doublet fraction at f D = 54%, close to the 50% expected for cross-spe- cies doublets given equal input of mouse and human cells (Figure 3 D). Furthermore, the detector ac...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_1b2e3f0f98997cb3",
+      "relevance_score": 0.01612903,
+      "source_bound": true,
+      "source_id": "SRCV2_1b2e3f0f98997cb3",
+      "source_span": "page:6;section:284 Cell Systems 8, 281–291, April 24, 2019;paragraph:11",
+      "task": "doublet_detection",
+      "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+      "tool_name": "Scrublet"
+    },
+    {
+      "chunk_id": "sourcev2:195df6b9c3e59909fa13",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Figure 2. Application of Scrublet to Simulated Data (A) Schematic summary of simulations for testing Scrublet. d, inter-cluster variance; s, intra-cluster variance; n1, size of larger cluster; n2, size of smaller cluster; h, inter-branch variance. See STAR Methods for full simulation details. (B) Evaluation of doublet detector performance for varying numbers of clusters and cluster separation. After thresholding doublet scores based on t he simulated doublet rate (5%), the recall (true positive rate) was measured using all doublets (left) or between-cluster doublets only (right). Points and error bars are the mean and standard deviation of 10 independent simulations, respectively. (C) Evaluation of doublet detector performance for two clusters with varying degrees of cluster size asymmetry. Panels and error bars as in (B). (D) Evaluation of doublet detector performance for a branching...",
+      "claim_type": "failure_mode",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_1b2e3f0f98997cb3",
+      "relevance_score": 0.01587302,
+      "source_bound": true,
+      "source_id": "SRCV2_1b2e3f0f98997cb3",
+      "source_span": "page:5;section:E F;paragraph:10-11",
+      "task": "doublet_detection",
+      "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+      "tool_name": "Scrublet"
+    },
+    {
+      "chunk_id": "sourcev2:d2a5e17df6e45c6abf96",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "while singlet states changed little or decreased ( Figure 5D). This test again suggests that the doublet detector correctly iden- tiﬁes neotypic doublets. We used this dataset to demonstrate that removal of doublets can improve the quality of downstream analyses, such as iden- tiﬁcation of genes expressed in a cell type-speciﬁc manner. We identiﬁed cell type-speciﬁc marker genes in the PBMC-8k dataset before and after excluding Scrublet-predicted doublets. Doublet removal resulted in marked increases in the number of highly speciﬁc genes detected for B cells, T cells, and mono- cytes ( Figures S4 E and S4F) since many doublets also ex- pressed these genes at relatively high levels. Prediction of Doublets in a Cell State Continuum The above examples demonstrate Scrublet’s ability to correctly identify neotypic doublets from datasets consisting of distinct cell types. In a ﬁnal example,...",
+      "claim_type": "output",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_1b2e3f0f98997cb3",
+      "relevance_score": 0.015625,
+      "source_bound": true,
+      "source_id": "SRCV2_1b2e3f0f98997cb3",
+      "source_span": "page:9;section:S + Tc;paragraph:19",
+      "task": "differential_expression",
+      "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+      "tool_name": "Scrublet"
+    },
+    {
+      "chunk_id": "sourcev2:765dd15eb33e24dd1929",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "S + Local TC True doub. density (Panel C) AUC 0.81 0.77 0.88 0.91 0.93 0.87 Doublet score threshold Precision [TP/(TP+FP] Recall [TP/(TP+FN)] Threshold from (D) Predicted recall, D Observed recall Precision C Figure 4. Doublet Prediction for Blood Cells from Eight Genotyped Human Donors (A) Schematic overview of genotyped cell mixing experiment. (B) Force-directed graph layout of the proﬁled cells. Black points indicate ground truth doublets identiﬁed by Demuxlet as barcodes associated with poly- morphisms from more than one individual ( Kang et al., 2018 ). (C) Force-directed graph layout of ground truth doublet score, deﬁned as the fraction of a cell’s neighbors that are mixed genotyped doublets. (D) Application of Scrublet to the transcriptomic data. After calculating doublet scores (i), the histogram of scores for simulated doublets was use d to determine a threshold for detection...",
+      "claim_type": "parameter",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_1b2e3f0f98997cb3",
+      "relevance_score": 0.01538462,
+      "source_bound": true,
+      "source_id": "SRCV2_1b2e3f0f98997cb3",
+      "source_span": "page:8;section:S + Tc;paragraph:18-19",
+      "task": "doublet_detection",
+      "title": "Scrublet: Computational Identification of Cell Doublets in Single-Cell Transcriptomic Data",
+      "tool_name": "Scrublet"
+    }
+  ],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+    "process_id": 58877,
+    "process_started_at": "2026-09-20T21:44:17.258419Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "version": "2.7.2-rc",
+    "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+  },
+  "runtime_mode": "external_reasoning_with_deterministic_governance",
+  "scored_tools": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "Scrublet"
+    }
+  ],
+  "semantic_route": {
+    "confidence": 0.95,
+    "domain": "SINGLE_CELL",
+    "intent": "evidence_qa",
+    "needs_clarification": false,
+    "source": "semantic_parser",
+    "task": "doublet_detection"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "Scrublet"
+    }
+  ],
+  "unverified_model_knowledge_claims": [
+    {
+      "authority": "model_knowledge_unverified",
+      "citation_mapping": "not_applicable",
+      "claim_id": "claim-001",
+      "claim_text": "在 Scrublet 0.2.3 中，mean_center 和 normalize_variance 是标准化参数，用于控制数据在降维前的预处理方式。",
+      "claim_type": "scientific",
+      "governance_action": "label_unverified",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "not_scientific_authority"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": []
+    },
+    {
+      "authority": "model_knowledge_unverified",
+      "citation_mapping": "not_applicable",
+      "claim_id": "claim-001",
+      "claim_text": "Scrublet 的 scrub_doublets 内部使用主成分分析（PCA）进行降维，而不是 TruncatedSVD。",
+      "claim_type": "scientific",
+      "governance_action": "label_unverified",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "not_scientific_authority"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": []
+    }
+  ],
+  "user_id": "local-research-user",
+  "user_query": "在 Scrublet 0.2.3 的 scrub_doublets 中，当前参数组合会使用哪种降维路径？只解释参数语义，不执行。\n\n已提供的条件（未提供的值不作推断）：\nmean_center=false\nnormalize_variance=true\nversion=Scrublet 0.2.3",
+  "verified_claims": [],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "doublet_detection",
+    "tool_name": null
+  }
+}

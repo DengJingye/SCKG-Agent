@@ -1,0 +1,3429 @@
+{
+  "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+  "dev_frozen": true,
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "family_ids": [
+    "K01-harmony-embedding",
+    "K02-scvi-count-input",
+    "K03-totalvi-modalities",
+    "K04-scrublet-reduction",
+    "K05-soupx-auto-clusters",
+    "K06-soupx-adjust-order",
+    "K07-wot-timecourse",
+    "K08-slingshot-inputs",
+    "K09-mofaplus-alignment",
+    "K10-cellrank-strength",
+    "K11-mimosca-strength",
+    "K12-umap-strength",
+    "O01-issue-triage",
+    "O02-issue-triage",
+    "O03-issue-triage",
+    "O04-issue-triage",
+    "O05-issue-triage",
+    "O06-issue-triage",
+    "O07-issue-triage",
+    "O08-issue-triage",
+    "W01-artifact-contract",
+    "W02-artifact-contract",
+    "W03-artifact-contract",
+    "W04-artifact-contract"
+  ],
+  "fixture_hashes": {
+    "fixture-W01-matrix-shape": "357b0c399b0a4ad4a156903e8ca18e9d29141ef9c1d8f847e879c96cbce12a1e",
+    "fixture-W02-checksum": "17d56db501e457bc3122ee83ec8706f87a026ff461a3c1ef7abfc35878a7801a",
+    "fixture-W03-valid-provenance-manifest": "b27c4c521c3672c550603e44008232af0c9b6a78c615a0527e8fe80d8c406050",
+    "fixture-W04-approval": "c986ec002fbf344d82db2d2a8a0b818e612f24457424d1d12c69847e021c1562"
+  },
+  "formal_gold_human_review_claimed": false,
+  "formal_scenarios": 36,
+  "freeze_timestamp": "2026-09-20T21:41:43.188487+00:00",
+  "frozen_file_hashes": {
+    "adjudication_pass.jsonl": "f32745bd7ed2e5ab9e8dd0068e7a0cba80a0a5df3c751c6daaa9865115a288bc",
+    "coverage_reviews.jsonl": "12b5bbfd26acd61ec601fd1ac3afb249b9dc3d560f29ebb30d975ad4cc05daf9",
+    "evaluation_cases.jsonl": "c218e52d462121d065cff0dc1a0cb3caf780c1a4497c0cb08507a448136ededb",
+    "evaluation_fixtures.json": "8fe82ccc17cf3a03f59b565719556f8a037a4ee4c496998b4c07bed657d321d1",
+    "expected_trajectories.jsonl": "ee0b3a58e24610a56258a24058c566f61a0e93c689c6d2d5b0bdaa621ff2c0fd",
+    "leakage_report.json": "f9f4ec0b4506d8d86a1a6ff68749f395f4fd4f736e91afb0b8c3815957bad060",
+    "prefreeze_revision_log.json": "e75731967380ce1ac1c5f62b34a69bd34b5d9d605cd21f026c12b7e413f511e4",
+    "reference_claims.jsonl": "98e3b5e4ad2c580c7401e7d4e64a0a3ecfc430035f80470d759ef3d864b8866a",
+    "rendered_inputs.json": "c66ee682c71406efb4d9ceb0b465d5833797362451ec540ff2b324525d597649",
+    "reviewer_pass_A.jsonl": "bcd541a85098d752596f13d0158e30ef70a96cc200375374897df82f8ccb76bc",
+    "reviewer_pass_A_supplement.jsonl": "ace56084ada002387471804b47fc17dabdf13dc71d31cb0e08f657c65fcb7d1d",
+    "reviewer_pass_B.jsonl": "61c29cef1a0f1165acde7b214d2ba7313d83bf6cc72504466ab8418a904f1c0b",
+    "reviewer_pass_B_supplement.jsonl": "2f8c0c3d13c8094fff4705f630452831d5066ca26ca57d7b9a70c1a4e380b0ee",
+    "scoring_protocol.json": "e017916f7c22147c4a997ca90aa458027f458e6596b5322448d279c183e0138a",
+    "source_spans.jsonl": "42b8e8acc56264da7ed4ff95e4a285187462d1a9512c28bfe814c948de74c6bd"
+  },
+  "lane_manifest": {
+    "actual_request_receipts_required": true,
+    "approved_consumer_invariants": {
+      "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statement_count": 121,
+      "caution_context_count": 166,
+      "direct_assessment_binding_count": 134,
+      "held_statement_id": "statement-revision:d0d887b96b7a1cf45e2c47bf:1",
+      "held_statement_visible": false,
+      "source_artifact_count": 61,
+      "source_revision_count": 48
+    },
+    "baseline_truth": {
+      "integration_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "rule": "accepted final 07 runtime; knowledge sources unchanged from frozen lane manifest"
+    },
+    "comparison_estimand": "product bundle, not graph structure alone",
+    "configuration_observation": "static immutable-code inspection; no runtime observations",
+    "coverage_exclusion_rule": "Planner, ToolContracts, execution guards, validation contracts, and approval system are common infrastructure. Their records and behavior cannot establish any V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.",
+    "formal_agent_gain_run": false,
+    "frozen_at": "2026-09-21",
+    "lane_order": [
+      "llm_only",
+      "generic_rag",
+      "legacy_kg",
+      "scientific_kg"
+    ],
+    "lanes": [
+      {
+        "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval (no-retrieval branch)",
+        "caution_policy": "no local caution channel",
+        "corpus_digests": {},
+        "corpus_snapshot_id": "none",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "llm_only",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": false,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "maximum_returned_hits": 0,
+          "sparse_candidate_limit": 0,
+          "top_k": "incoming request may vary; no-retrieval backend returns zero hits",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService",
+        "caution_policy": "no Scientific KG caution context",
+        "corpus_digests": {
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+          "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
+          "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
+          "manifest_sha256": "0afc019e7c4cb5b52ea89dbccdb70b2d1e40cf3100efbd4562e0966d2a78d92a"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled (use_kg=false; scientific evidence adapter disabled)",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "generic_rag",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService + engine.scientific_kg_evidence.ScientificKGEvidence + engine.evidence_graph_query.EvidenceGraphQuery",
+        "caution_policy": "candidate-only evidence-gap diagnostics may abstain; no approved-v2 caution context",
+        "corpus_digests": {
+          "candidate_bindings_sha256": "b9b77442968a705787b77c2b1a74c094d9a7223bd7d3eeebc7e028954c66c76f",
+          "candidate_bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "candidate_manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "legacy_inventory_sha256": "9a6da2e3981bbeddd5654d3f59b766bdc55d805ba52dec9beaead90294cdb138",
+          "legacy_tool_graph_edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
+          "legacy_tool_graph_nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3",
+          "retrieval_corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4 + scientific_kg_v1_uat_decision_rules + kg-v2.3.0-canonical:6b20b21847be",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "candidate ScientificKGEvidence direct-evidence channel enabled; 7,537-node legacy tool/catalog graph enabled only for candidate-tool filtering",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "legacy_kg",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": true,
+          "use_scientific_evidence": true
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.approved_scientific_kg.ApprovedScientificKG",
+        "caution_policy": {
+          "count": 166,
+          "execution_authorized": false,
+          "execution_gate": false,
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "trusted": false
+        },
+        "corpus_digests": {
+          "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+          "caution_context_index_sha256": "5e782d1a21ceb0789afc2392c901556f24ba763ca6a39a55052c0e3be5805062",
+          "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda"
+        },
+        "corpus_snapshot_id": "approved-scientific-kg-v2-01",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "approved allowlist, evidence-chain joins, exact scope policy, and separate caution context; generic RAG and both legacy graphs are not consulted",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "scientific_kg",
+        "retrieval_budget": {
+          "algorithm": "approved exact-evidence in-memory ranking",
+          "generic_dense_consumer_used": false,
+          "generic_sparse_consumer_used": false,
+          "legacy_kg_used": false,
+          "maximum_approved_facts": 12,
+          "maximum_caution_contexts": 4,
+          "top_k": "per request; approved facts capped at min(request.top_k, 12)"
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      }
+    ],
+    "run_id": "lane-alignment-20260921-v2-withdrawal",
+    "schema_version": "sckg-evaluation-lane-manifest-v2",
+    "shared_runtime": [
+      {
+        "component": "Planner",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "agent.research_chat_service.ResearchChatService tool-plan path"
+      },
+      {
+        "component": "ToolContracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "contracts/tools plus shared research/execution services"
+      },
+      {
+        "component": "execution guards",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared execution policy, authorization, and runtime guards"
+      },
+      {
+        "component": "validation contracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared artifact and result validation contracts"
+      },
+      {
+        "component": "approval system",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared plan-specific approval and approval-consumption path"
+      }
+    ]
+  },
+  "legacy_corpus_hashes": {
+    "candidate_bindings_sha256": "b9b77442968a705787b77c2b1a74c094d9a7223bd7d3eeebc7e028954c66c76f",
+    "candidate_bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+    "candidate_manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+    "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+    "legacy_inventory_sha256": "9a6da2e3981bbeddd5654d3f59b766bdc55d805ba52dec9beaead90294cdb138",
+    "legacy_tool_graph_edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
+    "legacy_tool_graph_nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3",
+    "retrieval_corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436"
+  },
+  "provider_config": {
+    "configuration_source": "SCKG_ENV_FILE",
+    "credentials_present": true,
+    "deterministic_provider_claimed": false,
+    "model": "deepseek-v4-pro",
+    "provider": "api.deepseek.com",
+    "provider_seed": null,
+    "same_runtime_configuration_all_lanes": true
+  },
+  "rag_corpus_hashes": {
+    "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+    "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+    "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
+    "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
+    "manifest_sha256": "0afc019e7c4cb5b52ea89dbccdb70b2d1e40cf3100efbd4562e0966d2a78d92a"
+  },
+  "repetitions": 3,
+  "review": {
+    "adjudication": "AI-assisted adjudication; not human review",
+    "review_a": "AI-assisted independent review; not human review",
+    "review_b": "AI-assisted independent review; not human review"
+  },
+  "run_policy": {
+    "answer_retries": false,
+    "cherry_picking": false,
+    "failed_run_deletion": false,
+    "isolated_conversations": true,
+    "maximum_concurrent_units": 4,
+    "randomized_interleaving": true,
+    "unit_watchdog_seconds": 360
+  },
+  "runner_sha256": "554b740548aa3ec5dafffb29c27431a6799a106aa5baf84d3cf8d5f7825bec9f",
+  "runtime_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+  "runtime_prompt_and_code_hashes": {
+    "agent/research_chat_service.py": "cf3cf8a6ee7e3afb626e9512a2e2c931c7a06f46771f1ede9dd0c62f0d9c1afa",
+    "agent/research_runtime.py": "3b496e821a4c168613cd58a24072224331799b3cc8f4465a2f5fbc51dededa23",
+    "core/prompts.py": "6777247a24a55a679e09d4c4d9927a11b6ab76533cbf84db23f66877e9656e7f",
+    "engine/approved_scientific_kg.py": "bef71e3c7d61dfc0dfd4cbf64cb639763a9d930474c304595a06103177b8f7b9"
+  },
+  "scenario_hashes": {
+    "eval-K01-harmony-embedding-a": "4899845c9332bc6dfcb08f719b4f4b767ed032b4600ecaf3e8cff724b3df38f8",
+    "eval-K01-harmony-embedding-b": "4f3ea344a6aa3b19d183a9cdf291f6faf51bc497e33765b3b4cc888dfe1c187c",
+    "eval-K02-scvi-count-input-a": "e64b0c8902c20db50dce057e9ce69b196b2ff4b50d4049538583ec671a2149fe",
+    "eval-K02-scvi-count-input-b": "ae992996d0bf5729c7ab244203b9d59ced403ca63752c1296428101e986ca027",
+    "eval-K03-totalvi-modalities-a": "5535988f2777ff1432923b7cb77052f66747937d7ef60f0800790e658c3b4274",
+    "eval-K03-totalvi-modalities-b": "6ef53914591b88f7ca75899c5d1e04b0400db38d24f86079d072370f2d4ee5d3",
+    "eval-K04-scrublet-reduction-a": "e1ab1ef576561cd1e2df5e1e616f290333d5f164e0e5ae00f972936e1c242d57",
+    "eval-K04-scrublet-reduction-b": "1c9ed6fa87fa9d131d81ab040a67dd52642ae96d13044fe66e0a4b8aa985b617",
+    "eval-K05-soupx-auto-clusters-a": "9525bc41e5b7addc5caef5de11dd62defa61ed8ec7b7ac1aaee00818fab97696",
+    "eval-K05-soupx-auto-clusters-b": "d7d9a2fc9f159f61d9cd004390da663491075c20b160ffca0cc29a32b6758243",
+    "eval-K06-soupx-adjust-order-a": "e34c537359b33709291fcfa0ce1ce8660dd08447c614c0f5e1ca20f2bcca6af5",
+    "eval-K06-soupx-adjust-order-b": "36caa06d9f3231dc509f1b47f23256d4dd2c70778db1df3359ace930a028d46a",
+    "eval-K07-wot-timecourse-a": "11cb5ff1f8217f17c633966232852e0d35b412d8c9f8ef5f9dbb4a7c44e81441",
+    "eval-K07-wot-timecourse-b": "7f466ddd33f97029016f24bddd8eecc95f00aca967044395d27afdadd30245da",
+    "eval-K08-slingshot-inputs-a": "18fa8aaaf70928c19e4522da6396db073e7bf8c5765931dcda222b60ec4dc650",
+    "eval-K08-slingshot-inputs-b": "d2d10a90a08d707cda6a2ba5a3539982e0dd804fa881905abc2b33cfb8d81e71",
+    "eval-K09-mofaplus-alignment-a": "45632c967c1a1ff0cd2762cb42d3d36c8dcae3d625a0b590f4938add62518384",
+    "eval-K09-mofaplus-alignment-b": "cac12eed99d3f381c8ed98c26d03711380defb39ef968ee6a2c6d9fd1c46cfda",
+    "eval-K10-cellrank-strength-a": "05ceae3bb01a4cdc09c4a63dd4a23e3f6ec5e0a2de1ab38d71952644666f8a48",
+    "eval-K10-cellrank-strength-b": "e8f8bed84d9eb59dc08003cfcb4bfd52f9b286270175e7f08c09087449567194",
+    "eval-K11-mimosca-strength-a": "9b4578256d673343cf24d77caad6acb36a51fac26e727ffd87abb99779026860",
+    "eval-K11-mimosca-strength-b": "9d8b3c3a1dfafb9463d426dd17b896dc103578ef2db8c323d6ba2e48e9bd9e8c",
+    "eval-K12-umap-strength-a": "a22303ff97d926f830f5d48a1374d39f8281143b2acb48f7d227c4934251e634",
+    "eval-K12-umap-strength-b": "3621548585d2f47750a63d97ca04dc4d7d0b470e8dfa70256b5bea5bf9eb1337",
+    "eval-O01": "e9242bbee03e3a25fd9b2801de66f585e7a273545dcf21611cff47e347294f7c",
+    "eval-O02": "1d8f3e874653b44ce807299650b02f422fedeb8100f6f262ce6605e92be11350",
+    "eval-O03": "22f06e4374bd9754a1a7d2fa0e2286088acab04b3a34d072d011807b128359ca",
+    "eval-O04": "86916894c212db010fa54674d7b31c7f2a21be72b45247d7c2ba788feefb57ba",
+    "eval-O05": "f38ab8c8bfe53b34e93e135e9e51486277fcc5d48895632a895c318cc296fe2e",
+    "eval-O06": "1e6cc4079f8e01588e59c68e875ec544535625fd7c7c195d1546ba6ca08f72f3",
+    "eval-O07": "62bef44bd4cc699939689da9503f14606d3a871ce7e1097204784a5944c11b0f",
+    "eval-O08": "3bf4891c7a7fa255bbca2a20cae27c2a8aaf25142bf0bb0a91044d1484859362",
+    "eval-W01": "4c67eacd747e894f899ab99098f41fe81c41aeb0ef02bed5cc789e1278df71b7",
+    "eval-W02": "bdbfdfeb1a27a43bb2b5eeb2fff018df8a14af4e5ff9ff81e5efdda02d7e670a",
+    "eval-W03": "383db73e6e25aed50fb3512d5d80758dd7805afa28338e6b4681768d250e1122",
+    "eval-W04": "88b95793b4cec35a0132969d46c064edf08180dbf98a6cabad6b0916c1458a1c"
+  },
+  "schedule": [
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-W02--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O07--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O08--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O05--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O07--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O05--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-W04--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O02--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O06--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O08--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O04--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-W04--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-W03--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O05--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-W01--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O04--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O03--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O02--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O07--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-W03--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-W01--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O07--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-W02--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O04--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O06--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O07--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O08--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-W01--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-W01--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O02--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O06--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O02--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O01--llm_only--r2"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-W02--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-W03--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-W04--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O07--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O03--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O06--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O03--llm_only--r2"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O03--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O03--llm_only--r0"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-W02--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O04--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-W03--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O04--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-W03--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-W01--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O02--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O08--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O03--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O01--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O05--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O08--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O06--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O02--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O06--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-W03--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O05--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-W03--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-W01--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O05--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O01--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O08--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O04--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O02--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-W02--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O05--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-W01--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O06--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-W02--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O02--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O05--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O03--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O01--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-W03--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-W04--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O02--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-W01--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O06--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O03--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O04--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O07--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O06--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O05--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-W02--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O03--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-O08--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-W04--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K06-soupx-adjust-order-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-W03--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O08--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-W02--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O01--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O08--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-O07--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K07-wot-timecourse-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O01--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O04--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O01--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O06--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-W04--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K12-umap-strength-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-a",
+      "input_sha256": "4bc4009fa71f0de82288780a6bba6388b7e8a23b432d070683351a16578d4911",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-W04--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O01--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O08--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-W01--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O04--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O02--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K12-umap-strength-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O05--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K08-slingshot-inputs-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-b--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-W04--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-b",
+      "input_sha256": "3f2424add0fb52be19015ecae803415e4905e142c1e22e0b92cc516cd726e361",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-W02--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-W01--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-a",
+      "input_sha256": "b36ce8d9192cbcd886625ecb97535b153925343117f1a017c775a725581d8724",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-W04--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K07-wot-timecourse-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K04-scrublet-reduction-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K01-harmony-embedding-b--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K03-totalvi-modalities-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-W01--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O05--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-W02--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K11-mimosca-strength-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O03--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-W02--llm_only--r2"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O03--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-a",
+      "input_sha256": "d9f09346b5046e5ece46e419f06acf4b71eaebc42837d739411762904b8a69e0",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K03-totalvi-modalities-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K10-cellrank-strength-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-W04--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-a--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O06--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K09-mofaplus-alignment-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-W03--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O05",
+      "input_sha256": "ee76774c2f6c88d59f71ceac4e86e7fc8d94e6d1adc6593fee4fd13365c9a729",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O05--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-a--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O07--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O08--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O03",
+      "input_sha256": "2c71acb53992ac72ce80891a3b512c03fd4edb2d87178b398bfb10951d9676b3",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O03--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-b",
+      "input_sha256": "7c4a7021de57ab0ff4340f0a1136bd283a7acfcf135a537388c6d8fa72c68092",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K04-scrublet-reduction-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K11-mimosca-strength-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-O02--llm_only--r0"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-O01--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-b--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-O08",
+      "input_sha256": "3d5beb754c0ca7dbab6d5003a6e8cfd983627b7a2ee35db6f36a139a9d1c0784",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O08--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-W02",
+      "input_sha256": "a7e6f6cc0eb98e4f7dd2d5a730ec7052370a47d941828be52ab94a9715597aec",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-W02--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O01--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-W04--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-b",
+      "input_sha256": "9425413be39e218b6ed638afe728a593839ed81f8015638500e16636744e9ada",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K06-soupx-adjust-order-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K02-scvi-count-input-a--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-O02",
+      "input_sha256": "636f250eed6652a302466e99964315c95675f954b9b249c3d09ebec46372db6b",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O02--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-K03-totalvi-modalities-b",
+      "input_sha256": "8908b5b38e4088d9588f6155e72adc6c225d69290a3ce5d30cc43120d57f04c8",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K03-totalvi-modalities-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-O04--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-b--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O01--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-O07--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-a",
+      "input_sha256": "770f0637f1aff1af36c501bfa309b7ac348509a2d21cf3e9ec8d4d1175ddfa1a",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-b",
+      "input_sha256": "bd649acf591a8edc253365d87ed5cc271759bcb400c5732244631ea28f067841",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-K10-cellrank-strength-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-W03--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K10-cellrank-strength-a",
+      "input_sha256": "ff144e533b25f3e08455e7293ce1a09fe506ba3dc729d7f45dcbb7ccda1f81b1",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K10-cellrank-strength-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-W01",
+      "input_sha256": "8a3f5c3f6500a36001c17526a090e35d7ef849f4f365e508745eba8c82acb9ee",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-W01--llm_only--r2"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-O04--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-W03",
+      "input_sha256": "368079b7be7286b8203263c6d81b887d7bf716e549c9ba2e44ae80c067110015",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-W03--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K11-mimosca-strength-b",
+      "input_sha256": "a14921d4f7eff9593b13f1a881780caae412025f887686085074c2e7786d7300",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K11-mimosca-strength-b--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O04",
+      "input_sha256": "7f3bb39d07a114dbd090090e573656f8cc2ade6c1bff29e849361a7287e60fa5",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "eval-O04--scientific_kg--r0"
+    },
+    {
+      "case_id": "eval-K12-umap-strength-b",
+      "input_sha256": "221eec8f84fe2b9e14efc3f2109760ffada1482f360afa21fea4668ae892dff7",
+      "lane": "generic_rag",
+      "repetition": 1,
+      "run_id": "eval-K12-umap-strength-b--generic_rag--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-b--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "generic_rag",
+      "repetition": 2,
+      "run_id": "eval-K05-soupx-auto-clusters-a--generic_rag--r2"
+    },
+    {
+      "case_id": "eval-O01",
+      "input_sha256": "79af24db5c14b0cd06635dd527530287270eab84ca93a235bc5ff874af1e4107",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-O01--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-b",
+      "input_sha256": "5c30a6fc2407a94c2ea4e764038b9585162d22f500094aaf0c64a2ea4de09e10",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K09-mofaplus-alignment-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-a",
+      "input_sha256": "00070995fb1c0bb9d7a8aac5457ac0b8d454982ceb83f1bb87f22bb78e4dba56",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K02-scvi-count-input-a--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-O06",
+      "input_sha256": "ffe7d65f0b7936e4cb604c2716a912c375f8d3cb79f72bf018749ca85c58510e",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-O06--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-a",
+      "input_sha256": "6f328330e1384c75d2fe03a1fe55f878be83e6437ef546e671d64919c286ddcd",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-b",
+      "input_sha256": "09e8bb8f36c38fcbc1858406e36ed311fbe5fa18ac2959514f931b9ba223f8f0",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K08-slingshot-inputs-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-b--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K07-wot-timecourse-b",
+      "input_sha256": "461bc9dea4307e9882320b55323c810ee8d03a8c0b2400daa19979125ab62e71",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K07-wot-timecourse-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-O07--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "eval-K05-soupx-auto-clusters-a--llm_only--r0"
+    },
+    {
+      "case_id": "eval-K08-slingshot-inputs-a",
+      "input_sha256": "f9d2ac80ecfae34fd7549236d4c05bc40c704ef9db14f93abbc38abf991c0a51",
+      "lane": "scientific_kg",
+      "repetition": 1,
+      "run_id": "eval-K08-slingshot-inputs-a--scientific_kg--r1"
+    },
+    {
+      "case_id": "eval-K09-mofaplus-alignment-a",
+      "input_sha256": "e6de37df457a8e190b4797136d790d34763af98c708d9e5c8ffd2b8e67f4f824",
+      "lane": "llm_only",
+      "repetition": 2,
+      "run_id": "eval-K09-mofaplus-alignment-a--llm_only--r2"
+    },
+    {
+      "case_id": "eval-K04-scrublet-reduction-a",
+      "input_sha256": "7fd2fd62fb20c9da34b43dd4577c657cdf0044cc0c9daf6b44a1f941fa152b38",
+      "lane": "legacy_kg",
+      "repetition": 2,
+      "run_id": "eval-K04-scrublet-reduction-a--legacy_kg--r2"
+    },
+    {
+      "case_id": "eval-O07",
+      "input_sha256": "0e30cad46cfab47c45c44f882ee5a0a2a8f4f0e7a7c28cb755f114cd07978f48",
+      "lane": "legacy_kg",
+      "repetition": 1,
+      "run_id": "eval-O07--legacy_kg--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "scientific_kg",
+      "repetition": 2,
+      "run_id": "eval-K01-harmony-embedding-b--scientific_kg--r2"
+    },
+    {
+      "case_id": "eval-W04",
+      "input_sha256": "36cb41fb8fd311528bfe8f0b5e73f3da7d456bcbe6f39c055b9ae3c64476a76f",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-W04--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K02-scvi-count-input-b",
+      "input_sha256": "e2e35125e817cefa74649027280ca405a982383bcce7e73c8899f8ab372579df",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K02-scvi-count-input-b--generic_rag--r0"
+    },
+    {
+      "case_id": "eval-K05-soupx-auto-clusters-a",
+      "input_sha256": "aa71c97fba77bc962548677d8b49703febb8d0206afbbff6477a2c13aef19055",
+      "lane": "llm_only",
+      "repetition": 1,
+      "run_id": "eval-K05-soupx-auto-clusters-a--llm_only--r1"
+    },
+    {
+      "case_id": "eval-K01-harmony-embedding-b",
+      "input_sha256": "2235b11f1bdc77e789b807a9fdc521313812e6aa937ccead310120c51bba71ec",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "eval-K01-harmony-embedding-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "eval-K06-soupx-adjust-order-a",
+      "input_sha256": "e6d11b9f8d41818665a2cc097e9cd74929eb73877f8829c37db2fca8862d7648",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "eval-K06-soupx-adjust-order-a--generic_rag--r0"
+    }
+  ],
+  "schedule_seed": 20260921,
+  "schema_version": "sckg-formal-evaluation-manifest-v1",
+  "scorer_sha256": "94403cdda41d3e8ec1787edcd98070b7f6ad25c9a15fe2b36cbfcfd93e5ae48d",
+  "scoring_protocol_sha256": "e017916f7c22147c4a997ca90aa458027f458e6596b5322448d279c183e0138a",
+  "shared_runtime_excluded_from_knowledge_gain": [
+    "Planner",
+    "ToolContracts",
+    "execution guards",
+    "validation contracts",
+    "approval system"
+  ],
+  "source_seed_ids": [
+    "github:satijalab_seurat:10415",
+    "github:satijalab_seurat:10420",
+    "github:satijalab_seurat:10421",
+    "github:satijalab_seurat:10436",
+    "github:satijalab_seurat:10441",
+    "github:satijalab_seurat:10445",
+    "github:satijalab_seurat:10499",
+    "github:scverse_scanpy:4335"
+  ],
+  "source_span_hashes": {
+    "evidence-span:0094f44a3ac9a8d94d597734": "92be958b66dc7acebca6641e563d6e4189bfbb0ea0a0b673c451410ff30bfcd7",
+    "evidence-span:06950a94fdaf80b437a09769": "8e88461e28c55947e894c5595bddb35bde795292312a6e687b69d26cfe0360b0",
+    "evidence-span:0b7b8ad3b10500a1adcff508": "d53ee113e910fd94b2f2da0ecb44ee09b6cd4885ca8c3fbdf9093aaf01cf2917",
+    "evidence-span:10db685f8e6db35d0387406f": "9d7d57618dc60c40cfba4bf4e4e74699af1c2083222c37c0ac1f34d71d52357e",
+    "evidence-span:1eecfae16883ed9592feb63d": "c6ae4deb90b5e7eb5d8bc2e906d72d03a122eb7c0c26a2c5594d3191a5ab0a75",
+    "evidence-span:240233fc208b9c0a3350a9bd": "708263333a8ffb4286c5647fb08be89d21361e0e9756a8ba396b7641e81965db",
+    "evidence-span:27a5c7d845f2d47dd8c441bf": "4682647be49d7d08bc0d130798c1295a34f06ec575143858e4ffdadd65d0f8c1",
+    "evidence-span:2b5b3abdbd3bb26d752ef7b3": "c8eed51bf5bd6ce1d1b17fbbfc81c15db5833260378029584e03cdb58a63ca08",
+    "evidence-span:2cdf7d39c43335a97cc7b3ae": "2eba562b7d2805ffc07db9f965253a98cb59a8c878f6f9ab7aba166f52095a04",
+    "evidence-span:31052114908951cb7a59befd": "f24ac3b3cc9b69e843a982df37faba846debe696dfd310bb9ff3654fc87e6685",
+    "evidence-span:32946f440afba288731a7b6b": "aa814f42cd7b4835b7727466eb2066bd7542ee69541c6dc7505d1ef220070f97",
+    "evidence-span:347e22df8d9a0f727a710271": "7bedf067b5e12fdb664d14802fe7714db884977b7c1a83e9b221febd71ff995c",
+    "evidence-span:376763821553c077d9efd28b": "912698250983d513dc99fd4882eccb42bcbc46e7ceca31f94a35c9140d219b77",
+    "evidence-span:60e3ef935480978551534155": "02b1c2d60406738672688061158b3c390ca069538058f0875b59e8a89dea373d",
+    "evidence-span:6cee96ef2fa111530594418e": "08456b8abaa23740377014143ec6470a9e34d1bf35acf853eec0c547cbe988b6",
+    "evidence-span:8595824e9fa363a9b056cf00": "0f70088c329f0bfc8e9b0be8f2f95671cd2fdfbdc543f6b7cce2e8d692c56714",
+    "evidence-span:8900271f507f3d966a436f1a": "94cee62a79be92593b3362d081036a56e225fa03603fd4d558db35fe6786cfbd",
+    "evidence-span:91e399ff33a3a0b481bc8ff5": "0a0ace09b1030f612f1f2b3fbe20faf245a2dc3306c4fa6e2e313d4885152c66",
+    "evidence-span:95e01d6da6ecdd129a96ccd4": "b41e73ccf72becc52fd7ed92dacc15d06b9644646d09308039eb060609b2fa14",
+    "evidence-span:982790bc6fcff41d6c03b033": "831f6d0979d9a9b22ba84218bcfc5fac1bf051ec15b0ffac8cb986d8870a3dbf",
+    "evidence-span:a87846e8319fd2e3654c0e9c": "a57faa238cf254612a8d86f32b2a70f15b71de6feec4afe2fcaa2c228ce5b978",
+    "evidence-span:b339388714bb312f56c0216f": "9a1a74bcd1723fc76bbc0fc7777547ec1be5860f8bd242618bbf6dc5e341c6ee",
+    "evidence-span:ba548c2633893692b51a4cd5": "170e24b5b4a385671b44de7ff11de8f95023e1641086486e408f20308c9cf887",
+    "evidence-span:c8b406dd2129fd4c96a4b476": "b4b92e5dffe4c8bc625c9b439fa63c94237f063bd6aee5ac5fe6947c9263c3cf",
+    "evidence-span:fa9ca8834d559543e74dad34": "5290f1a805f9b0a4bdcd66e178a962dc9281157d7b814c7467909fb4f0562a7e"
+  },
+  "source_thread_ids": [
+    "satijalab/seurat#10415",
+    "satijalab/seurat#10420",
+    "satijalab/seurat#10421",
+    "satijalab/seurat#10436",
+    "satijalab/seurat#10441",
+    "satijalab/seurat#10445",
+    "satijalab/seurat#10499",
+    "scverse/scanpy#4335"
+  ],
+  "track_counts": {
+    "K": 24,
+    "O": 8,
+    "W": 4
+  }
+}

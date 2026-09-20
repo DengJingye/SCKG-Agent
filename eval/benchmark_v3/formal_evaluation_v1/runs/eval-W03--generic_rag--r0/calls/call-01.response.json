@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法**\n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者均为 64 个字符，但包含非十六进制字符 `c`、`d` 之外的字符？实际上 `c` 和 `d` 是合法十六进制字符，但这里需要核对长度与字符集。\n   - 更关键的问题：`input_sha256` 与 `output_sha256` 的值是重复字符模式，虽然形式上可能是 64 个小写十六进制字符，但需确认是否满足 `sha256_pattern` 的“64 lowercase hexadecimal characters”。\n   - 从给定字符串看，它们确实由 64 个 `c` 或 64 个 `d` 组成，属于小写十六进制字符，因此语法层面可能通过。\n\n2. **决定性失败点：schema/status 与输入摘要不匹配**\n   - `inputs.expected_schema_version` 为 `artifact-manifest-v1`，artifact 中 `schema_version` 也是 `artifact-manifest-v1`，一致。\n   - `inputs.expected_status` 为 `completed`，artifact 中 `status` 也是 `completed`，一致。\n   - 但 `input_digest` 为 `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`，而 artifact 中的 `input_sha256` 为 `cccccccc...`，两者不一致。\n   - 同样，`artifact_digest` 为 `bab5dd176350e57eb153bab414c17974fd2b604586741ffac0419e5c0028a606`，与 artifact 中任何字段也无直接对应关系，但 contract 未明确要求校验 artifact_digest 与内容的关系。\n\n3. **决定性失败点：输入摘要不匹配**\n   - 冻结的 fixture 中 `input_digest` 明确为 `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`。\n   - artifact 内容中的 `input_sha256` 为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`。\n   - 两者不相等，因此 artifact 声称的输入摘要与预期输入摘要不一致。\n\n综上，虽然 `schema_version` 和 `status` 字段满足要求，且 SHA256 字符串在形式上可能是 64 个小写十六进制字符，但 **`input_sha256` 与预期的 `input_digest` 不一致**，这是决定性失败证据。\n\n建议 repair/rerun：\n- 重新生成 artifact，确保 `input_sha256` 与预期输入摘要 `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c` 一致。\n- 同时核对 `output_sha256` 是否与真实输出文件摘要一致。\n- 修复后重新提交核查。\n\n当前无批准，不执行任何修改或重跑操作。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940948,
+  "id": "6775cb86-ff7d-426e-aca2-24bb758e49ab",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 763,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1279
+  }
+}

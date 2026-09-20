@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入数据尚未绑定，测量数据不可用，因此无法对实际对象执行状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后又对参考数据做了子集”，这改变了参考对象的观测数量，但未提供子集前后的样本 ID 或索引。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提供的查询状态为“unchanged”，但未说明查询对象是否与参考对象共享同一 UMAP 模型或是否也经过子集。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:query_state\"]\n    },\n    {\n      \"text\": \"你提到存储的降维模型存在但未检查，因此无法确认该模型是否与当前参考子集对应，也无法判断 MapQuery 会使用哪个模型。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"在 Scanpy 中，MapQuery 通常依赖参考数据的邻居图和 UMAP 模型；如果参考在 RunUMAP 后被子集，而模型或邻居图未同步更新，映射结果可能不一致。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"标题中的“aberrant results”只是现象描述，不能作为根因；需要检查参考子集后是否重新计算了邻居图、是否保留了原始 UMAP 模型以及查询映射时使用的参考对象。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"参考子集前后的样本 ID 或索引是什么？查询对象是否与参考共享同一个 UMAP 模型？\",\n    \"missing_field\": \"reference_subset_ids_and_shared_model\",\n    \"why_needed\": \"只有知道子集前后的样本标识以及查询与参考是否共享模型，才能判断 MapQuery 是否使用了不一致的邻居图或 UMAP 模型，从而给出有界的根因解释。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941027,
+  "id": "e69ff9cb-411e-44e5-8921-7990c6be0c94",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 566,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2432,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 2518,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2432
+    },
+    "total_tokens": 3084
+  }
+}

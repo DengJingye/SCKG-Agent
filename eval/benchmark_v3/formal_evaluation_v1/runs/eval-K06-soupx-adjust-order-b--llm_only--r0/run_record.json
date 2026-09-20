@@ -1,0 +1,213 @@
+{
+  "answer_hash": "77247c7046436384ccfdcd38f7fce431edce4e9c5ec6ee435a532ea026506dea",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_afa6cfe6a46e4866a764235bda8977e1",
+  "case_id": "eval-K06-soupx-adjust-order-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 1992,
+  "latency_ms": 5001.717291001114,
+  "observed": {
+    "answer": "**ambient RNA removal 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+    "lane": "llm_only",
+    "product_status": "BLOCKED",
+    "provider_calls": 1,
+    "runtime_mode": "external_semantic_with_deterministic_governance"
+  },
+  "output_tokens": 449,
+  "repetition": 0,
+  "run_id": "eval-K06-soupx-adjust-order-b--llm_only--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K06-soupx-adjust-order-b--llm_only--r0",
+      "created_at": "2026-09-20T21:46:22.872396+00:00",
+      "finished_at": "2026-09-20T21:46:27.869169+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "UNIFIED_AGENT_TRACE",
+          "target_id": "agent-trace:f668778d961f7a04bb66",
+          "target_type": "unified_agent_trace"
+        },
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:b9b87503d99d483f",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K06-soupx-adjust-order-b--llm_only--r0",
+      "root_span_id": "span_065fd69f3b58414594ce56e93d6dd923",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_request_outcome",
+              "outcome": "blocked",
+              "reason_code": "research_request_blocked",
+              "record_ref": null,
+              "rule_version": "research_outcome_v0"
+            }
+          ],
+          "duration_ms": 4996.652,
+          "ended_at": "2026-09-20T21:46:27.869169+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_065fd69f3b58414594ce56e93d6dd923",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:46:22.872428+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_afa6cfe6a46e4866a764235bda8977e1"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_execution_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_workflow_run",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_run",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "ambient_rna_removal",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3622.181,
+          "ended_at": "2026-09-20T21:46:26.525140+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K06-soupx-adjust-order-b--llm_only--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_065fd69f3b58414594ce56e93d6dd923",
+          "sequence": 2,
+          "span_id": "span_76ec12a22ea14af9b3d051a805e4d556",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:46:22.902890+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_afa6cfe6a46e4866a764235bda8977e1"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.332,
+          "ended_at": "2026-09-20T21:46:26.527195+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_065fd69f3b58414594ce56e93d6dd923",
+          "sequence": 3,
+          "span_id": "span_b9c3da2472624f2ba07dbe1adcaf38e2",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:46:26.526852+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_afa6cfe6a46e4866a764235bda8977e1"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "execution_request_count": 0
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "planning_result",
+              "outcome": "blocked",
+              "reason_code": "evidence_recovery",
+              "record_ref": null,
+              "rule_version": "research_planning_v0"
+            }
+          ],
+          "duration_ms": 1339.219,
+          "ended_at": "2026-09-20T21:46:27.866457+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "plan_if_requested",
+          "output_refs": [],
+          "parent_span_id": "span_065fd69f3b58414594ce56e93d6dd923",
+          "sequence": 4,
+          "span_id": "span_338d9b8efdba4c7cb6ad52c3e5b71865",
+          "stage": "PLANNING",
+          "started_at": "2026-09-20T21:46:26.527225+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_afa6cfe6a46e4866a764235bda8977e1"
+        }
+      ],
+      "status": "BLOCKED",
+      "trace_id": "trace_afa6cfe6a46e4866a764235bda8977e1",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察是 IntegrateLayers 未返回，且你提供了 worker_count=8；这只能确认执行未完成，不能证明是无限循环或与多核 future 后端有因果关联。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_state\", \"user:worker_count\"]\n    },\n    {\n      \"text\": \"要区分“仍在运行”与“卡死/无限循环”，需要知道是否设置了超时、是否观察到 CPU 占用持续、以及日志或进度是否仍在更新。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"最小隔离步骤应先固定 future 后端和 worker 数：例如先用 plan(sequential) 跑同一 IntegrateLayers 调用，确认是否仍不返回；再逐步改为 multisession/multicore 并记录 worker 数。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供实际使用的 future 后端类型（sequential/multisession/multicore）以及 Seurat 版本；这决定隔离步骤的起点和可复现性。\",\n    \"missing_field\": \"future_backend\",\n    \"why_needed\": \"不同后端对多核和嵌套并行的行为不同，缺少该信息无法判断是否应优先测试 sequential 基线或检查嵌套并行限制。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940731,
+  "id": "7dc1bae7-c31f-489e-82fc-39c90e8e8a22",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 343,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1093,
+    "prompt_tokens": 2245,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 2588
+  }
+}

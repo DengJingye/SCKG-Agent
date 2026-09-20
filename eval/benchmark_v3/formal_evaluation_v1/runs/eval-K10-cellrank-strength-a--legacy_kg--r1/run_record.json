@@ -1,0 +1,203 @@
+{
+  "answer_hash": "92e0e624e1d3d75f5918f21be241481c03fb8364e56b469f5dd9969857e8c1a8",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_d395b1d0998e4b5297590941ec6ad3d2",
+  "case_id": "eval-K10-cellrank-strength-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 4229,
+  "latency_ms": 7201.303041991196,
+  "observed": {
+    "answer": "你提供的：independent_intervention=none（语义上未提供）。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nCellRank 的 lineage fate probability 相关基因只能说明基因表达与谱系命运概率存在相关性，不能直接证明这些基因是驱动谱系分化的因果驱动基因。\n\n因此“candidate driver genes”中的“driver”应被理解为候选或推测，而非已验证的驱动基因。\n\n可接受的措辞应明确限定为“与谱系命运概率相关的候选基因”或“谱系命运相关的候选驱动基因”，并避免暗示已建立因果驱动关系。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 584,
+  "repetition": 1,
+  "run_id": "eval-K10-cellrank-strength-a--legacy_kg--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K10-cellrank-strength-a--legacy_kg--r1",
+      "created_at": "2026-09-20T21:42:59.404898+00:00",
+      "finished_at": "2026-09-20T21:43:06.599698+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:281c03faefb8a75d",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K10-cellrank-strength-a--legacy_kg--r1",
+      "root_span_id": "span_6b9b78274f604233b0a54c9d40594cdf",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 7194.6,
+          "ended_at": "2026-09-20T21:43:06.599698+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_6b9b78274f604233b0a54c9d40594cdf",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:42:59.404939+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d395b1d0998e4b5297590941ec6ad3d2"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "trajectory_inference",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2866.323,
+          "ended_at": "2026-09-20T21:43:02.328449+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K10-cellrank-strength-a--legacy_kg--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_6b9b78274f604233b0a54c9d40594cdf",
+          "sequence": 2,
+          "span_id": "span_90880673e7c54fc0b4a7a60f7ef62565",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:42:59.462063+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d395b1d0998e4b5297590941ec6ad3d2"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 5,
+            "source_bound_count": 5,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:legacy_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 1137.376,
+          "ended_at": "2026-09-20T21:43:03.467574+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "sourcev2:cb52594c3943e6225471",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:2c180c928bbb466c022e",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:a8d85cd1bbc3f7d2f13e",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:19399e1c7e79e73de76e",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:5a753f2e33987d1860c6",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_6b9b78274f604233b0a54c9d40594cdf",
+          "sequence": 3,
+          "span_id": "span_38351a0f8b604696bc0b9c780ea56c7d",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:43:02.330181+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d395b1d0998e4b5297590941ec6ad3d2"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_d395b1d0998e4b5297590941ec6ad3d2",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

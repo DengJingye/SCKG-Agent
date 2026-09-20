@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法（决定性失败项）**\n   - `output_schema.sha256_pattern` 要求：64 位小写十六进制字符。\n   - 实际 `input_sha256` 为 `cccccccc...`（64 个 `c`），`output_sha256` 为 `dddddd...`（64 个 `d`）。\n   - `c` 和 `d` 都不是合法的十六进制字符（合法字符仅限 `0-9` 与 `a-f`）。\n   - 因此两个字段均不符合 SHA256 语法约束。\n\n2. **必需字段存在性：通过**\n   - `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **schema/status 相等性：通过**\n   - `schema_version` 为 `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` 为 `completed`，与 `expected_status` 一致。\n\n综合来看，虽然字段存在性与 schema/status 相等性满足要求，但两个 SHA256 字段的字符集不符合声明的十六进制约束，因此整体判定为 **invalid under the declared contract**。\n\n建议的 repair/rerun 方向（需另行批准后执行）：\n- 将 `input_sha256` 与 `output_sha256` 替换为真实的 64 位小写十六进制 SHA256 摘要；\n- 或修正 `output_schema.sha256_pattern`，使其与当前 fixture 的字符集一致（若该 fixture 本意并非真实哈希）。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941051,
+  "id": "0dbdf786-a2ca-4d70-9089-db76e6214cfa",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 369,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 885
+  }
+}

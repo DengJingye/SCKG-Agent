@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"MOFA 的输入描述允许各数据矩阵来自相同或重叠的样本集合，因此它并不强制要求两个 view 的样本完全一一对应。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 cell_identity_link=none 表示两个 view 之间没有细胞身份对应关系，这属于样本重叠程度未知的情况，而不是已确认的完全不重叠。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:cell_identity_link\"\n      ]\n    },\n    {\n      \"text\": \"在完全没有样本对应关系时，MOFA 无法利用跨 view 的配对信息来约束共享因子，其跨模态整合能力会受到限制。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"提醒：现有来源只说明输入可以是相同或重叠样本，并未定义任意缺失或完全不重叠情况下的通用兼容性规则，因此不能据此断言你的两个队列一定适合 MOFA。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"两个 view 之间是否存在任何可用的样本或细胞对应关系，例如部分重叠的样本 ID 或可映射的细胞标签？\",\n    \"missing_field\": \"sample_overlap_info\",\n    \"why_needed\": \"MOFA 的输入描述允许相同或重叠样本，但未定义完全不重叠时的兼容性；知道是否存在部分重叠会直接改变该方法是否适用于你的数据。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940987,
+  "id": "6dcfb466-d8d1-48dd-8438-c7dd59ff952d",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 512,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 6656,
+    "prompt_cache_miss_tokens": 16,
+    "prompt_tokens": 6672,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 6656
+    },
+    "total_tokens": 7184
+  }
+}

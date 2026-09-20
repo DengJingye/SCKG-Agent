@@ -1,0 +1,183 @@
+{
+  "answer_hash": "7d11d7c096a6a6119db009e11f8b68c88a3ed82c156351f77cd8e25ba23cf6b6",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_753f8f7ca19b4f2e9018ed960e04f9db",
+  "case_id": "eval-K03-totalvi-modalities-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 4442,
+  "latency_ms": 9958.882207996794,
+  "observed": {
+    "answer": "你提供的：rna_modality=UMI counts in both batches。\n\n你提供的：batch_composition=one CITE-seq batch plus one scRNA-seq batch；protein_modality=missing only in the scRNA-seq batch。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\ntotalVI 的设计目标就是联合建模 CITE-seq 的 RNA 与蛋白质模态，并支持蛋白质模态缺失的批次。\n\n符合 totalVI 对 RNA 输入为计数矩阵的常规要求。\n\ntotalVI 通过将缺失蛋白质视为缺失数据，在模型推断中利用 RNA 信息进行填补，因此不需要丢弃 scRNA-seq 批次。\n\n条件边界：totalVI 要求 RNA 为计数数据，且蛋白质表达通常需为对数或 CLR 变换后的连续值；若蛋白质数据未经适当变换，可能影响模型拟合。\n\n当前没有已批准的科学知识图谱证据直接支持 totalVI 的适用性，以上方法适配性说明属于未经验证的模型知识。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 957,
+  "repetition": 0,
+  "run_id": "eval-K03-totalvi-modalities-b--legacy_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K03-totalvi-modalities-b--legacy_kg--r0",
+      "created_at": "2026-09-20T21:45:46.654163+00:00",
+      "finished_at": "2026-09-20T21:45:56.608100+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:58d3c2d114e6a4b1",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K03-totalvi-modalities-b--legacy_kg--r0",
+      "root_span_id": "span_680b3a0edab44ff2adf7e1b8247bb1d7",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 9953.715,
+          "ended_at": "2026-09-20T21:45:56.608100+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_680b3a0edab44ff2adf7e1b8247bb1d7",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:45:46.654194+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_753f8f7ca19b4f2e9018ed960e04f9db"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "single_cell_entity_or_tool_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_caveat_comparison_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_caveat_comparison_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "multimodal_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 4391.579,
+          "ended_at": "2026-09-20T21:45:51.079745+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K03-totalvi-modalities-b--legacy_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_680b3a0edab44ff2adf7e1b8247bb1d7",
+          "sequence": 2,
+          "span_id": "span_e21a3501ddeb4406957fa99d4db81d7e",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:45:46.688099+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_753f8f7ca19b4f2e9018ed960e04f9db"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 2,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 2
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 1556.881,
+          "ended_at": "2026-09-20T21:45:52.638331+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            },
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_680b3a0edab44ff2adf7e1b8247bb1d7",
+          "sequence": 3,
+          "span_id": "span_93c8db41613f410cab5cd079dcdcc9cc",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:45:51.081416+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_753f8f7ca19b4f2e9018ed960e04f9db"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_753f8f7ca19b4f2e9018ed960e04f9db",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

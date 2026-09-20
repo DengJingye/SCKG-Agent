@@ -1,0 +1,204 @@
+{
+  "answerability": {
+    "candidate_only": false,
+    "claim_ids": [],
+    "direct_evidence_chunk_ids": [],
+    "evidence_gap_id": "",
+    "evidence_span_ids": [],
+    "fallback_reason": "",
+    "operator_revision_id": "",
+    "reason": "approved_kg_no_matching_statement",
+    "scientific_kg_used": false,
+    "scope_status": "unknown",
+    "source_revision_ids": [],
+    "status": "INSUFFICIENT_EVIDENCE",
+    "version_status": ""
+  },
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [],
+  "index_build_id": "approved-scientific-kg-v2-01",
+  "latency_ms": 0.6365410081343725,
+  "mode": "kg_bm25",
+  "pipeline": [
+    "approved_manifest_allowlist",
+    "scope_policy",
+    "approved_exact_evidence_index"
+  ],
+  "query": "totalVI multimodal integration missing protein modality batch correction",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": {
+    "adapter": "ApprovedScientificKG",
+    "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+    "approved_statements_visible": 121,
+    "caution_policy": {
+      "execution_authorized": false,
+      "execution_gate": false,
+      "production_retrieval_eligible": false,
+      "scientific_assertion": false,
+      "trusted": false
+    },
+    "cautions": [
+      {
+        "caution_id": "evidence-gap:3f1b34103459319b7d54509c",
+        "description": "All-cells protein requirement: The source expressly permits different panels and scRNA-only subsets; do not require measured proteins in every cell.",
+        "evidence": [
+          {
+            "content_hash": "02b1c2d60406738672688061158b3c390ca069538058f0875b59e8a89dea373d",
+            "end_offset": 3882,
+            "evidence_span_id": "evidence-span:60e3ef935480978551534155",
+            "exact_text": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[2]/sec[1]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:3286:3882"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[2]/sec[1]/p[1]",
+            "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+            "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+            "start_offset": 3286
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:totalvi"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:b288a4186eb2cfc4d5c6a2f4",
+        "description": "Missing-protein integration schema: Preserve the batch-dependent missingness and shared-gene assumptions; no blanket raw paired matrix requirement or imputation guarantee.",
+        "evidence": [
+          {
+            "content_hash": "0f7637785c8c8230e6079af6b5ac6cb7770c7b1082cf5438ae7edcdb306d1ead",
+            "end_offset": 44047,
+            "evidence_span_id": "evidence-span:801f068a414588df49746e2f",
+            "exact_text": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[4]/sec[2]/sec[2]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:43442:44047"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[4]/sec[2]/sec[2]/p[1]",
+            "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+            "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+            "start_offset": 43442
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:totalvi"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:99fe02c787e6e20c9ee3271d",
+        "description": "Chromatin accessibility and clonotype capabilities: These are prospective extensions in the paper, not implemented totalVI claims.",
+        "evidence": [
+          {
+            "content_hash": "d4570a0b97c163978a9f754c53ba1dd6f48e7331841109a5c5aac800bcd32bdd",
+            "end_offset": 35609,
+            "evidence_span_id": "evidence-span:e9fd478080f22735c03580a8",
+            "exact_text": "Through a single pipeline that jointly analyzes paired RNA and protein measurements, totalVI simplifies data analysis and interpretation that would otherwise be conducted in separate pipelines whose disparate results must be reconciled post hoc. totalVI is available through the scvi-tools software package, which connects it with the popular Scanpy [56] and Seurat [34] pipelines, and enables analysis on free cloud computing environments like Google Colab. The flexibility and scalability of totalVI make it easily applicable to future datasets with larger protein panels, and enable extensions that incorporate additional paired measurements. For example, we expect totalVI to naturally handle intracellular proteins measured with barcoded antibodies. Further additions of modalities like chromatin accessibility [57] or clonotype features [58] can also be implemented within the totalVI codebase with consideration of the modality-specific likelihood. By combining multiple views of cellular processes, totalVI can reveal a more complete picture that redefines cell states and elucidates mechanistic relationships between molecular components of the cell.",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[3]/p[4];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:34450:35609"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[3]/p[4]",
+            "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+            "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+            "start_offset": 34450
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:totalvi"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:480c66e5490d1af42bc4e7ea",
+        "description": "Benchmark rankings and generalization: No unqualified performance rankings or universal accuracy claims; dataset-specific numerical comparisons require an evaluation model and independently checked experiment context.",
+        "evidence": [],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": false,
+        "status": "unbound_evidence_gap",
+        "subject_ids": [
+          "method:totalvi"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      }
+    ],
+    "eligible_chunk_ids": [],
+    "excluded_statement_ids": [
+      "statement-revision:408c18b92c771381a3509e0b:1",
+      "statement-revision:5d0fff6647ebd834c5916616:1",
+      "statement-revision:5f21204d9dfb5efe92fa62e4:1",
+      "statement-revision:6eaefa5a4e46ee61c5a38da3:1",
+      "statement-revision:97be25d55462e6fee000c17f:1",
+      "statement-revision:b84854bd0a99f2b35f9f709b:1"
+    ],
+    "execution_authorized": false,
+    "fallback_reason": "approved_kg_no_matching_statement",
+    "final_graph_chunk_ids": [],
+    "hash_verified": true,
+    "held_statements_visible": 0,
+    "legacy_kg_consulted": false,
+    "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda",
+    "paths": [],
+    "query_count": 2,
+    "scope_context": {
+      "modality": "scrna-seq"
+    },
+    "scope_policy_active": true,
+    "snapshot_id": "approved-scientific-kg-v2-01",
+    "subjects": [
+      "method:totalvi"
+    ]
+  },
+  "stage_timings": [],
+  "warnings": []
+}

@@ -1,0 +1,111 @@
+{
+  "answer_hash": "67528b942bf187ef86ee2ed33f8aa4a744f55da8192a7e543927d8763e4fe47d",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_73e5fd4c80e74a83953536c4bce59c6b",
+  "case_id": "eval-W04",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": null,
+  "latency_ms": 145.3391249960987,
+  "observed": {
+    "answer": "**当前请求不在 scKG-Agent 已资格化的执行范围内，因此没有创建执行请求。**\n\n目前只有已登记、已资格化的单细胞 ActionBundle 可以进入受控执行。系统不会把越界任务回退成 Scrublet、cell2location 或其他随机单细胞工具。\n\n- 阻断原因：`tool_task_or_modality_incompatible`\n- ExecutionRequest：`0`\n- 你仍可以在 ASK 模式下让通用 LLM 解释相关概念，但它不会冒充已验证的 scKG workflow。",
+    "lane": "llm_only",
+    "product_status": "BLOCKED",
+    "provider_calls": 0,
+    "runtime_mode": "unsupported_action_blocked"
+  },
+  "output_tokens": null,
+  "repetition": 1,
+  "run_id": "eval-W04--llm_only--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W04--llm_only--r1",
+      "created_at": "2026-09-20T21:57:41.297496+00:00",
+      "finished_at": "2026-09-20T21:57:41.438512+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:962b382901f1f7e0",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W04--llm_only--r1",
+      "root_span_id": "span_151cdb15158d41a1875afc4df4b88c1f",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_request_outcome",
+              "outcome": "blocked",
+              "reason_code": "research_request_blocked",
+              "record_ref": null,
+              "rule_version": "research_outcome_v0"
+            }
+          ],
+          "duration_ms": 140.967,
+          "ended_at": "2026-09-20T21:57:41.438512+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_151cdb15158d41a1875afc4df4b88c1f",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:57:41.297536+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_73e5fd4c80e74a83953536c4bce59c6b"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "unsupported_action",
+              "reason_code": "tool_task_or_modality_incompatible",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 103.666,
+          "ended_at": "2026-09-20T21:57:41.437566+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W04--llm_only--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_151cdb15158d41a1875afc4df4b88c1f",
+          "sequence": 2,
+          "span_id": "span_3bb69c4b84844c2baa971522dc9ecdf1",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:57:41.333902+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_73e5fd4c80e74a83953536c4bce59c6b"
+        }
+      ],
+      "status": "BLOCKED",
+      "trace_id": "trace_73e5fd4c80e74a83953536c4bce59c6b",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的输入要求是原始计数矩阵，模型内部会自行进行归一化；当前矩阵只有 log1p 归一化值且无计数来源，不能直接作为 scVI 的模型输入。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"如果只有 log1p 归一化值，无法可靠还原原始计数，因此无法满足 scVI 对计数输入的要求。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"batch_key=donor 已提供且完整，但批次键的可用性不能弥补计数矩阵缺失的问题。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:batch_key\"]\n    },\n    {\n      \"text\": \"当前状态显示输入尚未注册且测量数据不可用，因此无法执行或验证 scVI 输入。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:input_registered\", \"observed:measurements_available\"]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"能否提供原始计数矩阵（或可还原计数的来源）？\",\n    \"missing_field\": \"raw_counts_matrix\",\n    \"why_needed\": \"scVI 需要原始计数作为输入，仅有 log1p 归一化值无法满足模型要求，因此需要确认是否存在原始计数来源。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941089,
+  "id": "4e366f2a-442c-4c43-95bd-a5c792d39b10",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 352,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2176,
+    "prompt_cache_miss_tokens": 48,
+    "prompt_tokens": 2224,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2176
+    },
+    "total_tokens": 2576
+  }
+}

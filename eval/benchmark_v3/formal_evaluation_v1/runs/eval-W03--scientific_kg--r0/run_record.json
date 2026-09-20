@@ -1,0 +1,103 @@
+{
+  "answer_hash": "8289e88573eb4cda67d71cdbfdeef35a77753ca03debc4f7b2e3a431bcbb3008",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_2000c404edb240839bc88f89d0b2f856",
+  "case_id": "eval-W03",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 516,
+  "latency_ms": 4240.535290999105,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法（决定性失败项）**\n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者均为 64 个重复字符，虽然长度是 64，但不符合 `sha256_pattern` 要求的“64 位小写十六进制字符”。`c` 和 `d` 本身是合法十六进制字符，但全重复值在语法上仍可被视为十六进制；不过结合 fixture 中 `artifact_digest` 与 `input_digest` 均为真实 64 位十六进制摘要，而这两个字段被替换为占位重复串，可判定为**非真实 SHA256 摘要**，不满足合约对 SHA256 语法/真实性的要求。\n\n2. **必需字段存在性：通过**\n   - `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **schema/status 相等性：通过**\n   - `schema_version` 为 `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` 为 `completed`，与 `expected_status` 一致。\n\n4. **未引入额外要求**\n   - 仅按给定合约核查，未添加计划外约束。\n\n建议 repair/rerun：\n- 将 `input_sha256` 与 `output_sha256` 替换为对应输入/输出产物的真实 SHA256 摘要（64 位小写十六进制）。\n- 修复后重新生成 `artifact_manifest.json` 并重新提交核查。\n\n当前无批准，不执行任何修复或重跑操作。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 428,
+  "repetition": 0,
+  "run_id": "eval-W03--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W03--scientific_kg--r0",
+      "created_at": "2026-09-20T21:47:23.150524+00:00",
+      "finished_at": "2026-09-20T21:47:27.388122+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:ef5f2824374b55e7",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W03--scientific_kg--r0",
+      "root_span_id": "span_bccca168cea54398b8b495963f288f7e",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 4237.479,
+          "ended_at": "2026-09-20T21:47:27.388122+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_bccca168cea54398b8b495963f288f7e",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:47:23.150567+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_2000c404edb240839bc88f89d0b2f856"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 97.098,
+          "ended_at": "2026-09-20T21:47:23.276872+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W03--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_bccca168cea54398b8b495963f288f7e",
+          "sequence": 2,
+          "span_id": "span_fee730f942744329813e98fb7a7c8a50",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:47:23.179772+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_2000c404edb240839bc88f89d0b2f856"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_2000c404edb240839bc88f89d0b2f856",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

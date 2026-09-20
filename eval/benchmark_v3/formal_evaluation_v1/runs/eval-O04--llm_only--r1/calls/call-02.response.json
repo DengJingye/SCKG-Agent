@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的观察是“输出看起来像 Louvain”，这只说明标签或结果形态与 Louvain 相似，不能据此断定实际运行的后端就是 Louvain。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你提供的请求算法是 leidenbase 和 igraph，这表示你尝试过这两种设置，但未提供 Seurat 版本或 Leiden 后端版本，因此无法判断是否触发了版本相关的回退。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"当前没有可用的科学知识图谱证据来确认 Seurat FindClusters 在 algorithm 设为 leidenbase 或 igraph 时的具体回退条件或版本行为。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"要区分输出标签与实际后端，需要检查 FindClusters 返回对象中记录的实际算法参数或运行日志，而不是仅凭聚类标签的外观判断。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供 Seurat 版本和 Leiden 后端（如 leidenbase 或 igraph）的具体版本号，以及 FindClusters 调用时使用的完整参数。\",\n    \"missing_field\": \"seurat_version_and_leiden_backend_version\",\n    \"why_needed\": \"不同版本对 algorithm 参数的支持和回退行为不同，缺少版本信息无法判断是否发生了版本相关的回退，也无法区分输出标签与实际后端。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940948,
+  "id": "b84ae9fc-aca1-4101-9b74-283c92779bbd",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 405,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 519,
+    "prompt_tokens": 2311,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2716
+  }
+}

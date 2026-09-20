@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的模型假设输入是原始计数数据，因为其损失函数基于负二项分布或零膨胀负二项分布，需要非负整数计数来估计离散度参数。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是 log1p 归一化后的值，且没有原始计数来源，因此不能直接作为 scVI 的标准输入。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"如果强行将 log1p 值输入 scVI，模型会把这些连续值当作计数处理，导致似然计算错误、离散度估计失真，批次整合和低维表示结果不可靠。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"在缺少原始计数的情况下，可以考虑使用不依赖计数假设的替代方法，如基于 PCA 或 Harmony 的批次整合，但这些方法的效果和适用性需要根据具体数据验证。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940942,
+  "id": "a8b19bd9-e5a5-45a5-bff0-6a39958775a0",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 324,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 432,
+    "prompt_tokens": 2224,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2548
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 格式不符合要求**\n   - declared contract 要求 `sha256_pattern` 为 **64 位小写十六进制字符**。\n   - 实际 `input_sha256` 为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`，`output_sha256` 为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`。\n   - 二者虽然长度是 64，但字符 `c`、`d` 属于十六进制字符，因此**格式本身符合**；不过它们不是真实 SHA256 摘要，而是明显的占位重复串。若 contract 只要求“语法格式”，则此项通过；若要求真实摘要，则无法验证，因为当前只读核查没有提供可对照的输入/输出内容。\n\n2. **schema/status 相等性**\n   - `schema_version` 实际为 `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` 实际为 `completed`，与 `expected_status` 一致。\n   - 因此该项满足。\n\n3. **required field presence**\n   - `required_fields` 为 `[\"schema_version\",\"status\",\"input_sha256\",\"output_sha256\"]`。\n   - 实际 artifact content 中四个字段均存在，因此该项满足。\n\n综合来看，在“仅按 declared contract 的字面规则”核查时，主要问题是：  \n**`input_sha256` 与 `output_sha256` 是占位重复串，不是真实 SHA256 摘要。**  \n如果 contract 的意图是要求真实、可验证的 SHA256 值，那么当前 artifact 不满足；如果只要求 64 位小写十六进制语法，则形式上通过。\n\n建议的 repair/rerun 方向（需批准后执行）：\n- 用真实输入文件计算 `input_sha256`，用真实输出文件计算 `output_sha256`，替换当前占位值。\n- 重新生成或更新 `artifact_manifest.json`，并重新计算 `artifact_digest`。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940755,
+  "id": "482a7608-b9ea-4c29-a25e-cd9617f1bb48",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 485,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1001
+  }
+}

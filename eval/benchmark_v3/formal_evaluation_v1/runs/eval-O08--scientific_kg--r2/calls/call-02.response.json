@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的消息显示 sample_colors.tsv 不存在并被跳过，但这条消息本身只是导出过程中的一个提示，不能据此断定它就是后续异常的唯一根因。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:message\"]\n    },\n    {\n      \"text\": \"当前没有已注册的输入数据或测量数据，因此无法检查实际输出目录内容或复现异常；需要先提供输出目录列表和完整异常信息。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"在 Scanpy 的 cellbrowser 导出流程中，sample_colors.tsv 通常用于定义样本颜色映射，缺失时导出器可能跳过该文件并继续，但后续步骤可能因缺少其他必需文件而报错。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"建议先检查输出目录中是否已生成其他 cellbrowser 文件（如 exprMatrix.tsv、meta.tsv、cellbrowser.conf），并查看 %tb 给出的完整 traceback 以定位真正抛出异常的位置。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供输出目录的完整文件列表以及 %tb 显示的完整异常 traceback，以便判断 sample_colors.tsv 缺失是否与异常直接相关。\",\n    \"missing_field\": \"output_directory_listing_and_traceback\",\n    \"why_needed\": \"仅凭“sample_colors.tsv 不存在”无法确定异常根因；需要实际目录内容和异常堆栈来定位是文件缺失、权限问题还是其他导出步骤失败。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941007,
+  "id": "d17d20f5-458f-437f-a927-23b7944de92b",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 432,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2048,
+    "prompt_cache_miss_tokens": 668,
+    "prompt_tokens": 2716,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2048
+    },
+    "total_tokens": 3148
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"totalVI 的设计目标就是联合建模 CITE-seq 的 RNA 与蛋白质模态，并支持蛋白质模态缺失的批次。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"你提供的 RNA 为 UMI counts，符合 totalVI 对 RNA 输入为计数矩阵的常规要求。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:rna_modality\"]\n    },\n    {\n      \"text\": \"你提供的批次构成为一个 CITE-seq 批次加一个 scRNA-seq 批次，且蛋白质仅在 scRNA-seq 批次缺失，这属于 totalVI 可处理的典型场景。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:batch_composition\", \"user:protein_modality\"]\n    },\n    {\n      \"text\": \"totalVI 通过将缺失蛋白质视为缺失数据，在模型推断中利用 RNA 信息进行填补，因此不需要丢弃 scRNA-seq 批次。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"条件边界：totalVI 要求 RNA 为计数数据，且蛋白质表达通常需为对数或 CLR 变换后的连续值；若蛋白质数据未经适当变换，可能影响模型拟合。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"当前没有已批准的科学知识图谱证据直接支持 totalVI 的适用性，以上方法适配性说明属于未经验证的模型知识。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940752,
+  "id": "b41c74f8-5e0a-45e6-b663-26f8be7f01fc",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 415,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1277,
+    "prompt_tokens": 2429,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 2844
+  }
+}

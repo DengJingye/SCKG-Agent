@@ -1,0 +1,123 @@
+{
+  "product_context_pack": {
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "chat_stage_timings": [
+      {
+        "detail": "domain_route=general_llm;scientific_retrieval=skipped",
+        "elapsed_ms": 824.703,
+        "stage": "intent",
+        "status": "completed"
+      }
+    ],
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 1,
+    "external_reasoning": {
+      "answer_claims": [],
+      "error_type": "APIStatusError",
+      "input_tokens": null,
+      "latency_ms": 693.0610840063309,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": null,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 0,
+      "status": "failed",
+      "support_check": {}
+    },
+    "grounded_answer_audit": {
+      "execution_claim_violation": false,
+      "invalid_citations": [],
+      "passed": true,
+      "reason": "not_a_scientific_evidence_answer"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "retrieval_context": {
+      "adaptive_decision": {
+        "enable_dense": false,
+        "reason": "query_outside_single_cell_domain",
+        "route": "general_llm"
+      },
+      "dense_status": "not_requested",
+      "governance_leakage_count": 0,
+      "latency_ms": 0.0,
+      "mode": "not_requested",
+      "pipeline": [],
+      "snippets": [],
+      "stage_timings": []
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 64834,
+      "process_started_at": "2026-09-20T21:53:41.813579Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.0,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "UNCERTAIN",
+      "error_type": "",
+      "input_tokens": null,
+      "intent": "evidence_qa",
+      "latency_ms": 0.0,
+      "model_name": "",
+      "needs_clarification": false,
+      "output_tokens": null,
+      "provider": "",
+      "provider_call_attempted": false,
+      "requested_tools": [],
+      "retrieval_query": "",
+      "status": "not_requested",
+      "task_switch": false,
+      "tool_calls": [],
+      "user_reported_context": {}
+    },
+    "semantic_route": {
+      "confidence": 1.0,
+      "domain": "GENERAL",
+      "needs_clarification": false,
+      "reason": "query_outside_single_cell_domain",
+      "source": "local_rule"
+    },
+    "total_latency_ms": 824.844,
+    "uploaded_context_present": false
+  },
+  "product_references": [],
+  "synthesis_calls": [
+    {
+      "actual_messages": [
+        {
+          "content": "You are the general conversation layer inside scKG-Agent.\nAnswer the latest user message directly and naturally in Chinese unless the user asks\nfor another language. Do not pretend that scKG-Agent can execute tools, install\npackages, inspect files, or validate scientific claims outside its qualified action\nspace. You may compare artifact facts explicitly supplied in the message (such as\nexit status, bytes/content/schema, and a declared output contract) and state whether\nthose supplied facts satisfy that contract. Attribute them to the user; do not claim\nyou opened a file or ran a tool. Inspection/validation is read-only. Repair, rerun,\nor execution is a separate action and requires the normal workflow approval path.\nDo not invent citations. When the user asks for an unsupported executable\nbioinformatics workflow, explain the boundary instead of generating allegedly\nvalidated code. Keep ordinary conversation concise and useful.",
+          "role": "system"
+        },
+        {
+          "content": "MIMOSCA 模型给出了 perturbation 对表达的系数。下面的结论能否由该结果支持？请限定结论强度；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nproposed_conclusion=The model estimates an association/effect of the perturbation on transcript abundance\nvalidation=permutation significance only",
+          "role": "user"
+        }
+      ],
+      "call_id": "call-01",
+      "request_ref": "calls/call-01.request.json"
+    }
+  ]
+}

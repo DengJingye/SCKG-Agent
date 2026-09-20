@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"domain\": \"SINGLE_CELL\",\n  \"intent\": \"execution\",\n  \"canonical_task\": \"ambient_rna_removal\",\n  \"confidence\": 0.9,\n  \"needs_clarification\": false,\n  \"clarification_question\": \"\",\n  \"capability_request\": null,\n  \"constraints\": {},\n  \"requested_tools\": [\"SoupX\"],\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"get_tool_contract\",\n      \"query\": \"SoupX adjustCounts prerequisites and required inputs\",\n      \"canonical_task\": \"ambient_rna_removal\",\n      \"tool_names\": [\"SoupX\"],\n      \"claim_types\": [\"input_requirement\", \"parameter\"],\n      \"top_k\": 3,\n      \"reason\": \"User asks whether current state (count_matrix present, contamination_fraction not estimated) is sufficient to run adjustCounts, so we need the tool's input contract.\"\n    },\n    {\n      \"tool_name\": \"search_evidence\",\n      \"query\": \"SoupX adjustCounts required inputs and whether contamination fraction must be estimated beforehand\",\n      \"canonical_task\": \"ambient_rna_removal\",\n      \"tool_names\": [\"SoupX\"],\n      \"claim_types\": [\"input_requirement\", \"parameter\", \"caveat\"],\n      \"top_k\": 3,\n      \"reason\": \"To determine if any prior steps are needed, retrieve evidence about adjustCounts prerequisites.\"\n    }\n  ],\n  \"retrieval_query\": \"For SoupX adjustCounts, what are the required inputs and prerequisites? Given a count matrix is present but contamination fraction is not estimated or specified, can adjustCounts be run directly, or must other steps be completed first?\",\n  \"user_reported_context\": {\n    \"contamination_fraction\": {\n      \"value\": \"not estimated or specified\",\n      \"user_quote\": \"contamination_fraction=not estimated or specified\"\n    },\n    \"count_matrix\": {\n      \"value\": \"present\",\n      \"user_quote\": \"count_matrix=present\"\n    }\n  },\n  \"data_dependency\": \"none\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940928,
+  "id": "12fe0526-1706-4b7b-b195-d74e15dcf2b0",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 461,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 72,
+    "prompt_tokens": 1992,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 2453
+  }
+}

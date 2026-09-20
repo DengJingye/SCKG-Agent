@@ -1,0 +1,103 @@
+{
+  "answer_hash": "29bb67813558efaab369b373d0264d7559be83cb3bdb327a7fc03a12e1574b68",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_5822b05f3ea946e6bc9cd5e96a894c84",
+  "case_id": "eval-W03",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 516,
+  "latency_ms": 3386.1935830063885,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法（决定性失败项）**\n   - `output_schema.sha256_pattern` 要求：64 位小写十六进制字符。\n   - 实际 `input_sha256` 为 `cccccccc...`（64 个 `c`），`output_sha256` 为 `dddddd...`（64 个 `d`）。\n   - `c` 和 `d` 都不是合法的十六进制字符（合法字符仅限 `0-9` 与 `a-f`）。\n   - 因此两个字段均不符合 SHA256 语法约束。\n\n2. **必需字段存在性：通过**\n   - `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **schema/status 相等性：通过**\n   - `schema_version` 为 `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` 为 `completed`，与 `expected_status` 一致。\n\n综合来看，虽然字段存在性与 schema/status 相等性满足要求，但两个 SHA256 字段的字符集不符合声明的十六进制约束，因此整体判定为 **invalid under the declared contract**。\n\n建议的 repair/rerun 方向（需另行批准后执行）：\n- 将 `input_sha256` 与 `output_sha256` 替换为真实的 64 位小写十六进制 SHA256 摘要；\n- 或修正 `output_schema.sha256_pattern`，使其与当前 fixture 的字符集一致（若该 fixture 本意并非真实哈希）。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 369,
+  "repetition": 2,
+  "run_id": "eval-W03--legacy_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W03--legacy_kg--r2",
+      "created_at": "2026-09-20T21:50:51.296125+00:00",
+      "finished_at": "2026-09-20T21:50:54.680138+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:bbbfac4c05bece9d",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W03--legacy_kg--r2",
+      "root_span_id": "span_7057e425df274faab124645f124ecbed",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 3383.935,
+          "ended_at": "2026-09-20T21:50:54.680138+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_7057e425df274faab124645f124ecbed",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:50:51.296147+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_5822b05f3ea946e6bc9cd5e96a894c84"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 72.087,
+          "ended_at": "2026-09-20T21:50:51.390973+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W03--legacy_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_7057e425df274faab124645f124ecbed",
+          "sequence": 2,
+          "span_id": "span_0105e91f4a93467a8f6adfdddea716c1",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:50:51.318886+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_5822b05f3ea946e6bc9cd5e96a894c84"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_5822b05f3ea946e6bc9cd5e96a894c84",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "answer_hash": "31094449d3f51cc0cdc42835f199166f8f65492b06c3dfdc7450f19d930b5b78",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_f685b8a8093b41be9cacff98b94a9c28",
+  "case_id": "eval-W02",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 474,
+  "latency_ms": 4453.762082994217,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 不匹配**\n   - 声明值（`declared_sha256`）：`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`\n   - 实际观测值（`observed_sha256`）：`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`\n   - 两者不一致，违反 `output_schema.sha256_must_equal_declared: true`。\n\n2. **exit code 不能作为通过依据**\n   - `artifact.exit_code = 0`，但 `artifact_validators` 明确要求 “compare exact SHA256” 且 “do not accept exit code alone”。\n   - `plan_constraints` 也声明 “exit code is not sufficient”。\n\n3. **预期结果本身即为 invalid**\n   - `expected` 字段为：`\"invalid: checksum mismatch despite exit code 0\"`，与上述证据一致。\n\n建议：  \n- 需要 repair/rerun 以生成与声明 SHA256 一致的结果文件；  \n- 当前处于只读核查状态，未获批准，不执行任何修复或重跑操作。",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 265,
+  "repetition": 1,
+  "run_id": "eval-W02--generic_rag--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W02--generic_rag--r1",
+      "created_at": "2026-09-20T21:42:49.223740+00:00",
+      "finished_at": "2026-09-20T21:42:53.675957+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:25f6f2c5727bfa2a",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W02--generic_rag--r1",
+      "root_span_id": "span_6f93c8a38ec54b42861fc77b03a811da",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 4452.119,
+          "ended_at": "2026-09-20T21:42:53.675957+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_6f93c8a38ec54b42861fc77b03a811da",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:42:49.223769+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_f685b8a8093b41be9cacff98b94a9c28"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 82.659,
+          "ended_at": "2026-09-20T21:42:49.335607+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W02--generic_rag--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_6f93c8a38ec54b42861fc77b03a811da",
+          "sequence": 2,
+          "span_id": "span_2edc8422e2a2422084dd35caabd145ad",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:42:49.252947+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_f685b8a8093b41be9cacff98b94a9c28"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_f685b8a8093b41be9cacff98b94a9c28",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

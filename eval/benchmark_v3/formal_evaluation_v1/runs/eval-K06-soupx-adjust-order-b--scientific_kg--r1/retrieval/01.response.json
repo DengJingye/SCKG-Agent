@@ -1,0 +1,618 @@
+{
+  "answerability": {
+    "candidate_only": false,
+    "claim_ids": [
+      "statement-revision:307509c44324bb73bc3d016c:1",
+      "statement-revision:b09af933529f6541f2b51c01:1",
+      "statement-revision:fdd62a32f1f7811ab193f3da:1"
+    ],
+    "direct_evidence_chunk_ids": [
+      "approved-v2:012c433a23db5c95fb4736e3",
+      "approved-v2:ddafadb3746e31212d1e0ecc",
+      "approved-v2:08fdd20a3f2cdfadad2d7934"
+    ],
+    "evidence_gap_id": "",
+    "evidence_span_ids": [],
+    "fallback_reason": "",
+    "operator_revision_id": "",
+    "reason": "conditional_knowledge_scope_unknown",
+    "scientific_kg_used": true,
+    "scope_status": "unknown",
+    "source_revision_ids": [],
+    "status": "CLARIFICATION_REQUIRED",
+    "version_status": ""
+  },
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:012c433a23db5c95fb4736e3",
+      "claim_type": "method",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 5.0,
+      "source_bound": true,
+      "source_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+      "source_span": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:3088:3339",
+      "sparse_rank": null,
+      "text": "adjustCounts\nRemove background contamination from count matrix\nDescription\nAfter the level of background contamination has been estimated or specified for a channel, calculate\nthe resulting corrected count matrix with background contamination removed.",
+      "title": "soupx_manual",
+      "tool_name": "soupx",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:ddafadb3746e31212d1e0ecc",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 5.0,
+      "source_bound": true,
+      "source_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+      "source_span": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:4381:4575",
+      "sparse_rank": null,
+      "text": "As expression data is highly sparse at the single cell level, it is highly recommended that clustering\ninformation be provided to allow the subtraction method to share information between cells.",
+      "title": "soupx_manual",
+      "tool_name": "soupx",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:08fdd20a3f2cdfadad2d7934",
+      "claim_type": "method",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 4.0,
+      "source_bound": true,
+      "source_id": "source-revision:9c88c5d94c9742da426d218b",
+      "source_span": "source-artifact:c077c1f8c4f5ca49b8a82f25e0fae735/xml:/article/body/sec[2]/p[1];text-sha256:777cf343f0167f7547104c764e4a8c31f33e77873c2b44c21032cb08ff973fef:2638:3184",
+      "sparse_rank": null,
+      "text": "Droplet-based scRNA-seq methods produce counts of unique molecular identifiers (UMIs) for genes in thousands of cells. The aim of an scRNA-seq experiment is to infer the number of molecules present for each type of gene within each cell from these data. However, the observed counts arise from a mixture of mRNAs produced by the captured cell and those present due to background contamination. SoupX aims to remove the contribution of the cell-free mRNA molecules from each cell and recover the true molecular abundance of each gene in each cell.",
+      "title": "recovered_60c12579fbba3c8f",
+      "tool_name": "soupx",
+      "tool_names": []
+    }
+  ],
+  "index_build_id": "approved-scientific-kg-v2-01",
+  "latency_ms": 2.6734169950941578,
+  "mode": "kg_bm25",
+  "pipeline": [
+    "approved_manifest_allowlist",
+    "scope_policy",
+    "approved_exact_evidence_index"
+  ],
+  "query": "SoupX adjustCounts required inputs and prerequisites before correction",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": {
+    "adapter": "ApprovedScientificKG",
+    "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+    "approved_statements_visible": 121,
+    "caution_policy": {
+      "execution_authorized": false,
+      "execution_gate": false,
+      "production_retrieval_eligible": false,
+      "scientific_assertion": false,
+      "trusted": false
+    },
+    "cautions": [
+      {
+        "caution_id": "evidence-gap:7340adc4bdf2c940ed6d90e1",
+        "description": "autoEstCont heterogeneous-cell assumption: The source describes a scientific assumption and likely failures, not a universal execution block. Frozen core lacks an assumption/limitation predicate; do not turn this into unconditional REQUIRED or SAFE_BLOCKING.",
+        "evidence": [
+          {
+            "content_hash": "29de98ee91160ea0440d91a61d2ac1024a8e2c00f1dc58ae2c53503b16286625",
+            "end_offset": 12111,
+            "evidence_span_id": "evidence-span:58bdf7d1ac531a193aa27369",
+            "exact_text": "This function assumes that the channel contains multiple distinct cell types with different marker\ngenes. If you try and run it on a channel with very homogenous cells (e.g. a cell line, flow-sorted\ncells), you will likely get a warning, an error, and/or an extremely high contamination estimate.\nIn such circumstances your best option is usually to manually set the contamination to something\nreasonable.",
+            "locator": {
+              "kind": "pdf_page",
+              "value": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:11706:12111"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "page": 6,
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc",
+            "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+            "start_offset": 11706
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "operator-revision:r:soupx:adjustCounts:1.6.2",
+          "operator-revision:r:soupx:autoEstCont:1.6.2",
+          "operator-revision:r:soupx:quickMarkers:1.6.2"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:cebd2891a3c76677c7257a74",
+        "description": "Manual marker gene advice and toy data: Do not generalize haemoglobin, example contamination fractions, toy-data thresholds or workflow order to universal scientific prerequisites.",
+        "evidence": [],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": false,
+        "status": "unbound_evidence_gap",
+        "subject_ids": [
+          "operator-revision:r:soupx:adjustCounts:1.6.2",
+          "operator-revision:r:soupx:autoEstCont:1.6.2",
+          "operator-revision:r:soupx:quickMarkers:1.6.2"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:577793c2910a7641ad1fdcfb",
+        "description": "SoupChannel tod/toc definitions: Exact input semantics retained as gap. Constructor cannot be given an implementation-independent Method without semantic invention, yet frozen OperatorRevision requires implements_method. No fabricated constructor Method or universal SoupX raw-count rule.",
+        "evidence": [
+          {
+            "content_hash": "3f98fbfe7444c5a6840e7b9c2eed5046dbf20f97dd95f857b3ee60a5f38d076a",
+            "end_offset": 37279,
+            "evidence_span_id": "evidence-span:3e4504a86e04c456f3dd5027",
+            "exact_text": "tod\nTable of droplets. A matrix with columns being each droplet and rows each\ngene.\ntoc\nTable of counts. Just those columns of tod that contain cells.",
+            "locator": {
+              "kind": "pdf_page",
+              "value": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:37129:37279"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "page": 24,
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc",
+            "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+            "start_offset": 37129
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "operator-revision:r:soupx:adjustCounts:1.6.2",
+          "operator-revision:r:soupx:autoEstCont:1.6.2",
+          "operator-revision:r:soupx:quickMarkers:1.6.2"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:0d7ade109c0bef1077ffffc9",
+        "description": "Clustering enables information sharing: Effect/causal predicate not admitted in frozen core; recommendation encoded separately without causal edge.",
+        "evidence": [
+          {
+            "content_hash": "ee410ef9b1cdab07a944683b66136f2530ae7cbd25651025bfd96131dc9eaf6e",
+            "end_offset": 4575,
+            "evidence_span_id": "evidence-span:e376347b9dfce5f7ef4b2eb5",
+            "exact_text": "As expression data is highly sparse at the single cell level, it is highly recommended that clustering\ninformation be provided to allow the subtraction method to share information between cells.",
+            "locator": {
+              "kind": "pdf_page",
+              "value": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:4381:4575"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "page": 3,
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc",
+            "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+            "start_offset": 4381
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "operator-revision:r:soupx:adjustCounts:1.6.2",
+          "operator-revision:r:soupx:autoEstCont:1.6.2",
+          "operator-revision:r:soupx:quickMarkers:1.6.2"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      }
+    ],
+    "eligible_chunk_ids": [
+      "approved-v2:012c433a23db5c95fb4736e3",
+      "approved-v2:ddafadb3746e31212d1e0ecc",
+      "approved-v2:08fdd20a3f2cdfadad2d7934"
+    ],
+    "excluded_statement_ids": [],
+    "execution_authorized": false,
+    "fallback_reason": "",
+    "final_graph_chunk_ids": [
+      "approved-v2:012c433a23db5c95fb4736e3",
+      "approved-v2:ddafadb3746e31212d1e0ecc",
+      "approved-v2:08fdd20a3f2cdfadad2d7934"
+    ],
+    "hash_verified": true,
+    "held_statements_visible": 0,
+    "legacy_kg_consulted": false,
+    "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda",
+    "paths": [
+      {
+        "claim_revision_id": "statement-revision:b09af933529f6541f2b51c01:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:012c433a23db5c95fb4736e3"
+            ],
+            "evidence_span_id": "evidence-span:2b5b3abdbd3bb26d752ef7b3",
+            "locator": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:3088:3339",
+            "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:30262c83b4ad8e47d175caea"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:soupx_manual:24ad5e61617d",
+              "assessment_id": "assessment:30262c83b4ad8e47d175caea",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:2b5b3abdbd3bb26d752ef7b3",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "adjustCounts removes background contamination after the channel contamination level is estimated or specified.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:b09af933529f6541f2b51c01:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:2b5b3abdbd3bb26d752ef7b3",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:3088:3339",
+          "original_source_file_reverified": false,
+          "output_ports": [
+            {
+              "applicability": "applicable",
+              "condition_combination": "ALL_OF",
+              "id": "output:r:soupx:adjustCounts:1.6.2:corrected-counts",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "OutputPort",
+              "role": "background-corrected count table",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "source_context": []
+            }
+          ],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:ambient-rna-removal",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "software_version": {
+                "expression": "1.6.2",
+                "status": "exact",
+                "subject_id": "package-release:r:soupx:1.6.2"
+              }
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:b09af933529f6541f2b51c01",
+            "statement_revision_id": "statement-revision:b09af933529f6541f2b51c01:1",
+            "subject_id": "operator-revision:r:soupx:adjustCounts:1.6.2"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "software_version": "unknown"
+            },
+            "qualifiers": {
+              "software_version": {
+                "expression": "1.6.2",
+                "status": "exact",
+                "subject_id": "package-release:r:soupx:1.6.2"
+              }
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc",
+          "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+          "statement": "adjustCounts removes background contamination after the channel contamination level is estimated or specified.",
+          "statement_id": "statement-revision:b09af933529f6541f2b51c01:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      },
+      {
+        "claim_revision_id": "statement-revision:307509c44324bb73bc3d016c:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:ddafadb3746e31212d1e0ecc"
+            ],
+            "evidence_span_id": "evidence-span:e376347b9dfce5f7ef4b2eb5",
+            "locator": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:4381:4575",
+            "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:8d36201bb09e8cf2c142c249"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:soupx_manual:24ad5e61617d",
+              "assessment_id": "assessment:8d36201bb09e8cf2c142c249",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:e376347b9dfce5f7ef4b2eb5",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Clustering information is recommended for subtraction; it is not a required input or an execution block.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:307509c44324bb73bc3d016c:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [
+            {
+              "id": "constraint:9354292eaf2ae052612d",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:e376347b9dfce5f7ef4b2eb5",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc/text-sha256:a4da54fc6602391f25a89669f812b2fc7d265c86e1da6d4a6ff0598a6f5ebd45:4381:4575",
+          "original_source_file_reverified": false,
+          "output_ports": [
+            {
+              "applicability": "applicable",
+              "condition_combination": "ALL_OF",
+              "id": "output:r:soupx:adjustCounts:1.6.2:corrected-counts",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "OutputPort",
+              "role": "background-corrected count table",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "source_context": []
+            }
+          ],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "recommendation",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:c898d4868fd4c24edf33",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "parameter_condition": {
+                "datatype": "string",
+                "operator": "equals",
+                "parameter_id": "parameter:r:soupx:adjustCounts:method",
+                "values": [
+                  "subtraction"
+                ]
+              },
+              "software_version": {
+                "expression": "1.6.2",
+                "status": "exact",
+                "subject_id": "package-release:r:soupx:1.6.2"
+              }
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:307509c44324bb73bc3d016c",
+            "statement_revision_id": "statement-revision:307509c44324bb73bc3d016c:1",
+            "subject_id": "operator-revision:r:soupx:adjustCounts:1.6.2"
+          },
+          "requirements": [
+            {
+              "activation_status": "specified",
+              "combination": "ALL_OF",
+              "id": "requirement:c898d4868fd4c24edf33",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "RECOMMENDED",
+              "when": [
+                {
+                  "datatype": "string",
+                  "operator": "equals",
+                  "parameter_id": "parameter:r:soupx:adjustCounts:method",
+                  "values": [
+                    "subtraction"
+                  ]
+                }
+              ]
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "parameter_condition": "unknown",
+              "software_version": "unknown"
+            },
+            "qualifiers": {
+              "parameter_condition": {
+                "datatype": "string",
+                "operator": "equals",
+                "parameter_id": "parameter:r:soupx:adjustCounts:method",
+                "values": [
+                  "subtraction"
+                ]
+              },
+              "software_version": {
+                "expression": "1.6.2",
+                "status": "exact",
+                "subject_id": "package-release:r:soupx:1.6.2"
+              }
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:f781a4b2cb104d4e45201a707bc65fdc",
+          "source_revision_id": "source-revision:ec0e7dfad9f2fd7afbb04562",
+          "statement": "Clustering information is recommended for subtraction; it is not a required input or an execution block.",
+          "statement_id": "statement-revision:307509c44324bb73bc3d016c:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      },
+      {
+        "claim_revision_id": "statement-revision:fdd62a32f1f7811ab193f3da:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:08fdd20a3f2cdfadad2d7934"
+            ],
+            "evidence_span_id": "evidence-span:69ecc6ef236c2e43df0e2ca3",
+            "locator": "source-artifact:c077c1f8c4f5ca49b8a82f25e0fae735/xml:/article/body/sec[2]/p[1];text-sha256:777cf343f0167f7547104c764e4a8c31f33e77873c2b44c21032cb08ff973fef:2638:3184",
+            "source_revision_id": "source-revision:9c88c5d94c9742da426d218b"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:69a82319bd478f9477ed6ad9"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:recovered_60c12579fbba3c8f:a203fe04d5f7",
+              "assessment_id": "assessment:69a82319bd478f9477ed6ad9",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:69ecc6ef236c2e43df0e2ca3",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "SoupX removes ambient RNA contributions from droplet-based single-cell measurements.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:fdd62a32f1f7811ab193f3da:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:69ecc6ef236c2e43df0e2ca3",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:c077c1f8c4f5ca49b8a82f25e0fae735/xml:/article/body/sec[2]/p[1];text-sha256:777cf343f0167f7547104c764e4a8c31f33e77873c2b44c21032cb08ff973fef:2638:3184",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:ambient-rna-removal",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "assay": "droplet-based single-cell RNA-seq",
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "partially_known",
+            "statement_id": "statement:fdd62a32f1f7811ab193f3da",
+            "statement_revision_id": "statement-revision:fdd62a32f1f7811ab193f3da:1",
+            "subject_id": "method:soupx"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "assay": "unknown",
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "assay": "droplet-based single-cell RNA-seq",
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "partially_known",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:c077c1f8c4f5ca49b8a82f25e0fae735",
+          "source_revision_id": "source-revision:9c88c5d94c9742da426d218b",
+          "statement": "SoupX removes ambient RNA contributions from droplet-based single-cell measurements.",
+          "statement_id": "statement-revision:fdd62a32f1f7811ab193f3da:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      }
+    ],
+    "query_count": 1,
+    "scope_context": {},
+    "scope_policy_active": true,
+    "snapshot_id": "approved-scientific-kg-v2-01",
+    "subjects": [
+      "method:soupx",
+      "operator-revision:r:soupx:adjustCounts:1.6.2",
+      "operator-revision:r:soupx:autoEstCont:1.6.2",
+      "operator-revision:r:soupx:quickMarkers:1.6.2"
+    ]
+  },
+  "stage_timings": [],
+  "warnings": []
+}

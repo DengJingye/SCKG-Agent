@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "只读核查结果：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法校验失败**\n   - `artifact.content.input_sha256` = `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `artifact.content.output_sha256` = `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者虽然都是 64 个字符，但包含非十六进制字符 `c`、`d` 之外的重复字符本身仍是合法十六进制字符；不过这里需要指出：`c` 和 `d` 是合法十六进制字符，因此仅凭字符集不能判定失败。\n   - 但根据 `output_schema.sha256_pattern` 要求为 **64 个小写十六进制字符**，这两个值形式上符合长度和字符集要求，因此该项**通过**。\n\n2. **required field presence 校验通过**\n   - `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **schema/status equality 校验失败**\n   - `artifact.content.schema_version` = `\"artifact-manifest-v1\"`\n   - `inputs.expected_schema_version` = `\"artifact-manifest-v1\"` → 一致。\n   - `artifact.content.status` = `\"completed\"`\n   - `inputs.expected_status` = `\"completed\"` → 一致。\n   - 因此该项**通过**。\n\n4. **artifact_digest 与 artifact 内容一致性未通过**\n   - 给定 `artifact_digest` = `bab5dd176350e57eb153bab414c17974fd2b604586741ffac0419e5c0028a606`\n   - 但 `artifact.content` 中声明的 `input_sha256` 与 `output_sha256` 均为明显的占位重复值，且与 `input_digest` 不一致：\n     - `input_digest` = `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`\n     - `artifact.content.input_sha256` = `cccc...`\n   - 在 declared contract 下，`input_sha256` 应能对应实际输入摘要；此处两者不匹配，构成决定性失败证据。\n\n结论：该 artifact 在 **SHA256 内容一致性/真实性** 上不满足 declared contract，不能判定为 `valid under the declared contract`。\n\n建议的 repair/rerun（需批准后执行）：\n- 重新生成 `artifact_manifest.json`，使 `input_sha256` 与真实输入摘要一致，并重新计算 `artifact_digest`。\n- 或修正 `input_digest` 与 manifest 中 `input_sha256` 的对应关系。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940908,
+  "id": "46f02536-29a1-4bda-bf10-71922a19b86b",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 644,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1160
+  }
+}

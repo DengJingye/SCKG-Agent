@@ -1,0 +1,103 @@
+{
+  "answer_hash": "61ee1cdce933df241d5bddf0926a541fab0ea7732bfc692394e21e0d176db804",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_468d7dd62a3e4795bec0808074f662bd",
+  "case_id": "eval-W01",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 470,
+  "latency_ms": 3114.563916999032,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - 声明形状：`[100, 50]`\n   - 实际形状：`[100, 49]`\n   - 第二维 `49 ≠ 50`，违反 `shape_must_equal_declared: true`。\n\n2. **dtype 匹配（通过项）**\n   - 声明 dtype：`float32`\n   - 实际 dtype：`float32`\n   - 满足 `dtype_must_equal_declared: true`。\n\n3. **可读性（通过项，但不足以判定成功）**\n   - `load_status: \"readable\"`\n   - 按 `artifact_validators` 中“readability alone is not success”的要求，可读性不能抵消形状不匹配。\n\n补充说明：\n- `expected` 字段已明确标注 `invalid: observed second dimension 49 differs from declared 50`，与上述核查一致。\n- 当前处于 `read_only_artifact_review` 模式，且 `execution_or_mutation_authorized: false`，因此本次仅做只读核查，未执行任何修复或重跑。\n\n建议（需批准后执行）：\n- 检查生成 `embedding.npy` 的上游流程，确认第二维应为 50 而非 49。\n- 修复后重新生成产物，并重新校验形状与 dtype。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 309,
+  "repetition": 2,
+  "run_id": "eval-W01--scientific_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W01--scientific_kg--r2",
+      "created_at": "2026-09-20T21:50:59.906830+00:00",
+      "finished_at": "2026-09-20T21:51:03.018971+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:21a823dbb7d3d1b1",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W01--scientific_kg--r2",
+      "root_span_id": "span_247302378b4943dbb2dcc6cd73f3df96",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 3112.074,
+          "ended_at": "2026-09-20T21:51:03.018971+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_247302378b4943dbb2dcc6cd73f3df96",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:50:59.906854+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_468d7dd62a3e4795bec0808074f662bd"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 92.569,
+          "ended_at": "2026-09-20T21:51:00.020666+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W01--scientific_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_247302378b4943dbb2dcc6cd73f3df96",
+          "sequence": 2,
+          "span_id": "span_7161fee9f2dc4066b14e2e68e0aa9293",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:50:59.928103+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_468d7dd62a3e4795bec0808074f662bd"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_468d7dd62a3e4795bec0808074f662bd",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

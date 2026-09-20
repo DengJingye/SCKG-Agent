@@ -1,0 +1,223 @@
+{
+  "answer_hash": "10f66a130fcd6acf9d6a77de02668512fe904fcde3e381503e777d439170a031",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_92f4bfc1786c4b069302a38526a258b3",
+  "case_id": "eval-K06-soupx-adjust-order-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": null,
+  "latency_ms": 1381.3896249921527,
+  "observed": {
+    "answer": "现有条件不足以唯一解析证据；请补充具体版本、方法变体或适用条件。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "degraded_local_fallback"
+  },
+  "output_tokens": null,
+  "repetition": 0,
+  "run_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r0",
+      "created_at": "2026-09-20T21:55:33.360970+00:00",
+      "finished_at": "2026-09-20T21:55:34.728873+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:d57a1395b8675e35",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r0",
+      "root_span_id": "span_016fc7d4504c4a5ea962dadcb9b99239",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 1367.837,
+          "ended_at": "2026-09-20T21:55:34.728873+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_016fc7d4504c4a5ea962dadcb9b99239",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:55:33.361007+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_92f4bfc1786c4b069302a38526a258b3"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "failed",
+              "reason_code": "semantic_proposal_not_available",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "query_or_context_task_anchor",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "governed_task_anchor_local_answer_shape_preserved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "governed_task_anchor_local_answer_shape_preserved",
+              "record_ref": {
+                "record_id": "ambient_rna_removal",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 824.59,
+          "ended_at": "2026-09-20T21:55:34.230982+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K06-soupx-adjust-order-b--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_016fc7d4504c4a5ea962dadcb9b99239",
+          "sequence": 2,
+          "span_id": "span_10169172e1ee4d8eb178caf778eead04",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:55:33.406365+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_92f4bfc1786c4b069302a38526a258b3"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 9,
+            "source_bound_count": 9,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:scientific_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 11.982,
+          "ended_at": "2026-09-20T21:55:34.246276+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "local-tool-search",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-v2:012c433a23db5c95fb4736e3",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:08fdd20a3f2cdfadad2d7934",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:65c70b5fe704faf81b609987",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:21c11e0fb7fcb4555c0c7445",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:ddafadb3746e31212d1e0ecc",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:643abd7e0b18a5d1cd1ee62b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:eecd03253cc0b8ce53d779f5",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:16be897c4f92366ae9a41d7d",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:b770cdedd7b21d78446d3baf",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_016fc7d4504c4a5ea962dadcb9b99239",
+          "sequence": 3,
+          "span_id": "span_a239b26ed9724434b9de45b38ed92ef9",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:55:34.234263+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_92f4bfc1786c4b069302a38526a258b3"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_92f4bfc1786c4b069302a38526a258b3",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

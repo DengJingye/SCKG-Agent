@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的输入要求是原始计数数据，模型内部自带归一化过程。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"scVI takes raw count data as input and includes an effective normalization procedure that is integrated into its model.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵只有 log1p 归一化值且没有计数来源，因此不能直接作为 scVI 的输入。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"scVI 支持批次整合和低维表示，但前提是输入满足原始计数要求。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"scVI stands out from these methods in two important ways... First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size and batch effects.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"批次注释是可选的，模型会在有批次注释时进行条件建模，不会为单批次使用虚构批次标签。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"The distribution is conditioned on the batch annotation bn of each cell (if available), as well as two additional, unobserved random variables.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940864,
+  "id": "5f35aa0a-7d18-4964-b209-43773be46d41",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 394,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 9539,
+    "prompt_tokens": 11331,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 11725
+  }
+}

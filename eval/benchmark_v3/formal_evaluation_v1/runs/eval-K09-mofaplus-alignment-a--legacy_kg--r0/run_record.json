@@ -1,0 +1,174 @@
+{
+  "answer_hash": "664dd8c11155f2a2881193e823b9da07aa169f33a332591d1b7c617edc9bfec4",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_bb8231884eeb4684b7b3b628778e9e8f",
+  "case_id": "eval-K09-mofaplus-alignment-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": null,
+  "latency_ms": 1622.8473750088597,
+  "observed": {
+    "answer": "当前无法可靠解析该实体或条件；以下仅保留检索到的候选上下文，不构成确定性证据结论。\n\n我识别到任务为 **Unresolved task**，但没有解析出可安全核验的原子科学 claim。我不会用目录元数据或静态算法卡补造结论。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "degraded_local_fallback"
+  },
+  "output_tokens": null,
+  "repetition": 0,
+  "run_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r0",
+      "created_at": "2026-09-20T21:56:11.223844+00:00",
+      "finished_at": "2026-09-20T21:56:12.842224+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:6f327bf42d982b9e",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r0",
+      "root_span_id": "span_bbf135d86d854ecd9f1bb76930aec515",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 1618.275,
+          "ended_at": "2026-09-20T21:56:12.842224+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_bbf135d86d854ecd9f1bb76930aec515",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:56:11.223898+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_bb8231884eeb4684b7b3b628778e9e8f"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "single_cell_entity_or_tool_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "failed",
+              "reason_code": "semantic_proposal_not_available",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "query_local_single_cell_anchor",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "local_single_cell_anchor_local_answer_shape_preserved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "local_single_cell_anchor_local_answer_shape_preserved",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 807.221,
+          "ended_at": "2026-09-20T21:56:12.074922+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K09-mofaplus-alignment-a--legacy_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_bbf135d86d854ecd9f1bb76930aec515",
+          "sequence": 2,
+          "span_id": "span_47653e4125b84733b8c1c024262ac7aa",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:56:11.267638+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_bb8231884eeb4684b7b3b628778e9e8f"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 291.819,
+          "ended_at": "2026-09-20T21:56:12.368974+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "local-tool-search",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_bbf135d86d854ecd9f1bb76930aec515",
+          "sequence": 3,
+          "span_id": "span_c96f62bd4c6f4c31b4ff1e06b692a64c",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:56:12.077143+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_bb8231884eeb4684b7b3b628778e9e8f"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_bb8231884eeb4684b7b3b628778e9e8f",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

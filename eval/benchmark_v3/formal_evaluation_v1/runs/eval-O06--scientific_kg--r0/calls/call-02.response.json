@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入尚未绑定，测量数据不可用，因此无法对实际对象执行状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后又对参考数据做了子集化”，这属于用户提供的事实，不是已批准的根因结论。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提到存储的降维模型存在但尚未检查，因此无法判断其中保存的 UMAP 图、邻居关系或嵌入是否与子集化后的参考对象一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"当前科学知识库中没有直接说明 MapQuery 在参考数据 RunUMAP 后子集化这一场景下的失败模式或适用条件。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"从一般计算流程看，若参考对象在 UMAP 后被过滤，而查询映射仍使用旧的邻居图或嵌入，可能产生索引错位或邻域不一致；但这只是通用机制，不能据此断定你的数据已发生该问题。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供子集化后参考对象中保留的样本 ID 列表，以及存储的降维模型对应的对象版本或生成时间。\",\n    \"missing_field\": \"retained_reference_sample_ids_and_reduction_model_version\",\n    \"why_needed\": \"只有知道保留样本与降维模型是否来自同一对象版本，才能检查索引对齐和邻域一致性，从而判断 MapQuery 异常是否与子集化有关。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941144,
+  "id": "8c180a6c-0f9f-45ac-914c-4972c5cbce8f",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 487,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2560,
+    "prompt_cache_miss_tokens": 15,
+    "prompt_tokens": 2575,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2560
+    },
+    "total_tokens": 3062
+  }
+}

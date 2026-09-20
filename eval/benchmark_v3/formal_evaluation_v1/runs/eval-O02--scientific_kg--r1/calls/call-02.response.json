@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察是 IntegrateLayers 未返回，且你提供了 worker_count=8；但 Seurat 版本和 future 后端类型都未提供，无法判断这是已知版本缺陷还是环境配置问题。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_state\", \"user:worker_count\"]\n    },\n    {\n      \"text\": \"最小隔离步骤应先固定 future 后端为 sequential，再运行同一 IntegrateLayers 调用；若 sequential 能返回而多核不返回，问题更可能集中在并行后端而非整合算法本身。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"同时记录 Seurat 版本、future 版本和实际使用的后端名称，因为不同版本对多核 future 的兼容性差异很大，缺少这些字段无法定位已知问题。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供实际使用的 Seurat 版本和 future 后端类型（例如 multisession、multicore 或 cluster），并说明在 future::plan(sequential) 下同一 IntegrateLayers 调用是否能正常返回。\",\n    \"missing_field\": \"seurat_version_and_future_backend\",\n    \"why_needed\": \"只有知道版本和后端，才能判断是否命中已知的 IntegrateLayers 多核无限循环缺陷，并给出针对性的最小复现或规避步骤。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941116,
+  "id": "120d2961-6798-4070-b3f6-6dcf15bc58f6",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 358,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 514,
+    "prompt_tokens": 2306,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2664
+  }
+}

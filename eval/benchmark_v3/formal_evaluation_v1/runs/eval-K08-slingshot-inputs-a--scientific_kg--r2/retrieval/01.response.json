@@ -1,0 +1,788 @@
+{
+  "answerability": {
+    "candidate_only": false,
+    "claim_ids": [
+      "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+      "statement-revision:5a42667d61cc149fe1c1fa9b:1",
+      "statement-revision:a87fd62935755af857db98b6:1",
+      "statement-revision:fb5f12ddfaf9e775d78fa768:1"
+    ],
+    "direct_evidence_chunk_ids": [
+      "approved-v2:6013f90e3320c3c794d9e64f",
+      "approved-v2:654a2d0dc20497e2bac57526",
+      "approved-v2:676726eddc4d4e6fb7cdf387",
+      "approved-v2:193f35067a89e1fb245d6362",
+      "approved-v2:ade195e9e9d7c84cebcce72d"
+    ],
+    "evidence_gap_id": "",
+    "evidence_span_ids": [],
+    "fallback_reason": "",
+    "operator_revision_id": "",
+    "reason": "conditional_knowledge_scope_unknown",
+    "scientific_kg_used": true,
+    "scope_status": "unknown",
+    "source_revision_ids": [],
+    "status": "CLARIFICATION_REQUIRED",
+    "version_status": ""
+  },
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:6013f90e3320c3c794d9e64f",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 7.0,
+      "source_bound": true,
+      "source_id": "source-revision:b62e7d60b45e435730147bcb",
+      "source_span": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:39200:39937",
+      "sparse_rank": null,
+      "text": "We start from an n×J matrix of normalized expression measures (e.g., read counts) for n single cells and J genes or features. Slingshot assumes that the n cells have been partitioned into K clusters, potentially corresponding to distinct cellular states. Although Slingshot can in principle be applied directly to the normalized expression measures, we strongly recommend a dimensionality reduction step before pseudotemporal reconstruction, as Slingshot’s curve-fitting step uses Euclidean (or related) distances, which can misbehave in high-dimensional spaces (cf. curse of dimensionality). Dimensionality reduction can also strengthen signal in the data and help with visualization. We denote the dimension of the reduced space by J′.",
+      "title": "recovered_af8ffd0ec6b54e81",
+      "tool_name": "slingshot",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:654a2d0dc20497e2bac57526",
+      "claim_type": "method",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 7.0,
+      "source_bound": true,
+      "source_id": "source-revision:b62e7d60b45e435730147bcb",
+      "source_span": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[1]/p[4];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:5782:7144",
+      "sparse_rank": null,
+      "text": "Here, we introduce Slingshot, a novel lineage inference tool designed for multiple branching lineages. Slingshot combines highly stable techniques necessary for noisy single-cell data with the flexibility to identify multiple lineages with varying levels of supervision. Slingshot consists of two main stages: 1) the inference of the global lineage structure and 2) the inference of pseudotime variables for cells along each lineage (Fig. 1). Like other methods [7, 10], Slingshot’s first stage uses a cluster-based MST to stably identify the key elements of the global lineage structure, i.e., the number of lineages and where they branch (Fig. 1, Step 1). This allows us to identify novel lineages while also accommodating the use of domain-specific knowledge to supervise parts of the tree (e.g., terminal cellular states). For the second stage, we propose a novel method called simultaneous principal curves, to fit smooth branching curves to these lineages, thereby translating the knowledge of global lineage structure into stable estimates of the underlying cell-level pseudotime variable for each lineage (Fig. 1, Step 2). The Slingshot method is implemented in the open-source R package slingshot (available from the GitHub repository https://github.com/kstreet13/slingshot) to be released through the Bioconductor Project (http://www.bioconductor.org).",
+      "title": "recovered_af8ffd0ec6b54e81",
+      "tool_name": "slingshot",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:676726eddc4d4e6fb7cdf387",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 6.0,
+      "source_bound": true,
+      "source_id": "source-revision:b62e7d60b45e435730147bcb",
+      "source_span": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/sec[1]/sec[2]/p[2];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:44325:45659",
+      "sparse_rank": null,
+      "text": "Additionally, Slingshot optionally allows the user to provide further supervision in the inference of the lineages by selecting clusters known to represent terminal cell states, imposing a local constraint on the MST algorithm. The constrained MST is obtained by first constructing the MST on all non-selected clusters and then connecting each selected cluster to its nearest non-selected neighbor. Such local supervision results in more biologically meaningful lineages for situations where the data can be explained by many possible lineage structures. Identified lineages are by construction consistent with known biology and provide improved stability over less supervised methods. Although terminal state supervision is not required, in many settings researchers do have knowledge of the cell types present in their data and systematically incorporating this knowledge can provide more accurate and stable inference. Importantly, this type of local supervision does not prevent the discovery of novel lineages; it allows the incorporation of specific knowledge of cell clusters, without imposing restrictions on the global branching structure. Ultimately, detecting multiple lineages based on gene expression data is a difficult problem that benefits from such guidance, as we demonstrate in the “Results and discussion” section.",
+      "title": "recovered_af8ffd0ec6b54e81",
+      "tool_name": "slingshot",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:193f35067a89e1fb245d6362",
+      "claim_type": "method",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 5.0,
+      "source_bound": true,
+      "source_id": "source-revision:e9ff167dec8b56a2b8411948",
+      "source_span": "source-artifact:665ae105d6446f1801cf60ea8eb1b8ca/text-sha256:318da69316178f266237813f15865f1e9d9451978dd938a867fa3c72a466e0a9:394:682",
+      "sparse_rank": null,
+      "text": "Provides functions for inferring continuous, branching lineage structures in low-dimensional data. Slingshot was designed to model developmental trajectories in single-cell RNA sequencing data and serve as a component in an analysis pipeline after dimensionality reduction and clustering.",
+      "title": "recovered_d6860402b8452a84",
+      "tool_name": "slingshot",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "",
+      "chunk_id": "approved-v2:ade195e9e9d7c84cebcce72d",
+      "claim_type": "method",
+      "dense_rank": null,
+      "governance_status": "approved_scientific_assertion",
+      "recommendation_eligible": false,
+      "score": 5.0,
+      "source_bound": true,
+      "source_id": "source-revision:b62e7d60b45e435730147bcb",
+      "source_span": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[2]/list[1]/list-item[2]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:10255:10529",
+      "sparse_rank": null,
+      "text": "2.  For each lineage, identification of pseudotimes, i.e., a one-dimensional variable representing each cell’s transcriptional progression toward the terminal state. This is achieved by a method which extends principal curves [13] to the case of multiple branching lineages.",
+      "title": "recovered_af8ffd0ec6b54e81",
+      "tool_name": "slingshot",
+      "tool_names": []
+    }
+  ],
+  "index_build_id": "approved-scientific-kg-v2-01",
+  "latency_ms": 1.3797919964417815,
+  "mode": "kg_bm25",
+  "pipeline": [
+    "approved_manifest_allowlist",
+    "scope_policy",
+    "approved_exact_evidence_index"
+  ],
+  "query": "Slingshot trajectory inference pseudotime input requirements necessary vs recommended conditions cluster labels normalized expression reduced dimensions",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": {
+    "adapter": "ApprovedScientificKG",
+    "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+    "approved_statements_visible": 121,
+    "caution_policy": {
+      "execution_authorized": false,
+      "execution_gate": false,
+      "production_retrieval_eligible": false,
+      "scientific_assertion": false,
+      "trusted": false
+    },
+    "cautions": [
+      {
+        "caution_id": "evidence-gap:17827a33eed70b9a262edd83",
+        "description": "Upstream reduction and clustering: A package-description pipeline position is not a precise universal hard requirement; primary paper/pinned method input definitions are needed before compatibility gating.",
+        "evidence": [
+          {
+            "content_hash": "8a7f4ac7ccb97d9013c4b21fe2dfef6d125fc1b3cdfad15ce323d5a62e0bc7e5",
+            "end_offset": 682,
+            "evidence_span_id": "evidence-span:d194ceb812b9c43f968979b0",
+            "exact_text": "Slingshot was designed to model developmental trajectories in single-cell RNA sequencing data and serve as a component in an analysis pipeline after dimensionality reduction and clustering.",
+            "locator": {
+              "kind": "text_offsets",
+              "value": "source-artifact:665ae105d6446f1801cf60ea8eb1b8ca/text-sha256:318da69316178f266237813f15865f1e9d9451978dd938a867fa3c72a466e0a9:493:682"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:665ae105d6446f1801cf60ea8eb1b8ca",
+            "source_revision_id": "source-revision:e9ff167dec8b56a2b8411948",
+            "start_offset": 493
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:slingshot"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:7a9602bd3355d15efa67cebc",
+        "description": "Root identification across versions: The paper requests a user-identified initial cluster. Preserve this edition-specific instruction; do not infer every present software version must receive an explicit root argument.",
+        "evidence": [
+          {
+            "content_hash": "cc09d24a0aa6d141ec06fe6ee9f1c496276e64fd81221eb6e61e35272bf5515e",
+            "end_offset": 44323,
+            "evidence_span_id": "evidence-span:73ff360a36efd09c93e58935",
+            "exact_text": "Slingshot allows two forms of supervision during lineage identification: initial state and terminal states specification. Like other methods (TSCAN, Waterfall, Monocle 2), Slingshot requires the user to identify the initial cluster or root node. Subsequently, every direct path from this node to a leaf node (i.e., a cluster with only one edge) will be called a lineage. Indeed, all existing lineage inference methods explicitly or implicitly make the assumption that a starting state can be identified by the user: Monocle and Embeddr construct orderings for which the user must select the correct direction and Wishbone and DPT require the user to select an initial cell or group of cells. In the simple case where the MST constructed by Slingshot has only two leaf nodes and one is specified as the root, this results in a single lineage. If an interior (non-leaf) node is specified as the origin, this results in two lineages, one terminating in each leaf node. Clusters with more than two edges will create bifurcations and produce additional lineages.",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/sec[1]/sec[2]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:43266:44323"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[4]/sec[1]/sec[2]/p[1]",
+            "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+            "start_offset": 43266
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:slingshot"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:55f1ccc0f70122b451b8acfd",
+        "description": "Universal PCA/normalization/clustering recipes: Source explicitly leaves upstream method choice open; tutorial order is not a prerequisite relation.",
+        "evidence": [
+          {
+            "content_hash": "15a64d5dc239761ca91250365975a7eba3514f7723b2479aacc079aa12fecb35",
+            "end_offset": 38808,
+            "evidence_span_id": "evidence-span:6b0879fe297a8c636b1ea2b9",
+            "exact_text": "Since there are many aspects to the problem of lineage inference, from sample collection to final analysis, it is important to define precisely the tasks for which Slingshot is designed. The philosophy of Slingshot is that upstream analysis steps such as normalization, dimensionality reduction, and clustering do not have a single solution that works well for all data types; these choices should therefore not be hardcoded into a lineage inference method. For example, Slingshot does not enforce a specific dimensionality reduction method because single-cell data can come from a variety of assays and in a wide range of dimensions, from the 271 cells×47,192 genes RNA-Seq dataset of [3] to the 25,000 cells×13 markers mass cytometry dataset of [9]. While the RGE method of Monocle 2 may work well in certain cases and the diffusion maps of Wishbone in others, this extreme heterogeneity seems to preclude any one-size-fits-all solution. Similar arguments can be made for other upstream analysis steps. Instead, Slingshot was designed with modularity in mind. Though it will typically come after normalization, dimensionality reduction, and clustering steps in an analysis pipeline, it is not a method for addressing these problems. For example, Slingshot led to biologically meaningful and novel results with PCA in [26] and with diffusion maps in [31]. Slingshot was applied using our recommended single-cell RNA-Seq data analysis workflow in [19]: the pipeline includes the data-adaptive selection of a normalization procedure (scone package; [20]), dimensionality reduction using a zero-inflated negative binomial model (zinbwave package; [21]), and resampling-based sequential ensemble clustering (RSEC; clusterExperiment package; [22]).",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[3]/p[5];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:37064:38808"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[3]/p[5]",
+            "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+            "start_offset": 37064
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:slingshot"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      {
+        "caution_id": "evidence-gap:8fea41f803b87a59b1121313",
+        "description": "Cluster partition assumption: The algorithm uses a cluster partition, but assumptions are not automatically converted to execution blocking.",
+        "evidence": [
+          {
+            "content_hash": "c6ae4deb90b5e7eb5d8bc2e906d72d03a122eb7c0c26a2c5594d3191a5ab0a75",
+            "end_offset": 39937,
+            "evidence_span_id": "evidence-span:1eecfae16883ed9592feb63d",
+            "exact_text": "We start from an n×J matrix of normalized expression measures (e.g., read counts) for n single cells and J genes or features. Slingshot assumes that the n cells have been partitioned into K clusters, potentially corresponding to distinct cellular states. Although Slingshot can in principle be applied directly to the normalized expression measures, we strongly recommend a dimensionality reduction step before pseudotemporal reconstruction, as Slingshot’s curve-fitting step uses Euclidean (or related) distances, which can misbehave in high-dimensional spaces (cf. curse of dimensionality). Dimensionality reduction can also strengthen signal in the data and help with visualization. We denote the dimension of the reduced space by J′.",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:39200:39937"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[4]/p[1]",
+            "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+            "start_offset": 39200
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:slingshot"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      }
+    ],
+    "eligible_chunk_ids": [
+      "approved-v2:6013f90e3320c3c794d9e64f",
+      "approved-v2:654a2d0dc20497e2bac57526",
+      "approved-v2:676726eddc4d4e6fb7cdf387",
+      "approved-v2:193f35067a89e1fb245d6362",
+      "approved-v2:ade195e9e9d7c84cebcce72d"
+    ],
+    "excluded_statement_ids": [],
+    "execution_authorized": false,
+    "fallback_reason": "",
+    "final_graph_chunk_ids": [
+      "approved-v2:6013f90e3320c3c794d9e64f",
+      "approved-v2:654a2d0dc20497e2bac57526",
+      "approved-v2:676726eddc4d4e6fb7cdf387",
+      "approved-v2:193f35067a89e1fb245d6362",
+      "approved-v2:ade195e9e9d7c84cebcce72d"
+    ],
+    "hash_verified": true,
+    "held_statements_visible": 0,
+    "legacy_kg_consulted": false,
+    "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda",
+    "paths": [
+      {
+        "claim_revision_id": "statement-revision:fb5f12ddfaf9e775d78fa768:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:6013f90e3320c3c794d9e64f"
+            ],
+            "evidence_span_id": "evidence-span:1eecfae16883ed9592feb63d",
+            "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:39200:39937",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:afa9c008971be832cc01c826"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:recovered_af8ffd0ec6b54e81:52c568a1e85f",
+              "assessment_id": "assessment:afa9c008971be832cc01c826",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:1eecfae16883ed9592feb63d",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Dimensionality reduction is strongly recommended, while the text explicitly allows direct use of normalized expression. It is not REQUIRED or a fixed PCA dependency.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:fb5f12ddfaf9e775d78fa768:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [
+            {
+              "id": "constraint:fff9f5f1527f695ac59c",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "required_value_states": [
+                "dimensionality reduced"
+              ],
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:1eecfae16883ed9592feb63d",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:39200:39937",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "recommendation",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:8c9330ce1e92a19a86c7",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:fb5f12ddfaf9e775d78fa768",
+            "statement_revision_id": "statement-revision:fb5f12ddfaf9e775d78fa768:1",
+            "subject_id": "method:slingshot"
+          },
+          "requirements": [
+            {
+              "activation_status": "unconditional",
+              "combination": "ALL_OF",
+              "id": "requirement:8c9330ce1e92a19a86c7",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "RECOMMENDED"
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+          "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+          "statement": "Dimensionality reduction is strongly recommended, while the text explicitly allows direct use of normalized expression. It is not REQUIRED or a fixed PCA dependency.",
+          "statement_id": "statement-revision:fb5f12ddfaf9e775d78fa768:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      },
+      {
+        "claim_revision_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:654a2d0dc20497e2bac57526"
+            ],
+            "evidence_span_id": "evidence-span:6cee96ef2fa111530594418e",
+            "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[1]/p[4];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:5782:7144",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:06b:76e6b5d46019aa40863bd5c6"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "semantic-06b-01",
+              "assessment_id": "assessment:06b:76e6b5d46019aa40863bd5c6",
+              "assessment_method": "06b_targeted_model_adjudication",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:54:51.238881+00:00",
+              "evidence_span_id": "evidence-span:6cee96ef2fa111530594418e",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Slingshot infers branching cellular lineages.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:6cee96ef2fa111530594418e",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[1]/p[4];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:5782:7144",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:trajectory-inference",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "partially_known",
+            "statement_id": "statement:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82",
+            "statement_revision_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+            "subject_id": "method:slingshot"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "partially_known",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+          "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+          "statement": "Slingshot infers branching cellular lineages. ; Slingshot addresses cellular trajectory inference in the scientific scope described by this source.",
+          "statement_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      },
+      {
+        "claim_revision_id": "statement-revision:5a42667d61cc149fe1c1fa9b:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:676726eddc4d4e6fb7cdf387"
+            ],
+            "evidence_span_id": "evidence-span:ec31757c1e52ee3bb94b2340",
+            "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/sec[1]/sec[2]/p[2];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:44325:45659",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:dc2c86e346dde068d49fb1af"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:recovered_af8ffd0ec6b54e81:52c568a1e85f",
+              "assessment_id": "assessment:dc2c86e346dde068d49fb1af",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:ec31757c1e52ee3bb94b2340",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Known terminal clusters provide optional local supervision; they do not fix the number of all lineages.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:5a42667d61cc149fe1c1fa9b:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [
+            {
+              "id": "constraint:c1460a00e3137178f400",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:ec31757c1e52ee3bb94b2340",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[4]/sec[1]/sec[2]/p[2];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:44325:45659",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "requirement",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:0b2be89b0a5fadf81416",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:5a42667d61cc149fe1c1fa9b",
+            "statement_revision_id": "statement-revision:5a42667d61cc149fe1c1fa9b:1",
+            "subject_id": "method:slingshot"
+          },
+          "requirements": [
+            {
+              "activation_status": "unconditional",
+              "combination": "ALL_OF",
+              "id": "requirement:0b2be89b0a5fadf81416",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "OPTIONAL"
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+          "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+          "statement": "Known terminal clusters provide optional local supervision; they do not fix the number of all lineages.",
+          "statement_id": "statement-revision:5a42667d61cc149fe1c1fa9b:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      },
+      {
+        "claim_revision_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:193f35067a89e1fb245d6362"
+            ],
+            "evidence_span_id": "evidence-span:240233fc208b9c0a3350a9bd",
+            "locator": "source-artifact:665ae105d6446f1801cf60ea8eb1b8ca/text-sha256:318da69316178f266237813f15865f1e9d9451978dd938a867fa3c72a466e0a9:394:682",
+            "source_revision_id": "source-revision:e9ff167dec8b56a2b8411948"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:06b:a53b9b1c870c2f81c49e7d15"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "semantic-06b-01",
+              "assessment_id": "assessment:06b:a53b9b1c870c2f81c49e7d15",
+              "assessment_method": "06b_targeted_model_adjudication",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:54:51.238881+00:00",
+              "evidence_span_id": "evidence-span:240233fc208b9c0a3350a9bd",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Slingshot addresses cellular trajectory inference in the scientific scope described by this source.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:240233fc208b9c0a3350a9bd",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:665ae105d6446f1801cf60ea8eb1b8ca/text-sha256:318da69316178f266237813f15865f1e9d9451978dd938a867fa3c72a466e0a9:394:682",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:trajectory-inference",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "partially_known",
+            "statement_id": "statement:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82",
+            "statement_revision_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+            "subject_id": "method:slingshot"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "partially_known",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:665ae105d6446f1801cf60ea8eb1b8ca",
+          "source_revision_id": "source-revision:e9ff167dec8b56a2b8411948",
+          "statement": "Slingshot infers branching cellular lineages. ; Slingshot addresses cellular trajectory inference in the scientific scope described by this source.",
+          "statement_id": "statement-revision:06b:da8b216cd3cf071e71585576250928f4252df7646fee14a29460920a7a8c8e82:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      },
+      {
+        "claim_revision_id": "statement-revision:a87fd62935755af857db98b6:1",
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "approved-v2:ade195e9e9d7c84cebcce72d"
+            ],
+            "evidence_span_id": "evidence-span:95e01d6da6ecdd129a96ccd4",
+            "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[2]/list[1]/list-item[2]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:10255:10529",
+            "source_revision_id": "source-revision:b62e7d60b45e435730147bcb"
+          }
+        ],
+        "fact": {
+          "assessment_ids": [
+            "assessment:224d0cb42458c2dfd82e2a19"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:recovered_af8ffd0ec6b54e81:52c568a1e85f",
+              "assessment_id": "assessment:224d0cb42458c2dfd82e2a19",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:95e01d6da6ecdd129a96ccd4",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Slingshot assigns per-lineage pseudotime to cells.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:a87fd62935755af857db98b6:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:95e01d6da6ecdd129a96ccd4",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b/xml:/article/body/sec[2]/list[1]/list-item[2]/p[1];text-sha256:2e29926f594881988dbe8b4140268a40f9824cc2c7c1597ab5d78aac1d839a70:10255:10529",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:pseudotime-inference",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "partially_known",
+            "statement_id": "statement:a87fd62935755af857db98b6",
+            "statement_revision_id": "statement-revision:a87fd62935755af857db98b6:1",
+            "subject_id": "method:slingshot"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "partially_known",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:7114f7708cd37af0bbb6b872cf9e014b",
+          "source_revision_id": "source-revision:b62e7d60b45e435730147bcb",
+          "statement": "Slingshot assigns per-lineage pseudotime to cells.",
+          "statement_id": "statement-revision:a87fd62935755af857db98b6:1",
+          "trusted": true
+        },
+        "status": "mapped"
+      }
+    ],
+    "query_count": 1,
+    "scope_context": {},
+    "scope_policy_active": true,
+    "snapshot_id": "approved-scientific-kg-v2-01",
+    "subjects": [
+      "method:slingshot"
+    ]
+  },
+  "stage_timings": [],
+  "warnings": []
+}

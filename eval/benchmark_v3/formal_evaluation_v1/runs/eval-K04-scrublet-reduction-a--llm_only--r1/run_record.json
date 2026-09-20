@@ -1,0 +1,172 @@
+{
+  "answer_hash": "1951ff817c7ee7c4bdc218e3bed2a3cdef2d9f4152d7f1a1c77793f34586b4d4",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_3814662777c3461cb5b69f71599a3006",
+  "case_id": "eval-K04-scrublet-reduction-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v1-20260921",
+  "input_tokens": 4343,
+  "latency_ms": 5240.416500004358,
+  "observed": {
+    "answer": "你提供的：mean_center=true。\n\n你提供的：normalize_variance=true。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n你提供的版本为 Scrublet 0.2.3，但当前知识库中没有该版本 scrub_doublets 关于 mean_center 与 normalize_variance 组合时具体降维路径的直接说明。",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 576,
+  "repetition": 1,
+  "run_id": "eval-K04-scrublet-reduction-a--llm_only--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K04-scrublet-reduction-a--llm_only--r1",
+      "created_at": "2026-09-20T21:46:43.631952+00:00",
+      "finished_at": "2026-09-20T21:46:48.867868+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:b6a9340220f1b354",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K04-scrublet-reduction-a--llm_only--r1",
+      "root_span_id": "span_a035623442d94237846434be08cd6c76",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 5235.793,
+          "ended_at": "2026-09-20T21:46:48.867868+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_a035623442d94237846434be08cd6c76",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T21:46:43.631988+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_3814662777c3461cb5b69f71599a3006"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "doublet_detection",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2888.047,
+          "ended_at": "2026-09-20T21:46:46.543716+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K04-scrublet-reduction-a--llm_only--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_a035623442d94237846434be08cd6c76",
+          "sequence": 2,
+          "span_id": "span_3c06c25194e549c7b3782338bf926940",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T21:46:43.655612+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_3814662777c3461cb5b69f71599a3006"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.259,
+          "ended_at": "2026-09-20T21:46:46.544359+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_a035623442d94237846434be08cd6c76",
+          "sequence": 3,
+          "span_id": "span_0a43924c2ed349acbfb39cb315787810",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T21:46:46.544093+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_3814662777c3461cb5b69f71599a3006"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_3814662777c3461cb5b69f71599a3006",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n- 声明形状：`[100, 50]`\n- 实际形状：`[100, 49]`\n- 第二维不一致：`49 ≠ 50`\n- 声明 dtype：`float32`\n- 实际 dtype：`float32`（此项一致）\n- 产物可读：`readable`（但按约束“readability alone is not success”，仅可读不构成通过）\n\n因此失败点是形状不匹配，尤其是第二维 `49` 与声明的 `50` 不符。\n\n建议：repair/rerun 以生成形状为 `[100, 50]`、dtype 为 `float32` 的 `embedding.npy`。当前无批准，不执行任何修改或重跑。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789941134,
+  "id": "20850037-c06c-48b7-b13e-b2f6f8bfa611",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 175,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 470,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 645
+  }
+}

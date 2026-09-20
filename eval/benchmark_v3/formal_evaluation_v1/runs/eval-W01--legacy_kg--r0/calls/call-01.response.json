@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - 声明形状：`[100, 50]`\n   - 实际形状：`[100, 49]`\n   - 第二维 49 ≠ 50，违反 `shape_must_equal_declared: true`。\n   - 这与预期描述一致：`\"observed second dimension 49 differs from declared 50\"`。\n\n2. **dtype 匹配（通过项）**\n   - 声明 dtype：`float32`\n   - 实际 dtype：`float32`\n   - 满足 `dtype_must_equal_declared: true`。\n\n3. **可读性（通过项，但不足以判定成功）**\n   - `load_status: \"readable\"` 仅表示文件可读。\n   - 按 artifact_validators 中 `\"readability alone is not success\"`，可读性不能抵消形状不匹配。\n\n结论：产物因第二维 49 与声明 50 不一致而判定为 invalid。\n\n建议（需批准后执行）：\n- 检查生成 embedding 的流程中特征维度是否为 50；当前产物疑似少了一列特征。\n- 修复后重新生成 `embedding.npy`，确保形状为 `[100, 50]`、dtype 为 `float32`。\n- 重新运行只读核查以确认通过。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940817,
+  "id": "3d18be70-8983-4f19-a5d3-9e6dcf905612",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 308,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 470,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 778
+  }
+}

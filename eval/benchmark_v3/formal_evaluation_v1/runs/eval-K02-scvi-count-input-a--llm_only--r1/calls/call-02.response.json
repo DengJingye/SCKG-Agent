@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的模型输入通常要求原始 UMI 计数矩阵，而不是经过对数变换或标准化的数据。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是原始整数 UMI 计数，这与 scVI 期望的计数输入在形式上一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"但当前没有可用的科学知识库证据来确认该矩阵是否满足 scVI 的具体输入要求，因此不能直接断言可以直接使用。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"批次键已指定为 donor，但 scVI 还需要知道批次变量的具体取值和样本对应关系，才能判断批次整合是否可行。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:batch_key\"]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供表达矩阵中每个细胞对应的 donor 批次标签，以及矩阵的行列结构（基因×细胞或细胞×基因）。\",\n    \"missing_field\": \"batch_labels_and_matrix_shape\",\n    \"why_needed\": \"scVI 需要批次标签与细胞一一对应，且矩阵方向必须正确，否则无法进行批次整合和低维表示。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940812,
+  "id": "4e870355-ae55-488f-b42e-7b0a6372ca88",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 364,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 914,
+    "prompt_tokens": 2194,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1280
+    },
+    "total_tokens": 2558
+  }
+}

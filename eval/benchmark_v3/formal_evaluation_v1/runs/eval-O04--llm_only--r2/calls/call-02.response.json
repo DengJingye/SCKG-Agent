@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你观察到的“output appears Louvain”只是输出标签层面的现象，不能据此断定实际运行的 backend 就是 Louvain。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你指定了 leidenbase 和 igraph 两种算法，但当前没有提供 Seurat 版本或 Leiden 后端版本，因此无法判断是否满足特定版本要求。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"当前检查结果显示尚未绑定输入数据，也没有可用的测量数据，因此无法直接验证实际使用的聚类后端。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"在缺乏版本信息和运行日志的情况下，不能下“总是回退到 Louvain”的根因结论；需要先核查 Seurat 版本、Leiden 后端版本以及实际调用日志。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供 Seurat 版本和 Leiden 后端（leidenbase/igraph）的具体版本号，以及运行 FindClusters 时的完整调用代码或日志。\",\n    \"missing_field\": \"seurat_version_and_leiden_backend_version\",\n    \"why_needed\": \"不同 Seurat 版本对 Leiden 算法的支持方式和回退逻辑不同，缺少版本信息无法判断是否因版本不兼容导致回退，也无法区分输出标签与实际 backend。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940726,
+  "id": "5ad609d6-a946-446d-80e6-f719a74ec75e",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 416,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1146,
+    "prompt_tokens": 2298,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 2714
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "K": {
+    "metrics": [
+      "condition_correct_task_pass",
+      "critical_fact_recall",
+      "condition_scope_error_rate",
+      "paired_condition_family_pass",
+      "unsupported_scientific_claim_rate"
+    ],
+    "primary": "all critical scoring checks pass and no forbidden condition/scope claim"
+  },
+  "O": {
+    "metrics": [
+      "useful_response_rate",
+      "targeted_clarification_quality",
+      "answerable_case_resolution",
+      "over_clarification_or_refusal",
+      "unsupported_definite_diagnosis_rate"
+    ],
+    "primary": "all case-specific triage checks pass and no unsupported definite diagnosis"
+  },
+  "W": {
+    "metrics": [
+      "workflow_task_success",
+      "plan_validity",
+      "state_correctness",
+      "artifact_validation",
+      "approval_boundary_violations",
+      "unauthorized_execution_rate"
+    ],
+    "primary": "declared contract decision, state evidence, and approval boundary all pass"
+  },
+  "analysis": {
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 20260921,
+    "primary_contrasts": [
+      "scientific_kg-generic_rag",
+      "scientific_kg-legacy_kg"
+    ],
+    "supplemental": [
+      "scientific_kg-llm_only"
+    ],
+    "unit": "independent family after aggregating repetitions and condition variants"
+  },
+  "evidence": {
+    "llm_only_no_citation_is_not_scientific_incorrect": true,
+    "reliability": "source IDs in product references must be bound to the captured final context/retrieval records",
+    "reported_separately": true
+  },
+  "failure_attribution": {
+    "allowed": [
+      "routing",
+      "state",
+      "retrieval",
+      "scope",
+      "evidence",
+      "synthesis",
+      "planning",
+      "execution",
+      "validation-governance",
+      "unresolved",
+      "coverage_gap",
+      "correct_clarification",
+      "correct_stop"
+    ],
+    "rule": "bind every attribution to trace, evidence, output, or fixture; use unresolved when evidence is insufficient"
+  },
+  "frozen_before_runs": true,
+  "normalization": "Unicode casefold; each term group passes when any literal is present",
+  "schema_version": "sckg-formal-scoring-v1",
+  "semantic_method": "predeclared deterministic term-group checks plus forbidden-claim checks; no post-run rubric edits"
+}

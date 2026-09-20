@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"MOFA+ 的典型用法要求不同组学数据来自同一组细胞或样本，以便在样本维度上对齐并推断共享因子。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的条件显示 cell_identity_link=none，即两个 view 之间没有细胞身份对应关系，因此不满足 MOFA+ 常规的样本匹配前提。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:cell_identity_link\"]\n    },\n    {\n      \"text\": \"view_1 是 cohort A 的 RNA 细胞，view_2 是 cohort B 的 ATAC 细胞，二者来自不同队列，进一步提示样本并非同一组细胞。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:view_1\", \"user:view_2\"]\n    },\n    {\n      \"text\": \"在无细胞身份链接的情况下，MOFA+ 无法将两个 view 的观测按样本对齐，因此不能直接用于学习跨模态因子。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"若强行使用，MOFA+ 会把不同队列的细胞当作独立样本，导致因子反映的是队列或模态差异，而非共享生物学信号。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940596,
+  "id": "34c1fcc8-0267-44ad-8653-5d62125c042f",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 387,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2304,
+    "prompt_cache_miss_tokens": 48,
+    "prompt_tokens": 2352,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2304
+    },
+    "total_tokens": 2739
+  }
+}

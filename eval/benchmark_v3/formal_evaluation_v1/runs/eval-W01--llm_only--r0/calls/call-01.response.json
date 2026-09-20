@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - declared shape：`[100, 50]`\n   - observed shape：`[100, 49]`\n   - 第二维 49 ≠ 50，违反 `shape_must_equal_declared: true`。\n   - fixture 中 `expected` 字段也明确标注：`\"invalid: observed second dimension 49 differs from declared 50\"`。\n\n2. **dtype 匹配（通过项）**\n   - declared dtype：`float32`\n   - observed dtype：`float32`\n   - 满足 `dtype_must_equal_declared: true`。\n\n3. **可读性（通过项，但不是成功条件）**\n   - `load_status: \"readable\"` 仅表示 artifact 可读。\n   - 按 `artifact_validators` 中 `\"readability alone is not success\"`，可读性不能抵消形状不匹配。\n\n结论：该 artifact 因第二维尺寸与声明不一致而判定为 invalid。\n\n建议的 repair/rerun 方向（需另行批准后执行）：\n- 重新生成或重新导出 embedding，使输出形状为 `[100, 50]`。\n- 检查上游降维/嵌入步骤是否错误地将特征维度从 50 压缩为 49。\n- 修复后重新计算 artifact digest，并与声明契约再次比对。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789940810,
+  "id": "4cbbdd27-1ead-4372-9da6-7b142ed8bed7",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 311,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 470,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 781
+  }
+}
