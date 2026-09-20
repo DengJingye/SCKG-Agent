@@ -20,10 +20,13 @@ DENSITY_MODES = {"focus", "standard", "global"}
 SEMANTIC_STYLES = {
     "existing": {"label": "Existing KG", "color": "#16804C"},
     "statement": {"label": "Candidate Statement", "color": "#3978E8"},
+    "statement_identity": {"label": "Statement Identity", "color": "#7091C8"},
     "scope": {"label": "Scope", "color": "#8B63C7"},
+    "constraint": {"label": "Requirement / Parameter", "color": "#7656A8"},
     "entity": {"label": "Method / Operator", "color": "#0A8F84"},
     "evidence": {"label": "Evidence", "color": "#D6A92E"},
     "source": {"label": "Source", "color": "#B87426"},
+    "caution": {"label": "Caution / Evidence Gap", "color": "#D05A3A"},
     "schema": {"label": "Ontology Type", "color": "#526173"},
     "other": {"label": "Other", "color": "#64748B"},
     "invalid": {"label": "Invalid", "color": "#C44747"},
@@ -59,6 +62,9 @@ def build_scientific_graph_viewer_html(
     """Render a page-owned graph workbench without a nested product shell."""
 
     settings = config or ScientificGraphViewerConfig()
+    styles = {name: dict(style) for name, style in SEMANTIC_STYLES.items()}
+    if settings.mode == "scientific_kg":
+        styles["statement"]["label"] = "Scientific Statement"
     requested = [node_id for node_id in graph.visible_node_ids if node_id in graph.nodes]
     if not requested:
         return '<div style="padding:32px;color:#64748b;font-family:system-ui">No graph nodes available.</div>'
@@ -81,12 +87,16 @@ def build_scientific_graph_viewer_html(
         candidate_state = (
             "INVALID"
             if "INVALID" in validation_status
+            else "APPROVED"
+            if validation_status == "APPROVED" or metadata.get("knowledge_status") == "approved"
+            else "CAUTION"
+            if validation_status == "CAUTION" or semantic_group == "caution"
             else "VALIDATED"
             if validation_status == "VALID"
             else "CANDIDATE"
         )
         is_invalid = candidate_state == "INVALID"
-        style = SEMANTIC_STYLES["invalid" if is_invalid else semantic_group]
+        style = styles["invalid" if is_invalid else semantic_group]
         display_label = str(metadata.get("display_label") or node.label)
         nodes.append(
             {
@@ -94,12 +104,13 @@ def build_scientific_graph_viewer_html(
                 "type": node.kind,
                 "ontologyType": metadata.get("ontology_type") or metadata.get("proposal_node_type") or node.kind,
                 "group": semantic_group,
-                "groupLabel": SEMANTIC_STYLES[semantic_group]["label"],
+                "groupLabel": styles[semantic_group]["label"],
                 "displayLabel": display_label,
                 "fullLabel": str(metadata.get("full_label") or node.label),
                 "color": style["color"],
                 "degree": degree.get(node_id, 0),
                 "candidateState": candidate_state,
+                "executionAuthorized": metadata.get("execution_authorized"),
                 "invalid": is_invalid,
                 "evidenceLayer": semantic_group in {"evidence", "source"},
                 "properties": metadata,
@@ -132,8 +143,17 @@ def build_scientific_graph_viewer_html(
                 "target": edge.target,
                 "relation": edge.relation,
                 "candidateState": (
-                    "INVALID" if "INVALID" in status else "VALIDATED" if status == "VALID" else "CANDIDATE"
+                    "INVALID"
+                    if "INVALID" in status
+                    else "APPROVED"
+                    if status == "APPROVED"
+                    else "CAUTION"
+                    if status == "CAUTION"
+                    else "VALIDATED"
+                    if status == "VALID"
+                    else "CANDIDATE"
                 ),
+                "executionAuthorized": metadata.get("execution_authorized"),
                 "parallelIndex": parallel_index,
                 "parallelTotal": pair_counts[pair],
                 "properties": metadata,
@@ -146,7 +166,7 @@ def build_scientific_graph_viewer_html(
     payload = {
         "nodes": nodes,
         "edges": edges,
-        "styles": SEMANTIC_STYLES,
+        "styles": styles,
         "groupCounts": dict(group_counts),
         "summary": {
             "fullNodes": len(nodes),
@@ -235,7 +255,7 @@ _HTML = r'''<!doctype html>
 .edge{fill:none;stroke:#98A6B8;stroke-width:1.2;stroke-opacity:.46;vector-effect:non-scaling-stroke}.edge.invalid{stroke:#C44747;stroke-dasharray:5 4}.edge.highlighted{stroke:#285FC8;stroke-width:2.4;stroke-opacity:1}.edge.dimmed{stroke-opacity:.07}.edge-hit{fill:none;stroke:transparent;stroke-width:13;pointer-events:stroke;cursor:pointer}.edge-label{font-size:8px;fill:#607087;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;pointer-events:none}.edge-label.hidden{display:none}
 .node{cursor:pointer}.node circle{stroke:#fff;stroke-width:2;filter:drop-shadow(0 1px 2px rgba(36,48,71,.22));vector-effect:non-scaling-stroke}.node text{font-size:10px;font-weight:650;fill:#28364C;text-anchor:middle;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;pointer-events:none}.node.invalid circle{stroke:#8D2525;stroke-width:3}.node.highlighted circle{stroke:#162033;stroke-width:4}.node.search-match circle{stroke:#F59E0B;stroke-width:4}.node.dimmed{opacity:.13}.node-label.hidden{display:none}
 .empty{display:none;position:absolute;inset:0;place-items:center;color:#778399;font-size:12px;pointer-events:none}.canvas-note{position:absolute;left:10px;bottom:8px;font-size:8px;color:#788499;background:rgba(255,255,255,.88);border:1px solid #E1E7EF;border-radius:4px;padding:3px 6px}
-.inspector{min-height:0;overflow:auto;border-left:1px solid var(--line);background:#fff}.inspector-head{padding:13px;border-bottom:1px solid var(--line)}.inspector-head span{display:block;font-size:9px;color:var(--blue);text-transform:uppercase;font-weight:800}.inspector-head h2{font-size:15px;margin:4px 0;line-height:1.3;word-break:break-word}.inspector-head p{font-size:9px;color:#7A8699;margin:0;word-break:break-all}.inspector-body{padding:12px}.state{display:inline-flex;border-radius:10px;padding:3px 7px;background:#F0F4FA;font-size:9px;font-weight:750}.state.invalid{background:#FDECEC;color:#A73333}.state.validated{background:#E8F5EE;color:#177048}.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}.meta{border:1px solid #E1E7EF;border-radius:5px;padding:7px}.meta span{display:block;font-size:8px;color:#7A8699}.meta strong{display:block;font-size:10px;margin-top:3px;word-break:break-word}.section{margin-top:12px}.section h3{font-size:9px;text-transform:uppercase;color:#6C788D;margin:0 0 5px}.json{margin:0;padding:8px;background:#F7F9FC;border:1px solid #E2E7EF;border-radius:5px;white-space:pre-wrap;word-break:break-word;font-size:9px;line-height:1.45;max-height:230px;overflow:auto}.overview{font-size:10px;line-height:1.55;color:#5F6C80;background:#F4F7FC;border:1px solid #E1E7EF;border-radius:6px;padding:10px}
+.inspector{min-height:0;overflow:auto;border-left:1px solid var(--line);background:#fff}.inspector-head{padding:13px;border-bottom:1px solid var(--line)}.inspector-head span{display:block;font-size:9px;color:var(--blue);text-transform:uppercase;font-weight:800}.inspector-head h2{font-size:15px;margin:4px 0;line-height:1.3;word-break:break-word}.inspector-head p{font-size:9px;color:#7A8699;margin:0;word-break:break-all}.inspector-body{padding:12px}.state{display:inline-flex;border-radius:10px;padding:3px 7px;background:#F0F4FA;font-size:9px;font-weight:750}.state.invalid{background:#FDECEC;color:#A73333}.state.validated{background:#E8F5EE;color:#177048}.state.approved{background:#E7F4EE;color:#126B45}.state.caution{background:#FFF0E8;color:#A94728}.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}.meta{border:1px solid #E1E7EF;border-radius:5px;padding:7px}.meta span{display:block;font-size:8px;color:#7A8699}.meta strong{display:block;font-size:10px;margin-top:3px;word-break:break-word}.section{margin-top:12px}.section h3{font-size:9px;text-transform:uppercase;color:#6C788D;margin:0 0 5px}.json{margin:0;padding:8px;background:#F7F9FC;border:1px solid #E2E7EF;border-radius:5px;white-space:pre-wrap;word-break:break-word;font-size:9px;line-height:1.45;max-height:230px;overflow:auto}.overview{font-size:10px;line-height:1.55;color:#5F6C80;background:#F4F7FC;border:1px solid #E1E7EF;border-radius:6px;padding:10px}
 .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.legend span{display:flex;gap:4px;align-items:center;font-size:8px;color:#6D798D}
 @media(max-width:850px){.workbench{grid-template-columns:1fr}.inspector{display:none}.control-label{display:none}.btn{padding:0 5px}.count{width:100%;margin-left:0}}
 </style></head><body>
@@ -270,8 +290,9 @@ function applyHighlight(){const related=relatedIds(),matched=new Set(state.visib
 function updateLOD(){const focus=state.density==='focus',zoom=state.transform.k;nodeLayer.querySelectorAll('.node').forEach(g=>{const n=nodeById.get(g.dataset.nodeId),label=g.querySelector('.node-label'),meaningful=n.degree>=4||n.group==='statement'||(state.query&&matches(n))||state.selectedNode===n.id,show=focus||zoom>1.7||meaningful;label.classList.toggle('hidden',!show)});edgeLabelLayer.querySelectorAll('.edge-label').forEach(label=>{const show=(state.visibleEdges.length<=55&&(focus||zoom>1.7))||state.selectedEdge===label.dataset.edgeId;label.classList.toggle('hidden',!show)})}
 function selectNode(id){state.selectedNode=id;state.selectedEdge=null;if(state.density==='focus')render();else{applyHighlight();updateLOD();renderInspector()}}
 function selectEdge(id){state.selectedEdge=id;state.selectedNode=null;applyHighlight();updateLOD();renderInspector()}
-function stateClass(value){return value==='INVALID'?'invalid':value==='VALIDATED'?'validated':''}
-function renderInspector(){const root=byId('inspector');if(state.selectedEdge){const e=edgeById.get(state.selectedEdge),s=nodeById.get(e.source),t=nodeById.get(e.target);root.innerHTML=`<div class="inspector-head"><span>Relation</span><h2>${escapeHTML(e.relation)}</h2><p>${escapeHTML(e.id)}</p></div><div class="inspector-body"><span class="state ${stateClass(e.candidateState)}">${escapeHTML(e.candidateState)}</span><div class="meta-grid"><div class="meta"><span>Source</span><strong>${escapeHTML(s?.displayLabel||e.source)}</strong></div><div class="meta"><span>Target</span><strong>${escapeHTML(t?.displayLabel||e.target)}</strong></div></div><div class="section"><h3>Provenance</h3><pre class="json">${escapeHTML(JSON.stringify(e.provenance,null,2))}</pre></div><div class="section"><h3>Reason / properties</h3><pre class="json">${escapeHTML(JSON.stringify({reason:e.reason,...e.properties},null,2))}</pre></div></div>`;return}if(state.selectedNode){const n=nodeById.get(state.selectedNode);root.innerHTML=`<div class="inspector-head"><span>${escapeHTML(n.groupLabel)} · ${escapeHTML(n.ontologyType)}</span><h2>${escapeHTML(n.fullLabel)}</h2><p>${escapeHTML(n.id)}</p></div><div class="inspector-body"><span class="state ${stateClass(n.candidateState)}">${escapeHTML(n.candidateState)}</span><div class="meta-grid"><div class="meta"><span>Connections</span><strong>${n.degree}</strong></div><div class="meta"><span>Semantic group</span><strong>${escapeHTML(n.groupLabel)}</strong></div></div><div class="section"><h3>Full detail / provenance</h3><pre class="json">${escapeHTML(JSON.stringify(n.properties,null,2))}</pre></div></div>`;return}root.innerHTML=`<div class="inspector-head"><span>ScientificGraphViewer</span><h2>${escapeHTML(data.config.mode.replaceAll('_',' '))}</h2><p>Ontology-driven, read-only graph projection</p></div><div class="inspector-body"><div class="overview">Select a node or relation to inspect its full label, validation state, provenance, and raw properties. Focus view follows the selected node and its real one-hop neighborhood.</div><div class="legend">${Object.entries(data.styles).filter(([key])=>key!=='other'&&key!=='schema').map(([,style])=>`<span><i style="--c:${style.color}"></i>${escapeHTML(style.label)}</span>`).join('')}</div></div>`}
+function stateClass(value){return value==='INVALID'?'invalid':value==='VALIDATED'?'validated':value==='APPROVED'?'approved':value==='CAUTION'?'caution':''}
+function statusText(item){return item.executionAuthorized===false&&(item.candidateState==='APPROVED'||item.candidateState==='CAUTION')?`${item.candidateState} · NOT EXECUTION AUTHORIZED`:item.candidateState}
+function renderInspector(){const root=byId('inspector');if(state.selectedEdge){const e=edgeById.get(state.selectedEdge),s=nodeById.get(e.source),t=nodeById.get(e.target);root.innerHTML=`<div class="inspector-head"><span>Relation</span><h2>${escapeHTML(e.relation)}</h2><p>${escapeHTML(e.id)}</p></div><div class="inspector-body"><span class="state ${stateClass(e.candidateState)}">${escapeHTML(statusText(e))}</span><div class="meta-grid"><div class="meta"><span>Source</span><strong>${escapeHTML(s?.displayLabel||e.source)}</strong></div><div class="meta"><span>Target</span><strong>${escapeHTML(t?.displayLabel||e.target)}</strong></div></div><div class="section"><h3>Provenance</h3><pre class="json">${escapeHTML(JSON.stringify(e.provenance,null,2))}</pre></div><div class="section"><h3>Reason / properties</h3><pre class="json">${escapeHTML(JSON.stringify({reason:e.reason,...e.properties},null,2))}</pre></div></div>`;return}if(state.selectedNode){const n=nodeById.get(state.selectedNode);root.innerHTML=`<div class="inspector-head"><span>${escapeHTML(n.groupLabel)} · ${escapeHTML(n.ontologyType)}</span><h2>${escapeHTML(n.fullLabel)}</h2><p>${escapeHTML(n.id)}</p></div><div class="inspector-body"><span class="state ${stateClass(n.candidateState)}">${escapeHTML(statusText(n))}</span><div class="meta-grid"><div class="meta"><span>Connections</span><strong>${n.degree}</strong></div><div class="meta"><span>Semantic group</span><strong>${escapeHTML(n.groupLabel)}</strong></div></div><div class="section"><h3>Full detail / provenance</h3><pre class="json">${escapeHTML(JSON.stringify(n.properties,null,2))}</pre></div></div>`;return}root.innerHTML=`<div class="inspector-head"><span>ScientificGraphViewer</span><h2>${escapeHTML(data.config.mode.replaceAll('_',' '))}</h2><p>Ontology-driven, read-only graph projection</p></div><div class="inspector-body"><div class="overview">Select a node or relation to inspect its full label, validation state, provenance, and raw properties. Focus view follows the selected node and its real one-hop neighborhood.</div><div class="legend">${Object.entries(data.styles).filter(([key])=>key!=='other'&&key!=='schema').map(([,style])=>`<span><i style="--c:${style.color}"></i>${escapeHTML(style.label)}</span>`).join('')}</div></div>`}
 function fit(){const nodes=state.visibleNodes;if(!nodes.length)return;const xs=nodes.map(n=>n.x),ys=nodes.map(n=>n.y),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),w=Math.max(100,maxX-minX+100),h=Math.max(100,maxY-minY+100),k=Math.min(1.8,1100/w,640/h);state.transform={x:600-(minX+maxX)*k/2,y:360-(minY+maxY)*k/2,k};applyTransform()}
 function applyTransform(){viewport.setAttribute('transform',`translate(${state.transform.x} ${state.transform.y}) scale(${state.transform.k})`);updateLOD()}
 function buildFilters(){const bar=byId('filterBar'),groups=[...new Set(data.nodes.map(n=>n.group))].sort();groups.forEach(group=>{const style=data.styles[group],button=document.createElement('button');button.className='chip active';button.dataset.group=group;button.innerHTML=`<i style="--c:${style.color}"></i><span>${escapeHTML(style.label)}</span><b>${data.groupCounts[group]||0}</b>`;button.addEventListener('click',()=>{state.activeGroups.has(group)?state.activeGroups.delete(group):state.activeGroups.add(group);render();fit()});bar.appendChild(button)});const invalidCount=data.nodes.filter(n=>n.invalid).length;if(invalidCount){const button=document.createElement('button');button.id='invalidFilter';button.className='chip active';button.innerHTML=`<i style="--c:${data.styles.invalid.color}"></i><span>Invalid</span><b>${invalidCount}</b>`;button.addEventListener('click',()=>{state.includeInvalid=!state.includeInvalid;render();fit()});bar.appendChild(button)}}

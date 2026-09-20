@@ -1037,6 +1037,7 @@ from engine.scientific_graph_viewer import (
     ScientificGraphViewerConfig,
     build_scientific_graph_viewer_html,
 )
+from engine.approved_scientific_kg_v2 import ApprovedScientificKGV2Service
 from engine.scientific_kg_admin import ScientificKGAdminSnapshotService
 from engine.ontology_manager import (
     OntologyIntegrityError,
@@ -4610,6 +4611,7 @@ def _render_scientific_kg_admin_page() -> None:
         "Read-only view of the frozen Scientific KG inventory. Candidate claims remain separate from reviewed or trusted knowledge.",
     )
     service = ScientificKGAdminSnapshotService(Path(__file__).resolve().parent)
+    approved_v2_service = ApprovedScientificKGV2Service(Path(__file__).resolve().parent)
     summary = service.summary()
     status = summary["snapshot_status"]
     if status != "IDENTITY_MATCH":
@@ -4678,46 +4680,75 @@ def _render_scientific_kg_admin_page() -> None:
 
     with graph_tab:
         st.markdown("#### Scientific graph workbench")
-        st.caption(
-            "Explore a focused real subgraph or the complete frozen Scientific KG. SourceRevision display nodes in focused examples come from frozen source manifests and are excluded from physical graph totals."
+        data_source = st.radio(
+            "Data source",
+            ["Legacy KG", "Scientific KG v2"],
+            horizontal=True,
+            key="scientific_kg_data_source",
         )
+        is_v2 = data_source == "Scientific KG v2"
+        graph_service = approved_v2_service if is_v2 else service
+        source_key = "v2" if is_v2 else "legacy"
+        if is_v2:
+            approved_summary = approved_v2_service.summary()
+            st.caption(
+                f"{approved_summary['snapshot_id']} · "
+                f"{approved_summary['approved_statements']} approved statements · "
+                f"{approved_summary['held_statements']} HOLD excluded · "
+                "execution_authorized=false"
+            )
+        else:
+            st.caption(
+                "Legacy frozen Scientific KG. SourceRevision display nodes in focused examples come from frozen source manifests and are excluded from physical graph totals."
+            )
         graph_scope = st.radio(
             "Graph scope",
             ["Focused subgraph", "Full Scientific KG"],
             horizontal=True,
-            key="scientific_kg_graph_scope",
+            key=f"scientific_kg_graph_scope_{source_key}",
         )
         controls = st.columns([1.0, 1.6, 1.4, 0.8, 0.8])
         with controls[0]:
             example = st.selectbox(
-                "Example", ["PCA", "neighbors", "Leiden"], key="scientific_kg_example"
+                "Example",
+                ["Scanpy HVG", "Scanpy PCA", "Scrublet"]
+                if is_v2
+                else ["PCA", "neighbors", "Leiden"],
+                key=f"scientific_kg_example_{source_key}",
             )
         with controls[1]:
             search = st.text_input(
                 "Search",
                 value="",
                 placeholder="operator, claim, evidence span...",
-                key="scientific_kg_search",
+                key=f"scientific_kg_search_{source_key}",
             )
         node_type_options = sorted(
-            {row["type"] for row in service.semantic_inventory()}
+            {row["type"] for row in graph_service.semantic_inventory()}
             | {"EvidenceReference", "InputPort", "OutputPort", "Requirement"}
         )
         with controls[2]:
             node_types = st.multiselect(
-                "Node types", node_type_options, key="scientific_kg_node_types"
+                "Node types",
+                node_type_options,
+                key=f"scientific_kg_node_types_{source_key}",
             )
         with controls[3]:
-            hops = st.selectbox("Hops", [1, 2], index=1, key="scientific_kg_hops")
+            hops = st.selectbox(
+                "Hops", [1, 2], index=1, key=f"scientific_kg_hops_{source_key}"
+            )
         with controls[4]:
             max_nodes = st.select_slider(
-                "Node cap", options=[50, 75, 100], value=75, key="scientific_kg_cap"
+                "Node cap",
+                options=[100, 130, 160] if is_v2 else [50, 75, 100],
+                value=160 if is_v2 else 75,
+                key=f"scientific_kg_cap_{source_key}",
             )
 
         selected_seed: str | None = None
         matches: list[dict[str, Any]] = []
         if search.strip():
-            matches = service.search_nodes(
+            matches = graph_service.search_nodes(
                 search,
                 node_types=set(node_types) if node_types else None,
                 limit=50,
@@ -4735,13 +4766,13 @@ def _render_scientific_kg_admin_page() -> None:
                 st.warning("No Scientific KG nodes match the current search and type filter.")
 
         if graph_scope == "Full Scientific KG":
-            graph = service.global_graph()
+            graph = graph_service.global_graph()
         elif selected_seed:
-            graph = service.neighborhood_graph(
+            graph = graph_service.neighborhood_graph(
                 selected_seed, hops=int(hops), max_nodes=int(max_nodes)
             )
         else:
-            graph = service.example_graph(example, max_nodes=int(max_nodes))
+            graph = graph_service.example_graph(example, max_nodes=int(max_nodes))
         if graph.truncated:
             st.caption("Node cap reached; the canvas is a deterministic local projection.")
         components.html(
@@ -4771,7 +4802,7 @@ def _render_scientific_kg_admin_page() -> None:
             detail_label = st.selectbox(
                 "Inspect node", list(node_options), key="scientific_kg_inspect_node"
             )
-            detail = service.get_node(node_options[detail_label])
+            detail = graph_service.get_node(node_options[detail_label])
             if detail:
                 detail_col, record_col = st.columns([0.9, 1.5])
                 with detail_col:
@@ -4788,8 +4819,8 @@ def _render_scientific_kg_admin_page() -> None:
                 with record_col:
                     st.markdown("##### Frozen record")
                     st.json(detail["record"])
-                if detail["node_type"] == "AtomicClaimRevision":
-                    chain = service.get_claim_evidence_chain(detail["graph_node_id"])
+                if detail["node_type"] in {"AtomicClaimRevision", "StatementRevision"}:
+                    chain = graph_service.get_claim_evidence_chain(detail["graph_node_id"])
                     st.markdown("##### Claim → EvidenceAssessment → EvidenceSpan → SourceRevision")
                     if chain["complete"]:
                         st.success("All referenced evidence and source records resolve in this frozen layer.")
