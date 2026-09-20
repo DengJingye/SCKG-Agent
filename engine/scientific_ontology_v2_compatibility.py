@@ -18,8 +18,10 @@ from core.scientific_knowledge_conformance_models import (
     Requirement,
 )
 from core.scientific_ontology_v2_compatibility_models import (
+    CompatibilityDiagnostics,
     CompatibilityResult,
     EvidenceAssessmentView,
+    EvidenceCoreProvenance,
     EvidenceSpanCoreView,
     FROZEN_ONTOLOGY_VERSION,
     ReferenceResourceView,
@@ -87,11 +89,12 @@ def _source_id(record: Mapping[str, Any]) -> str:
         "claim_revision_id",
         "evidence_span_id",
         "assessment_id",
-        "scope_id",
         "requirement_id",
+        "relation_id",
+        "graph_edge_id",
+        "scope_id",
         "entity_id",
         "representation_type_id",
-        "relation_id",
         "edge_id",
     ):
         if record.get(key):
@@ -112,6 +115,20 @@ def _provenance(
         source_schema_version=record.get("schema_version"),
         source_graph_node_id=source_graph_node_id,
         source_status=source_status,
+    )
+
+
+def _evidence_core_provenance(
+    record: Mapping[str, Any],
+    *,
+    source_layer_id: str,
+    source_graph_node_id: str | None = None,
+) -> EvidenceCoreProvenance:
+    return EvidenceCoreProvenance(
+        source_layer_id=source_layer_id,
+        source_record_id=_source_id(record),
+        source_schema_version=record.get("schema_version"),
+        source_graph_node_id=source_graph_node_id,
     )
 
 
@@ -243,11 +260,11 @@ class ScientificOntologyV2CompatibilityService:
             )
 
         inline = {
-            key: tuple(_canonical_json(item) for item in values)
+            key: tuple(sorted({_canonical_json(item) for item in values}))
             for key, values in (inline_qualifiers or {}).items()
         }
         shared = {
-            key: tuple(_canonical_json(item) for item in values)
+            key: tuple(sorted({_canonical_json(item) for item in values}))
             for key, values in dimensions.items()
         }
         conflicts = sorted(key for key in set(inline) & set(shared) if inline[key] != shared[key])
@@ -257,15 +274,25 @@ class ScientificOntologyV2CompatibilityService:
                 reason_codes=("INLINE_SHARED_SCOPE_CONFLICT", *conflicts),
             )
 
-        qualifiers = tuple(
+        shared_qualifiers = tuple(
             ScopeQualifierView(dimension=key, values_json=values)
             for key, values in sorted(shared.items())
         )
+        inline_only = {key: values for key, values in inline.items() if key not in shared}
+        inline_qualifier_views = tuple(
+            ScopeQualifierView(dimension=key, values_json=values)
+            for key, values in sorted(inline_only.items())
+        )
+        qualifiers = shared_qualifiers + inline_qualifier_views
         view = ScopeCompatibilityView(
             scope_id=validated.scope_id,
+            source_scope_id=validated.scope_id,
             scope_status=validated.scope_status,
             combination="ALL_OF" if validated.combination == "all_of" else "ANY_OF",
             qualifiers=qualifiers,
+            shared_qualifiers=shared_qualifiers,
+            inline_qualifiers=inline_qualifier_views,
+            composition="SHARED_AND_INLINE" if inline_qualifier_views else "SHARED_ONLY",
             provenance=_provenance(
                 raw,
                 source_layer_id=source_layer_id,
@@ -284,6 +311,8 @@ class ScientificOntologyV2CompatibilityService:
         source_layer_id: str = "unspecified_v1_layer",
         source_graph_node_id: str | None = None,
         source_status: str | None = None,
+        inline_qualifiers: Mapping[str, Iterable[Any]] | None = None,
+        literal_datatype: str | None = None,
     ) -> CompatibilityResult:
         validated, raw = _validated(AtomicClaimRevision, claim)
         if validated is None:
@@ -314,7 +343,26 @@ class ScientificOntologyV2CompatibilityService:
             status = "AMBIGUOUS_MAPPING" if reason == "KNOWN_NON_STATEMENT_RELATION" else "NOT_MAPPABLE"
             return CompatibilityResult(status=status, reason_codes=(reason, validated.predicate))
 
-        literal_datatype_unavailable = validated.object_value is not None
+        is_property = predicate in self._assertion_properties
+        if is_property and validated.object_id is not None:
+            return CompatibilityResult(
+                status="NOT_MAPPABLE",
+                reason_codes=("SCALAR_PROPERTY_REQUIRES_LITERAL_OBJECT", predicate),
+            )
+        if not is_property and validated.object_value is not None:
+            return CompatibilityResult(
+                status="NOT_MAPPABLE",
+                reason_codes=("ENTITY_PREDICATE_REQUIRES_ENTITY_OBJECT", predicate),
+            )
+        literal_datatype_unavailable = is_property and literal_datatype is None
+        literal_reason = self._validate_property_literal(
+            predicate, validated.object_value, literal_datatype
+        )
+        if literal_reason:
+            return CompatibilityResult(
+                status="NOT_MAPPABLE",
+                reason_codes=(literal_reason, predicate),
+            )
         endpoint_reason = self._validate_statement_endpoints(
             predicate, validated.subject_id, validated.object_id
         )
@@ -328,7 +376,11 @@ class ScientificOntologyV2CompatibilityService:
                 status="AMBIGUOUS_MAPPING",
                 reason_codes=("SCOPE_RECORD_UNAVAILABLE",),
             )
-        scope_result = self.map_scope(scope, source_layer_id=source_layer_id)
+        scope_result = self.map_scope(
+            scope,
+            source_layer_id=source_layer_id,
+            inline_qualifiers=inline_qualifiers,
+        )
         if scope_result.status not in {"DIRECT_COMPATIBLE", "COMPATIBLE_WITH_ADAPTER"}:
             return CompatibilityResult(
                 status=scope_result.status,
@@ -336,6 +388,24 @@ class ScientificOntologyV2CompatibilityService:
             )
         scope_view = scope_result.view
         assert isinstance(scope_view, ScopeCompatibilityView)
+        if validated.scope_id != scope_view.source_scope_id:
+            return CompatibilityResult(
+                status="NOT_MAPPABLE",
+                reason_codes=(
+                    "SCOPE_IDENTITY_MISMATCH",
+                    validated.scope_id,
+                    scope_view.source_scope_id,
+                ),
+            )
+        disallowed_dimensions = self._disallowed_scope_dimensions(predicate, scope_view)
+        if disallowed_dimensions:
+            return CompatibilityResult(
+                status="AMBIGUOUS_MAPPING",
+                reason_codes=(
+                    "PREDICATE_SCOPE_DIMENSION_NOT_ALLOWED",
+                    *disallowed_dimensions,
+                ),
+            )
 
         evidence_span_ids: list[str] = []
         for assessment in evidence_assessments:
@@ -365,6 +435,7 @@ class ScientificOntologyV2CompatibilityService:
             source_predicate=validated.predicate,
             object_id=validated.object_id,
             literal_value=validated.object_value,
+            literal_datatype=literal_datatype,
             polarity=validated.polarity.upper(),
             scope_ref=scope_view.scope_id,
             scope_status=scope_view.scope_status,
@@ -384,6 +455,49 @@ class ScientificOntologyV2CompatibilityService:
             ),
         )
         return CompatibilityResult(status=status, reason_codes=tuple(reasons), view=view)
+
+    def _validate_property_literal(
+        self,
+        predicate: str,
+        literal_value: str | None,
+        literal_datatype: str | None,
+    ) -> str | None:
+        if predicate not in self._assertion_properties:
+            return None
+        if literal_value is None:
+            return "SCALAR_PROPERTY_REQUIRES_LITERAL_OBJECT"
+        if literal_datatype is None:
+            return None
+        property_row = next(
+            row
+            for row in self._property_registry["properties"]
+            if row["property_id"] == predicate
+        )
+        value_type = property_row["value_type"]
+        if value_type == "boolean":
+            if literal_datatype != "boolean" or literal_value.casefold() not in {"true", "false"}:
+                return "PROPERTY_LITERAL_TYPE_MISMATCH"
+        elif literal_datatype != value_type:
+            return "PROPERTY_LITERAL_TYPE_MISMATCH"
+        return None
+
+    def _disallowed_scope_dimensions(
+        self, predicate: str, scope: ScopeCompatibilityView
+    ) -> tuple[str, ...]:
+        dimensions = {item.dimension for item in scope.qualifiers}
+        if predicate in self._assertion_properties:
+            row = next(
+                item
+                for item in self._property_registry["properties"]
+                if item["property_id"] == predicate
+            )
+            allowed = set(row.get("assertion_qualifier_policy", {}).get("allowed", []))
+        else:
+            allowed = set(self._links[predicate].get("qualifier_policy", {}).get("allowed", []))
+        accepted_dimensions = set(allowed)
+        if {"software_version", "method_version"} & allowed:
+            accepted_dimensions.add("version_constraint")
+        return tuple(sorted(dimensions - accepted_dimensions))
 
     def _validate_statement_endpoints(
         self, predicate: str, subject_id: str, object_id: str | None
@@ -460,11 +574,10 @@ class ScientificOntologyV2CompatibilityService:
                 start_offset=start_offset,
                 end_offset=end_offset,
                 activity_ref=raw.get("activity_ref"),
-                provenance=_provenance(
+                provenance=_evidence_core_provenance(
                     raw,
                     source_layer_id=source_layer_id,
                     source_graph_node_id=source_graph_node_id,
-                    source_status=source_status,
                 ),
             )
         except ValidationError:
@@ -480,7 +593,12 @@ class ScientificOntologyV2CompatibilityService:
         status = "COMPATIBLE_WITH_ADAPTER"
         if len(reasons) > 1:
             status = "AMBIGUOUS_MAPPING"
-        return CompatibilityResult(status=status, reason_codes=tuple(reasons), view=view)
+        return CompatibilityResult(
+            status=status,
+            reason_codes=tuple(reasons),
+            view=view,
+            diagnostics=CompatibilityDiagnostics(legacy_source_status=source_status),
+        )
 
     def map_evidence_assessment(
         self,
@@ -503,11 +621,17 @@ class ScientificOntologyV2CompatibilityService:
                 reason_codes=("STATEMENT_REVISION_NOT_AVAILABLE",),
             )
         missing = [span_id for span_id in validated.evidence_span_ids if span_id not in evidence_spans]
-        invalid = [
-            span_id
-            for span_id in validated.evidence_span_ids
-            if span_id in evidence_spans and evidence_spans[span_id].view is None
-        ]
+        invalid = []
+        for span_id in validated.evidence_span_ids:
+            if span_id not in evidence_spans:
+                continue
+            span_view = evidence_spans[span_id].view
+            if (
+                not isinstance(span_view, EvidenceSpanCoreView)
+                or span_view.evidence_span_id != span_id
+                or span_view.provenance.source_record_id != span_id
+            ):
+                invalid.append(span_id)
         if missing or invalid:
             return CompatibilityResult(
                 status="NOT_MAPPABLE",
@@ -718,12 +842,16 @@ class ScientificOntologyV2CompatibilityService:
                 status="NOT_MAPPABLE",
                 reason_codes=("MISSING_RELATION",),
             )
+        semantic_subject_id = raw.get("semantic_subject_id") or raw.get("source_id")
+        semantic_object_id = raw.get("semantic_object_id") or raw.get("target_id")
         if source_relation in _DERIVED_RELATIONS:
             view = RelationCompatibilityView(
                 source_relation=source_relation,
                 canonical_predicate=source_relation.casefold(),
-                classification="DERIVED_PROJECTION",
-                authoritative=False,
+                predicate_classification="DERIVED_PROJECTION",
+                record_authority="DERIVED_RECORD",
+                semantic_subject_id=semantic_subject_id,
+                semantic_object_id=semantic_object_id,
                 provenance=_provenance(raw, source_layer_id=source_layer_id, source_status=source_status),
             )
             return CompatibilityResult(
@@ -735,8 +863,10 @@ class ScientificOntologyV2CompatibilityService:
             view = RelationCompatibilityView(
                 source_relation=source_relation,
                 canonical_predicate=None,
-                classification="UNRESOLVED",
-                authoritative=False,
+                predicate_classification="UNRESOLVED_PREDICATE",
+                record_authority="UNRESOLVED",
+                semantic_subject_id=semantic_subject_id,
+                semantic_object_id=semantic_object_id,
                 provenance=_provenance(raw, source_layer_id=source_layer_id, source_status=source_status),
             )
             return CompatibilityResult(
@@ -744,39 +874,64 @@ class ScientificOntologyV2CompatibilityService:
                 reason_codes=("RELATION_DEFERRED_BY_FROZEN_CORE",),
                 view=view,
             )
-        if source_relation in _LEGACY_RELATION_MAP:
-            view = RelationCompatibilityView(
-                source_relation=source_relation,
-                canonical_predicate=_LEGACY_RELATION_MAP[source_relation],
-                classification="LEGACY_COMPATIBILITY",
-                authoritative=False,
-                provenance=_provenance(raw, source_layer_id=source_layer_id, source_status=source_status),
-            )
-            return CompatibilityResult(
-                status="COMPATIBLE_WITH_ADAPTER",
-                reason_codes=("LEGACY_RELATION_CLASSIFIED_WITHOUT_AUTHORITY_PROMOTION",),
-                view=view,
-            )
-        canonical = source_relation.casefold()
+        is_legacy_alias = source_relation in _LEGACY_RELATION_MAP
+        canonical = _LEGACY_RELATION_MAP.get(source_relation, source_relation.casefold())
         link = self._links.get(canonical)
         if link and link.get("classification") == "AUTHORITATIVE":
+            endpoints = [
+                raw.get("semantic_subject_type") or _id_type(semantic_subject_id),
+                raw.get("semantic_object_type") or _id_type(semantic_object_id),
+            ]
+            if endpoints not in link["allowed_endpoint_pairs"]:
+                view = RelationCompatibilityView(
+                    source_relation=source_relation,
+                    canonical_predicate=canonical,
+                    predicate_classification="AUTHORITATIVE_LINK_TYPE",
+                    record_authority="UNRESOLVED",
+                    semantic_subject_id=semantic_subject_id,
+                    semantic_object_id=semantic_object_id,
+                    provenance=_provenance(
+                        raw, source_layer_id=source_layer_id, source_status=source_status
+                    ),
+                )
+                return CompatibilityResult(
+                    status="NOT_MAPPABLE",
+                    reason_codes=("INVALID_RELATION_ENDPOINT_PAIR",),
+                    view=view,
+                )
+            record_authority = self._record_authority(source_status)
             view = RelationCompatibilityView(
                 source_relation=source_relation,
                 canonical_predicate=canonical,
-                classification="AUTHORITATIVE_SOURCE",
-                authoritative=True,
+                predicate_classification="AUTHORITATIVE_LINK_TYPE",
+                record_authority=record_authority,
+                semantic_subject_id=semantic_subject_id,
+                semantic_object_id=semantic_object_id,
                 provenance=_provenance(raw, source_layer_id=source_layer_id, source_status=source_status),
             )
             return CompatibilityResult(
-                status="DIRECT_COMPATIBLE",
-                reason_codes=("FROZEN_AUTHORITATIVE_LINK_TYPE",),
+                status=(
+                    "DIRECT_COMPATIBLE"
+                    if record_authority == "SUPPORTED_AUTHORITATIVE_RECORD"
+                    else "COMPATIBLE_WITH_ADAPTER"
+                ),
+                reason_codes=(
+                    (
+                        "LEGACY_RELATION_CLASSIFIED_WITHOUT_AUTHORITY_PROMOTION"
+                        if is_legacy_alias
+                        else "FROZEN_AUTHORITATIVE_LINK_TYPE"
+                    ),
+                    "PREDICATE_CLASSIFICATION_DOES_NOT_PROMOTE_RECORD_AUTHORITY",
+                ),
                 view=view,
             )
         view = RelationCompatibilityView(
             source_relation=source_relation,
             canonical_predicate=None,
-            classification="UNRESOLVED",
-            authoritative=False,
+            predicate_classification="UNRESOLVED_PREDICATE",
+            record_authority="UNRESOLVED",
+            semantic_subject_id=semantic_subject_id,
+            semantic_object_id=semantic_object_id,
             provenance=_provenance(raw, source_layer_id=source_layer_id, source_status=source_status),
         )
         return CompatibilityResult(
@@ -784,3 +939,12 @@ class ScientificOntologyV2CompatibilityService:
             reason_codes=("UNRESOLVED_RELATION",),
             view=view,
         )
+
+    @staticmethod
+    def _record_authority(source_status: str | None) -> str:
+        status = (source_status or "").casefold()
+        if "candidate" in status:
+            return "CANDIDATE_RECORD"
+        if status in {"accepted_authoritative", "reviewed_authoritative"}:
+            return "SUPPORTED_AUTHORITATIVE_RECORD"
+        return "UNRESOLVED"

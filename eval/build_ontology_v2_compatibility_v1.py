@@ -4,8 +4,11 @@ import argparse
 import hashlib
 import json
 from collections import Counter, defaultdict
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from core.scientific_knowledge_conformance_models import (
     ConformanceBundle,
@@ -44,6 +47,62 @@ OUTPUT_NAMES = (
     "integrity.json",
     "test_summary.json",
 )
+PATCH_BASE_COMMIT = "6a7fc238676a3389c7e556b16ab8bac33d53e7bd"
+
+
+class TestExecutionSummary(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    status: Literal["PASS", "FAIL", "NOT_RUN", "UNVERIFIED"]
+    passed: int = Field(default=0, ge=0)
+    failed: int = Field(default=0, ge=0)
+    errors: int = Field(default=0, ge=0)
+    skipped: int = Field(default=0, ge=0)
+    command: tuple[str, ...] = ()
+    evidence: str | None = None
+
+    @model_validator(mode="after")
+    def validate_pass_evidence(self) -> "TestExecutionSummary":
+        if self.status == "PASS" and (
+            self.passed < 1
+            or self.failed
+            or self.errors
+            or not self.command
+            or not self.evidence
+        ):
+            raise ValueError(
+                "PASS requires positive cases, zero failures/errors, a command and evidence"
+            )
+        if self.status == "FAIL" and not (self.failed or self.errors):
+            raise ValueError("FAIL requires at least one failure or error")
+        return self
+
+
+def _validated_test_summary(
+    value: TestExecutionSummary | Mapping[str, Any] | str | None,
+) -> TestExecutionSummary:
+    if isinstance(value, TestExecutionSummary):
+        return value
+    if value is None or (isinstance(value, str) and value.casefold() in {"not_run", "not run"}):
+        return TestExecutionSummary(status="NOT_RUN")
+    if isinstance(value, str):
+        if value.strip().upper() in {"FAIL", "FAILED", "FAILURE"}:
+            return TestExecutionSummary(
+                status="FAIL",
+                failed=1,
+                evidence=f"unstructured failure marker: {value}",
+            )
+        return TestExecutionSummary(
+            status="UNVERIFIED",
+            evidence=f"unstructured test result rejected: {value}",
+        )
+    try:
+        return TestExecutionSummary.model_validate(value)
+    except ValidationError as exc:
+        return TestExecutionSummary(
+            status="UNVERIFIED",
+            evidence=f"invalid structured test result: {exc.errors()[0]['type']}",
+        )
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -85,28 +144,52 @@ def _count_status(results: list[Any]) -> dict[str, int]:
     }
 
 
+def collect_assessments(
+    edges: list[dict[str, Any]],
+) -> tuple[
+    dict[tuple[str, str], dict[str, Any]],
+    dict[tuple[str, str], list[dict[str, Any]]],
+]:
+    by_identity: dict[tuple[str, str], dict[str, Any]] = {}
+    by_claim: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for edge in edges:
+        assessment = edge.get("provenance", {}).get("evidence_assessment")
+        if not assessment:
+            continue
+        identity = (edge["layer_id"], assessment["assessment_id"])
+        existing = by_identity.get(identity)
+        if existing is not None and existing != assessment:
+            raise ValueError("conflicting_duplicate_assessment_identity")
+        by_identity[identity] = assessment
+    for (layer_id, _), assessment in sorted(by_identity.items()):
+        by_claim[(layer_id, assessment["claim_revision_id"])].append(assessment)
+    return by_identity, by_claim
+
+
 def build(
     output_dir: Path = DEFAULT_OUTPUT_DIR,
     *,
-    focused_tests: str = "not_run",
-    regression_tests: str = "not_run",
+    focused_tests: TestExecutionSummary | Mapping[str, Any] | str | None = None,
+    regression_tests: TestExecutionSummary | Mapping[str, Any] | str | None = None,
 ) -> dict[str, Any]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     service = ScientificOntologyV2CompatibilityService(ROOT)
     graph = _read_json(GRAPH_PATH)
+    focused_result = _validated_test_summary(focused_tests)
+    regression_result = _validated_test_summary(regression_tests)
 
     nodes_by_type: dict[str, list[dict[str, Any]]] = defaultdict(list)
     node_index: dict[tuple[str, str, str], dict[str, Any]] = {}
+    record_type_by_identity: dict[tuple[str, str], str] = {}
+    node_by_graph_id: dict[str, dict[str, Any]] = {}
     for node in graph["nodes"]:
         nodes_by_type[node["record_type"]].append(node)
         node_index[(node["layer_id"], node["record_type"], node["record_id"])] = node
+        record_type_by_identity[(node["layer_id"], node["record_id"])] = node["record_type"]
+        node_by_graph_id[node["graph_node_id"]] = node
 
-    assessment_by_claim: dict[tuple[str, str], dict[str, Any]] = {}
-    for edge in graph["edges"]:
-        assessment = edge.get("provenance", {}).get("evidence_assessment")
-        if assessment:
-            assessment_by_claim[(edge["layer_id"], assessment["claim_revision_id"])] = assessment
+    assessment_by_identity, assessments_by_claim = collect_assessments(graph["edges"])
 
     scope_results: dict[tuple[str, str], Any] = {}
     for node in nodes_by_type["ApplicabilityScope"]:
@@ -124,11 +207,11 @@ def build(
         scope_node = node_index.get(
             (node["layer_id"], "ApplicabilityScope", node["record"].get("scope_id", ""))
         )
-        assessment = assessment_by_claim.get((node["layer_id"], node["record_id"]))
+        assessments = assessments_by_claim.get((node["layer_id"], node["record_id"]), [])
         result = service.map_atomic_claim(
             node["record"],
             scope=scope_node["record"] if scope_node else None,
-            evidence_assessments=(assessment,) if assessment else (),
+            evidence_assessments=assessments,
             source_layer_id=node["layer_id"],
             source_graph_node_id=node["graph_node_id"],
             source_status=node["status"],
@@ -153,7 +236,8 @@ def build(
 
     assessment_results: list[Any] = []
     assessment_rows: list[dict[str, Any]] = []
-    for (layer_id, claim_revision_id), assessment in sorted(assessment_by_claim.items()):
+    for (layer_id, assessment_id), assessment in sorted(assessment_by_identity.items()):
+        claim_revision_id = assessment["claim_revision_id"]
         claim_result = claim_result_index.get((layer_id, claim_revision_id))
         statement_revision_ids = (
             {claim_revision_id} if claim_result is not None and claim_result.view is not None else set()
@@ -172,7 +256,7 @@ def build(
         )
         assessment_results.append(result)
         assessment_rows.append(
-            _result_row("EvidenceAssessment", assessment["assessment_id"], result, layer_id)
+            _result_row("EvidenceAssessment", assessment_id, result, layer_id)
         )
 
     known_constraints = {
@@ -197,14 +281,41 @@ def build(
         service.map_representation_type(node["record"], source_layer_id=node["layer_id"])
         for node in nodes_by_type["RepresentationType"]
     ]
-    relation_results = [
-        service.classify_relation(
-            edge,
-            source_layer_id=edge["layer_id"],
-            source_status=edge.get("status"),
+    relation_results = []
+    for edge in graph["edges"]:
+        relation_record = dict(edge)
+        claim_revision_id = edge.get("provenance", {}).get("claim_revision_id")
+        if claim_revision_id:
+            claim_node = node_index.get(
+                (edge["layer_id"], "AtomicClaimRevision", claim_revision_id)
+            )
+            if claim_node:
+                relation_record["semantic_subject_id"] = claim_node["record"]["subject_id"]
+                relation_record["semantic_object_id"] = claim_node["record"].get("object_id")
+                relation_record["semantic_subject_type"] = record_type_by_identity.get(
+                    (edge["layer_id"], claim_node["record"]["subject_id"])
+                )
+                relation_record["semantic_object_type"] = record_type_by_identity.get(
+                    (edge["layer_id"], claim_node["record"].get("object_id", ""))
+                )
+        else:
+            relation_record["semantic_subject_id"] = edge.get("source_record_id")
+            relation_record["semantic_object_id"] = edge.get("target_record_id")
+            source_node = node_by_graph_id.get(edge.get("source_graph_node_id", ""))
+            target_node = node_by_graph_id.get(edge.get("target_graph_node_id", ""))
+            relation_record["semantic_subject_type"] = (
+                source_node["record_type"] if source_node else None
+            )
+            relation_record["semantic_object_type"] = (
+                target_node["record_type"] if target_node else None
+            )
+        relation_results.append(
+            service.classify_relation(
+                relation_record,
+                source_layer_id=edge["layer_id"],
+                source_status=edge.get("status"),
+            )
         )
-        for edge in graph["edges"]
-    ]
 
     reference_bundle = ConformanceBundle.model_validate(_read_json(REFERENCE_FIXTURE))
     artifact = next(item for item in reference_bundle.entities if isinstance(item, ReferenceArtifact))
@@ -232,8 +343,13 @@ def build(
     claim_statuses = _count_status(claim_results)
     span_statuses = _count_status(span_results)
     requirement_statuses = _count_status(requirement_results)
-    relation_classifications = Counter(
-        result.view.classification for result in relation_results if result.view is not None
+    predicate_classifications = Counter(
+        result.view.predicate_classification
+        for result in relation_results
+        if result.view is not None
+    )
+    record_authorities = Counter(
+        result.view.record_authority for result in relation_results if result.view is not None
     )
     mapping_summary = {
         "schema_version": "sckg-ontology-v2-compatibility-evaluation-v1",
@@ -276,8 +392,9 @@ def build(
         },
         "relations": {
             "inspected": len(relation_results),
-            "classification_counts": dict(sorted(relation_classifications.items())),
-            "derived_relations_classified": relation_classifications["DERIVED_PROJECTION"],
+            "predicate_classification_counts": dict(sorted(predicate_classifications.items())),
+            "record_authority_counts": dict(sorted(record_authorities.items())),
+            "derived_relations_classified": predicate_classifications["DERIVED_PROJECTION"],
         },
         "interpretation": "Compatibility rate is structural mapping coverage, not scientific accuracy.",
     }
@@ -291,12 +408,23 @@ def build(
         + span_statuses["COMPATIBLE_WITH_ADAPTER"],
         "evidence_ambiguous": span_statuses["AMBIGUOUS_MAPPING"],
         "evidence_invalid": span_statuses["NOT_MAPPABLE"],
+        "evidence_hash_rejected": sum(
+            "EVIDENCE_TEXT_HASH_MISMATCH" in result.reason_codes for result in span_results
+        ),
+        "evidence_missing_artifact_id": sum(
+            result.view is not None and result.view.source_artifact_id is None
+            for result in span_results
+        ),
+        "evidence_missing_revision_id": sum(
+            result.view is not None and result.view.source_revision_id is None
+            for result in span_results
+        ),
         "evidence_assessments_inspected": len(assessment_results),
         "evidence_assessment_views": sum(result.view is not None for result in assessment_results),
         "scope_mappings": sum(result.view is not None for result in scope_results.values()),
         "requirement_mappings": sum(result.view is not None for result in requirement_results),
         "reference_mappings": 1 if reference_result.view is not None else 0,
-        "derived_relations_classified": relation_classifications["DERIVED_PROJECTION"],
+        "derived_relations_classified": predicate_classifications["DERIVED_PROJECTION"],
     }
     unresolved = sorted(
         [
@@ -325,6 +453,7 @@ def build(
     integrity = {
         "schema_version": "sckg-ontology-v2-compatibility-integrity-v1",
         "authoritative_base_commit": AUTHORITATIVE_BASE_COMMIT,
+        "compatibility_patch_base_commit": PATCH_BASE_COMMIT,
         "frozen_ontology_version": "2.0.0-core-review.1",
         "frozen_core_artifact_hashes": frozen_hashes,
         "source_inventory": {
@@ -348,12 +477,12 @@ def build(
     }
     test_summary = {
         "schema_version": "sckg-ontology-v2-compatibility-test-summary-v1",
-        "focused_tests": focused_tests,
-        "regression_tests": regression_tests,
-        "chat_import": "PENDING" if regression_tests == "not_run" else "PASS",
-        "chat_runtime": "PENDING" if regression_tests == "not_run" else "PASS",
-        "chat_retrieval": "PENDING" if regression_tests == "not_run" else "PASS",
-        "chat_planner": "PENDING" if regression_tests == "not_run" else "PASS",
+        "focused_tests": focused_result.model_dump(mode="json"),
+        "regression_tests": regression_result.model_dump(mode="json"),
+        "chat_import": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
+        "chat_runtime": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
+        "chat_retrieval": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
+        "chat_planner": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
     }
 
     for name, payload in (
@@ -368,9 +497,14 @@ def build(
     artifacts = {name: _sha256(output_dir / name) for name in OUTPUT_NAMES}
     manifest = {
         "schema_version": "sckg-ontology-v2-compatibility-manifest-v1",
-        "checkpoint": "5E-V1-V2-Compatibility-Layer",
-        "status": "PASS" if focused_tests != "not_run" and regression_tests != "not_run" else "PENDING_TESTS",
-        "base_commit": AUTHORITATIVE_BASE_COMMIT,
+        "checkpoint": "5E.1-Compatibility-Safety-Patch",
+        "status": (
+            "PASS"
+            if focused_result.status == "PASS" and regression_result.status == "PASS"
+            else "NEEDS_VERIFICATION"
+        ),
+        "base_commit": PATCH_BASE_COMMIT,
+        "accepted_ontology_commit": AUTHORITATIVE_BASE_COMMIT,
         "branch": "feature/ontology-v2-compat-v1",
         "artifacts": artifacts,
         "read_only": True,
@@ -378,7 +512,7 @@ def build(
         "deterministic": True,
         "non_destructive": True,
         "scientific_content_generated": False,
-        "next_recommended_action": "STOP_FOR_QA",
+        "next_recommended_action": "STOP_FOR_QA_RECHECK",
     }
     _write_json(output_dir / "manifest.json", manifest)
     return manifest
@@ -387,13 +521,39 @@ def build(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--focused-tests", default="not_run")
-    parser.add_argument("--regression-tests", default="not_run")
+    for prefix in ("focused", "regression"):
+        parser.add_argument(
+            f"--{prefix}-status",
+            choices=("PASS", "FAIL", "NOT_RUN", "UNVERIFIED"),
+            default="NOT_RUN",
+        )
+        parser.add_argument(f"--{prefix}-passed", type=int, default=0)
+        parser.add_argument(f"--{prefix}-failed", type=int, default=0)
+        parser.add_argument(f"--{prefix}-errors", type=int, default=0)
+        parser.add_argument(f"--{prefix}-skipped", type=int, default=0)
+        parser.add_argument(f"--{prefix}-command", action="append", default=[])
+        parser.add_argument(f"--{prefix}-evidence")
     args = parser.parse_args()
     build(
         args.output_dir,
-        focused_tests=args.focused_tests,
-        regression_tests=args.regression_tests,
+        focused_tests={
+            "status": args.focused_status,
+            "passed": args.focused_passed,
+            "failed": args.focused_failed,
+            "errors": args.focused_errors,
+            "skipped": args.focused_skipped,
+            "command": args.focused_command,
+            "evidence": args.focused_evidence,
+        },
+        regression_tests={
+            "status": args.regression_status,
+            "passed": args.regression_passed,
+            "failed": args.regression_failed,
+            "errors": args.regression_errors,
+            "skipped": args.regression_skipped,
+            "command": args.regression_command,
+            "evidence": args.regression_evidence,
+        },
     )
 
 

@@ -15,10 +15,16 @@ CompatibilityStatus = Literal[
     "NOT_MAPPABLE",
     "DEFERRED",
 ]
-RelationClassification = Literal[
-    "AUTHORITATIVE_SOURCE",
+PredicateClassification = Literal[
+    "AUTHORITATIVE_LINK_TYPE",
     "DERIVED_PROJECTION",
-    "LEGACY_COMPATIBILITY",
+    "UNRESOLVED_PREDICATE",
+]
+RecordAuthority = Literal[
+    "SUPPORTED_AUTHORITATIVE_RECORD",
+    "CANDIDATE_RECORD",
+    "LEGACY_RECORD",
+    "DERIVED_RECORD",
     "UNRESOLVED",
 ]
 
@@ -29,12 +35,24 @@ class ReadOnlyCompatibilityModel(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, use_enum_values=True)
 
 
-class SourceRecordProvenance(ReadOnlyCompatibilityModel):
+class CompatibilityProvenance(ReadOnlyCompatibilityModel):
     source_layer_id: str = Field(min_length=1)
     source_record_id: str = Field(min_length=1)
     source_schema_version: str | None = None
     source_graph_node_id: str | None = None
+
+
+class SourceRecordProvenance(CompatibilityProvenance):
     source_status: str | None = None
+
+
+class EvidenceCoreProvenance(CompatibilityProvenance):
+    pass
+
+
+class CompatibilityDiagnostics(ReadOnlyCompatibilityModel):
+    legacy_source_status: str | None = None
+    notes: tuple[str, ...] = ()
 
 
 class ScopeQualifierView(ReadOnlyCompatibilityModel):
@@ -49,9 +67,13 @@ class ScopeCompatibilityView(ReadOnlyCompatibilityModel):
     )
     ontology_version: Literal["2.0.0-core-review.1"] = FROZEN_ONTOLOGY_VERSION
     scope_id: str = Field(min_length=1)
+    source_scope_id: str = Field(min_length=1)
     scope_status: Literal["explicit", "partially_known", "unknown", "not_applicable"]
     combination: Literal["ALL_OF", "ANY_OF"]
     qualifiers: tuple[ScopeQualifierView, ...] = ()
+    shared_qualifiers: tuple[ScopeQualifierView, ...] = ()
+    inline_qualifiers: tuple[ScopeQualifierView, ...] = ()
+    composition: Literal["SHARED_ONLY", "SHARED_AND_INLINE"] = "SHARED_ONLY"
     unknown_dimensions: tuple[str, ...] = ()
     provenance: SourceRecordProvenance
 
@@ -69,6 +91,7 @@ class StatementRevisionView(ReadOnlyCompatibilityModel):
     source_predicate: str = Field(min_length=1)
     object_id: str | None = None
     literal_value: str | None = None
+    literal_datatype: str | None = None
     polarity: Literal["POSITIVE", "NEGATIVE"]
     qualifiers: tuple[ScopeQualifierView, ...] = ()
     scope_ref: str | None = None
@@ -119,7 +142,7 @@ class EvidenceSpanCoreView(ReadOnlyCompatibilityModel):
     start_offset: int | None = Field(default=None, ge=0)
     end_offset: int | None = Field(default=None, ge=1)
     activity_ref: str | None = None
-    provenance: SourceRecordProvenance
+    provenance: EvidenceCoreProvenance
 
     @model_validator(mode="after")
     def validate_locator_pairs(self) -> "EvidenceSpanCoreView":
@@ -231,8 +254,12 @@ class RelationCompatibilityView(ReadOnlyCompatibilityModel):
     ontology_version: Literal["2.0.0-core-review.1"] = FROZEN_ONTOLOGY_VERSION
     source_relation: str = Field(min_length=1)
     canonical_predicate: str | None = None
-    classification: RelationClassification
-    authoritative: bool
+    predicate_classification: PredicateClassification
+    record_authority: RecordAuthority
+    semantic_subject_id: str | None = None
+    semantic_object_id: str | None = None
+    trusted: Literal[False] = False
+    canonical: Literal[False] = False
     provenance: SourceRecordProvenance
 
 
@@ -255,3 +282,4 @@ class CompatibilityResult(ReadOnlyCompatibilityModel):
     status: CompatibilityStatus
     reason_codes: tuple[str, ...] = Field(min_length=1)
     view: CompatibilityView | None = None
+    diagnostics: CompatibilityDiagnostics | None = None

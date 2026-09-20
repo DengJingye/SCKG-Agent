@@ -24,7 +24,7 @@ from core.scientific_ontology_v2_compatibility_models import (
 from engine.scientific_ontology_v2_compatibility import (
     ScientificOntologyV2CompatibilityService,
 )
-from eval.build_ontology_v2_compatibility_v1 import build
+from eval.build_ontology_v2_compatibility_v1 import build, collect_assessments
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +36,13 @@ REFERENCE_FIXTURE = (
     / "scientific_knowledge_schema_v1_1"
     / "fixtures"
     / "reference-and-multimodal-requirements.json"
+)
+GRAPH_PATH = (
+    ROOT
+    / "data"
+    / "evidence_candidates"
+    / "scientific_kg_v1_inventory"
+    / "scientific_kg_v1_consolidated_graph.json"
 )
 
 
@@ -102,6 +109,33 @@ def _scope_payload() -> dict:
     }
 
 
+def _predicate_scope_payload(*, scope_id: str = "scope:test:compatibility") -> dict:
+    payload = _scope_payload()
+    payload.update(
+        {
+            "scope_id": scope_id,
+            "task_ids": [],
+            "version_constraints": [
+                {
+                    "subject_id": "operator-revision:test:1",
+                    "status": "exact",
+                    "expression": "1.0.0",
+                }
+            ],
+            "modalities": [],
+            "observation_units": [],
+            "combination": "all_of",
+        }
+    )
+    return payload
+
+
+def _property_scope_payload() -> dict:
+    payload = _scope_payload()
+    payload.update({"task_ids": [], "combination": "all_of"})
+    return payload
+
+
 def _span_payload(*, page: int | None = None, lines: bool = False) -> dict:
     text = "Exact source text."
     payload = {
@@ -125,19 +159,25 @@ def _span_payload(*, page: int | None = None, lines: bool = False) -> dict:
 
 def test_atomic_claim_maps_to_read_only_statement_view_with_preserved_links(
     service: ScientificOntologyV2CompatibilityService,
-    core_bundle: ConformanceBundle,
 ) -> None:
-    claim = next(item for item in core_bundle.atomic_claims if item.predicate == "implements_method")
-    scope = next(item for item in core_bundle.scopes if item.scope_id == claim.scope_id)
-    assessments = [
-        item for item in core_bundle.evidence_assessments if item.claim_revision_id == claim.claim_revision_id
-    ]
+    claim = AtomicClaimRevision.model_validate(_claim_payload())
+    assessment = EvidenceAssessment(
+        assessment_id="evidence-assessment:test:claim",
+        claim_revision_id=claim.claim_revision_id,
+        evidence_span_ids=["evidence-span:test:1"],
+        stance="supports",
+        subject_aligned=True,
+        predicate_aligned=True,
+        object_aligned=True,
+        scope_alignment="aligned",
+        rationale="Explicit compatibility fixture.",
+    )
 
     result = service.map_atomic_claim(
         claim,
-        scope=scope,
-        evidence_assessments=assessments,
-        source_layer_id="scientific_kg_v1_core",
+        scope=_predicate_scope_payload(),
+        evidence_assessments=[assessment],
+        source_layer_id="test_fixture",
         source_status="candidate_not_promoted",
     )
 
@@ -152,7 +192,7 @@ def test_atomic_claim_maps_to_read_only_statement_view_with_preserved_links(
     assert result.view.semantic_fingerprint == claim.semantic_fingerprint
     assert result.view.content == claim.claim_text
     assert result.view.content_hash == claim.content_hash
-    assert result.view.evidence_span_ids == tuple(assessments[0].evidence_span_ids)
+    assert result.view.evidence_span_ids == tuple(assessment.evidence_span_ids)
     assert result.view.source_governance_status == "candidate_not_promoted"
     assert result.view.trusted is False
     with pytest.raises(ValidationError):
@@ -164,7 +204,7 @@ def test_literal_object_is_preserved_but_datatype_ambiguity_is_visible(
 ) -> None:
     result = service.map_atomic_claim(
         _claim_payload(predicate="is_sparse", literal=True),
-        scope=_scope_payload(),
+        scope=_property_scope_payload(),
         source_layer_id="test_fixture",
     )
 
@@ -190,11 +230,111 @@ def test_scope_preserves_any_of_without_flattening(
     }
 
 
+def test_h01_wrong_rna_to_atac_scope_identity_fails_closed(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    wrong_scope = _property_scope_payload()
+    wrong_scope.update({"scope_id": "scope:test:atac", "modalities": ["atac"]})
+    result = service.map_atomic_claim(
+        _claim_payload(), scope=wrong_scope, source_layer_id="test_fixture"
+    )
+    assert result.status == "NOT_MAPPABLE"
+    assert result.reason_codes[0] == "SCOPE_IDENTITY_MISMATCH"
+    assert result.view is None
+
+
+@pytest.mark.parametrize("richer", [False, True])
+def test_h01_same_or_richer_qualifiers_with_wrong_scope_id_fail_closed(
+    service: ScientificOntologyV2CompatibilityService,
+    richer: bool,
+) -> None:
+    wrong_scope = _predicate_scope_payload(scope_id="scope:test:wrong")
+    if richer:
+        wrong_scope["parameter_conditions"] = [
+            {"parameter_id": "parameter:test", "operator": "equals", "values": ["x"]}
+        ]
+    result = service.map_atomic_claim(
+        _claim_payload(), scope=wrong_scope, source_layer_id="test_fixture"
+    )
+    assert result.status == "NOT_MAPPABLE"
+    assert result.reason_codes[0] == "SCOPE_IDENTITY_MISMATCH"
+
+
+def test_h01_missing_expected_scope_is_ambiguous_and_exact_scope_succeeds(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    missing = service.map_atomic_claim(
+        _claim_payload(), scope=None, source_layer_id="test_fixture"
+    )
+    exact = service.map_atomic_claim(
+        _claim_payload(), scope=_predicate_scope_payload(), source_layer_id="test_fixture"
+    )
+    assert missing.status == "AMBIGUOUS_MAPPING"
+    assert missing.reason_codes == ("SCOPE_RECORD_UNAVAILABLE",)
+    assert exact.status == "DIRECT_COMPATIBLE"
+    assert isinstance(exact.view, StatementRevisionView)
+    assert exact.view.scope_ref == "scope:test:compatibility"
+
+
+def test_h02_inline_only_qualifier_is_preserved_as_conjunction(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    scope = _property_scope_payload()
+    scope["observation_units"] = []
+    result = service.map_scope(
+        scope,
+        inline_qualifiers={"organism_taxon": ["NCBITaxon:9606"]},
+        source_layer_id="test_fixture",
+    )
+    assert result.view is not None
+    assert result.view.composition == "SHARED_AND_INLINE"
+    assert {item.dimension for item in result.view.shared_qualifiers} == {"modality"}
+    assert {item.dimension for item in result.view.inline_qualifiers} == {"organism_taxon"}
+    assert {item.dimension for item in result.view.qualifiers} == {
+        "modality",
+        "organism_taxon",
+    }
+
+
+def test_h02_any_of_group_and_inline_conjunction_are_not_flattened(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    scope = _scope_payload()
+    scope["task_ids"] = []
+    scope["observation_units"] = []
+    result = service.map_scope(
+        scope,
+        inline_qualifiers={"organism_taxon": ["NCBITaxon:9606"]},
+        source_layer_id="test_fixture",
+    )
+    assert result.view is not None
+    assert result.view.combination == "ANY_OF"
+    assert result.view.composition == "SHARED_AND_INLINE"
+    assert [item.dimension for item in result.view.shared_qualifiers] == ["modality"]
+    assert [item.dimension for item in result.view.inline_qualifiers] == ["organism_taxon"]
+
+
+def test_h02_duplicate_inline_value_is_deduplicated_in_shared_group(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    scope = _property_scope_payload()
+    result = service.map_scope(
+        scope,
+        inline_qualifiers={"modality": ["rna", "rna"]},
+        source_layer_id="test_fixture",
+    )
+    assert result.view is not None
+    assert result.view.composition == "SHARED_ONLY"
+    assert result.view.inline_qualifiers == ()
+    modality = next(item for item in result.view.shared_qualifiers if item.dimension == "modality")
+    assert modality.values_json == ('"rna"',)
+
+
 def test_statement_supersession_same_family_revision_is_preserved(
     service: ScientificOntologyV2CompatibilityService,
 ) -> None:
     result = service.map_atomic_claim(
-        _claim_payload(), scope=_scope_payload(), source_layer_id="test_fixture"
+        _claim_payload(), scope=_predicate_scope_payload(), source_layer_id="test_fixture"
     )
 
     assert isinstance(result.view, StatementRevisionView)
@@ -318,8 +458,105 @@ def test_can_feed_is_always_derived_and_mapping_is_deterministic(
 
     assert first == second
     assert first.view is not None
-    assert first.view.classification == "DERIVED_PROJECTION"
-    assert first.view.authoritative is False
+    assert first.view.predicate_classification == "DERIVED_PROJECTION"
+    assert first.view.record_authority == "DERIVED_RECORD"
+    assert first.view.trusted is False
+
+
+def test_h03_candidate_authoritative_predicate_remains_candidate_record(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    result = service.classify_relation(
+        {
+            "graph_edge_id": "edge:test:candidate-implements",
+            "predicate": "implements_method",
+            "semantic_subject_id": "operator-revision:test:1",
+            "semantic_object_id": "method:test",
+            "status": "candidate_not_promoted",
+        },
+        source_layer_id="test_fixture",
+        source_status="candidate_not_promoted",
+    )
+    assert result.status == "COMPATIBLE_WITH_ADAPTER"
+    assert result.view is not None
+    assert result.view.predicate_classification == "AUTHORITATIVE_LINK_TYPE"
+    assert result.view.record_authority == "CANDIDATE_RECORD"
+    assert result.view.trusted is False
+    assert result.view.canonical is False
+
+
+def test_h03_wrong_domain_authoritative_predicate_is_unresolved(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    result = service.classify_relation(
+        {
+            "graph_edge_id": "edge:test:wrong-domain",
+            "predicate": "implements_method",
+            "semantic_subject_id": "method:not-an-operator-revision",
+            "semantic_object_id": "method:test",
+        },
+        source_layer_id="test_fixture",
+        source_status="candidate_not_promoted",
+    )
+    assert result.status == "NOT_MAPPABLE"
+    assert result.reason_codes == ("INVALID_RELATION_ENDPOINT_PAIR",)
+    assert result.view is not None
+    assert result.view.record_authority == "UNRESOLVED"
+    assert result.view.trusted is False
+
+    legacy_alias = service.classify_relation(
+        {
+            "graph_edge_id": "edge:test:wrong-domain-legacy-alias",
+            "predicate": "IMPLEMENTS_METHOD",
+            "semantic_subject_id": "method:not-an-operator-revision",
+            "semantic_object_id": "method:test",
+        },
+        source_layer_id="test_fixture",
+        source_status="candidate_not_promoted",
+    )
+    assert legacy_alias.status == "NOT_MAPPABLE"
+    assert legacy_alias.reason_codes == ("INVALID_RELATION_ENDPOINT_PAIR",)
+    assert legacy_alias.view is not None
+    assert legacy_alias.view.record_authority == "UNRESOLVED"
+
+
+def test_m01_entity_predicate_and_typed_scalar_property_constraints(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    entity = service.map_atomic_claim(
+        _claim_payload(), scope=_predicate_scope_payload(), source_layer_id="test_fixture"
+    )
+    scalar = service.map_atomic_claim(
+        _claim_payload(predicate="is_sparse", literal=True),
+        scope=_property_scope_payload(),
+        literal_datatype="boolean",
+        source_layer_id="test_fixture",
+    )
+    wrong_object = _claim_payload(predicate="is_sparse")
+    wrong_object["subject_id"] = "representation-type:test"
+    invalid = service.map_atomic_claim(
+        wrong_object,
+        scope=_property_scope_payload(),
+        source_layer_id="test_fixture",
+    )
+    assert isinstance(entity.view, StatementRevisionView)
+    assert scalar.status == "DIRECT_COMPATIBLE"
+    assert isinstance(scalar.view, StatementRevisionView)
+    assert scalar.view.literal_datatype == "boolean"
+    assert invalid.status == "NOT_MAPPABLE"
+    assert invalid.reason_codes[0] == "SCALAR_PROPERTY_REQUIRES_LITERAL_OBJECT"
+
+
+def test_m01_disallowed_qualifier_is_reported_not_dropped(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    result = service.map_atomic_claim(
+        _claim_payload(), scope=_scope_payload(), source_layer_id="test_fixture"
+    )
+    assert result.status == "AMBIGUOUS_MAPPING"
+    assert result.reason_codes[0] == "PREDICATE_SCOPE_DIMENSION_NOT_ALLOWED"
+    assert set(result.reason_codes[1:]) == {"modality", "observation_unit", "task"}
+    assert result.view is None
 
 
 def test_unknown_predicate_fails_closed(
@@ -527,8 +764,9 @@ def test_derived_relation_input_cannot_claim_authority(
         source_layer_id="test_fixture",
     )
     assert result.view is not None
-    assert result.view.classification == "DERIVED_PROJECTION"
-    assert result.view.authoritative is False
+    assert result.view.predicate_classification == "DERIVED_PROJECTION"
+    assert result.view.record_authority == "DERIVED_RECORD"
+    assert result.view.trusted is False
 
 
 def test_candidate_claim_cannot_become_trusted(
@@ -536,7 +774,7 @@ def test_candidate_claim_cannot_become_trusted(
 ) -> None:
     result = service.map_atomic_claim(
         _claim_payload(),
-        scope=_scope_payload(),
+        scope=_predicate_scope_payload(),
         source_layer_id="test_fixture",
         source_status="candidate_not_promoted",
     )
@@ -559,8 +797,9 @@ def test_effect_description_cannot_gain_machine_authority(
     assert result.status == "NOT_MAPPABLE"
     assert result.reason_codes == ("EFFECT_DESCRIPTION_DISPLAY_ONLY",)
     assert relation.view is not None
-    assert relation.view.classification == "UNRESOLVED"
-    assert relation.view.authoritative is False
+    assert relation.view.predicate_classification == "UNRESOLVED_PREDICATE"
+    assert relation.view.record_authority == "UNRESOLVED"
+    assert relation.view.trusted is False
 
 
 def test_current_core_records_repeat_deterministically(
@@ -593,16 +832,182 @@ def test_real_v1_span_without_artifact_identity_is_visible_as_ambiguous(
     assert "SOURCE_ARTIFACT_ID_UNAVAILABLE" in result.reason_codes
 
 
+def test_m02_all_requirement_views_use_requirement_identity(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    graph = _json(GRAPH_PATH)
+    constraints_by_layer: dict[str, set[str]] = {}
+    for node in graph["nodes"]:
+        if node["record_type"] == "RepresentationConstraint":
+            constraints_by_layer.setdefault(node["layer_id"], set()).add(node["record_id"])
+    views = []
+    for node in graph["nodes"]:
+        if node["record_type"] != "Requirement":
+            continue
+        result = service.map_requirement(
+            node["record"],
+            known_constraint_ids=constraints_by_layer[node["layer_id"]],
+            source_layer_id=node["layer_id"],
+        )
+        if result.view is not None:
+            views.append((node, result.view))
+    assert len(views) == 102
+    assert all(view.provenance.source_record_id == node["record_id"] for node, view in views)
+    assert all(view.provenance.source_record_id.startswith("requirement:") for _, view in views)
+
+
+def test_m02_all_derived_relation_views_retain_exact_edge_identity(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    graph = _json(GRAPH_PATH)
+    derived = []
+    for edge in graph["edges"]:
+        result = service.classify_relation(
+            edge,
+            source_layer_id=edge["layer_id"],
+            source_status=edge.get("status"),
+        )
+        if result.view is not None and result.view.predicate_classification == "DERIVED_PROJECTION":
+            derived.append((edge, result.view))
+    assert len(derived) == 331
+    assert all(
+        view.provenance.source_record_id == edge["graph_edge_id"] for edge, view in derived
+    )
+    repeated = service.classify_relation(
+        graph["edges"][0],
+        source_layer_id=graph["edges"][0]["layer_id"],
+        source_status=graph["edges"][0].get("status"),
+    )
+    assert repeated.view is not None
+    assert repeated.view.provenance.source_record_id == graph["edges"][0]["graph_edge_id"]
+
+
+def test_m03_evidence_core_view_excludes_governance_status(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    result = service.map_evidence_span(
+        _span_payload(),
+        source_layer_id="test_fixture",
+        source_status="trusted_source_evidence",
+    )
+    assert isinstance(result.view, EvidenceSpanCoreView)
+    serialized_view = json.dumps(result.view.model_dump(mode="json"), sort_keys=True)
+    assert "trusted_source_evidence" not in serialized_view
+    assert "source_status" not in result.view.provenance.model_dump(mode="json")
+    assert result.diagnostics is not None
+    assert result.diagnostics.legacy_source_status == "trusted_source_evidence"
+
+
+def test_m04_evidence_binding_rejects_key_to_wrong_span_object(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    wrong_payload = _span_payload()
+    wrong_payload["evidence_span_id"] = "evidence-span:test:other"
+    wrong = service.map_evidence_span(wrong_payload, source_layer_id="test_fixture")
+    assessment = EvidenceAssessment(
+        assessment_id="evidence-assessment:test:mismatch",
+        claim_revision_id="claim-revision:test:compatibility:1",
+        evidence_span_ids=["evidence-span:test:1"],
+        stance="supports",
+        subject_aligned=True,
+        predicate_aligned=True,
+        object_aligned=True,
+        scope_alignment="aligned",
+        rationale="The mapping key intentionally points to a different span object.",
+    )
+    result = service.map_evidence_assessment(
+        assessment,
+        statement_revision_ids={assessment.claim_revision_id},
+        evidence_spans={"evidence-span:test:1": wrong},
+        source_layer_id="test_fixture",
+    )
+    assert result.status == "NOT_MAPPABLE"
+    assert result.reason_codes[0] == "EVIDENCE_SPAN_NOT_AVAILABLE"
+    assert result.view is None
+
+
+def test_m04_two_assessments_for_one_statement_are_collected_independently() -> None:
+    base = {
+        "claim_revision_id": "claim-revision:test:compatibility:1",
+        "evidence_span_ids": ["evidence-span:test:1"],
+        "object_aligned": True,
+        "predicate_aligned": True,
+        "rationale": "Independent assessment.",
+        "review_decision_ids": [],
+        "schema_version": "sckg-evidence-assessment-v1.1",
+        "scope_alignment": "aligned",
+        "subject_aligned": True,
+    }
+    first = {**base, "assessment_id": "evidence-assessment:test:support", "stance": "supports"}
+    second = {**base, "assessment_id": "evidence-assessment:test:refute", "stance": "refutes"}
+    edges = [
+        {"layer_id": "test", "provenance": {"evidence_assessment": first}},
+        {"layer_id": "test", "provenance": {"evidence_assessment": second}},
+    ]
+    by_identity, by_claim = collect_assessments(edges)
+    assert set(by_identity) == {
+        ("test", "evidence-assessment:test:support"),
+        ("test", "evidence-assessment:test:refute"),
+    }
+    assert len(by_claim[("test", "claim-revision:test:compatibility:1")]) == 2
+
+
+def test_m04_support_and_refutation_coexist_without_trust_aggregation(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    span = service.map_evidence_span(_span_payload(), source_layer_id="test_fixture")
+    results = []
+    for suffix, stance in (("support", "supports"), ("refute", "refutes")):
+        assessment = EvidenceAssessment(
+            assessment_id=f"evidence-assessment:test:{suffix}",
+            claim_revision_id="claim-revision:test:compatibility:1",
+            evidence_span_ids=["evidence-span:test:1"],
+            stance=stance,
+            subject_aligned=True,
+            predicate_aligned=True,
+            object_aligned=True,
+            scope_alignment="aligned",
+            rationale="Independent aligned assessment.",
+        )
+        results.append(
+            service.map_evidence_assessment(
+                assessment,
+                statement_revision_ids={assessment.claim_revision_id},
+                evidence_spans={"evidence-span:test:1": span},
+                source_layer_id="test_fixture",
+            )
+        )
+    assert [result.view.support_type for result in results] == ["DIRECT_SUPPORT", "REFUTES"]
+    assert all(result.view.trusted is False for result in results)
+
+
+def test_m05_failed_or_unverified_test_input_cannot_emit_pass(tmp_path: Path) -> None:
+    failed_dir = tmp_path / "failed"
+    missing_evidence_dir = tmp_path / "missing-evidence"
+    failed = build(failed_dir, focused_tests="FAILED", regression_tests="FAILED")
+    unverified = build(
+        missing_evidence_dir,
+        focused_tests={
+            "status": "PASS",
+            "passed": 10,
+            "command": ["pytest tests/example.py"],
+        },
+        regression_tests=None,
+    )
+    failed_summary = _json(failed_dir / "test_summary.json")
+    unverified_summary = _json(missing_evidence_dir / "test_summary.json")
+    assert failed["status"] != "PASS"
+    assert failed_summary["focused_tests"]["status"] == "FAIL"
+    assert failed_summary["regression_tests"]["status"] == "FAIL"
+    assert unverified["status"] != "PASS"
+    assert unverified_summary["focused_tests"]["status"] == "UNVERIFIED"
+    assert unverified_summary["regression_tests"]["status"] == "NOT_RUN"
+
+
 def test_evaluation_build_is_deterministic_and_does_not_mutate_source_data(
     tmp_path: Path,
 ) -> None:
-    graph = (
-        ROOT
-        / "data"
-        / "evidence_candidates"
-        / "scientific_kg_v1_inventory"
-        / "scientific_kg_v1_consolidated_graph.json"
-    )
+    graph = GRAPH_PATH
     before = hashlib.sha256(graph.read_bytes()).hexdigest()
     first = tmp_path / "first"
     second = tmp_path / "second"
@@ -620,6 +1025,8 @@ def test_checked_in_evaluation_inventory_counts_and_hashes_are_consistent() -> N
     output = ROOT / "data" / "evaluation" / "ontology_v2_compatibility_v1"
     counts = _json(output / "compatibility_counts.json")
     manifest = _json(output / "manifest.json")
+    summary = _json(output / "mapping_summary.json")
+    unresolved = _json(output / "unresolved_mappings.json")["mappings"]
 
     assert counts["atomic_claim_revision_total_all"] == 380
     assert sum(
@@ -635,6 +1042,37 @@ def test_checked_in_evaluation_inventory_counts_and_hashes_are_consistent() -> N
     assert counts["evidence_spans_inspected"] == 170
     assert counts["evidence_core_views"] + counts["evidence_invalid"] == 170
     assert counts["evidence_normalized_fully_compatible"] == 0
+    assert counts["evidence_missing_artifact_id"] == 141
+    assert counts["evidence_missing_revision_id"] == 90
+    assert counts["evidence_hash_rejected"] == 29
+    assert summary["atomic_claims"]["status_counts"] == {
+        "AMBIGUOUS_MAPPING": 317,
+        "COMPATIBLE_WITH_ADAPTER": 0,
+        "DEFERRED": 0,
+        "DIRECT_COMPATIBLE": 0,
+        "NOT_MAPPABLE": 63,
+    }
+    atomic_primary_reasons: dict[str, int] = {}
+    for item in unresolved:
+        if item["category"] != "AtomicClaimRevision":
+            continue
+        reason = item["reason_codes"][0]
+        atomic_primary_reasons[reason] = atomic_primary_reasons.get(reason, 0) + 1
+    assert atomic_primary_reasons == {
+        "CLAIM_SCOPE_NOT_COMPATIBLE": 19,
+        "INVALID_STATEMENT_ENDPOINT_PAIR": 4,
+        "KNOWN_NON_STATEMENT_RELATION": 198,
+        "PREDICATE_SCOPE_DIMENSION_NOT_ALLOWED": 100,
+        "UNKNOWN_PREDICATE": 59,
+    }
+    hash_rejections = [
+        item
+        for item in unresolved
+        if item["category"] == "EvidenceSpan"
+        and item["reason_codes"][0] == "EVIDENCE_TEXT_HASH_MISMATCH"
+    ]
+    assert len(hash_rejections) == 29
+    assert {item["layer_id"] for item in hash_rejections} == {"content_expansion_v1"}
     assert manifest["read_only"] is True
     assert manifest["scientific_content_generated"] is False
     assert all(
