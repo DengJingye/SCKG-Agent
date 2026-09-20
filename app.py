@@ -1034,6 +1034,12 @@ from engine.knowledge_graph_view import (
     build_knowledge_graph_view,
 )
 from engine.scientific_kg_admin import ScientificKGAdminSnapshotService
+from engine.scientific_knowledge_studio import (
+    ScientificKnowledgeStudioService,
+    load_studio_evaluation_snapshot,
+    load_studio_run,
+    proposal_graph_view,
+)
 from engine.decision_graph_query import DecisionGraphQuery
 from engine.action_bundle_retriever import ActionBundleRetriever
 from engine.evidence_graph_query import EvidenceGraphQuery
@@ -4053,6 +4059,190 @@ def _render_evaluation_admin_panel() -> None:
         st.info("No real group trial feedback has been recorded.")
 
 
+def _render_candidate_studio(
+    scientific_summary: Dict[str, Any],
+) -> None:
+    st.markdown(
+        """
+<div style="border:2px solid #b45309;background:#fff7ed;padding:.8rem 1rem;border-radius:8px;margin:.2rem 0 1rem">
+  <strong>PREVIEW ONLY · Scientific KG unchanged</strong><br/>
+  <span style="font-size:.85rem;color:#6b4f2f">KG mutation: DISABLED · ReviewDecision: NOT AVAILABLE · Canonical promotion: NOT AVAILABLE</span>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+    st.caption(
+        "Exactly one text-extractable PDF · candidate_proposal only · no production RAG indexing or Planner consumption"
+    )
+    studio = ScientificKnowledgeStudioService(Path(__file__).resolve().parent)
+    upload_col, action_col = st.columns([3, 1])
+    with upload_col:
+        uploaded = st.file_uploader(
+            "One scientific PDF",
+            type=["pdf"],
+            accept_multiple_files=False,
+            key="scientific_knowledge_studio_pdf",
+            help="The PDF is parsed locally. The binary and full text are not committed to the evaluation snapshot.",
+        )
+    with action_col:
+        st.write("")
+        run_clicked = st.button(
+            "Build preview",
+            type="primary",
+            disabled=uploaded is None,
+            key="scientific_knowledge_studio_run",
+        )
+    if run_clicked and uploaded is not None:
+        try:
+            result = studio.run_pdf_bytes(uploaded.name, uploaded.getvalue())
+            st.session_state.scientific_knowledge_studio_run_dir = str(result["run_dir"])
+            st.success("Candidate Proposal preview built. Scientific KG remains unchanged.")
+        except Exception as exc:
+            st.error(f"Studio preview blocked: {type(exc).__name__}: {exc}")
+
+    run: Dict[str, Any] | None = None
+    runtime_value = st.session_state.get("scientific_knowledge_studio_run_dir")
+    if runtime_value:
+        runtime_path = Path(runtime_value)
+        if (runtime_path / "manifest.json").is_file():
+            run = load_studio_run(runtime_path)
+    if run is None:
+        frozen = Path(__file__).resolve().parent / "data/evaluation/scientific_knowledge_studio_v1"
+        if (frozen / "manifest.json").is_file():
+            run = load_studio_evaluation_snapshot(frozen)
+            st.caption("Showing the frozen first real-PDF preview run.")
+    if run is None:
+        st.info("Upload one PDF to create a preview. No Scientific KG mutation will occur.")
+        waiting = [{"step": index, "stage": stage, "status": "WAITING"} for index, stage in enumerate(
+            ["Upload", "Source", "Parse", "Evidence", "Extract", "Resolve", "Validate", "Preview"], 1
+        )]
+        st.dataframe(waiting, use_container_width=True, hide_index=True)
+        return
+
+    trace = run["trace"]
+    stage_labels = {
+        "UPLOAD": "Upload", "SOURCE_IDENTITY": "Source", "PARSE": "Parse",
+        "EVIDENCE_PROPOSAL": "Evidence", "SEMANTIC_EXTRACTION": "Extract",
+        "IDENTITY_RESOLUTION": "Resolve", "VALIDATION": "Validate", "PREVIEW": "Preview",
+    }
+    step_cols = st.columns(8)
+    for index, row in enumerate(trace):
+        step_cols[index].metric(f"{index + 1} {stage_labels[row['stage']]}", row["status"])
+
+    evidence_rows = list(run["evidence"])
+    segment_rows = {row["segment_id"]: row for row in run["segments"]}
+    viewer_col, graph_col = st.columns([1.0, 1.25])
+    with viewer_col:
+        st.markdown("#### Document Evidence")
+        if evidence_rows:
+            labels = {
+                f"Page {row['page_number']} · {row['proposal_id'][-8:]}": row
+                for row in evidence_rows
+            }
+            selected_label = st.selectbox(
+                "EvidenceSpanProposal", list(labels), key="studio_evidence_selection"
+            )
+            selected = labels[selected_label]
+            segment = segment_rows.get(selected["segment_id"], {})
+            st.caption(
+                f"Page {selected['page_number']} · Segment {selected['segment_id']} · "
+                f"offsets {selected['start_offset']}:{selected['end_offset']}"
+            )
+            text = str(segment.get("exact_text") or selected["exact_text"])
+            start = int(selected.get("start_offset") or 0)
+            end = int(selected.get("end_offset") or len(text))
+            if segment:
+                highlighted = (
+                    escape(text[:start])
+                    + '<mark style="background:#fde68a">'
+                    + escape(text[start:end])
+                    + "</mark>"
+                    + escape(text[end:])
+                )
+                st.markdown(
+                    f'<div style="border:1px solid #d9e0e8;border-radius:7px;padding:.85rem;line-height:1.55;max-height:420px;overflow:auto">{highlighted}</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.info(selected["exact_text"])
+            st.caption(f"Evidence validation: {selected['validation_status']}")
+        else:
+            st.warning("No bounded EvidenceSpanProposal was produced.")
+    with graph_col:
+        st.markdown("#### Candidate Proposal Graph")
+        st.caption("Existing KG · new proposal · ambiguous · invalid · evidence · source")
+        graph = proposal_graph_view(run["proposal_graph"])
+        components.html(build_knowledge_graph_html(graph), height=520, scrolling=False)
+
+    diff = run["candidate_diff"]
+    st.markdown("#### Current Scientific KG vs Proposed Delta")
+    st.caption("If accepted, proposed delta would be…")
+    current_cols = st.columns(3)
+    current_cols[0].metric("Current nodes", f"{diff['current_nodes']:,}")
+    current_cols[1].metric("Current edges", f"{diff['current_edges']:,}")
+    current_cols[2].metric("Current candidate claims", f"{diff['current_candidate_claims']:,}")
+    if (
+        diff["current_nodes"] != scientific_summary["scientific_kg_nodes"]
+        or diff["current_edges"] != scientific_summary["scientific_kg_edges"]
+        or diff["current_candidate_claims"] != scientific_summary["candidate_claims"]
+    ):
+        st.error("Frozen Studio diff does not match the current Scientific KG snapshot.")
+    delta_cols = st.columns(4)
+    delta_cols[0].metric("Entity proposals", f"+ {diff['entity_proposals']}")
+    delta_cols[1].metric("Relation proposals", f"+ {diff['relation_proposals']}")
+    delta_cols[2].metric("Claim proposals", f"+ {diff['atomic_claim_proposals']}")
+    delta_cols[3].metric("Evidence proposals", f"+ {diff['evidence_span_proposals']}")
+
+    entities_tab, relations_tab, claims_tab, evidence_tab, validation_tab = st.tabs(
+        ["Entities", "Relations", "Claims", "Evidence", "Validation"]
+    )
+    with entities_tab:
+        st.dataframe(_safe_rows(run["entities"]), use_container_width=True, hide_index=True)
+    with relations_tab:
+        if run["relations"]:
+            st.dataframe(_safe_rows(run["relations"]), use_container_width=True, hide_index=True)
+        else:
+            st.info("No relation proposal passed the constrained extractor in this run.")
+    with claims_tab:
+        claim_rows = []
+        for row in run["claims"]:
+            scope = next((item for item in run["scopes"] if item["scope_proposal_id"] == row["scope_proposal_id"]), {})
+            claim_rows.append({
+                "Claim": row["claim_text"],
+                "Subject": row["subject_ref"],
+                "Claim type": row["claim_type"],
+                "Object / requirement": row["object_or_requirement"],
+                "Scope": json.dumps(scope.get("dimensions", {}), ensure_ascii=False),
+                "Version/flavor": ", ".join([*row.get("version_conditions", []), *row.get("flavor_conditions", [])]),
+                "Evidence": ", ".join(row["supporting_evidence_span_ids"]),
+                "Validation": row["validation_status"],
+                "Knowledge status": row["knowledge_status"],
+            })
+        st.dataframe(_safe_rows(claim_rows), use_container_width=True, hide_index=True)
+    with evidence_tab:
+        st.dataframe(_safe_rows(evidence_rows), use_container_width=True, hide_index=True)
+    with validation_tab:
+        counts = run["validation"].get("counts", {})
+        cols = st.columns(3)
+        cols[0].metric("VALID", counts.get("VALID", 0))
+        cols[1].metric("NEEDS_REVIEW", counts.get("NEEDS_REVIEW", 0))
+        cols[2].metric("INVALID", counts.get("INVALID", 0))
+        st.caption("Schema · Evidence · Identity · Governance validators")
+
+    st.markdown("#### Run Trace")
+    st.dataframe(
+        _safe_rows([
+            {
+                "stage": row["stage"], "status": row["status"], "timestamp": row["timestamp"],
+                "reason": row["reason"], "hash": row["content_hash"],
+            }
+            for row in trace
+        ]),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
 def _render_scientific_kg_admin_page() -> None:
     """Render the read-only Scientific KG checkpoint snapshot."""
 
@@ -4072,8 +4262,8 @@ def _render_scientific_kg_admin_page() -> None:
         "SCIENTIFIC_KG only · checkpoint-1 physical layer counts · "
         "candidate ≠ reviewed ≠ trusted ≠ execution-authorized"
     )
-    overview_tab, graph_tab, readiness_tab = st.tabs(
-        ["Overview", "Scientific Graph", "Readiness & Integrity"]
+    overview_tab, graph_tab, readiness_tab, studio_tab = st.tabs(
+        ["Overview", "Scientific Graph", "Readiness & Integrity", "Candidate Studio"]
     )
 
     with overview_tab:
@@ -4269,6 +4459,9 @@ def _render_scientific_kg_admin_page() -> None:
         st.caption(
             "Warnings preserve declared coverage gaps and unreferenced materialized spans. They are visible evidence boundaries, not hidden successes."
         )
+
+    with studio_tab:
+        _render_candidate_studio(summary)
 
 def _render_memory_admin_panel() -> None:
     _render_admin_header(

@@ -209,10 +209,11 @@ def test_scientific_kg_admin_page_renders_frozen_counts_and_three_tabs() -> None
     )
 
     assert len(app.exception) == 0
-    assert [tab.label for tab in app.tabs] == [
+    assert [tab.label for tab in app.tabs[:4]] == [
         "Overview",
         "Scientific Graph",
         "Readiness & Integrity",
+        "Candidate Studio",
     ]
     metrics = {metric.label: metric.value for metric in app.metric}
     assert metrics["Scientific nodes"] == "1,651"
