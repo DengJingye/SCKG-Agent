@@ -1433,6 +1433,11 @@ def validate(
 
 
 def main() -> int:
+    raise SystemExit(
+        "Historical Phase 2.1 generator disabled: it uses superseded coverage sources. "
+        "Use run_lane_alignment_audit.py then build_development_review.py. "
+        "Raw seeds and clustering outputs remain reusable; no recollection is needed."
+    )
     original_seeds = read_jsonl(BASE_DIR / "raw_seeds_pilot.jsonl")
     paper_seeds = [paper_seed(spec) for spec in PAPER_SEED_SPECS]
     all_seeds = original_seeds + paper_seeds

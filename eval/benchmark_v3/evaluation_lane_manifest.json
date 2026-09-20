@@ -1,4 +1,5 @@
 {
+  "actual_request_receipts_required": true,
   "approved_consumer_invariants": {
     "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
     "approved_statement_count": 121,
@@ -13,6 +14,8 @@
     "integration_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
     "rule": "07 runtime implementation at this commit is the only lane definition"
   },
+  "comparison_estimand": "product bundle, not graph structure alone",
+  "configuration_observation": "static immutable-code inspection; no runtime observations",
   "coverage_exclusion_rule": "Planner, ToolContracts, execution guards, validation contracts, and approval system are common infrastructure. Their records and behavior cannot establish any V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.",
   "formal_agent_gain_run": false,
   "frozen_at": "2026-09-21",
@@ -35,9 +38,10 @@
       "retrieval_budget": {
         "enable_dense": false,
         "enable_sparse": false,
-        "include_catalog": false,
+        "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+        "maximum_returned_hits": 0,
         "sparse_candidate_limit": 0,
-        "top_k": 0,
+        "top_k": "incoming request may vary; no-retrieval backend returns zero hits",
         "use_contract_gate": false,
         "use_governance_rerank": false,
         "use_kg": false,
@@ -55,6 +59,7 @@
       "backend_class": "engine.hybrid_retrieval.HybridRetrievalService",
       "caution_policy": "no Scientific KG caution context",
       "corpus_digests": {
+        "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
         "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
         "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
         "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
@@ -68,9 +73,9 @@
       "retrieval_budget": {
         "enable_dense": false,
         "enable_sparse": true,
-        "include_catalog": false,
-        "sparse_candidate_limit": 144,
-        "top_k": 12,
+        "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+        "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+        "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
         "use_contract_gate": false,
         "use_governance_rerank": false,
         "use_kg": false,
@@ -91,6 +96,7 @@
         "candidate_bindings_sha256": "b9b77442968a705787b77c2b1a74c094d9a7223bd7d3eeebc7e028954c66c76f",
         "candidate_bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
         "candidate_manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+        "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
         "legacy_inventory_sha256": "9a6da2e3981bbeddd5654d3f59b766bdc55d805ba52dec9beaead90294cdb138",
         "legacy_tool_graph_edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
         "legacy_tool_graph_nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3",
@@ -104,9 +110,9 @@
       "retrieval_budget": {
         "enable_dense": false,
         "enable_sparse": true,
-        "include_catalog": false,
-        "sparse_candidate_limit": 144,
-        "top_k": 12,
+        "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+        "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+        "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
         "use_contract_gate": false,
         "use_governance_rerank": false,
         "use_kg": true,
@@ -147,7 +153,7 @@
         "legacy_kg_used": false,
         "maximum_approved_facts": 12,
         "maximum_caution_contexts": 4,
-        "top_k": 12
+        "top_k": "per request; approved facts capped at min(request.top_k, 12)"
       },
       "shared_runtime_components": [
         "Planner",
@@ -158,8 +164,8 @@
       ]
     }
   ],
-  "run_id": "lane-alignment-20260921-v1",
-  "schema_version": "sckg-evaluation-lane-manifest-v1",
+  "run_id": "lane-alignment-20260921-v2-withdrawal",
+  "schema_version": "sckg-evaluation-lane-manifest-v2",
   "shared_runtime": [
     {
       "component": "Planner",

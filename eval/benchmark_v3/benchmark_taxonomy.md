@@ -1,7 +1,7 @@
 # scKG-Agent V3 Benchmark Taxonomy
 
-Status: Phase 2.2 candidate taxonomy. It describes raw and candidate metadata, not
-DEV/Gold labels and not an Agent Gain result.
+Status: V3 offline development review. These are candidate/sidecar dimensions,
+not Gold labels or an Agent Gain result. The old all-000 conclusion is withdrawn.
 
 The taxonomy has three independent dimensions. They must be stored and reported
 separately. A question's origin does not imply its knowledge coverage, and
@@ -91,7 +91,9 @@ by 07 integration commit `5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee`:
   `ScientificKGEvidence` adapter, and the legacy tool/catalog graph used for
   candidate filtering. It must not be widened to the approved snapshot.
 - RAG is the paired `generic_rag` BM25 consumer over the frozen 800-chunk
-  retrieval foundation, with graph and scientific-evidence channels disabled.
+  retrieval foundation (790 non-quarantined), plus1847 catalog records conditional
+  on `include_catalog=true`, with graph/scientific-evidence channels disabled.
+  Catalog authority is discovery metadata only, not recommendation/execution evidence.
 
 Planner, ToolContracts, execution guards, validation contracts, and the approval
 system are shared infrastructure across all four lanes. They cannot establish a
@@ -100,10 +102,18 @@ V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.
 In this re-audit, `present` means the frozen consumer source contains enough
 records to establish every critical fact/condition declared for the candidate,
 not merely a related tool, method name, or partial lexical hit. Each `present`
-entry therefore has stable supporting IDs. Each `absent` entry records an
-exhaustive frozen-record scan, query variants, record count, partial-match IDs,
-and a manual sufficiency conclusion. These are candidate-audit decisions with
-`review_status=needs_adjudication`; they are not answer Gold.
+entry therefore has stable supporting IDs, bound excerpts and scope reasons.
+Each `absent` entry requires human-checked negative-search scope, variants,
+inventory digest, related IDs and reasons for insufficiency. A program scan is
+not a manual conclusion. All critical fact-by-source cells require two reviews
+(00 resolves disagreement) before deriving a signature. Unreviewed cells are unknown.
+
+Scientific facts, user context/state and task outputs are three separate fields.
+Missing user data/version or computed output does not imply absent knowledge.
+Runtime-only tasks, once requirements are reviewed, use `not_applicable` with
+null exact signature/coarse label; they must not be encoded as000.
+The current20 historical labels are withdrawn to unknown, awaiting decomposition.
+See `coverage_review.py` and `scoring_protocol.md` for the review contract.
 
 ## 3. Failure stage
 

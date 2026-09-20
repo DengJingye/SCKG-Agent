@@ -1,5 +1,9 @@
 # Phase 2.1 Candidate Quality & Coverage Audit Report
 
+> Historical report: BOTH the Phase2.1 ToolContract coverage and Phase2.2
+> hardcoded all-000 coverage are WITHDRAWN. All20 current labels are unknown.
+> The following former notice is historical, not a valid scientific conclusion.
+>
 > Superseded coverage notice: Phase 2.2 re-audited all 20 identity drafts against
 > the exact consumers at 07 integration commit
 > `5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee`. The Phase 2.1 `100` result used a

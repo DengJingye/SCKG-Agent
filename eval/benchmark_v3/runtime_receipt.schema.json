@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sckg:benchmark-v3:runtime-receipt:v1",
+  "title": "Per-attempt telemetry sidecar for EvaluationRunRecord (not an experiment result)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "attempt_id", "lane", "experiment_manifest_digest", "scenario_digest", "session_id", "status", "seed", "retrieval_requests", "provider_calls", "artifact_checks", "failure_evidence", "latency_ms"],
+  "properties": {
+    "schema_version": {"const": "sckg-runtime-receipt-v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "attempt_id": {"type": "string", "minLength": 1},
+    "parent_attempt_id": {"type": ["string", "null"]},
+    "lane": {"enum": ["llm_only", "generic_rag", "legacy_kg", "scientific_kg", "mechanism_structured", "mechanism_lossless_text", "mechanism_scope_off"]},
+    "experiment_manifest_digest": {"$ref": "#/$defs/hash"},
+    "scenario_digest": {"$ref": "#/$defs/hash"},
+    "session_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["completed", "failed", "blocked", "not_run"]},
+    "not_run_reason": {"type": "string", "minLength": 1},
+    "seed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scheduling_seed", "provider_seed_supported", "requested", "actual"],
+      "properties": {
+        "scheduling_seed": {"type": "integer"},
+        "provider_seed_supported": {"type": ["boolean", "null"]},
+        "requested": {"type": ["integer", "null"]},
+        "actual": {"type": ["integer", "null"]}
+      }
+    },
+    "retrieval_requests": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["request_id", "trace_span_id", "path", "backend", "snapshot_digest", "effective_request", "returned_ids", "excluded_ids", "final_context_ref", "final_context_sha256", "final_context_tokens"],
+        "properties": {
+          "request_id": {"type": "string", "minLength": 1},
+          "trace_span_id": {"type": "string", "minLength": 1},
+          "path": {"enum": ["search_catalog", "search_evidence", "fallback", "supplemental", "other_recorded"]},
+          "backend": {"type": "string", "minLength": 1},
+          "snapshot_digest": {"$ref": "#/$defs/hash"},
+          "effective_request": {
+            "type": "object", "required": ["query", "top_k", "include_catalog", "enable_dense", "use_kg"],
+            "properties": {
+              "query": {"type": "string"}, "top_k": {"type": "integer", "minimum": 0},
+              "include_catalog": {"type": "boolean"}, "enable_dense": {"type": "boolean"}, "use_kg": {"type": "boolean"}
+            }
+          },
+          "returned_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "excluded_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "final_context_ref": {"type": "string", "minLength": 1},
+          "final_context_sha256": {"$ref": "#/$defs/hash"},
+          "final_context_tokens": {"type": ["integer", "null"], "minimum": 0}
+        }
+      }
+    },
+    "provider_calls": {
+      "type": "array", "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["call_id", "purpose", "provider", "model", "model_revision", "messages_ref", "messages_sha256", "parameters", "status", "input_tokens", "output_tokens", "usage_source", "latency_ms"],
+        "properties": {
+          "call_id": {"type": "string", "minLength": 1},
+          "purpose": {"enum": ["routing", "planning", "synthesis", "support_check", "independent_judge", "other_recorded"]},
+          "provider": {"type": "string", "minLength": 1}, "model": {"type": "string", "minLength": 1},
+          "model_revision": {"type": ["string", "null"]},
+          "messages_ref": {"type": "string", "minLength": 1}, "messages_sha256": {"$ref": "#/$defs/hash"},
+          "parameters": {"type": "object", "required": ["temperature", "max_tokens", "timeout_seconds"]},
+          "status": {"enum": ["completed", "failed", "blocked"]},
+          "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+          "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+          "usage_source": {"enum": ["provider_reported", "local_estimate", "unavailable"]},
+          "latency_ms": {"type": "number", "minimum": 0}
+        }
+      }
+    },
+    "artifact_checks": {"type": "array", "items": {"type": "object", "required": ["artifact_ref", "check_id", "status", "evidence_ref"]}},
+    "failure_evidence": {"type": "array", "items": {
+      "type": "object", "required": ["classification", "evidence_refs", "rationale"],
+      "properties": {
+        "classification": {"enum": ["routing", "state", "retrieval", "scope", "evidence", "synthesis", "planning", "execution", "validation-governance", "coverage_gap", "correct_clarification", "correct_stop", "unresolved"]},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    }},
+    "latency_ms": {"type": ["number", "null"], "minimum": 0}
+  },
+  "allOf": [{"if": {"properties": {"status": {"const": "not_run"}}}, "then": {"required": ["not_run_reason"], "properties": {"provider_calls": {"maxItems": 0}, "retrieval_requests": {"maxItems": 0}}}}],
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

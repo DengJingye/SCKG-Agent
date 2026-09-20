@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Freeze the 07 evaluation lanes and re-audit the Phase 2.1 candidates.
+"""Freeze the 07 evaluation lanes and withdraw invalid Phase 2.2 labels.
 
 This is an offline metadata audit.  It reads immutable Git blobs, never calls an
 LLM or a Research Chat lane, and never treats retrieval success as coverage.
@@ -23,7 +23,8 @@ APPROVED_PACKAGE_COMMIT = "6018699092d979a2da0dda45a19c920018ed9eda"
 APPROVED_PACKAGE_PATH = "reconstruction/promotion_v2/snapshots/approved-v2-01"
 APPROVED_KG_SHA256 = "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4"
 HELD_STATEMENT_ID = "statement-revision:d0d887b96b7a1cf45e2c47bf:1"
-RUN_ID = "lane-alignment-20260921-v1"
+RUN_ID = "lane-alignment-20260921-v2-withdrawal"
+HISTORICAL_AUDIT_COMMIT = "810ed0853c763c0a497f74100f7bb8d47ed2e4e8"
 FROZEN_AT = "2026-09-21"
 
 RETRIEVAL_ROOT = "data/indexes/retrieval_foundation_v1"
@@ -199,6 +200,26 @@ def load_and_verify_sources() -> dict[str, Any]:
     ):
         raise ValueError("approved evidence-chain count mismatch")
 
+    # Mirror the immutable consumer's source-chain checks without importing or
+    # executing Research Chat. Counts alone do not establish chain integrity.
+    entities = {row["id"]: row for row in approved["entities"]}
+    provenance = {p["source_artifact_id"]: p for p in approved["provenance"]
+                  if "source" in p and "source_revision_id" in p}
+    artifact_links = {(l["subject_id"], l["object_id"]) for l in approved["links"]
+                      if l["predicate"] == "artifact_of"}
+    for span in approved["evidence_spans"]:
+        if sha256(span["exact_text"].encode()) != span["content_hash"]:
+            raise ValueError("approved excerpt hash mismatch")
+        origin = provenance.get(span["source_artifact_id"])
+        if not origin or span["source_artifact_id"] not in entities:
+            raise ValueError("approved source provenance missing")
+        if origin["source_revision_id"] != span["source_revision_id"]:
+            raise ValueError("approved source revision mismatch")
+        if origin["source"].get("text_sha256") not in span["locator"]["value"]:
+            raise ValueError("approved source locator mismatch")
+        if (span["source_artifact_id"], span["source_revision_id"]) not in artifact_links:
+            raise ValueError("approved artifact revision link missing")
+
     retrieval_manifest = json_blob(
         INTEGRATION_COMMIT, f"{RETRIEVAL_ROOT}/evidence_index_manifest.json"
     )
@@ -249,11 +270,11 @@ def lane_manifest(source: dict[str, Any]) -> dict[str, Any]:
         "implementation_commit": INTEGRATION_COMMIT,
         "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
         "retrieval_budget": {
-            "top_k": 12,
-            "include_catalog": False,
+            "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+            "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
             "enable_dense": False,
             "enable_sparse": True,
-            "sparse_candidate_limit": 144,
+            "sparse_candidate_limit": "max(request.top_k * 12, 120)",
             "use_governance_rerank": False,
             "use_contract_gate": False,
         },
@@ -270,7 +291,8 @@ def lane_manifest(source: dict[str, Any]) -> dict[str, Any]:
             caution_policy="no local caution channel",
             retrieval_budget=dict(
                 common["retrieval_budget"],
-                top_k=0,
+                top_k="incoming request may vary; no-retrieval backend returns zero hits",
+                maximum_returned_hits=0,
                 enable_sparse=False,
                 sparse_candidate_limit=0,
                 use_kg=False,
@@ -284,6 +306,7 @@ def lane_manifest(source: dict[str, Any]) -> dict[str, Any]:
             corpus_snapshot_id=retrieval["build_id"],
             corpus_digests={
                 "corpus_digest": retrieval["corpus_digest_after"],
+                "catalog_chunks_sha256": sha256(git_blob(INTEGRATION_COMMIT, f"{RETRIEVAL_ROOT}/scrna_tools_catalog_chunks.jsonl")),
                 "evidence_chunks_sha256": retrieval["artifacts"]["evidence_chunks.jsonl"],
                 "fts_sha256": retrieval["artifacts"]["evidence_fts5.sqlite"],
                 "manifest_sha256": sha256(
@@ -312,6 +335,7 @@ def lane_manifest(source: dict[str, Any]) -> dict[str, Any]:
             ),
             corpus_digests={
                 "retrieval_corpus_digest": retrieval["corpus_digest_after"],
+                "catalog_chunks_sha256": sha256(git_blob(INTEGRATION_COMMIT, f"{RETRIEVAL_ROOT}/scrna_tools_catalog_chunks.jsonl")),
                 "candidate_manifest_sha256": sha256(
                     git_blob(INTEGRATION_COMMIT, f"{LEGACY_CANDIDATE_ROOT}/manifest.json")
                 ),
@@ -357,7 +381,7 @@ def lane_manifest(source: dict[str, Any]) -> dict[str, Any]:
                 "execution_authorized": False,
             },
             retrieval_budget={
-                "top_k": 12,
+                "top_k": "per request; approved facts capped at min(request.top_k, 12)",
                 "maximum_approved_facts": 12,
                 "maximum_caution_contexts": 4,
                 "algorithm": "approved exact-evidence in-memory ranking",
@@ -368,7 +392,10 @@ def lane_manifest(source: dict[str, Any]) -> dict[str, Any]:
         ),
     ]
     return {
-        "schema_version": "sckg-evaluation-lane-manifest-v1",
+        "schema_version": "sckg-evaluation-lane-manifest-v2",
+        "configuration_observation": "static immutable-code inspection; no runtime observations",
+        "comparison_estimand": "product bundle, not graph structure alone",
+        "actual_request_receipts_required": True,
         "run_id": RUN_ID,
         "frozen_at": FROZEN_AT,
         "baseline_truth": {
@@ -407,7 +434,8 @@ def coverage_snapshot(manifest: dict[str, Any]) -> dict[str, Any]:
         "bit_order": ["scientific_kg_v2", "legacy_kg", "ordinary_rag"],
         "assignment_rule": (
             "present requires sufficient consumer-visible facts/conditions plus supporting IDs; "
-            "absent requires a recorded exhaustive search. Shared runtime components never count."
+            "absent requires reviewer-checked negative evidence; search alone leaves unknown. "
+            "Shared runtime components never count."
         ),
         "supersedes": {
             "run_id": "candidate-audit-20260921-v1",
@@ -415,6 +443,11 @@ def coverage_snapshot(manifest: dict[str, Any]) -> dict[str, Any]:
                 "Phase 2.1 used the canonical tool graph as V2 and counted a ToolContract. "
                 "Neither is the approved-v2 consumer used by the 07 scientific_kg lane."
             ),
+        },
+        "withdraws_invalid_audit": {
+            "run_id": "lane-alignment-20260921-v1",
+            "commit": HISTORICAL_AUDIT_COMMIT,
+            "reason": "Unconditional absent/000 generation; no reviewed coverage conclusion.",
         },
         "sources": {
             "scientific_kg_v2": {
@@ -432,7 +465,7 @@ def coverage_snapshot(manifest: dict[str, Any]) -> dict[str, Any]:
                     json.dumps(by_name["legacy_kg"]["corpus_digests"], sort_keys=True).encode()
                 ),
                 "coverage_records": (
-                    "800 retrieval-foundation evidence chunks plus consumer-visible candidate "
+                    "800 evidence chunks (10 quarantined), 1847 conditional catalog metadata records, plus consumer-visible candidate "
                     "ScientificKGEvidence claims/bindings; the legacy tool graph is recorded as a "
                     "filtering channel, not promoted to answer evidence"
                 ),
@@ -440,8 +473,9 @@ def coverage_snapshot(manifest: dict[str, Any]) -> dict[str, Any]:
             "ordinary_rag": {
                 "lane_name": "generic_rag",
                 "snapshot_id": by_name["generic_rag"]["corpus_snapshot_id"],
-                "digest": by_name["generic_rag"]["corpus_digests"]["corpus_digest"],
-                "coverage_records": "800 evidence chunks available to the paired BM25 consumer",
+                "digest": sha256(json.dumps(by_name["generic_rag"]["corpus_digests"], sort_keys=True).encode()),
+                "evidence_corpus_digest": by_name["generic_rag"]["corpus_digests"]["corpus_digest"],
+                "coverage_records": "800 evidence chunks (790 eligible) plus 1847 catalog metadata records when include_catalog=true; authority boundaries retained",
             },
         },
         "shared_runtime_excluded": [row["component"] for row in SHARED_RUNTIME],
@@ -452,7 +486,7 @@ def record_text(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True)
 
 
-def source_records(source: dict[str, Any]) -> tuple[dict[str, list[dict[str, str]]], list[dict[str, str]], list[dict[str, str]]]:
+def source_records(source: dict[str, Any]) -> tuple[dict[str, list[dict[str, Any]]], list[dict[str, str]], list[dict[str, str]]]:
     approved = source["approved"]
     utility = defaultdict(list)
     for row in approved["utility"]:
@@ -465,7 +499,9 @@ def source_records(source: dict[str, Any]) -> tuple[dict[str, list[dict[str, str
     v2_records = []
     for statement in approved["statements"]:
         sid = statement["statement_revision_id"]
-        statement_assessments = assessments[sid]
+        statement_assessments = [a for a in assessments[sid]
+            if a.get("support_type") == "DIRECT_SUPPORT" and all(
+                a.get(k) is True for k in ("subject_aligned", "predicate_aligned", "object_aligned"))]
         span_rows = [
             spans[row["evidence_span_id"]]
             for row in statement_assessments
@@ -478,8 +514,18 @@ def source_records(source: dict[str, Any]) -> tuple[dict[str, list[dict[str, str
             "evidence_spans": span_rows,
             "subject": entities.get(statement["subject_id"]),
             "object": entities.get(statement["object_id"]),
+            "descriptor_links": [link for link in approved["links"]
+                if link["subject_id"] in {statement["subject_id"], statement["object_id"]}],
+            "descriptor_entities": [entities[link["object_id"]] for link in approved["links"]
+                if link["subject_id"] in {statement["subject_id"], statement["object_id"]}
+                and link["predicate"] in {"requires_constraint", "has_output_port"}
+                and link["object_id"] in entities],
+            "source_provenance": [p for p in approved["provenance"]
+                if p.get("source_artifact_id") in {s["source_artifact_id"] for s in span_rows}],
         }
-        v2_records.append({"id": sid, "text": record_text(payload)})
+        v2_records.append({"id": sid, "text": record_text(payload),
+            "kind": "approved_statement", "consumer_eligible": True,
+            "evidence": {s["evidence_span_id"]: s["exact_text"] for s in span_rows}})
 
     caution_records = [
         {"id": row["caution_id"], "text": record_text(row)} for row in source["cautions"]
@@ -517,12 +563,22 @@ def source_records(source: dict[str, Any]) -> tuple[dict[str, list[dict[str, str
             "evidence_spans": [candidate_spans[x] for x in evidence_ids if x in candidate_spans],
             "scopes": candidate_bundle["scopes"],
         }
-        legacy_claim_records.append({"id": cid, "text": record_text(payload)})
+        legacy_claim_records.append({"id": cid, "text": record_text(payload),
+            "kind": "legacy_candidate_claim", "consumer_eligible": bool(binding),
+            "evidence": {s: candidate_spans[s]["source_excerpt"] for s in evidence_ids if s in candidate_spans}})
 
-    rag_records = [
-        {"id": row["chunk_id"], "text": record_text(row)}
-        for row in jsonl_blob(INTEGRATION_COMMIT, f"{RETRIEVAL_ROOT}/evidence_chunks.jsonl")
-    ]
+    rag_records = []
+    for name in ("evidence_chunks.jsonl", "scrna_tools_catalog_chunks.jsonl"):
+        for row in jsonl_blob(INTEGRATION_COMMIT, f"{RETRIEVAL_ROOT}/{name}"):
+            # Same generic rule as the pinned formal_evidence_is_quarantined;
+            # inventory includes quarantined rows but they can never support present.
+            formal = row.get("source_kind", "").casefold() in {"publication", "benchmark"} or row.get("source_type", "").casefold() in {"formal_publication_tsv", "formal_benchmark_tsv"}
+            rag_records.append({"id": row["chunk_id"], "text": record_text(row),
+                "kind": "catalog_metadata" if row["retrieval_status"] == "catalog_only" else "rag_chunk",
+                "consumer_eligible": not (formal and not row.get("source_bound")),
+                "evidence": {row["chunk_id"]: row["chunk_text"]},
+                "claim_boundary": row.get("claim_boundary", ""),
+                "request_condition": "include_catalog=true" if row["retrieval_status"] == "catalog_only" else None})
     # The actual 07 legacy lane retains the same BM25 corpus and adds the
     # candidate ScientificKGEvidence channel.  Its coverage audit must therefore
     # inspect both; auditing only the 25 candidate claims would make a narrower
@@ -645,10 +701,8 @@ def re_audit(
                     "individual anchor terms",
                 ],
                 **result,
-                "manual_sufficiency_conclusion": (
-                    "No consumer-visible record or inspected combination establishes every declared "
-                    "critical fact/condition. Related names and partial lexical matches do not count."
-                ),
+                "reviewer_sufficiency_conclusion": None,
+                "search_is_not_a_coverage_decision": True,
                 "shared_runtime_excluded": [row["component"] for row in SHARED_RUNTIME],
             }
             if source_name == "scientific_kg_v2":
@@ -656,8 +710,8 @@ def re_audit(
                 procedure.update(
                     {
                         "approved_statement_allowlist_count": 121,
-                        "approved_evidence_chain_checked": True,
-                        "scope_records_checked": True,
+                        "evidence_chain_inventory_verified": True,
+                        "fact_specific_scope_review": "pending",
                         "caution_records_scanned": caution_result["records_scanned"],
                         "caution_sample_match_ids": caution_result["sample_match_ids"],
                         "cautions_can_support_present": False,
@@ -677,13 +731,14 @@ def re_audit(
                     }
                 )
             source_results[source_name] = {
-                "status": "absent",
+                "status": "unknown",
                 "supporting_ids": [],
                 "supporting_scope": "",
-                "negative_search_procedure": procedure,
+                "search_evidence": procedure,
+                "negative_search_procedure": None,
             }
 
-        signature = "000"
+        signature = None
         track, track_basis = TRACKS[candidate_id]
         admission_row = admission(candidate)
         admissions.append(admission_row)
@@ -706,11 +761,11 @@ def re_audit(
             )
         }
         candidate["coverage_vector"] = {
-            "scientific_kg_v2": "absent",
-            "legacy_kg": "absent",
-            "ordinary_rag": "absent",
+            "scientific_kg_v2": "unknown",
+            "legacy_kg": "unknown",
+            "ordinary_rag": "unknown",
             "exact_signature": signature,
-            "coarse_label": "out-of-knowledge",
+            "coarse_label": None,
             "snapshot_ids": snapshot_ids,
             "snapshot_digests": snapshot_digests,
             "shared_runtime_excluded": [row["component"] for row in SHARED_RUNTIME],
@@ -718,24 +773,29 @@ def re_audit(
         candidate["exact_coverage_signature"] = signature
         audits.append(
             {
-                "schema_version": "sckg-candidate-coverage-audit-v2",
+                "schema_version": "sckg-candidate-coverage-audit-v3-withdrawn",
                 "run_id": RUN_ID,
                 "candidate_id": candidate_id,
                 "source_seed_id": candidate["source_seed_ids"][0],
                 "question_origin": candidate["question_origin"],
                 "candidate_admission_status": admission_row["admission_status"],
                 "benchmark_track_proposal": track,
-                "required_facts_and_conditions": prior["required_facts_and_conditions"],
+                "legacy_requirements_unreviewed": prior["required_facts_and_conditions"],
+                "required_scientific_facts": [],
+                "requirements_review_status": "needs_decomposition",
+                "user_context_and_state": candidate["context_requirements"],
+                "task_results": [],
+                "withdraws": {"commit": HISTORICAL_AUDIT_COMMIT, "signature": "000",
+                    "reason": "Program assigned absent unconditionally; no human coverage decision existed."},
                 "audit_method": (
-                    "Manual all-critical-facts sufficiency decision over deterministic exhaustive scans "
-                    "of the exact 07 consumer sources. No lane call, top-k success, LLM answer, ToolContract, "
-                    "planner, execution guard, validation contract, or approval state was used as coverage."
+                    "Deterministic lexical search inventory only. All labels withdrawn to unknown. "
+                    "Separate scientific facts from user state and task outputs before human review."
                 ),
                 "snapshot_ids": snapshot_ids,
                 "snapshot_digests": snapshot_digests,
                 "source_results": source_results,
                 "exact_signature": signature,
-                "coarse_label": "out-of-knowledge",
+                "coarse_label": None,
                 "review_status": "needs_adjudication",
                 "gold_status": "none",
             }
@@ -800,13 +860,13 @@ def lane_report(manifest: dict[str, Any]) -> str:
 
 
 def coverage_report(audits: list[dict[str, Any]], snapshot: dict[str, Any]) -> str:
-    counts = Counter(row["exact_signature"] for row in audits)
+    counts = Counter(row["exact_signature"] or "unknown" for row in audits)
     lines = [
         "# Phase 2.2 Lane-aligned Coverage Re-audit",
         "",
         f"Run: `{RUN_ID}`",
         "",
-        "Status: candidate coverage proposal only; `needs_adjudication`, `gold_status=none`.",
+        "Status: previous all-000 conclusion WITHDRAWN; all 20 unknown pending fact decomposition and human review.",
         "",
         "The Phase 2.1 coverage conclusion is superseded. The V2 bit now uses only the actual",
         "approved-v2 consumer at the 07 integration commit. ToolContracts and all other shared",
@@ -820,21 +880,23 @@ def coverage_report(audits: list[dict[str, Any]], snapshot: dict[str, Any]) -> s
     for row in audits:
         lines.append(
             f"| `{row['candidate_id']}` | `{row['candidate_admission_status']}` | "
-            f"`{row['benchmark_track_proposal']}` | {md(row['required_facts_and_conditions'][0])} | "
-            f"absent | absent | absent | `{row['exact_signature']}` |"
+            f"`{row['benchmark_track_proposal']}` | decomposition pending | "
+            "unknown | unknown | unknown | unassigned |"
         )
     lines.extend(
         [
             "",
             "## Negative-search interpretation",
             "",
-            "Every `absent` cell in `coverage_audit.jsonl` records the exact lane snapshot, query",
-            "variants, record count, match counts, partial-match IDs, and manual all-critical-facts",
-            "sufficiency conclusion. Scientific KG searches all 121 approved statements with their",
+            "No cell currently establishes absence or presence. Search evidence records snapshot, query",
+            "variants, counts and partial-match IDs, NOT manual sufficiency decisions.",
+            "Scientific KG searches all 121 approved statements with their",
             "evidence and scope joins and separately reports caution matches. Legacy searches the",
             "same 800 frozen evidence chunks plus the 25 direct-evidence candidate claims used by",
             "its consumer, and records the tool-graph filter",
-            "scan separately. RAG searches all 800 frozen evidence chunks. A partial match never becomes",
+            "scan separately. Both RAG-backed inventories include the 1847 conditional catalog records;",
+            "10 quarantined formal chunks cannot support present. Catalog metadata cannot support recommendations/execution.",
+            "A partial match never becomes",
             "`present`, and no single retrieval result was used as a label.",
             "",
             f"The held scVelo statement `{HELD_STATEMENT_ID}` was verified absent and never searched as",
@@ -892,19 +954,19 @@ def phase_report(
     demoted = [row for row in admissions if not row["suitable_for_candidate"]]
     return f"""# Phase 2.2 Evaluation Lane Alignment + Coverage Re-audit
 
-Status: complete bounded metadata audit; no DEV/Gold, lane execution, Agent Gain, seed expansion, or 05/06/07 changes.
+Status: COVERAGE CONCLUSION WITHDRAWN. Lane identities remain verified; coverage is unknown, not 000.
 
 ## Outcome
 
 - Lane manifest freezes `llm_only`, `generic_rag`, `legacy_kg`, and `scientific_kg` at `{INTEGRATION_COMMIT}`.
 - Approved Scientific KG identity verified as `{APPROVED_KG_SHA256}` with 121 visible statements, 166 separate caution contexts, and the held scVelo statement absent.
-- All {len(audits)} existing candidate drafts were re-audited against the actual consumers: `{json.dumps(dict(sorted(Counter(row['exact_signature'] for row in audits).items())), sort_keys=True)}`.
+- All {len(audits)} former coverage labels are withdrawn pending fact-level human review. Search inventory is not adjudication.
 - Track proposals across the audited 20: K={tracks['K']}, O={tracks['O']}, W={tracks['W']}. They are sampling/review metadata, not Gold.
 - Candidate admission: {len(retained)} retained; {len(demoted)} demoted to raw-only (`candidate-pilot-01`, `candidate-pilot-07`).
 
 ## Alignment correction
 
-The Phase 2.1 `kg-v2.3.0-canonical:6b20b218...` source is the legacy 7,537-node tool/catalog graph, not the approved Scientific KG v2 consumer. Its former `100` result for `candidate-pilot-06` came from a ToolContract. The re-audit excludes that shared runtime component, so the candidate is `000`. The legacy lane remains bound to its candidate evidence adapter, frozen RAG corpus, and graph filtering channel; the RAG lane remains bound to the same frozen BM25 corpus with graph channels off.
+The Phase 2.1 canonical graph is not the approved Scientific KG consumer. The former `100` for candidate-pilot-06 incorrectly counted a shared ToolContract. The subsequent all-000 result was also invalid: the program hardcoded absent. Neither result is a scientific coverage conclusion. Historical bytes remain at commit {HISTORICAL_AUDIT_COMMIT}; current labels are unknown. Runtime-only tasks may become not_applicable after requirement decomposition, never automatically 000.
 
 ## Review blockers
 
@@ -935,16 +997,16 @@ def validate(
         errors.append("approved statement count")
     if len(source["cautions"]) != 166:
         errors.append("caution count")
-    if len(records["legacy_kg"]) != 825:
+    if len(records["legacy_kg"]) != 2672:
         errors.append("legacy consumer knowledge-record count")
-    if len(records["ordinary_rag"]) != 800:
+    if len(records["ordinary_rag"]) != 2647:
         errors.append("RAG chunk count")
     if len(candidates) != 20 or len(audits) != 20 or len(admissions) != 20:
         errors.append("candidate/audit count")
     if any(row["review_status"] != "needs_adjudication" or row["gold_status"] != "none" for row in candidates):
         errors.append("candidate review/Gold invariant")
-    if any(row["exact_signature"] != "000" for row in audits):
-        errors.append("coverage signature mismatch")
+    if any(row["exact_signature"] is not None for row in audits):
+        errors.append("unreviewed coverage must remain unassigned")
     for row in audits:
         for result in row["source_results"].values():
             if result["status"] == "present" and not result["supporting_ids"]:
@@ -973,7 +1035,10 @@ def validate(
             "legacy_retrieval_foundation_chunks": 800,
             "legacy_consumer_knowledge_records": len(records["legacy_kg"]),
             "ordinary_rag_chunks": len(records["ordinary_rag"]),
-            "candidates_reaudited": len(audits),
+            "catalog_inventory_per_rag_backed_lane": 1847,
+            "quarantined_evidence_per_rag_backed_lane": sum(not r["consumer_eligible"] for r in records["ordinary_rag"]),
+            "candidate_labels_withdrawn": len(audits),
+            "candidates_human_coverage_audited": 0,
             "candidates_retained": sum(row["suitable_for_candidate"] for row in admissions),
             "candidates_demoted": sum(not row["suitable_for_candidate"] for row in admissions),
             "shared_runtime_excluded": [row["component"] for row in SHARED_RUNTIME],
@@ -995,7 +1060,8 @@ def main() -> None:
     snapshot = coverage_snapshot(manifest)
     candidates = read_jsonl(BASE_DIR / "candidate_scenarios_pilot.jsonl")
     prior_audits = {
-        row["candidate_id"]: row for row in read_jsonl(BASE_DIR / "coverage_audit.jsonl")
+        row["candidate_id"]: row for row in jsonl_blob(
+            HISTORICAL_AUDIT_COMMIT, "eval/benchmark_v3/coverage_audit.jsonl")
     }
     records, cautions, graph_records = source_records(source)
     audits, admissions = re_audit(

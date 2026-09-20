@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sckg:development-review:v1",
+  "title": "Draft-only review sidecar, deliberately not EvaluationCase or Gold",
+  "type": "object",
+  "required": ["schema_version", "scenario_id", "candidate_id", "track", "family_id", "question_origin", "intended_split", "split", "review_status", "gold_status", "gold_eligible", "requirements_review_status", "scientific_applicability", "required_scientific_facts", "user_context_and_state", "task_results", "input", "source_seed_ids", "source_provenance", "transformation_history", "added_scientific_context", "public_exposure", "verbatim_overlap", "transformation_distance", "memorization_risk", "human_review", "split_group_keys"],
+  "properties": {
+    "schema_version": {"const": "sckg-development-review-v1"},
+    "scenario_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "track": {"enum": ["K", "O", "W"]},
+    "family_id": {"type": "string", "minLength": 1},
+    "question_origin": {"enum": ["real-user", "paper-notebook", "controlled-probe"]},
+    "intended_split": {"const": "development"},
+    "split": {"type": "null"},
+    "review_status": {"const": "needs_adjudication"},
+    "gold_status": {"const": "none"},
+    "gold_eligible": {"const": false},
+    "requirements_review_status": {"enum": ["needs_adjudication", "adjudicated"]},
+    "scientific_applicability": {"enum": ["applicable", "not_applicable"]},
+    "required_scientific_facts": {"type": "array", "items": {
+      "type": "object", "required": ["fact_id", "requirement", "critical", "query_variants", "expected_fact", "independent_reference_span_ids", "scenario_conditions"],
+      "properties": {
+        "fact_id": {"type": "string", "minLength": 1},
+        "requirement": {"type": "string", "minLength": 1},
+        "critical": {"type": "boolean"},
+        "query_variants": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}},
+        "expected_fact": {"type": "null"},
+        "independent_reference_span_ids": {"type": "array", "maxItems": 0},
+        "scenario_conditions": {"type": "object"}
+      }
+    }},
+    "user_context_and_state": {"type": "array"}, "task_results": {"type": "array", "minItems": 1},
+    "input": {"type": "object", "required": ["query", "conditions", "fixture_id"]},
+    "source_seed_ids": {"type": "array", "items": {"type": "string"}},
+    "source_provenance": {"type": "array"}, "transformation_history": {"type": "array", "minItems": 1},
+    "added_scientific_context": {"type": "array"}, "public_exposure": {"type": "string"},
+    "verbatim_overlap": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "transformation_distance": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "memorization_risk": {"type": "string", "minLength": 1},
+    "split_group_keys": {"type": "array", "minItems": 1, "uniqueItems": true},
+    "human_review": {"type": "object", "required": ["reviewers", "reference_claims", "expected_trajectory", "expected_response"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"question_origin": {"const": "real-user"}}}, "then": {"properties": {"source_seed_ids": {"minItems": 1}, "source_provenance": {"minItems": 1}}}},
+    {"if": {"properties": {"scientific_applicability": {"const": "not_applicable"}}}, "then": {"properties": {"required_scientific_facts": {"maxItems": 0}}}, "else": {"properties": {"required_scientific_facts": {"minItems": 1}}}}
+  ]
+}

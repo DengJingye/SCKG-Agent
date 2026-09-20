@@ -1,5 +1,5 @@
 {
-  "assignment_rule": "present requires sufficient consumer-visible facts/conditions plus supporting IDs; absent requires a recorded exhaustive search. Shared runtime components never count.",
+  "assignment_rule": "present requires sufficient consumer-visible facts/conditions plus supporting IDs; absent requires reviewer-checked negative evidence; search alone leaves unknown. Shared runtime components never count.",
   "bit_order": [
     "scientific_kg_v2",
     "legacy_kg",
@@ -7,7 +7,7 @@
   ],
   "frozen_at": "2026-09-21",
   "integration_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
-  "run_id": "lane-alignment-20260921-v1",
+  "run_id": "lane-alignment-20260921-v2-withdrawal",
   "schema_version": "sckg-coverage-snapshot-manifest-v2",
   "shared_runtime_excluded": [
     "Planner",
@@ -18,14 +18,15 @@
   ],
   "sources": {
     "legacy_kg": {
-      "coverage_records": "800 retrieval-foundation evidence chunks plus consumer-visible candidate ScientificKGEvidence claims/bindings; the legacy tool graph is recorded as a filtering channel, not promoted to answer evidence",
-      "digest": "ba48b12d6ad81681c0332081a400ef72a05c90788b4cc16a8e756f25fab49044",
+      "coverage_records": "800 evidence chunks (10 quarantined), 1847 conditional catalog metadata records, plus consumer-visible candidate ScientificKGEvidence claims/bindings; the legacy tool graph is recorded as a filtering channel, not promoted to answer evidence",
+      "digest": "0451e9d35fac87e7c4160c52bfebead5c3391d36d38341f45abe62df3dc53a4d",
       "lane_name": "legacy_kg",
       "snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4 + scientific_kg_v1_uat_decision_rules + kg-v2.3.0-canonical:6b20b21847be"
     },
     "ordinary_rag": {
-      "coverage_records": "800 evidence chunks available to the paired BM25 consumer",
-      "digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+      "coverage_records": "800 evidence chunks (790 eligible) plus 1847 catalog metadata records when include_catalog=true; authority boundaries retained",
+      "digest": "d2201c59d3fb00c4164479276389377b4225573625839cab62e3c1b9ca858497",
+      "evidence_corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
       "lane_name": "generic_rag",
       "snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4"
     },
@@ -41,5 +42,10 @@
   "supersedes": {
     "reason": "Phase 2.1 used the canonical tool graph as V2 and counted a ToolContract. Neither is the approved-v2 consumer used by the 07 scientific_kg lane.",
     "run_id": "candidate-audit-20260921-v1"
+  },
+  "withdraws_invalid_audit": {
+    "commit": "810ed0853c763c0a497f74100f7bb8d47ed2e4e8",
+    "reason": "Unconditional absent/000 generation; no reviewed coverage conclusion.",
+    "run_id": "lane-alignment-20260921-v1"
   }
 }
