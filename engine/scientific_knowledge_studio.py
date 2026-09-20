@@ -1165,6 +1165,120 @@ def load_studio_evaluation_snapshot(snapshot_dir: Path) -> dict[str, Any]:
     }
 
 
+def candidate_demo_view(run: dict[str, Any]) -> dict[str, Any]:
+    """Build a read-only presentation model from one persisted Studio run.
+
+    Counts and bindings intentionally come from the supplied run artifacts.  This
+    helper performs no extraction, validation repair, graph mutation, or
+    production persistence, which keeps the demo UI deterministic and testable.
+    """
+
+    manifest = dict(run.get("manifest") or {})
+    source = dict(run.get("source") or {})
+    evidence_rows = [dict(row) for row in run.get("evidence") or []]
+    entity_rows = [dict(row) for row in run.get("entities") or []]
+    relation_rows = [dict(row) for row in run.get("relations") or []]
+    claim_rows = [dict(row) for row in run.get("claims") or []]
+    scope_rows = [dict(row) for row in run.get("scopes") or []]
+    graph = dict(run.get("proposal_graph") or {})
+
+    evidence_by_id = {str(row.get("proposal_id")): row for row in evidence_rows}
+    entity_by_id = {str(row.get("entity_proposal_id")): row for row in entity_rows}
+    scope_by_id = {str(row.get("scope_proposal_id")): row for row in scope_rows}
+
+    statements: list[dict[str, Any]] = []
+    for claim in claim_rows:
+        subject_ref = str(claim.get("subject_ref") or "")
+        subject = entity_by_id.get(subject_ref, {})
+        scope = scope_by_id.get(str(claim.get("scope_proposal_id") or ""), {})
+        bindings = [
+            evidence_by_id[evidence_id]
+            for evidence_id in claim.get("supporting_evidence_span_ids") or []
+            if evidence_id in evidence_by_id
+        ]
+        statements.append(
+            {
+                **claim,
+                "subject_label": subject.get("raw_label") or subject_ref or "NOT_MODELED",
+                "predicate_label": claim.get("predicate") or claim.get("claim_type") or "NOT_MODELED",
+                "polarity_label": claim.get("polarity") or "NOT_MODELED",
+                "scope": scope,
+                "evidence_bindings": bindings,
+            }
+        )
+
+    validation_rows: list[dict[str, Any]] = []
+    groups = (
+        ("EvidenceSpan", evidence_rows, "proposal_id"),
+        ("Entity", entity_rows, "entity_proposal_id"),
+        ("Relation", relation_rows, "relation_proposal_id"),
+        ("Candidate Statement", claim_rows, "claim_proposal_id"),
+        ("ApplicabilityScope", scope_rows, "scope_proposal_id"),
+    )
+    for object_type, rows, id_field in groups:
+        for row in rows:
+            validation_rows.append(
+                {
+                    "object_type": object_type,
+                    "object_id": row.get(id_field, ""),
+                    "status": row.get("validation_status", "NEEDS_REVIEW"),
+                    "reason_or_issue": "; ".join(row.get("validation_reasons") or [])
+                    or "No validation issue recorded",
+                }
+            )
+
+    page_count = int(manifest.get("page_count") or source.get("page_count") or 0)
+    parsed_pages = int(manifest.get("parsed_pages") or 0)
+    parse_gap_count = int(
+        manifest.get("parse_gap_count")
+        if manifest.get("parse_gap_count") is not None
+        else len(run.get("parse_gaps") or [])
+    )
+    parse_status = "PARSED" if page_count and parsed_pages == page_count and parse_gap_count == 0 else "PARTIAL"
+    counts = dict((run.get("validation") or {}).get("counts") or {})
+    validation_counts = {
+        "VALID": int(counts.get("VALID", 0)),
+        "NEEDS_REVIEW": int(counts.get("NEEDS_REVIEW", 0)),
+        "INVALID": int(counts.get("INVALID", 0)),
+    }
+    graph_nodes = len(graph.get("nodes") or [])
+    graph_edges = len(graph.get("edges") or [])
+    validate_state = "REVIEW" if validation_counts["INVALID"] or validation_counts["NEEDS_REVIEW"] else "DONE"
+
+    return {
+        "document": {
+            "name": source.get("title") or source.get("original_filename") or manifest.get("original_filename") or "Unknown PDF",
+            "file": source.get("original_filename") or manifest.get("original_filename") or "Unknown PDF",
+            "source_type": source.get("source_type") or "local_scientific_pdf",
+            "page_count": page_count,
+            "parsed_pages": parsed_pages,
+            "parse_gap_count": parse_gap_count,
+            "parse_status": parse_status,
+            "parser": " ".join(
+                part for part in (str(source.get("parser_name") or ""), str(source.get("parser_version") or "")) if part
+            ),
+            "sha256": source.get("pdf_sha256") or manifest.get("pdf_sha256") or "",
+        },
+        "pipeline": [
+            {"stage": "PDF", "value": "1 document", "status": "DONE"},
+            {"stage": "Parse", "value": f"{parsed_pages} / {page_count} pages", "status": "DONE" if parse_status == "PARSED" else "WARNING"},
+            {"stage": "Evidence", "value": f"{len(evidence_rows)} proposals", "status": "DONE" if evidence_rows else "BLOCKED"},
+            {"stage": "Statement", "value": f"{len(claim_rows)} proposals", "status": "DONE" if claim_rows else "WARNING"},
+            {"stage": "Scope", "value": f"{len(scope_rows)} proposals", "status": "DONE" if scope_rows else "WARNING"},
+            {"stage": "Validate", "value": f"{validation_counts['VALID']} / {validation_counts['NEEDS_REVIEW']} / {validation_counts['INVALID']}", "status": validate_state},
+            {"stage": "Candidate KG", "value": f"{graph_nodes} nodes · {graph_edges} edges", "status": "DONE" if graph.get("bounded_to_run") else "BLOCKED"},
+        ],
+        "statements": statements,
+        "validation_counts": validation_counts,
+        "validation_rows": validation_rows,
+        "graph": {
+            "node_count": graph_nodes,
+            "edge_count": graph_edges,
+            "bounded_to_run": bool(graph.get("bounded_to_run")),
+        },
+    }
+
+
 def proposal_graph_view(payload: dict[str, Any]) -> KnowledgeGraphView:
     nodes = {
         row["node_id"]: GraphNode(
