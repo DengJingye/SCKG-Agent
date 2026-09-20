@@ -3,12 +3,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from core.scientific_knowledge_conformance_models import (
     ConformanceBundle,
@@ -20,6 +21,8 @@ from engine.scientific_ontology_v2_compatibility import (
     AUTHORITATIVE_BASE_COMMIT,
     ScientificOntologyV2CompatibilityService,
 )
+from eval.ontology_v2_test_evidence import SCHEMA_VERSION as TEST_RESULT_SCHEMA_VERSION
+from eval.ontology_v2_test_evidence import parse_junit, sha256_file
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,62 +50,250 @@ OUTPUT_NAMES = (
     "integrity.json",
     "test_summary.json",
 )
-PATCH_BASE_COMMIT = "6a7fc238676a3389c7e556b16ab8bac33d53e7bd"
+PATCH_BASE_COMMIT = "392c5d9c0b2140abdaf5b952f7fce1cee29f4554"
+FOCUSED_SUITE_ID = "ontology-v2-compatibility-focused-5e2"
+REGRESSION_SUITE_ID = "ontology-v2-compatibility-bounded-regression-5e2"
+FOCUSED_REQUIRED_NODES = {
+    "tests/test_scientific_ontology_v2_compatibility.py::test_h01_missing_expected_scope_is_ambiguous_and_exact_scope_succeeds",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_h02_atomic_claim_retains_distinct_inline_flavors_end_to_end",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_h02_atomic_claim_deduplicates_or_rejects_same_dimension_inline_context",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_h02_atomic_claim_preserves_any_of_plus_inline_and_serialization",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_h03_candidate_authoritative_predicate_remains_candidate_record",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_h03_wrong_domain_authoritative_predicate_is_unresolved",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m01_entity_predicate_and_typed_scalar_property_constraints",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m01_disallowed_qualifier_is_reported_not_dropped",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m02_all_requirement_views_use_requirement_identity",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m02_all_derived_relation_views_retain_exact_edge_identity",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m03_evidence_core_view_excludes_governance_status",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m04_evidence_binding_rejects_key_to_wrong_span_object",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m04_two_assessments_for_one_statement_are_collected_independently",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m04_support_and_refutation_coexist_without_trust_aggregation",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_failed_not_run_and_unverified_declarations_cannot_emit_pass",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_false_command_failed_text_and_missing_artifact_are_unverified",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_wrong_hash_revision_counts_suite_and_tamper_are_unverified",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_verified_artifacts_gate_checkpoint_and_chat_surfaces",
+}
+CHAT_SURFACE_NODES = {
+    "chat_import": {
+        "tests/test_research_shell.py::test_chat_rerun_emits_theme_first_without_hidden_image_or_workbench"
+    },
+    "chat_runtime": {
+        "tests/test_research_agent_entrypoint.py::test_ask_mode_answers_without_compiling_or_handoff"
+    },
+    "chat_retrieval": {
+        "tests/test_research_chat_service.py::test_research_chat_answers_without_langgraph_dense_or_neo4j"
+    },
+    "chat_planner": {
+        "tests/test_research_agent_entrypoint.py::test_run_mode_without_registered_data_waits_and_never_executes"
+    },
+}
+REGRESSION_REQUIRED_NODES = set().union(*CHAT_SURFACE_NODES.values()) | {
+    "tests/test_research_shell.py::test_chat_rerun_emits_theme_first_without_hidden_image_or_workbench",
+    "tests/test_hybrid_retrieval_v2.py::test_fts5_bm25_prefers_source_bound_chunk_and_dense_falls_back",
+    "tests/test_hybrid_retrieval_v2.py::test_index_is_reused_without_reparsing_jsonl",
+    "tests/test_capability_workspace_service.py::test_workspace_minimal_scanpy_plan_is_registry_driven_and_never_executes",
+    "tests/test_scientific_kg_evidence_retrieval_v1.py::test_research_product_evidence_entry_and_frozen_integrity",
+    "tests/test_representation_ledger.py::test_profiler_records_coexisting_anndata_states_without_mutation",
+    "tests/test_tool_contracts.py::test_scrublet_contract_is_qualified_for_restricted_execution_policy",
+    "tests/test_scientific_kg_admin_workspace_readonly_v1.py::test_scientific_kg_counts_and_governance_match_frozen_snapshot",
+    "tests/test_scientific_knowledge_studio_v1.py::test_01_source_revision_proposal_schema_is_candidate_only",
+}
 
 
-class TestExecutionSummary(BaseModel):
+class TestExecutionDeclaration(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     status: Literal["PASS", "FAIL", "NOT_RUN", "UNVERIFIED"]
+    suite_id: str | None = None
     passed: int = Field(default=0, ge=0)
     failed: int = Field(default=0, ge=0)
     errors: int = Field(default=0, ge=0)
     skipped: int = Field(default=0, ge=0)
     command: tuple[str, ...] = ()
-    evidence: str | None = None
-
-    @model_validator(mode="after")
-    def validate_pass_evidence(self) -> "TestExecutionSummary":
-        if self.status == "PASS" and (
-            self.passed < 1
-            or self.failed
-            or self.errors
-            or not self.command
-            or not self.evidence
-        ):
-            raise ValueError(
-                "PASS requires positive cases, zero failures/errors, a command and evidence"
-            )
-        if self.status == "FAIL" and not (self.failed or self.errors):
-            raise ValueError("FAIL requires at least one failure or error")
-        return self
+    tested_revision: str | None = None
+    result_artifact: str | None = None
+    result_artifact_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
-def _validated_test_summary(
-    value: TestExecutionSummary | Mapping[str, Any] | str | None,
-) -> TestExecutionSummary:
-    if isinstance(value, TestExecutionSummary):
-        return value
+def _validated_test_declaration(
+    value: TestExecutionDeclaration | Mapping[str, Any] | str | None,
+) -> tuple[TestExecutionDeclaration, tuple[str, ...]]:
+    if isinstance(value, TestExecutionDeclaration):
+        return value, ()
     if value is None or (isinstance(value, str) and value.casefold() in {"not_run", "not run"}):
-        return TestExecutionSummary(status="NOT_RUN")
+        return TestExecutionDeclaration(status="NOT_RUN"), ()
     if isinstance(value, str):
         if value.strip().upper() in {"FAIL", "FAILED", "FAILURE"}:
-            return TestExecutionSummary(
+            return TestExecutionDeclaration(
                 status="FAIL",
                 failed=1,
-                evidence=f"unstructured failure marker: {value}",
-            )
-        return TestExecutionSummary(
-            status="UNVERIFIED",
-            evidence=f"unstructured test result rejected: {value}",
+            ), ()
+        return TestExecutionDeclaration(status="UNVERIFIED"), (
+            "UNSTRUCTURED_TEST_DECLARATION",
         )
     try:
-        return TestExecutionSummary.model_validate(value)
+        return TestExecutionDeclaration.model_validate(value), ()
     except ValidationError as exc:
-        return TestExecutionSummary(
-            status="UNVERIFIED",
-            evidence=f"invalid structured test result: {exc.errors()[0]['type']}",
+        return TestExecutionDeclaration(status="UNVERIFIED"), (
+            f"INVALID_TEST_DECLARATION:{exc.errors()[0]['type']}",
         )
+
+
+def _safe_artifact_path(evidence_root: Path, relative_path: str) -> Path | None:
+    root = evidence_root.resolve()
+    candidate = (root / relative_path).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError:
+        return None
+    return candidate
+
+
+def _verification_payload(
+    declaration: TestExecutionDeclaration,
+    *,
+    verification_status: Literal["PASS", "FAIL", "UNVERIFIED"],
+    reasons: list[str],
+    verified_node_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    payload = declaration.model_dump(mode="json")
+    payload["declared_status"] = payload.pop("status")
+    payload["verification_status"] = verification_status
+    payload["verification_reason_codes"] = reasons
+    payload["verified_node_ids"] = verified_node_ids or []
+    return payload
+
+
+def verify_test_evidence(
+    declaration: TestExecutionDeclaration,
+    *,
+    declaration_errors: tuple[str, ...] = (),
+    expected_suite_id: str,
+    expected_revision: str,
+    evidence_root: Path,
+    required_node_ids: set[str],
+) -> dict[str, Any]:
+    if declaration_errors:
+        return _verification_payload(
+            declaration,
+            verification_status="UNVERIFIED",
+            reasons=list(declaration_errors),
+        )
+    if declaration.status == "FAIL":
+        return _verification_payload(
+            declaration,
+            verification_status="FAIL",
+            reasons=["DECLARED_TEST_FAILURE"],
+        )
+    if declaration.status != "PASS":
+        return _verification_payload(
+            declaration,
+            verification_status="UNVERIFIED",
+            reasons=[f"DECLARED_{declaration.status}"],
+        )
+
+    reasons: list[str] = []
+    if declaration.passed < 1:
+        reasons.append("NO_PASSED_TESTS")
+    if declaration.failed or declaration.errors:
+        reasons.append("DECLARED_FAILURES_OR_ERRORS")
+    if not declaration.command:
+        reasons.append("COMMAND_PROVENANCE_MISSING")
+    elif not any("pytest" in part for part in declaration.command):
+        reasons.append("COMMAND_IS_NOT_BOUNDED_PYTEST")
+    if declaration.suite_id != expected_suite_id:
+        reasons.append("DECLARED_SUITE_ID_MISMATCH")
+    if declaration.tested_revision != expected_revision:
+        reasons.append("DECLARED_TESTED_REVISION_MISMATCH")
+    if not declaration.result_artifact or not declaration.result_artifact_sha256:
+        reasons.append("RESULT_ARTIFACT_REFERENCE_MISSING")
+    if reasons:
+        return _verification_payload(
+            declaration, verification_status="UNVERIFIED", reasons=reasons
+        )
+
+    artifact_path = _safe_artifact_path(evidence_root, declaration.result_artifact)
+    if artifact_path is None:
+        reasons.append("RESULT_ARTIFACT_OUTSIDE_EVIDENCE_ROOT")
+    elif not artifact_path.is_file():
+        reasons.append("RESULT_ARTIFACT_NOT_FOUND")
+    elif sha256_file(artifact_path) != declaration.result_artifact_sha256:
+        reasons.append("RESULT_ARTIFACT_SHA256_MISMATCH")
+    if reasons:
+        return _verification_payload(
+            declaration, verification_status="UNVERIFIED", reasons=reasons
+        )
+
+    try:
+        result = _read_json(artifact_path)
+    except (OSError, json.JSONDecodeError):
+        return _verification_payload(
+            declaration,
+            verification_status="UNVERIFIED",
+            reasons=["RESULT_ARTIFACT_INVALID_JSON"],
+        )
+    expected_fields = {
+        "schema_version": TEST_RESULT_SCHEMA_VERSION,
+        "suite_id": expected_suite_id,
+        "tested_revision": expected_revision,
+        "passed": declaration.passed,
+        "failed": declaration.failed,
+        "errors": declaration.errors,
+        "skipped": declaration.skipped,
+        "command": list(declaration.command),
+    }
+    for key, expected in expected_fields.items():
+        if result.get(key) != expected:
+            reasons.append(f"RESULT_ARTIFACT_{key.upper()}_MISMATCH")
+    if result.get("status") != "PASS":
+        reasons.append("RESULT_ARTIFACT_NOT_PASS")
+    junit_ref = result.get("junit_artifact")
+    junit_sha = result.get("junit_artifact_sha256")
+    if not isinstance(junit_ref, str) or not isinstance(junit_sha, str):
+        reasons.append("JUNIT_REFERENCE_MISSING")
+    if reasons:
+        verification_status: Literal["FAIL", "UNVERIFIED"] = (
+            "FAIL" if "RESULT_ARTIFACT_NOT_PASS" in reasons else "UNVERIFIED"
+        )
+        return _verification_payload(
+            declaration, verification_status=verification_status, reasons=reasons
+        )
+
+    junit_path = _safe_artifact_path(evidence_root, junit_ref)
+    if junit_path is None:
+        reasons.append("JUNIT_ARTIFACT_OUTSIDE_EVIDENCE_ROOT")
+    elif not junit_path.is_file():
+        reasons.append("JUNIT_ARTIFACT_NOT_FOUND")
+    elif sha256_file(junit_path) != junit_sha:
+        reasons.append("JUNIT_ARTIFACT_SHA256_MISMATCH")
+    if reasons:
+        return _verification_payload(
+            declaration, verification_status="UNVERIFIED", reasons=reasons
+        )
+    try:
+        parsed_junit = parse_junit(junit_path)
+    except (OSError, ET.ParseError, ValueError):
+        return _verification_payload(
+            declaration,
+            verification_status="UNVERIFIED",
+            reasons=["JUNIT_ARTIFACT_INVALID"],
+        )
+    for key in ("status", "passed", "failed", "errors", "skipped", "test_node_ids"):
+        if result.get(key) != parsed_junit.get(key):
+            reasons.append(f"JUNIT_{key.upper()}_MISMATCH")
+    missing_required_nodes = sorted(required_node_ids - set(parsed_junit["test_node_ids"]))
+    if missing_required_nodes:
+        reasons.append("REQUIRED_TEST_NODES_MISSING")
+    if reasons:
+        return _verification_payload(
+            declaration, verification_status="UNVERIFIED", reasons=reasons
+        )
+    return _verification_payload(
+        declaration,
+        verification_status="PASS",
+        reasons=["RESULT_AND_JUNIT_ARTIFACTS_VERIFIED"],
+        verified_node_ids=parsed_junit["test_node_ids"],
+    )
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -169,15 +360,33 @@ def collect_assessments(
 def build(
     output_dir: Path = DEFAULT_OUTPUT_DIR,
     *,
-    focused_tests: TestExecutionSummary | Mapping[str, Any] | str | None = None,
-    regression_tests: TestExecutionSummary | Mapping[str, Any] | str | None = None,
+    focused_tests: TestExecutionDeclaration | Mapping[str, Any] | str | None = None,
+    regression_tests: TestExecutionDeclaration | Mapping[str, Any] | str | None = None,
+    evaluated_revision: str = PATCH_BASE_COMMIT,
+    evidence_root: Path = ROOT,
 ) -> dict[str, Any]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     service = ScientificOntologyV2CompatibilityService(ROOT)
     graph = _read_json(GRAPH_PATH)
-    focused_result = _validated_test_summary(focused_tests)
-    regression_result = _validated_test_summary(regression_tests)
+    focused_declaration, focused_errors = _validated_test_declaration(focused_tests)
+    regression_declaration, regression_errors = _validated_test_declaration(regression_tests)
+    focused_result = verify_test_evidence(
+        focused_declaration,
+        declaration_errors=focused_errors,
+        expected_suite_id=FOCUSED_SUITE_ID,
+        expected_revision=evaluated_revision,
+        evidence_root=evidence_root,
+        required_node_ids=FOCUSED_REQUIRED_NODES,
+    )
+    regression_result = verify_test_evidence(
+        regression_declaration,
+        declaration_errors=regression_errors,
+        expected_suite_id=REGRESSION_SUITE_ID,
+        expected_revision=evaluated_revision,
+        evidence_root=evidence_root,
+        required_node_ids=REGRESSION_REQUIRED_NODES,
+    )
 
     nodes_by_type: dict[str, list[dict[str, Any]]] = defaultdict(list)
     node_index: dict[tuple[str, str, str], dict[str, Any]] = {}
@@ -351,6 +560,11 @@ def build(
     record_authorities = Counter(
         result.view.record_authority for result in relation_results if result.view is not None
     )
+    predicate_record_authorities = Counter(
+        (result.view.predicate_classification, result.view.record_authority)
+        for result in relation_results
+        if result.view is not None
+    )
     mapping_summary = {
         "schema_version": "sckg-ontology-v2-compatibility-evaluation-v1",
         "ontology_version": "2.0.0-core-review.1",
@@ -394,6 +608,10 @@ def build(
             "inspected": len(relation_results),
             "predicate_classification_counts": dict(sorted(predicate_classifications.items())),
             "record_authority_counts": dict(sorted(record_authorities.items())),
+            "predicate_record_authority_counts": {
+                f"{predicate} + {authority}": count
+                for (predicate, authority), count in sorted(predicate_record_authorities.items())
+            },
             "derived_relations_classified": predicate_classifications["DERIVED_PROJECTION"],
         },
         "interpretation": "Compatibility rate is structural mapping coverage, not scientific accuracy.",
@@ -454,6 +672,7 @@ def build(
         "schema_version": "sckg-ontology-v2-compatibility-integrity-v1",
         "authoritative_base_commit": AUTHORITATIVE_BASE_COMMIT,
         "compatibility_patch_base_commit": PATCH_BASE_COMMIT,
+        "evaluated_revision": evaluated_revision,
         "frozen_ontology_version": "2.0.0-core-review.1",
         "frozen_core_artifact_hashes": frozen_hashes,
         "source_inventory": {
@@ -476,14 +695,19 @@ def build(
         "automatic_production_wiring": False,
     }
     test_summary = {
-        "schema_version": "sckg-ontology-v2-compatibility-test-summary-v1",
-        "focused_tests": focused_result.model_dump(mode="json"),
-        "regression_tests": regression_result.model_dump(mode="json"),
-        "chat_import": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
-        "chat_runtime": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
-        "chat_retrieval": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
-        "chat_planner": "PASS" if regression_result.status == "PASS" else "UNVERIFIED",
+        "schema_version": "sckg-ontology-v2-compatibility-test-summary-v2",
+        "evaluated_revision": evaluated_revision,
+        "focused_tests": focused_result,
+        "regression_tests": regression_result,
     }
+    verified_regression_nodes = set(regression_result["verified_node_ids"])
+    for surface, required_nodes in CHAT_SURFACE_NODES.items():
+        test_summary[surface] = (
+            "PASS"
+            if regression_result["verification_status"] == "PASS"
+            and required_nodes <= verified_regression_nodes
+            else "UNVERIFIED"
+        )
 
     for name, payload in (
         ("mapping_summary.json", mapping_summary),
@@ -497,13 +721,15 @@ def build(
     artifacts = {name: _sha256(output_dir / name) for name in OUTPUT_NAMES}
     manifest = {
         "schema_version": "sckg-ontology-v2-compatibility-manifest-v1",
-        "checkpoint": "5E.1-Compatibility-Safety-Patch",
+        "checkpoint": "5E.2-Final-Compatibility-Closure",
         "status": (
             "PASS"
-            if focused_result.status == "PASS" and regression_result.status == "PASS"
+            if focused_result["verification_status"] == "PASS"
+            and regression_result["verification_status"] == "PASS"
             else "NEEDS_VERIFICATION"
         ),
         "base_commit": PATCH_BASE_COMMIT,
+        "evaluated_revision": evaluated_revision,
         "accepted_ontology_commit": AUTHORITATIVE_BASE_COMMIT,
         "branch": "feature/ontology-v2-compat-v1",
         "artifacts": artifacts,
@@ -512,7 +738,7 @@ def build(
         "deterministic": True,
         "non_destructive": True,
         "scientific_content_generated": False,
-        "next_recommended_action": "STOP_FOR_QA_RECHECK",
+        "next_recommended_action": "STOP_FOR_FINAL_QA",
     }
     _write_json(output_dir / "manifest.json", manifest)
     return manifest
@@ -521,6 +747,7 @@ def build(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--evaluated-revision", default=PATCH_BASE_COMMIT)
     for prefix in ("focused", "regression"):
         parser.add_argument(
             f"--{prefix}-status",
@@ -532,7 +759,10 @@ def main() -> None:
         parser.add_argument(f"--{prefix}-errors", type=int, default=0)
         parser.add_argument(f"--{prefix}-skipped", type=int, default=0)
         parser.add_argument(f"--{prefix}-command", action="append", default=[])
-        parser.add_argument(f"--{prefix}-evidence")
+        parser.add_argument(f"--{prefix}-suite-id")
+        parser.add_argument(f"--{prefix}-tested-revision")
+        parser.add_argument(f"--{prefix}-result-artifact")
+        parser.add_argument(f"--{prefix}-result-artifact-sha256")
     args = parser.parse_args()
     build(
         args.output_dir,
@@ -543,7 +773,10 @@ def main() -> None:
             "errors": args.focused_errors,
             "skipped": args.focused_skipped,
             "command": args.focused_command,
-            "evidence": args.focused_evidence,
+            "suite_id": args.focused_suite_id,
+            "tested_revision": args.focused_tested_revision,
+            "result_artifact": args.focused_result_artifact,
+            "result_artifact_sha256": args.focused_result_artifact_sha256,
         },
         regression_tests={
             "status": args.regression_status,
@@ -552,8 +785,12 @@ def main() -> None:
             "errors": args.regression_errors,
             "skipped": args.regression_skipped,
             "command": args.regression_command,
-            "evidence": args.regression_evidence,
+            "suite_id": args.regression_suite_id,
+            "tested_revision": args.regression_tested_revision,
+            "result_artifact": args.regression_result_artifact,
+            "result_artifact_sha256": args.regression_result_artifact_sha256,
         },
+        evaluated_revision=args.evaluated_revision,
     )
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
@@ -24,7 +25,16 @@ from core.scientific_ontology_v2_compatibility_models import (
 from engine.scientific_ontology_v2_compatibility import (
     ScientificOntologyV2CompatibilityService,
 )
-from eval.build_ontology_v2_compatibility_v1 import build, collect_assessments
+from eval.build_ontology_v2_compatibility_v1 import (
+    CHAT_SURFACE_NODES,
+    FOCUSED_REQUIRED_NODES,
+    FOCUSED_SUITE_ID,
+    REGRESSION_REQUIRED_NODES,
+    REGRESSION_SUITE_ID,
+    build,
+    collect_assessments,
+)
+from eval.ontology_v2_test_evidence import record_junit_result, sha256_file
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -328,6 +338,89 @@ def test_h02_duplicate_inline_value_is_deduplicated_in_shared_group(
     assert result.view.inline_qualifiers == ()
     modality = next(item for item in result.view.shared_qualifiers if item.dimension == "modality")
     assert modality.values_json == ('"rna"',)
+
+
+def test_h02_atomic_claim_retains_distinct_inline_flavors_end_to_end(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    scope = _predicate_scope_payload()
+    seurat = service.map_atomic_claim(
+        _claim_payload(),
+        scope=scope,
+        inline_qualifiers={"flavor": ["seurat_v3"]},
+        source_layer_id="test_fixture",
+    )
+    cell_ranger = service.map_atomic_claim(
+        _claim_payload(),
+        scope=scope,
+        inline_qualifiers={"flavor": ["cell_ranger"]},
+        source_layer_id="test_fixture",
+    )
+    shared_only = service.map_atomic_claim(
+        _claim_payload(), scope=scope, source_layer_id="test_fixture"
+    )
+
+    assert all(result.status == "DIRECT_COMPATIBLE" for result in (seurat, cell_ranger, shared_only))
+    assert all(isinstance(result.view, StatementRevisionView) for result in (seurat, cell_ranger, shared_only))
+    assert seurat.view.inline_qualifiers[0].values_json == ('"seurat_v3"',)
+    assert cell_ranger.view.inline_qualifiers[0].values_json == ('"cell_ranger"',)
+    assert seurat.view.context_composition == "SHARED_SCOPE_AND_INLINE"
+    assert shared_only.view.inline_qualifiers == ()
+    assert shared_only.view.context_composition == "SHARED_SCOPE_ONLY"
+    assert seurat.view.model_dump() != cell_ranger.view.model_dump()
+    assert seurat.view.model_dump() != shared_only.view.model_dump()
+
+
+def test_h02_atomic_claim_deduplicates_or_rejects_same_dimension_inline_context(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    scope = _predicate_scope_payload()
+    shared_version = json.loads(
+        service.map_scope(scope, source_layer_id="test_fixture")
+        .view.shared_qualifiers[0]
+        .values_json[0]
+    )
+    duplicate = service.map_atomic_claim(
+        _claim_payload(),
+        scope=scope,
+        inline_qualifiers={"version_constraint": [shared_version, shared_version]},
+        source_layer_id="test_fixture",
+    )
+    conflict_version = {**shared_version, "expression": "2.0.0"}
+    conflict = service.map_atomic_claim(
+        _claim_payload(),
+        scope=scope,
+        inline_qualifiers={"version_constraint": [conflict_version]},
+        source_layer_id="test_fixture",
+    )
+
+    assert isinstance(duplicate.view, StatementRevisionView)
+    assert duplicate.view.inline_qualifiers == ()
+    assert duplicate.view.context_composition == "SHARED_SCOPE_ONLY"
+    assert conflict.status == "AMBIGUOUS_MAPPING"
+    assert "INLINE_SHARED_SCOPE_CONFLICT" in conflict.reason_codes
+    assert conflict.view is None
+
+
+def test_h02_atomic_claim_preserves_any_of_plus_inline_and_serialization(
+    service: ScientificOntologyV2CompatibilityService,
+) -> None:
+    scope = _predicate_scope_payload()
+    scope["combination"] = "any_of"
+    result = service.map_atomic_claim(
+        _claim_payload(),
+        scope=scope,
+        inline_qualifiers={"flavor": ["seurat_v3"]},
+        source_layer_id="test_fixture",
+    )
+    reconstructed = type(result).model_validate_json(result.model_dump_json())
+
+    assert isinstance(result.view, StatementRevisionView)
+    assert result.view.scope_ref == scope["scope_id"]
+    assert result.view.context_composition == "SHARED_SCOPE_AND_INLINE"
+    assert result.view.inline_qualifiers[0].values_json == ('"seurat_v3"',)
+    assert reconstructed == result
+    assert reconstructed.view.inline_qualifiers == result.view.inline_qualifiers
 
 
 def test_statement_supersession_same_family_revision_is_preserved(
@@ -981,27 +1074,235 @@ def test_m04_support_and_refutation_coexist_without_trust_aggregation(
     assert all(result.view.trusted is False for result in results)
 
 
-def test_m05_failed_or_unverified_test_input_cannot_emit_pass(tmp_path: Path) -> None:
-    failed_dir = tmp_path / "failed"
-    missing_evidence_dir = tmp_path / "missing-evidence"
-    failed = build(failed_dir, focused_tests="FAILED", regression_tests="FAILED")
-    unverified = build(
-        missing_evidence_dir,
-        focused_tests={
-            "status": "PASS",
-            "passed": 10,
-            "command": ["pytest tests/example.py"],
-        },
-        regression_tests=None,
+def _test_evidence_declaration(
+    root: Path,
+    *,
+    name: str,
+    suite_id: str,
+    revision: str,
+    node_ids: set[str],
+    command: list[str] | None = None,
+) -> dict:
+    evidence_dir = root / "evidence"
+    junit_path = evidence_dir / f"{name}.junit.xml"
+    result_path = evidence_dir / f"{name}.json"
+    suite = ET.Element(
+        "testsuite",
+        name="pytest",
+        tests=str(len(node_ids)),
+        failures="0",
+        errors="0",
+        skipped="0",
     )
-    failed_summary = _json(failed_dir / "test_summary.json")
-    unverified_summary = _json(missing_evidence_dir / "test_summary.json")
-    assert failed["status"] != "PASS"
-    assert failed_summary["focused_tests"]["status"] == "FAIL"
-    assert failed_summary["regression_tests"]["status"] == "FAIL"
-    assert unverified["status"] != "PASS"
-    assert unverified_summary["focused_tests"]["status"] == "UNVERIFIED"
-    assert unverified_summary["regression_tests"]["status"] == "NOT_RUN"
+    for node_id in sorted(node_ids):
+        module, test_name = node_id.split("::", 1)
+        ET.SubElement(
+            suite,
+            "testcase",
+            classname=module.removesuffix(".py").replace("/", "."),
+            name=test_name,
+        )
+    junit_path.parent.mkdir(parents=True, exist_ok=True)
+    wrapper = ET.Element("testsuites")
+    wrapper.append(suite)
+    ET.ElementTree(wrapper).write(junit_path, encoding="utf-8", xml_declaration=True)
+    actual_command = command or [f"pytest {name}"]
+    result = record_junit_result(
+        junit_path=junit_path,
+        output_path=result_path,
+        repository_root=root,
+        suite_id=suite_id,
+        tested_revision=revision,
+        command=actual_command,
+    )
+    return {
+        "status": "PASS",
+        "suite_id": suite_id,
+        "passed": result["passed"],
+        "failed": result["failed"],
+        "errors": result["errors"],
+        "skipped": result["skipped"],
+        "command": actual_command,
+        "tested_revision": revision,
+        "result_artifact": str(result_path.relative_to(root)),
+        "result_artifact_sha256": sha256_file(result_path),
+    }
+
+
+def test_m05_failed_not_run_and_unverified_declarations_cannot_emit_pass(
+    tmp_path: Path,
+) -> None:
+    manifest = build(
+        tmp_path / "failed", focused_tests="FAILED", regression_tests="FAILED"
+    )
+    summary = _json(tmp_path / "failed" / "test_summary.json")
+    assert manifest["status"] != "PASS"
+    assert summary["focused_tests"]["declared_status"] == "FAIL"
+    assert summary["focused_tests"]["verification_status"] == "FAIL"
+    assert summary["regression_tests"]["verification_status"] == "FAIL"
+
+
+def test_m05_false_command_failed_text_and_missing_artifact_are_unverified(
+    tmp_path: Path,
+) -> None:
+    revision = "a" * 40
+    declarations = (
+        {
+            "status": "PASS",
+            "suite_id": FOCUSED_SUITE_ID,
+            "passed": 1,
+            "command": ["false"],
+            "tested_revision": revision,
+        },
+        {
+            "status": "PASS",
+            "suite_id": FOCUSED_SUITE_ID,
+            "passed": 1,
+            "command": ["pytest"],
+            "tested_revision": revision,
+            "evidence": "FAILED",
+        },
+        {
+            "status": "PASS",
+            "suite_id": FOCUSED_SUITE_ID,
+            "passed": 1,
+            "command": ["pytest"],
+            "tested_revision": revision,
+            "result_artifact": "missing.json",
+            "result_artifact_sha256": "0" * 64,
+        },
+    )
+    for index, declaration in enumerate(declarations):
+        output = tmp_path / f"case-{index}"
+        manifest = build(
+            output,
+            focused_tests=declaration,
+            evaluated_revision=revision,
+            evidence_root=tmp_path,
+        )
+        summary = _json(output / "test_summary.json")
+        assert manifest["status"] != "PASS"
+        assert summary["focused_tests"]["verification_status"] == "UNVERIFIED"
+
+
+def test_m05_wrong_hash_revision_counts_suite_and_tamper_are_unverified(
+    tmp_path: Path,
+) -> None:
+    revision = "b" * 40
+    base = _test_evidence_declaration(
+        tmp_path,
+        name="focused",
+        suite_id=FOCUSED_SUITE_ID,
+        revision=revision,
+        node_ids={
+            "tests/test_scientific_ontology_v2_compatibility.py::test_h01_missing_expected_scope_is_ambiguous_and_exact_scope_succeeds"
+        },
+    )
+    wrong_suite_artifact = _test_evidence_declaration(
+        tmp_path,
+        name="wrong-suite",
+        suite_id="wrong-suite",
+        revision=revision,
+        node_ids={
+            "tests/test_scientific_ontology_v2_compatibility.py::test_h01_missing_expected_scope_is_ambiguous_and_exact_scope_succeeds"
+        },
+    )
+    wrong_suite = {
+        **wrong_suite_artifact,
+        "suite_id": FOCUSED_SUITE_ID,
+    }
+    false_command = _test_evidence_declaration(
+        tmp_path,
+        name="false-command",
+        suite_id=FOCUSED_SUITE_ID,
+        revision=revision,
+        node_ids=FOCUSED_REQUIRED_NODES,
+        command=["false"],
+    )
+    cases = (
+        {**base, "result_artifact_sha256": "0" * 64},
+        {**base, "tested_revision": "c" * 40},
+        {**base, "failed": 1},
+        {**base, "passed": 0},
+        wrong_suite,
+        false_command,
+    )
+    for index, declaration in enumerate(cases):
+        output = tmp_path / f"invalid-{index}"
+        manifest = build(
+            output,
+            focused_tests=declaration,
+            evaluated_revision=revision,
+            evidence_root=tmp_path,
+        )
+        summary = _json(output / "test_summary.json")
+        assert manifest["status"] != "PASS"
+        assert summary["focused_tests"]["verification_status"] == "UNVERIFIED"
+
+    tampered = dict(base)
+    result_path = tmp_path / tampered["result_artifact"]
+    result_path.write_text(result_path.read_text(encoding="utf-8") + " ", encoding="utf-8")
+    manifest = build(
+        tmp_path / "tampered",
+        focused_tests=tampered,
+        evaluated_revision=revision,
+        evidence_root=tmp_path,
+    )
+    assert manifest["status"] != "PASS"
+    assert (
+        _json(tmp_path / "tampered" / "test_summary.json")["focused_tests"][
+            "verification_status"
+        ]
+        == "UNVERIFIED"
+    )
+
+
+def test_m05_verified_artifacts_gate_checkpoint_and_chat_surfaces(tmp_path: Path) -> None:
+    revision = "d" * 40
+    focused = _test_evidence_declaration(
+        tmp_path,
+        name="focused-positive",
+        suite_id=FOCUSED_SUITE_ID,
+        revision=revision,
+        node_ids=FOCUSED_REQUIRED_NODES,
+    )
+    regression = _test_evidence_declaration(
+        tmp_path,
+        name="regression-positive",
+        suite_id=REGRESSION_SUITE_ID,
+        revision=revision,
+        node_ids=REGRESSION_REQUIRED_NODES,
+    )
+    manifest = build(
+        tmp_path / "positive",
+        focused_tests=focused,
+        regression_tests=regression,
+        evaluated_revision=revision,
+        evidence_root=tmp_path,
+    )
+    summary = _json(tmp_path / "positive" / "test_summary.json")
+    assert manifest["status"] == "PASS"
+    assert summary["focused_tests"]["verification_status"] == "PASS"
+    assert summary["regression_tests"]["verification_status"] == "PASS"
+    assert all(summary[surface] == "PASS" for surface in CHAT_SURFACE_NODES)
+
+    retrieval_only = _test_evidence_declaration(
+        tmp_path,
+        name="regression-retrieval-only",
+        suite_id=REGRESSION_SUITE_ID,
+        revision=revision,
+        node_ids=CHAT_SURFACE_NODES["chat_retrieval"],
+    )
+    build(
+        tmp_path / "partial-chat",
+        focused_tests=focused,
+        regression_tests=retrieval_only,
+        evaluated_revision=revision,
+        evidence_root=tmp_path,
+    )
+    partial = _json(tmp_path / "partial-chat" / "test_summary.json")
+    assert partial["chat_retrieval"] == "UNVERIFIED"
+    assert partial["chat_runtime"] == "UNVERIFIED"
 
 
 def test_evaluation_build_is_deterministic_and_does_not_mutate_source_data(
@@ -1051,6 +1352,12 @@ def test_checked_in_evaluation_inventory_counts_and_hashes_are_consistent() -> N
         "DEFERRED": 0,
         "DIRECT_COMPATIBLE": 0,
         "NOT_MAPPABLE": 63,
+    }
+    assert summary["relations"]["predicate_record_authority_counts"] == {
+        "AUTHORITATIVE_LINK_TYPE + CANDIDATE_RECORD": 1099,
+        "AUTHORITATIVE_LINK_TYPE + UNRESOLVED": 83,
+        "DERIVED_PROJECTION + DERIVED_RECORD": 331,
+        "UNRESOLVED_PREDICATE + UNRESOLVED": 916,
     }
     atomic_primary_reasons: dict[str, int] = {}
     for item in unresolved:

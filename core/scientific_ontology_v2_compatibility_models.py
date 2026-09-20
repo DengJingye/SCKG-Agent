@@ -94,6 +94,10 @@ class StatementRevisionView(ReadOnlyCompatibilityModel):
     literal_datatype: str | None = None
     polarity: Literal["POSITIVE", "NEGATIVE"]
     qualifiers: tuple[ScopeQualifierView, ...] = ()
+    inline_qualifiers: tuple[ScopeQualifierView, ...] = ()
+    context_composition: Literal["SHARED_SCOPE_ONLY", "SHARED_SCOPE_AND_INLINE"] = (
+        "SHARED_SCOPE_ONLY"
+    )
     scope_ref: str | None = None
     scope_status: Literal["explicit", "partially_known", "unknown", "not_applicable"]
     epistemic_status: Literal["asserted"] = "asserted"

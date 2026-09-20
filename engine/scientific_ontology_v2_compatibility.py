@@ -437,6 +437,13 @@ class ScientificOntologyV2CompatibilityService:
             literal_value=validated.object_value,
             literal_datatype=literal_datatype,
             polarity=validated.polarity.upper(),
+            qualifiers=scope_view.inline_qualifiers,
+            inline_qualifiers=scope_view.inline_qualifiers,
+            context_composition=(
+                "SHARED_SCOPE_AND_INLINE"
+                if scope_view.inline_qualifiers
+                else "SHARED_SCOPE_ONLY"
+            ),
             scope_ref=scope_view.scope_id,
             scope_status=scope_view.scope_status,
             assertion_kind=validated.assertion_kind,
