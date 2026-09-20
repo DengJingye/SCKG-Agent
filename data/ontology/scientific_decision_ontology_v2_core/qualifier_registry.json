@@ -1,0 +1,130 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "qualifiers": [
+    {
+      "qualifier_id": "modality",
+      "definition": "Assay modality condition.",
+      "value_type": "term",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "organism_taxon",
+      "definition": "Taxon identifier condition.",
+      "value_type": "external_id",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "assay",
+      "definition": "Assay technology condition.",
+      "value_type": "term",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "observation_unit",
+      "definition": "Unit of scientific observation.",
+      "value_type": "term",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "study_design",
+      "definition": "Study design condition.",
+      "value_type": "term",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "software_version",
+      "definition": "Subject-bound software version constraint.",
+      "value_type": "version_constraint",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "method_version",
+      "definition": "Subject-bound method edition condition; unknown stays unknown.",
+      "value_type": "version_constraint",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "flavor",
+      "definition": "Scientific implementation flavor.",
+      "value_type": "term",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "parameter_condition",
+      "definition": "Condition on a ParameterDefinition.",
+      "value_type": "parameter_condition",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    },
+    {
+      "qualifier_id": "representation_state",
+      "definition": "Scientific value/transformation state only; never runtime freshness.",
+      "value_type": "term",
+      "owner": "StatementRevision_or_ApplicabilityScope",
+      "storage_rule": "Use inline context unless independent shared scope identity is needed; equal duplicate values deduplicate, conflicting values reject."
+    }
+  ],
+  "deferred_design1_qualifiers": [
+    {
+      "qualifier_id": "dataset_class",
+      "disposition": "EXTENSION",
+      "reason": "Evaluation context belongs to the optional evaluation module."
+    },
+    {
+      "qualifier_id": "evaluation_context",
+      "disposition": "EXTENSION",
+      "reason": "Evaluation context belongs to the optional evaluation module."
+    },
+    {
+      "qualifier_id": "evaluation_metric",
+      "disposition": "EXTENSION",
+      "reason": "Evaluation context belongs to the optional evaluation module."
+    },
+    {
+      "qualifier_id": "modality_strength",
+      "disposition": "MERGE",
+      "replacement": "Requirement.strength",
+      "reason": "Avoid ambiguity with assay modality; strength is an enum."
+    }
+  ],
+  "value_validation": {
+    "term": "Nonempty string in the supplied controlled term registry for that dimension; this helper does not mint or normalize terms.",
+    "observation_unit_enum": [
+      "cell",
+      "nucleus",
+      "sample",
+      "donor",
+      "spot"
+    ],
+    "organism_taxon_pattern": "NCBITaxon:[1-9][0-9]*",
+    "version_families": {
+      "software_version": [
+        "Package",
+        "PackageRelease",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "method_version": [
+        "Method",
+        "MethodVariant"
+      ]
+    },
+    "parameter_definition_fields": [
+      "owner_operator_id",
+      "allowed_operator_revision_ids",
+      "datatype",
+      "unit"
+    ],
+    "rule": "Validate allowed name AND value shape/enum/datatype/unit/owner. Unknown terms and unsupported pin grammars require review; no name-only pass."
+  }
+}

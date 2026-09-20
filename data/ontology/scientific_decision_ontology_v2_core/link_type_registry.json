@@ -1,0 +1,2532 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "links": [
+    {
+      "predicate_id": "belongs_to_project",
+      "module": "scKG-core",
+      "definition": "Package belongs to one stable software project.",
+      "domain": [
+        "Package"
+      ],
+      "range": [
+        "SoftwareProject"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "Package",
+          "SoftwareProject"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "belongs_to_package",
+      "module": "scKG-core",
+      "definition": "Operator belongs to one distribution package.",
+      "domain": [
+        "Operator"
+      ],
+      "range": [
+        "Package"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "Operator",
+          "Package"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "revision_of",
+      "module": "scKG-evidence",
+      "definition": "Revision belongs to exactly one same-family stable identity, never an arbitrary versioned resource.",
+      "domain": [
+        "PackageRelease",
+        "OperatorRevision",
+        "SourceRevision",
+        "StatementRevision",
+        "ReferenceArtifactRevision"
+      ],
+      "range": [
+        "Package",
+        "Operator",
+        "SourceWork",
+        "ScientificStatement",
+        "ReferenceArtifact"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "PackageRelease",
+          "Package"
+        ],
+        [
+          "OperatorRevision",
+          "Operator"
+        ],
+        [
+          "SourceRevision",
+          "SourceWork"
+        ],
+        [
+          "StatementRevision",
+          "ScientificStatement"
+        ],
+        [
+          "ReferenceArtifactRevision",
+          "ReferenceArtifact"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-A02",
+        "CQ-G01",
+        "CQ-E01",
+        "CQ-D03"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "bound_to_release",
+      "module": "scKG-core",
+      "definition": "Operator scientific description is pinned to one package release whose package owns its Operator.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "PackageRelease"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "PackageRelease"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-A02"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "variant_of",
+      "module": "scKG-core",
+      "definition": "Variant specializes one scientific Method.",
+      "domain": [
+        "MethodVariant"
+      ],
+      "range": [
+        "Method"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "MethodVariant",
+          "Method"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-B02"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "implements_method",
+      "module": "scKG-core",
+      "definition": "Release-bound operator implements a scientific method under the stated conditions.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "Method"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": true,
+      "evidence_policy": {
+        "kind": "source_bound_statement_assessment",
+        "rule": "Scientific assertions require separately assessed source support; structural existence never implies trust."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [
+          "software_version",
+          "flavor",
+          "parameter_condition"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "Method"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-A01"
+      ],
+      "statement_predicate_allowed": true,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "implements_method_variant",
+      "module": "scKG-core",
+      "definition": "Release-bound operator implements the specified scientifically meaningful variant.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "MethodVariant"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": true,
+      "evidence_policy": {
+        "kind": "source_bound_statement_assessment",
+        "rule": "Scientific assertions require separately assessed source support; structural existence never implies trust."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [
+          "software_version",
+          "parameter_condition"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "MethodVariant"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-B02"
+      ],
+      "statement_predicate_allowed": true,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "supports_task",
+      "module": "scKG-core",
+      "definition": "Entity addresses a bounded scientific analysis objective; does not mean executable or recommended.",
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "ScientificTask"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": true,
+      "evidence_policy": {
+        "kind": "source_bound_statement_assessment",
+        "rule": "Scientific assertions require separately assessed source support; structural existence never implies trust."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [
+          "modality",
+          "assay",
+          "software_version"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "Method",
+          "ScientificTask"
+        ],
+        [
+          "MethodVariant",
+          "ScientificTask"
+        ],
+        [
+          "OperatorRevision",
+          "ScientificTask"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "statement_predicate_allowed": true,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "has_parameter",
+      "module": "scKG-core",
+      "definition": "Release-bound operator exposes this parameter definition; no default value is inferred.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "ParameterDefinition"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": true,
+      "evidence_policy": {
+        "kind": "source_bound_statement_assessment",
+        "rule": "Scientific assertions require separately assessed source support; structural existence never implies trust."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [
+          "software_version"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "ParameterDefinition"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-B03"
+      ],
+      "statement_predicate_allowed": true,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "has_input_port",
+      "module": "scKG-core",
+      "definition": "Owns a typed scientific input role.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "InputPort"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "InputPort"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-C01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "has_output_port",
+      "module": "scKG-core",
+      "definition": "Owns a typed scientific output role.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "OutputPort"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "OutputPort"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-C02"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "has_requirement",
+      "module": "scKG-core",
+      "definition": "Entity has the referenced Requirement; independent strength and activation are preserved without deriving strength from a verb.",
+      "domain": [
+        "InputPort",
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "Requirement"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": true,
+      "evidence_policy": {
+        "kind": "source_bound_statement_assessment",
+        "rule": "Scientific assertions require separately assessed source support; structural existence never implies trust."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [
+          "modality",
+          "organism_taxon",
+          "assay",
+          "observation_unit",
+          "study_design",
+          "software_version",
+          "method_version",
+          "flavor",
+          "parameter_condition"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "InputPort",
+          "Requirement"
+        ],
+        [
+          "Method",
+          "Requirement"
+        ],
+        [
+          "MethodVariant",
+          "Requirement"
+        ],
+        [
+          "OperatorRevision",
+          "Requirement"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "statement_predicate_allowed": true,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "requires_constraint",
+      "module": "scKG-core",
+      "definition": "Requirement refers to a representation constraint target; strength/activation remain in Requirement. At least one constraint or reference target is required.",
+      "domain": [
+        "Requirement"
+      ],
+      "range": [
+        "RepresentationConstraint"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "Requirement",
+          "RepresentationConstraint"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "constrains_type",
+      "module": "scKG-core",
+      "definition": "Constraint describes conditions on one scientific representation type.",
+      "domain": [
+        "RepresentationConstraint"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "RepresentationConstraint",
+          "RepresentationType"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "output_type",
+      "module": "scKG-core",
+      "definition": "Output role declares one representation type, subject to its production_conditions.",
+      "domain": [
+        "OutputPort"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OutputPort",
+          "RepresentationType"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-C02"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "consumes",
+      "module": "scKG-core",
+      "definition": "Derived input capability view through port, requirement and constraint; preserves strength, alternatives and conditions.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "direction": "subject_to_object",
+      "classification": "DERIVED_PROJECTION",
+      "disposition": "DERIVED_PROJECTION",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "derivation_provenance",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "RepresentationType"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-C01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "produces",
+      "module": "scKG-core",
+      "definition": "Derived output capability view through an owned output port; preserves production_conditions.",
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "direction": "subject_to_object",
+      "classification": "DERIVED_PROJECTION",
+      "disposition": "DERIVED_PROJECTION",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "derivation_provenance",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "OperatorRevision",
+          "RepresentationType"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-C02"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "applicable_to",
+      "module": "scKG-core",
+      "definition": "Entity-level applicability under independently identified shared context; not a statement-as-entity shortcut.",
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "ApplicabilityScope"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": true,
+      "evidence_policy": {
+        "kind": "source_bound_statement_assessment",
+        "rule": "Scientific assertions require separately assessed source support; structural existence never implies trust."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "Method",
+          "ApplicabilityScope"
+        ],
+        [
+          "MethodVariant",
+          "ApplicabilityScope"
+        ],
+        [
+          "OperatorRevision",
+          "ApplicabilityScope"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-D04"
+      ],
+      "statement_predicate_allowed": true,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "artifact_of",
+      "module": "scKG-evidence",
+      "definition": "Acquired immutable bytes represent one identified source revision.",
+      "domain": [
+        "SourceArtifact"
+      ],
+      "range": [
+        "SourceRevision"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "SourceArtifact",
+          "SourceRevision"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-G01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "span_in_revision",
+      "module": "scKG-evidence",
+      "definition": "Exact excerpt refers to one source revision.",
+      "domain": [
+        "EvidenceSpan"
+      ],
+      "range": [
+        "SourceRevision"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "EvidenceSpan",
+          "SourceRevision"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-F02"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "span_in_artifact",
+      "module": "scKG-evidence",
+      "definition": "Exact excerpt resolves to one immutable artifact of the same source revision.",
+      "domain": [
+        "EvidenceSpan"
+      ],
+      "range": [
+        "SourceArtifact"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "EvidenceSpan",
+          "SourceArtifact"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-F01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "assesses_statement",
+      "module": "scKG-evidence",
+      "definition": "Assessment evaluates one exact statement revision; support_type is a property.",
+      "domain": [
+        "EvidenceAssessment"
+      ],
+      "range": [
+        "StatementRevision"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "EvidenceAssessment",
+          "StatementRevision"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-F03"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "uses_evidence",
+      "module": "scKG-evidence",
+      "definition": "Assessment uses one exact span; multiple spans require multiple assessments, preserving distinct judgments.",
+      "domain": [
+        "EvidenceAssessment"
+      ],
+      "range": [
+        "EvidenceSpan"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "EvidenceAssessment",
+          "EvidenceSpan"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-F01"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "binds_to_type",
+      "module": "runtime-bridge",
+      "definition": "External runtime record references one scientific type; neither copying universal facts nor promoting runtime state.",
+      "domain": [
+        "RepresentationRecord"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "1",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "RepresentationRecord",
+          "RepresentationType"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-J06"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "requires_reference",
+      "module": "scKG-representation",
+      "definition": "Requirement refers to an immutable/version-pinned ReferenceArtifactRevision; this target link does not imply REQUIRED strength.",
+      "domain": [
+        "Requirement"
+      ],
+      "range": [
+        "ReferenceArtifactRevision"
+      ],
+      "direction": "subject_to_object",
+      "classification": "AUTHORITATIVE",
+      "disposition": "CORE_LINK_TYPE",
+      "evidence_required": false,
+      "evidence_policy": {
+        "kind": "typed_record_binding",
+        "rule": "Preserve exact source record/port IDs and hashes; no evidence-support inference."
+      },
+      "cardinality": "0..*",
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "symmetric": false,
+      "transitive": false,
+      "inverse_predicate": null,
+      "allowed_endpoint_pairs": [
+        [
+          "Requirement",
+          "ReferenceArtifactRevision"
+        ]
+      ],
+      "supporting_cq_ids": [
+        "CQ-D03"
+      ],
+      "statement_predicate_allowed": false,
+      "reason": "N02: reuse the historical requires_reference relation with a precise Requirement domain instead of introducing a reference predicate family."
+    }
+  ],
+  "design1_review": [
+    {
+      "predicate_id": "implements_method",
+      "module": "core-link",
+      "definition": "Release-bound operator implements a scientific method under the stated conditions.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "Method"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "Method"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "implements_method",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [
+          "software_version",
+          "flavor",
+          "parameter_condition"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-A01"
+      ],
+      "design1_definition": "Governed v2 relation `implements_method` from OperatorRevision to Method."
+    },
+    {
+      "predicate_id": "implements_method_variant",
+      "module": "core-link",
+      "definition": "Release-bound operator implements the specified scientifically meaningful variant.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "MethodVariant"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "MethodVariant"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "implements_method_variant",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [
+          "software_version",
+          "parameter_condition"
+        ],
+        "required": [],
+        "rule": "Only these relation-specific conditions; referenced context must not conflict with the endpoint revision."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-B02"
+      ],
+      "design1_definition": "Governed v2 relation `implements_method_variant` from OperatorRevision to MethodVariant."
+    },
+    {
+      "predicate_id": "belongs_to_package",
+      "module": "core-link",
+      "definition": "Operator belongs to one distribution package.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Operator"
+      ],
+      "design1_range": [
+        "Package"
+      ],
+      "domain": [
+        "Operator"
+      ],
+      "range": [
+        "Package"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "belongs_to_package",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "design1_definition": "Governed v2 relation `belongs_to_package` from Operator to Package."
+    },
+    {
+      "predicate_id": "belongs_to_project",
+      "module": "core-link",
+      "definition": "Package belongs to one stable software project.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Package"
+      ],
+      "design1_range": [
+        "SoftwareProject"
+      ],
+      "domain": [
+        "Package"
+      ],
+      "range": [
+        "SoftwareProject"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "belongs_to_project",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "design1_definition": "Governed v2 relation `belongs_to_project` from Package to SoftwareProject."
+    },
+    {
+      "predicate_id": "revision_of",
+      "module": "core-link",
+      "definition": "Revision belongs to exactly one same-family stable identity, never an arbitrary versioned resource.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "VersionedResource"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "PackageRelease",
+        "OperatorRevision",
+        "SourceRevision",
+        "StatementRevision"
+      ],
+      "range": [
+        "Package",
+        "Operator",
+        "SourceWork",
+        "ScientificStatement"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "revision_of",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-A02",
+        "CQ-G01",
+        "CQ-E01"
+      ],
+      "design1_definition": "Governed v2 relation `revision_of` from VersionedResource to VersionedResource."
+    },
+    {
+      "predicate_id": "consumes",
+      "module": "core-link",
+      "definition": "Derived input capability view through port, requirement and constraint; preserves strength, alternatives and conditions.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "DERIVED_PROJECTION",
+      "replacement": "consumes",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-C01"
+      ],
+      "design1_definition": "Governed v2 relation `consumes` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "produces",
+      "module": "core-link",
+      "definition": "Derived output capability view through an owned output port; preserves production_conditions.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "DERIVED_PROJECTION",
+      "replacement": "produces",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-C02"
+      ],
+      "design1_definition": "Governed v2 relation `produces` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "derives_from",
+      "module": "non-core-review",
+      "definition": "Use one future provenance relation; no duplicate internal lineage vocabulary.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "design1_range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "disposition": "MERGE",
+      "replacement": "was_derived_from",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use one future provenance relation; no duplicate internal lineage vocabulary.",
+      "supporting_cq_ids": [
+        "CQ-C03",
+        "CQ-I01"
+      ],
+      "design1_definition": "Governed v2 relation `derives_from` from ProvenanceTrackedArtifact to ProvenanceTrackedArtifact."
+    },
+    {
+      "predicate_id": "transforms",
+      "module": "non-core-review",
+      "definition": "Display-only description may summarize transformations; decision-bearing effects require typed StatementRevision plus EvidenceAssessment. No general Effect ontology.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "effect_description",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Display-only description may summarize transformations; decision-bearing effects require typed StatementRevision plus EvidenceAssessment. No general Effect ontology.",
+      "supporting_cq_ids": [
+        "CQ-C04"
+      ],
+      "design1_definition": "Governed v2 relation `transforms` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "preserves",
+      "module": "non-core-review",
+      "definition": "Describe implemented Method/MethodVariant and typed input/output semantics; no additional transformation verb is necessary in core.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "DataRepresentation"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "DataRepresentation"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "preserves",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Describe implemented Method/MethodVariant and typed input/output semantics; no additional transformation verb is necessary in core.",
+      "supporting_cq_ids": [
+        "CQ-C04"
+      ],
+      "design1_definition": "Governed v2 relation `preserves` from OperatorRevision to DataRepresentation."
+    },
+    {
+      "predicate_id": "invalidates",
+      "module": "non-core-review",
+      "definition": "Runtime invalidation belongs to Ledger/Trace. Display-only effect_description cannot express decision-bearing scientific effects; those require a registered StatementRevision and EvidenceAssessment, otherwise defer.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "GovernedAction"
+      ],
+      "design1_range": [
+        "RepresentationRecord"
+      ],
+      "domain": [
+        "GovernedAction"
+      ],
+      "range": [
+        "RepresentationRecord"
+      ],
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Runtime invalidation belongs to Ledger/Trace. Display-only effect_description cannot express decision-bearing scientific effects; those require a registered StatementRevision and EvidenceAssessment, otherwise defer.",
+      "supporting_cq_ids": [
+        "CQ-C05",
+        "CQ-I03"
+      ],
+      "design1_definition": "Governed v2 relation `invalidates` from GovernedAction to RepresentationRecord."
+    },
+    {
+      "predicate_id": "modifies",
+      "module": "non-core-review",
+      "definition": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "supporting_cq_ids": [
+        "CQ-C07"
+      ],
+      "design1_definition": "Governed v2 relation `modifies` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "filters",
+      "module": "non-core-review",
+      "definition": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "supporting_cq_ids": [
+        "CQ-C04"
+      ],
+      "design1_definition": "Governed v2 relation `filters` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "normalizes",
+      "module": "non-core-review",
+      "definition": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "supporting_cq_ids": [
+        "CQ-C04"
+      ],
+      "design1_definition": "Governed v2 relation `normalizes` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "integrates",
+      "module": "non-core-review",
+      "definition": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "supporting_cq_ids": [
+        "CQ-C04"
+      ],
+      "design1_definition": "Governed v2 relation `integrates` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "aggregates",
+      "module": "non-core-review",
+      "definition": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "supporting_cq_ids": [
+        "CQ-C04"
+      ],
+      "design1_definition": "Governed v2 relation `aggregates` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "projects_to",
+      "module": "non-core-review",
+      "definition": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OperatorRevision"
+      ],
+      "design1_range": [
+        "RepresentationType"
+      ],
+      "domain": [
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationType"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate.",
+      "supporting_cq_ids": [
+        "CQ-C02"
+      ],
+      "design1_definition": "Governed v2 relation `projects_to` from OperatorRevision to RepresentationType."
+    },
+    {
+      "predicate_id": "requires_input",
+      "module": "non-core-review",
+      "definition": "Strength/condition belong to Requirement, referenced through typed entity/port links.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ExecutableCapability"
+      ],
+      "design1_range": [
+        "RepresentationConstraint"
+      ],
+      "domain": [
+        "ExecutableCapability"
+      ],
+      "range": [
+        "RepresentationConstraint"
+      ],
+      "disposition": "MERGE",
+      "replacement": "has_requirement",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Strength/condition belong to Requirement, referenced through typed entity/port links.",
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "design1_definition": "Governed v2 relation `requires_input` from ExecutableCapability to RepresentationConstraint."
+    },
+    {
+      "predicate_id": "requires_metadata",
+      "module": "non-core-review",
+      "definition": "Names required by a constraint are scalar metadata requirements, not undefined PropertyDefinition nodes.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ExecutableCapability"
+      ],
+      "design1_range": [
+        "PropertyDefinition"
+      ],
+      "domain": [
+        "ExecutableCapability"
+      ],
+      "range": [
+        "PropertyDefinition"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "required_metadata",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Names required by a constraint are scalar metadata requirements, not undefined PropertyDefinition nodes.",
+      "supporting_cq_ids": [
+        "CQ-D02"
+      ],
+      "design1_definition": "Governed v2 relation `requires_metadata` from ExecutableCapability to PropertyDefinition."
+    },
+    {
+      "predicate_id": "requires_reference",
+      "module": "scKG-representation",
+      "definition": "Requirement refers to an immutable/version-pinned ReferenceArtifactRevision; this target link does not imply REQUIRED strength.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ExecutableCapability"
+      ],
+      "design1_range": [
+        "ReferenceArtifactRevision"
+      ],
+      "domain": [
+        "Requirement"
+      ],
+      "range": [
+        "ReferenceArtifactRevision"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "requires_reference",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "N02: reuse the historical requires_reference relation with a precise Requirement domain instead of introducing a reference predicate family.",
+      "supporting_cq_ids": [
+        "CQ-D03"
+      ],
+      "design1_definition": "Governed v2 relation `requires_reference` from ExecutableCapability to ReferenceArtifactRevision."
+    },
+    {
+      "predicate_id": "requires_assay_property",
+      "module": "non-core-review",
+      "definition": "Use simple context or shared ApplicabilityScope.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ApplicabilityScope"
+      ],
+      "domain": [
+        "ScientificStatement"
+      ],
+      "range": [
+        "ApplicabilityScope"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "assay",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use simple context or shared ApplicabilityScope.",
+      "supporting_cq_ids": [
+        "CQ-D04"
+      ],
+      "design1_definition": "Governed v2 relation `requires_assay_property` from ScientificStatement to ApplicabilityScope."
+    },
+    {
+      "predicate_id": "requires_study_design",
+      "module": "non-core-review",
+      "definition": "Use simple context or shared ApplicabilityScope.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ApplicabilityScope"
+      ],
+      "domain": [
+        "ScientificStatement"
+      ],
+      "range": [
+        "ApplicabilityScope"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "study_design",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use simple context or shared ApplicabilityScope.",
+      "supporting_cq_ids": [
+        "CQ-D04"
+      ],
+      "design1_definition": "Governed v2 relation `requires_study_design` from ScientificStatement to ApplicabilityScope."
+    },
+    {
+      "predicate_id": "applicable_to",
+      "module": "core-link",
+      "definition": "Entity-level applicability under independently identified shared context; not a statement-as-entity shortcut.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ApplicabilityScope"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "ApplicabilityScope"
+      ],
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "applicable_to",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "required": [],
+        "rule": "No qualifiers; all endpoint/version/locator identity is explicit in referenced records."
+      },
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value.",
+      "supporting_cq_ids": [
+        "CQ-D04"
+      ],
+      "design1_definition": "Governed v2 relation `applicable_to` from ScientificStatement to ApplicabilityScope."
+    },
+    {
+      "predicate_id": "validated_on",
+      "module": "non-core-review",
+      "definition": "Requires assessment criteria and evaluation module; evaluated never implies validated.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "EvaluationDataset"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "EvaluationDataset"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Requires assessment criteria and evaluation module; evaluated never implies validated.",
+      "supporting_cq_ids": [
+        "CQ-D06",
+        "CQ-K05"
+      ],
+      "design1_definition": "Governed v2 relation `validated_on` from ScientificStatement to EvaluationDataset."
+    },
+    {
+      "predicate_id": "evaluated_under",
+      "module": "non-core-review",
+      "definition": "Requires comparison protocol module.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "BenchmarkStudy"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "BenchmarkStudy"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Requires comparison protocol module.",
+      "supporting_cq_ids": [
+        "CQ-D06",
+        "CQ-K06"
+      ],
+      "design1_definition": "Governed v2 relation `evaluated_under` from ScientificStatement to BenchmarkStudy."
+    },
+    {
+      "predicate_id": "incompatible_with",
+      "module": "non-core-review",
+      "definition": "A negative requires_input assertion is not incompatibility; defer a precise incompatibility relation.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "RepresentationConstraint"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "RepresentationConstraint"
+      ],
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "A negative requires_input assertion is not incompatibility; defer a precise incompatibility relation.",
+      "supporting_cq_ids": [
+        "CQ-D05"
+      ],
+      "design1_definition": "Governed v2 relation `incompatible_with` from ScientificStatement to RepresentationConstraint."
+    },
+    {
+      "predicate_id": "contraindicated_for",
+      "module": "non-core-review",
+      "definition": "DISCOURAGED strength can encode advice; stronger contraindication semantics await review.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ApplicabilityScope"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "ApplicabilityScope"
+      ],
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "DISCOURAGED strength can encode advice; stronger contraindication semantics await review.",
+      "supporting_cq_ids": [
+        "CQ-D05"
+      ],
+      "design1_definition": "Governed v2 relation `contraindicated_for` from ScientificStatement to ApplicabilityScope."
+    },
+    {
+      "predicate_id": "assumes",
+      "module": "non-core-review",
+      "definition": "Higher-order statement dependencies need scope and identity semantics beyond core.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ScientificStatement"
+      ],
+      "domain": [
+        "ScientificStatement"
+      ],
+      "range": [
+        "ScientificStatement"
+      ],
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Higher-order statement dependencies need scope and identity semantics beyond core.",
+      "supporting_cq_ids": [
+        "CQ-E02"
+      ],
+      "design1_definition": "Governed v2 relation `assumes` from ScientificStatement to ScientificStatement."
+    },
+    {
+      "predicate_id": "has_limitation",
+      "module": "non-core-review",
+      "definition": "Use limitation statement kind about the scientific entity; no statement-to-statement catch-all.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ScientificStatement"
+      ],
+      "domain": [
+        "ScientificStatement"
+      ],
+      "range": [
+        "ScientificStatement"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "assertion_kind",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Use limitation statement kind about the scientific entity; no statement-to-statement catch-all.",
+      "supporting_cq_ids": [
+        "CQ-E04"
+      ],
+      "design1_definition": "Governed v2 relation `has_limitation` from ScientificStatement to ScientificStatement."
+    },
+    {
+      "predicate_id": "has_recommendation",
+      "module": "non-core-review",
+      "definition": "RECOMMENDED or DISCOURAGED requirement strength; no duplicate predicate family.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "ScientificStatement"
+      ],
+      "domain": [
+        "ScientificStatement"
+      ],
+      "range": [
+        "ScientificStatement"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "strength",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "RECOMMENDED or DISCOURAGED requirement strength; no duplicate predicate family.",
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "design1_definition": "Governed v2 relation `has_recommendation` from ScientificStatement to ScientificStatement."
+    },
+    {
+      "predicate_id": "supports",
+      "module": "non-core-review",
+      "definition": "DIRECT/PARTIAL/CONTEXTUAL support is a reified EvidenceAssessment value.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "EvidenceAssessment"
+      ],
+      "design1_range": [
+        "StatementRevision"
+      ],
+      "domain": [
+        "EvidenceAssessment"
+      ],
+      "range": [
+        "StatementRevision"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "support_type",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "DIRECT/PARTIAL/CONTEXTUAL support is a reified EvidenceAssessment value.",
+      "supporting_cq_ids": [
+        "CQ-F01",
+        "CQ-F03"
+      ],
+      "design1_definition": "Governed v2 relation `supports` from EvidenceAssessment to StatementRevision."
+    },
+    {
+      "predicate_id": "contradicts",
+      "module": "non-core-review",
+      "definition": "Conflicting evidence is an independent assessment; not a generic statement-level contradiction link.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "EvidenceAssessment"
+      ],
+      "design1_range": [
+        "StatementRevision"
+      ],
+      "domain": [
+        "EvidenceAssessment"
+      ],
+      "range": [
+        "StatementRevision"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "support_type",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Conflicting evidence is an independent assessment; not a generic statement-level contradiction link.",
+      "supporting_cq_ids": [
+        "CQ-E05",
+        "CQ-F03"
+      ],
+      "design1_definition": "Governed v2 relation `contradicts` from EvidenceAssessment to StatementRevision."
+    },
+    {
+      "predicate_id": "refutes",
+      "module": "non-core-review",
+      "definition": "Refutation is assessed against the same proposition/scope.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "EvidenceAssessment"
+      ],
+      "design1_range": [
+        "StatementRevision"
+      ],
+      "domain": [
+        "EvidenceAssessment"
+      ],
+      "range": [
+        "StatementRevision"
+      ],
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "support_type",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Refutation is assessed against the same proposition/scope.",
+      "supporting_cq_ids": [
+        "CQ-F03"
+      ],
+      "design1_definition": "Governed v2 relation `refutes` from EvidenceAssessment to StatementRevision."
+    },
+    {
+      "predicate_id": "was_generated_by",
+      "module": "non-core-review",
+      "definition": "External provenance binding only in core; activity modeling is deferred.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "design1_range": [
+        "Activity"
+      ],
+      "domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "range": [
+        "Activity"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "External provenance binding only in core; activity modeling is deferred.",
+      "supporting_cq_ids": [
+        "CQ-G02",
+        "CQ-G03"
+      ],
+      "design1_definition": "Governed v2 relation `was_generated_by` from ProvenanceTrackedArtifact to Activity."
+    },
+    {
+      "predicate_id": "generated",
+      "module": "non-core-review",
+      "definition": "Inverse display can be derived in the optional provenance module; no duplicate authoritative fields.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Activity"
+      ],
+      "design1_range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "domain": [
+        "Activity"
+      ],
+      "range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "disposition": "MERGE",
+      "replacement": "was_generated_by",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Inverse display can be derived in the optional provenance module; no duplicate authoritative fields.",
+      "supporting_cq_ids": [
+        "CQ-G02"
+      ],
+      "design1_definition": "Governed v2 relation `generated` from Activity to ProvenanceTrackedArtifact."
+    },
+    {
+      "predicate_id": "used",
+      "module": "non-core-review",
+      "definition": "General activity use awaits provenance module; EvidenceAssessment uses_evidence is specific.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Activity"
+      ],
+      "design1_range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "domain": [
+        "Activity"
+      ],
+      "range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "General activity use awaits provenance module; EvidenceAssessment uses_evidence is specific.",
+      "supporting_cq_ids": [
+        "CQ-G04"
+      ],
+      "design1_definition": "Governed v2 relation `used` from Activity to ProvenanceTrackedArtifact."
+    },
+    {
+      "predicate_id": "was_used_by",
+      "module": "non-core-review",
+      "definition": "Inverse display only; avoid duplicate authoritative storage.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "design1_range": [
+        "Activity"
+      ],
+      "domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "range": [
+        "Activity"
+      ],
+      "disposition": "MERGE",
+      "replacement": "used",
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Inverse display only; avoid duplicate authoritative storage.",
+      "supporting_cq_ids": [
+        "CQ-G04"
+      ],
+      "design1_definition": "Governed v2 relation `was_used_by` from ProvenanceTrackedArtifact to Activity."
+    },
+    {
+      "predicate_id": "was_derived_from",
+      "module": "non-core-review",
+      "definition": "Single selected future provenance relation; direct declared derivation, no transitive inference.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "design1_range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Single selected future provenance relation; direct declared derivation, no transitive inference.",
+      "supporting_cq_ids": [
+        "CQ-G05"
+      ],
+      "design1_definition": "Governed v2 relation `was_derived_from` from ProvenanceTrackedArtifact to ProvenanceTrackedArtifact."
+    },
+    {
+      "predicate_id": "was_associated_with",
+      "module": "non-core-review",
+      "definition": "Agent/activity semantics are external and unavailable to core links.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Activity"
+      ],
+      "design1_range": [
+        "Agent"
+      ],
+      "domain": [
+        "Activity"
+      ],
+      "range": [
+        "Agent"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Agent/activity semantics are external and unavailable to core links.",
+      "supporting_cq_ids": [
+        "CQ-G03"
+      ],
+      "design1_definition": "Governed v2 relation `was_associated_with` from Activity to Agent."
+    },
+    {
+      "predicate_id": "supersedes",
+      "module": "non-core-review",
+      "definition": "Governed revision replacement requires same family and stable identity; revision_of alone is not replacement.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "VersionedResource"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "VersionedResource"
+      ],
+      "range": [
+        "VersionedResource"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Governed revision replacement requires same family and stable identity; revision_of alone is not replacement.",
+      "supporting_cq_ids": [
+        "CQ-E07",
+        "CQ-H06"
+      ],
+      "design1_definition": "Governed v2 relation `supersedes` from VersionedResource to VersionedResource."
+    },
+    {
+      "predicate_id": "superseded_by",
+      "module": "non-core-review",
+      "definition": "Inverse display of governed replacement.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "VersionedResource"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "VersionedResource"
+      ],
+      "range": [
+        "VersionedResource"
+      ],
+      "disposition": "MERGE",
+      "replacement": "supersedes",
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Inverse display of governed replacement.",
+      "supporting_cq_ids": [
+        "CQ-H06"
+      ],
+      "design1_definition": "Governed v2 relation `superseded_by` from VersionedResource to VersionedResource."
+    },
+    {
+      "predicate_id": "alias_of",
+      "module": "non-core-review",
+      "definition": "Reified identity assertion links two resources with namespace-aware identity review.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "IdentityAssertion"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "range": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Reified identity assertion links two resources with namespace-aware identity review.",
+      "supporting_cq_ids": [
+        "CQ-A03"
+      ],
+      "design1_definition": "Governed v2 relation `alias_of` from IdentityAssertion to VersionedResource."
+    },
+    {
+      "predicate_id": "deprecated_by",
+      "module": "non-core-review",
+      "definition": "Deprecation is metadata; replacement is not guaranteed and is not necessarily functional.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "VersionedResource"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "VersionedResource"
+      ],
+      "range": [
+        "VersionedResource"
+      ],
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Deprecation is metadata; replacement is not guaranteed and is not necessarily functional.",
+      "supporting_cq_ids": [
+        "CQ-B04"
+      ],
+      "design1_definition": "Governed v2 relation `deprecated_by` from VersionedResource to VersionedResource."
+    },
+    {
+      "predicate_id": "fork_of",
+      "module": "non-core-review",
+      "definition": "Identity module: SoftwareProject to SoftwareProject, asymmetric/nontransitive and no biological qualifiers.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "SoftwareProject"
+      ],
+      "design1_range": [
+        "SoftwareProject"
+      ],
+      "domain": [
+        "SoftwareProject"
+      ],
+      "range": [
+        "SoftwareProject"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Project lineage has no biological context qualifiers."
+      },
+      "reason": "Identity module: SoftwareProject to SoftwareProject, asymmetric/nontransitive and no biological qualifiers.",
+      "supporting_cq_ids": [
+        "CQ-A04"
+      ],
+      "design1_definition": "Governed v2 relation `fork_of` from SoftwareProject to SoftwareProject."
+    },
+    {
+      "predicate_id": "equivalent_to",
+      "module": "non-core-review",
+      "definition": "Identity module uses resource endpoints of matching type and scope; symmetric only within that scope, not transitive identity merging.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "IdentityAssertion"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "range": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Identity module uses resource endpoints of matching type and scope; symmetric only within that scope, not transitive identity merging.",
+      "supporting_cq_ids": [
+        "CQ-B07"
+      ],
+      "design1_definition": "Governed v2 relation `equivalent_to` from IdentityAssertion to VersionedResource."
+    },
+    {
+      "predicate_id": "replaced_by",
+      "module": "non-core-review",
+      "definition": "Ontology migration concepts outside current core.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "OntologyConceptRevision"
+      ],
+      "design1_range": [
+        "OntologyConceptRevision"
+      ],
+      "domain": [
+        "OntologyConceptRevision"
+      ],
+      "range": [
+        "OntologyConceptRevision"
+      ],
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Ontology migration concepts outside current core.",
+      "supporting_cq_ids": [
+        "CQ-H07",
+        "CQ-K07"
+      ],
+      "design1_definition": "Governed v2 relation `replaced_by` from OntologyConceptRevision to OntologyConceptRevision."
+    }
+  ],
+  "unknown_predicate_policy": "Reject from core; never accept an arbitrary string or silently infer a relation.",
+  "projection_policy": {
+    "authoritative": false,
+    "required": [
+      "projection_id",
+      "predicate_id",
+      "subject_id",
+      "object_id",
+      "premise_record_ids",
+      "premise_hashes",
+      "derivation_rule_id",
+      "context",
+      "requirement_strengths"
+    ],
+    "consumes_path": [
+      "has_input_port",
+      "has_requirement",
+      "requires_constraint",
+      "constrains_type"
+    ],
+    "produces_path": [
+      "has_output_port",
+      "output_type"
+    ],
+    "conditions": "Preserve alternatives, activation_status/when and strength. Reference-only requirements do not imply any consumed representation type. Display effect_description never becomes projected scientific truth.",
+    "CAN_FEED": "Deferred compatibility view: shared type is insufficient; inspect constraints, scope, alignment, conditions and review. Nontransitive.",
+    "REQUIRES_BEFORE": "Not admitted; tutorial order, package dependency and CAN_FEED do not prove scientific prerequisite."
+  }
+}

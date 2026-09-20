@@ -1,0 +1,1678 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "modules": {
+    "scKG-core": [
+      "ScientificTask",
+      "Method",
+      "MethodVariant",
+      "SoftwareProject",
+      "Package",
+      "PackageRelease",
+      "Operator",
+      "OperatorRevision",
+      "ParameterDefinition",
+      "ReferenceArtifact",
+      "ReferenceArtifactRevision"
+    ],
+    "scKG-representation": [
+      "RepresentationType",
+      "RepresentationConstraint",
+      "InputPort",
+      "OutputPort",
+      "Requirement"
+    ],
+    "scKG-statement": [
+      "ScientificStatement",
+      "StatementRevision",
+      "ApplicabilityScope"
+    ],
+    "scKG-evidence": [
+      "SourceWork",
+      "SourceRevision",
+      "SourceArtifact",
+      "EvidenceSpan",
+      "EvidenceAssessment",
+      "EvidenceGap"
+    ],
+    "runtime-bridge": [
+      "RepresentationRecord"
+    ]
+  },
+  "hierarchy_policy": "Modules are organizational namespaces, not subclass axioms. All core object types are concrete; no implicit interfaces or inheritance. MethodVariant specializes Method via variant_of, not Python/OWL subclass inference.",
+  "objects": [
+    {
+      "item_id": "ScientificTask",
+      "module": "scKG-core",
+      "definition": "A bounded analysis objective.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label"
+      ],
+      "optional_properties": [
+        "definition"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "Method",
+      "module": "scKG-core",
+      "definition": "An implementation-independent scientific method.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-A01",
+        "CQ-B06"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label"
+      ],
+      "optional_properties": [
+        "definition"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "MethodVariant",
+      "module": "scKG-core",
+      "definition": "A method specialization defined by scientifically meaningful conditions.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-B02",
+        "CQ-B03"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label"
+      ],
+      "optional_properties": [
+        "definition",
+        "defining_parameter_conditions"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "variant_of"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "ParameterDefinition",
+      "module": "scKG-core",
+      "definition": "A version-aware operator parameter definition.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-B03"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label",
+        "value_domain"
+      ],
+      "optional_properties": [
+        "unit"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "Limitation",
+      "module": "compatibility",
+      "definition": "A reusable named limitation object in v1.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "MERGE",
+      "reason": "Use assertion_kind=limitation and an entity subject; defer reusable limitation-object taxonomy.",
+      "supporting_cq_ids": [
+        "CQ-E04"
+      ],
+      "replacement": "StatementRevision"
+    },
+    {
+      "item_id": "SoftwareProject",
+      "module": "scKG-core",
+      "definition": "A software project identity independent of packaging and release.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label"
+      ],
+      "optional_properties": [],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "Package",
+      "module": "scKG-core",
+      "definition": "A distribution artifact identity within an ecosystem.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-B01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "ecosystem",
+        "distribution_name"
+      ],
+      "optional_properties": [
+        "label"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "belongs_to_project"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "PackageRelease",
+      "module": "scKG-core",
+      "definition": "An immutable versioned package release.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-A02"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "version",
+        "immutable_release_ref"
+      ],
+      "optional_properties": [
+        "release_date",
+        "deprecated"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "revision_of"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "Operator",
+      "module": "scKG-core",
+      "definition": "A stable callable operator identity.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-A05"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "qualified_name"
+      ],
+      "optional_properties": [
+        "label"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "belongs_to_package"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "OperatorRevision",
+      "module": "scKG-core",
+      "definition": "Release-bound scientific description of an operator, its implemented method and typed ports; not an executable ToolContract or permission.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-A01",
+        "CQ-B05"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "api_path"
+      ],
+      "optional_properties": [
+        "deprecated"
+      ],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "revision_of",
+        "bound_to_release",
+        "implements_method"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "ReferenceArtifact",
+      "module": "scKG-core",
+      "definition": "A stable identity for an atlas, model, or mapping resource.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "N02: existing versioned model, explicit reference, atlas/mapping and pinned-resource scientific requirements need this minimal identity/revision pair.",
+      "supporting_cq_ids": [
+        "CQ-D03"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "lifecycle": "stable_identity",
+      "identity_rule": "Stable reference identity is separate from immutable version and byte digest; changed content requires a new revision ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label",
+        "artifact_kind"
+      ],
+      "optional_properties": [
+        "definition"
+      ],
+      "required_links": [],
+      "required_incoming_links": [],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      }
+    },
+    {
+      "item_id": "ReferenceArtifactRevision",
+      "module": "scKG-core",
+      "definition": "A content-addressed reference artifact revision.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "N02: existing versioned model, explicit reference, atlas/mapping and pinned-resource scientific requirements need this minimal identity/revision pair.",
+      "supporting_cq_ids": [
+        "CQ-D03"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Stable reference identity is separate from immutable version and byte digest; changed content requires a new revision ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "version",
+        "content_hash"
+      ],
+      "optional_properties": [],
+      "required_links": [
+        "revision_of"
+      ],
+      "required_incoming_links": [],
+      "source_mapping": {
+        "identity_field": "entity_id",
+        "implemented_in_5c": false
+      }
+    },
+    {
+      "item_id": "RepresentationType",
+      "module": "scKG-representation",
+      "definition": "Reusable scientific data semantics: axes, observation unit, feature namespace, value and transformation states; no concrete cell or feature identities.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-C01",
+        "CQ-C02"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "label",
+        "axes",
+        "observation_unit",
+        "value_semantics",
+        "feature_namespace",
+        "missingness_semantics"
+      ],
+      "optional_properties": [
+        "definition",
+        "is_sparse",
+        "transformation_state",
+        "modalities",
+        "components"
+      ],
+      "source_mapping": {
+        "identity_field": "representation_type_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "RepresentationConstraint",
+      "module": "scKG-representation",
+      "definition": "Independently referenced semantic conditions on a RepresentationType, including typed value bounds and alignment requirements.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version"
+      ],
+      "optional_properties": [
+        "required_value_states",
+        "required_transformations",
+        "forbidden_transformations",
+        "required_metadata",
+        "numeric_constraints"
+      ],
+      "source_mapping": {
+        "identity_field": "constraint_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "constrains_type"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "ApplicabilityScope",
+      "module": "scKG-statement",
+      "definition": "Independently identified reusable or governed context; each referenced scope record is immutable and changes receive a new identifier.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-D04"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "scope_status",
+        "combination",
+        "qualifiers"
+      ],
+      "optional_properties": [
+        "unknown_dimensions"
+      ],
+      "source_mapping": {
+        "identity_field": "scope_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "InputPort",
+      "module": "scKG-representation",
+      "definition": "Independently referenced input role owned by one OperatorRevision; its Requirement objects express admissibility and strength.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-C01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "role",
+        "min_cardinality",
+        "combination"
+      ],
+      "optional_properties": [
+        "max_cardinality"
+      ],
+      "source_mapping": {
+        "identity_field": "input_port_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": [
+        "has_input_port"
+      ]
+    },
+    {
+      "item_id": "OutputPort",
+      "module": "scKG-representation",
+      "definition": "Independently referenced output role owned by one OperatorRevision, with declared representation type, conditions and input-role lineage.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-C02",
+        "CQ-C03"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "role"
+      ],
+      "optional_properties": [
+        "effect_description",
+        "lineage_input_port_ids",
+        "preserves",
+        "production_conditions"
+      ],
+      "source_mapping": {
+        "identity_field": "output_port_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "output_type"
+      ],
+      "required_incoming_links": [
+        "has_output_port"
+      ]
+    },
+    {
+      "item_id": "Requirement",
+      "module": "scKG-representation",
+      "definition": "Independently referenced strength and orthogonal activation condition over representation constraints and/or pinned reference revisions.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-D01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "strength",
+        "combination",
+        "activation_status"
+      ],
+      "optional_properties": [
+        "when"
+      ],
+      "source_mapping": {
+        "identity_field": "requirement_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": [],
+      "required_link_groups": [
+        {
+          "any_of": [
+            "requires_constraint",
+            "requires_reference"
+          ],
+          "minimum_total": 1
+        }
+      ]
+    },
+    {
+      "item_id": "AtomicClaimRevision",
+      "module": "compatibility",
+      "definition": "The v1 versioned scientific assertion record.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "MERGE",
+      "reason": "V1 compatibility surface only; conceptual mapping, no second assertion model or adapter.",
+      "supporting_cq_ids": [
+        "CQ-E01"
+      ],
+      "replacement": "StatementRevision"
+    },
+    {
+      "item_id": "EvidenceAssessment",
+      "module": "scKG-evidence",
+      "definition": "Reified evaluation of one EvidenceSpan against one StatementRevision, retaining support type, alignment, method and assessor provenance.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-F03",
+        "CQ-F04"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "support_type",
+        "assessment_method",
+        "assessor_ref",
+        "created_at",
+        "status",
+        "subject_aligned",
+        "predicate_aligned",
+        "object_aligned",
+        "scope_alignment",
+        "rationale"
+      ],
+      "optional_properties": [
+        "activity_ref",
+        "confidence"
+      ],
+      "source_mapping": {
+        "identity_field": "assessment_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "assesses_statement",
+        "uses_evidence"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "EvidenceSpan",
+      "module": "scKG-evidence",
+      "definition": "Immutable exact excerpt bound to one SourceRevision and one SourceArtifact, with a resolvable locator and exact-text digest only.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-F01",
+        "CQ-F05"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "exact_text",
+        "content_hash",
+        "locator"
+      ],
+      "optional_properties": [
+        "activity_ref",
+        "page",
+        "start_offset",
+        "end_offset",
+        "section"
+      ],
+      "source_mapping": {
+        "identity_field": "evidence_span_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "span_in_revision",
+        "span_in_artifact"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "EvidenceGap",
+      "module": "scKG-evidence",
+      "definition": "Identified missing or unresolved evidence for an entity or assertion, with its impact; it is neither negative evidence nor execution authorization.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-F07"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "description",
+        "impact"
+      ],
+      "optional_properties": [],
+      "source_mapping": {
+        "identity_field": "gap_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "ReviewDecision",
+      "module": "governance",
+      "definition": "A governed decision over exact reviewed artifacts.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Exact-hash human review remains an external governance owner; no review record is created in 5C.",
+      "supporting_cq_ids": [
+        "CQ-J03"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "DerivedRelation",
+      "module": "compatibility",
+      "definition": "A graph projection derived from ports or reviewed rules.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "MERGE",
+      "reason": "Projection metadata on derived links; no independent core scientific object.",
+      "supporting_cq_ids": [
+        "CQ-E06"
+      ],
+      "replacement": "link_type_registry"
+    },
+    {
+      "item_id": "MetricDefinition",
+      "module": "evaluation",
+      "definition": "A definition of an evaluation metric.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Metric definitions belong to an optional comparison module.",
+      "supporting_cq_ids": [
+        "CQ-K01"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "EvaluationDataset",
+      "module": "evaluation",
+      "definition": "A versioned evaluation dataset and split definition.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Dataset revisions, split and leakage controls require the comparison module.",
+      "supporting_cq_ids": [
+        "CQ-K01"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "BenchmarkStudy",
+      "module": "evaluation",
+      "definition": "A bounded comparison protocol.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Comparison protocol and evaluated subjects are beyond minimal analysis core.",
+      "supporting_cq_ids": [
+        "CQ-D06"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "EmpiricalResult",
+      "module": "evaluation",
+      "definition": "A scoped metric observation from a benchmark.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Numeric measured performance needs dataset, metric and protocol context.",
+      "supporting_cq_ids": [
+        "CQ-D06"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "SupersessionRecord",
+      "module": "governance",
+      "definition": "A governed revision replacement assertion.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Governed replacement decisions are external to core revision membership.",
+      "supporting_cq_ids": [
+        "CQ-E07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "RepresentationInstanceBinding",
+      "module": "compatibility",
+      "definition": "A binding between runtime data and scientific representation constraints.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "MERGE",
+      "reason": "Runtime-owned binding reference; no scientific-owned duplicate of ledger state.",
+      "supporting_cq_ids": [
+        "CQ-J06"
+      ],
+      "replacement": "RepresentationRecord"
+    },
+    {
+      "item_id": "SourceWork",
+      "module": "scKG-evidence",
+      "definition": "A stable intellectual or documentation work identity.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-G01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "work_identifier"
+      ],
+      "optional_properties": [],
+      "source_mapping": {
+        "identity_field": "source_work_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "SourceRevision",
+      "module": "scKG-evidence",
+      "definition": "A versioned edition or release of a source work.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-F02"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "version"
+      ],
+      "optional_properties": [
+        "release_date"
+      ],
+      "source_mapping": {
+        "identity_field": "source_revision_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "revision_of"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "SourceArtifact",
+      "module": "scKG-evidence",
+      "definition": "A content-addressed acquired source file.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-G01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "content_hash",
+        "media_type"
+      ],
+      "optional_properties": [
+        "source_uri",
+        "activity_ref"
+      ],
+      "source_mapping": {
+        "identity_field": "source_artifact_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "artifact_of"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "RepresentationRecord",
+      "module": "runtime-bridge",
+      "definition": "External runtime-owned state of a concrete representation; this design declares a bridge reference, not a new runtime schema.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-I01",
+        "CQ-J06"
+      ],
+      "replacement": null,
+      "owner": "RepresentationLedger",
+      "layer": "runtime",
+      "runtime_bridge_only": true,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "external_runtime_lifecycle",
+      "identity_rule": "Use the existing runtime representation_record_id; bind by reference only, no new required runtime fields.",
+      "required_properties": [],
+      "optional_properties": [],
+      "source_mapping": {
+        "identity_field": "representation_record_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": [],
+      "external_schema_ref": "core/representation_models.py:18"
+    },
+    {
+      "item_id": "TraceSpan",
+      "module": "runtime-observability",
+      "definition": "Runtime audit event connecting inputs, outputs, decisions, and activities.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Existing runtime trace schema remains external and unchanged.",
+      "supporting_cq_ids": [
+        "CQ-I07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "ScientificStatement",
+      "module": "scKG-statement",
+      "definition": "Stable assertion identity and revision anchor only; not a document, paragraph or collection of claims.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-E01"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "stable_identity_or_owned_component",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version"
+      ],
+      "optional_properties": [],
+      "source_mapping": {
+        "identity_field": null,
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "StatementRevision",
+      "module": "scKG-statement",
+      "definition": "Immutable, version-specific, independently judgeable proposition about typed entities or a typed property value, with polarity and explicit context.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "CORE_OBJECT_TYPE",
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone.",
+      "supporting_cq_ids": [
+        "CQ-E01",
+        "CQ-E03"
+      ],
+      "replacement": null,
+      "owner": "scientific_knowledge",
+      "layer": "scientific",
+      "runtime_bridge_only": false,
+      "abstract": false,
+      "parent_class": null,
+      "lifecycle": "immutable_revision",
+      "identity_rule": "Persistent identifier independent of label; owned ports/parameters carry owner identity; immutable semantic changes require new revision or ID.",
+      "required_properties": [
+        "id",
+        "schema_version",
+        "ontology_version",
+        "predicate",
+        "polarity",
+        "assertion_kind",
+        "epistemic_status",
+        "scope_status"
+      ],
+      "optional_properties": [
+        "activity_ref",
+        "literal_value"
+      ],
+      "source_mapping": {
+        "identity_field": "claim_revision_id",
+        "implemented_in_5c": false
+      },
+      "admission": {
+        "independent_identity": true,
+        "meaningful_lifecycle": true,
+        "independently_referenced": true,
+        "in_scope_use_case": true,
+        "scalar_or_qualifier_is_insufficient": true,
+        "unambiguous_definition": true
+      },
+      "required_links": [
+        "revision_of"
+      ],
+      "required_incoming_links": []
+    },
+    {
+      "item_id": "IdentityAssertion",
+      "module": "identity-governance",
+      "definition": "Reviewable claim that two identifiers have a typed identity relationship.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Reifies subject_resource/relation_type/object_resource and review; resources, not the assertion, are endpoints.",
+      "supporting_cq_ids": [
+        "CQ-A03",
+        "CQ-B07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "ExtractionRun",
+      "module": "provenance",
+      "definition": "Provenance activity that generates candidate records from sources.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Future extraction activity contract; no extractor changes.",
+      "supporting_cq_ids": [
+        "CQ-G02"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "ReviewActivity",
+      "module": "provenance",
+      "definition": "Provenance activity that generates ReviewDecisions.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Activity/agent contracts await governance review.",
+      "supporting_cq_ids": [
+        "CQ-G03"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "EvidenceDriftAssessment",
+      "module": "evidence-evolution",
+      "definition": "Assessment of evidence continuity across source revisions.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Drift comparison inputs remain in core; monitoring and revalidation lifecycle are deferred.",
+      "supporting_cq_ids": [
+        "CQ-H01",
+        "CQ-H05"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "OntologyConceptRevision",
+      "module": "ontology-evolution",
+      "definition": "Versioned class, property, predicate, qualifier, or shape definition.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Full ontology change framework is outside bounded core.",
+      "supporting_cq_ids": [
+        "CQ-H07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "OntologyMigrationPlan",
+      "module": "ontology-evolution",
+      "definition": "Governed plan for schema and data migration between ontology releases.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Migration framework explicitly outside this checkpoint.",
+      "supporting_cq_ids": [
+        "CQ-H07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "GovernedAction",
+      "module": "action",
+      "definition": "Typed action with permissions, preconditions, side effects, trace, and rollback semantics.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Permissions, effects and execution are not universal scientific facts.",
+      "supporting_cq_ids": [
+        "CQ-I07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_id": "ActionPolicy",
+      "module": "action",
+      "definition": "Policy governing approval and execution eligibility for actions.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "DEFERRED",
+      "reason": "Authorization remains owned by existing policy; no action ontology implementation.",
+      "supporting_cq_ids": [
+        "CQ-I06"
+      ],
+      "replacement": null
+    }
+  ],
+  "example_audit": [
+    {
+      "item_id": "RepresentationConstraint",
+      "historical_examples": [
+        "scope:uat:scanpy:hvg-dispersion:1.11.2"
+      ],
+      "actual_identity_field": "constraint_id",
+      "verified_example": "representation-constraint:uat:hvg-log",
+      "source_graph_node_id": "uat_decision_rule_correction::representation-constraint:uat:hvg-log",
+      "conclusion": "AUDIT_GENERATOR_PARENT_SCOPE_ID_BUG",
+      "evidence_path": "eval/scientific_decision_ontology_v2_design_audit.py:475"
+    },
+    {
+      "item_id": "ApplicabilityScope",
+      "historical_examples": [
+        "scope:uat:scanpy:hvg:1.11.2"
+      ],
+      "actual_identity_field": "scope_id",
+      "verified_example": "scope:uat:scanpy:hvg:1.11.2",
+      "source_graph_node_id": "uat_decision_rule_correction::scope:uat:scanpy:hvg:1.11.2",
+      "conclusion": "VALID_SOURCE_ID",
+      "evidence_path": "eval/scientific_decision_ontology_v2_design_audit.py:475"
+    },
+    {
+      "item_id": "InputPort",
+      "historical_examples": [
+        "scope:uat:scanpy:hvg:1.11.2"
+      ],
+      "actual_identity_field": "input_port_id",
+      "verified_example": "input-port:uat:scanpy.hvg:expression",
+      "source_graph_node_id": "uat_decision_rule_correction::input-port:uat:scanpy.hvg:expression",
+      "conclusion": "AUDIT_GENERATOR_PARENT_SCOPE_ID_BUG",
+      "evidence_path": "eval/scientific_decision_ontology_v2_design_audit.py:475"
+    },
+    {
+      "item_id": "OutputPort",
+      "historical_examples": [
+        "scope:uat:scanpy:hvg:1.11.2"
+      ],
+      "actual_identity_field": "output_port_id",
+      "verified_example": "output-port:uat:scanpy.hvg:mask",
+      "source_graph_node_id": "uat_decision_rule_correction::output-port:uat:scanpy.hvg:mask",
+      "conclusion": "AUDIT_GENERATOR_PARENT_SCOPE_ID_BUG",
+      "evidence_path": "eval/scientific_decision_ontology_v2_design_audit.py:475"
+    }
+  ],
+  "record_reference_fields": [
+    {
+      "field": "StatementRevision.subject_id",
+      "range": [
+        "ScientificTask",
+        "Method",
+        "MethodVariant",
+        "ParameterDefinition",
+        "SoftwareProject",
+        "Package",
+        "PackageRelease",
+        "Operator",
+        "OperatorRevision",
+        "RepresentationType",
+        "RepresentationConstraint",
+        "InputPort",
+        "OutputPort",
+        "Requirement",
+        "ReferenceArtifact",
+        "ReferenceArtifactRevision"
+      ],
+      "cardinality": "1",
+      "rule": "Further restricted by predicate domain/property owner."
+    },
+    {
+      "field": "StatementRevision.object_id",
+      "range": [
+        "ScientificTask",
+        "Method",
+        "MethodVariant",
+        "ParameterDefinition",
+        "SoftwareProject",
+        "Package",
+        "PackageRelease",
+        "Operator",
+        "OperatorRevision",
+        "RepresentationType",
+        "RepresentationConstraint",
+        "ApplicabilityScope",
+        "InputPort",
+        "OutputPort",
+        "Requirement",
+        "EvidenceAssessment",
+        "EvidenceSpan",
+        "EvidenceGap",
+        "SourceWork",
+        "SourceRevision",
+        "SourceArtifact",
+        "ScientificStatement",
+        "StatementRevision",
+        "ReferenceArtifact",
+        "ReferenceArtifactRevision"
+      ],
+      "cardinality": "0..1",
+      "rule": "XOR literal_value; further restricted by predicate range."
+    },
+    {
+      "field": "StatementRevision.scope_ref",
+      "range": [
+        "ApplicabilityScope"
+      ],
+      "cardinality": "0..1",
+      "rule": "Shared immutable context, never mandatory per assertion."
+    },
+    {
+      "field": "StatementRevision.statement_id",
+      "range": [
+        "ScientificStatement"
+      ],
+      "cardinality": "1",
+      "rule": "Same binding as revision_of, not a second source of truth."
+    },
+    {
+      "field": "EvidenceGap.subject_ref",
+      "range": [
+        "ScientificTask",
+        "Method",
+        "MethodVariant",
+        "ParameterDefinition",
+        "SoftwareProject",
+        "Package",
+        "PackageRelease",
+        "Operator",
+        "OperatorRevision",
+        "RepresentationType",
+        "RepresentationConstraint",
+        "ApplicabilityScope",
+        "InputPort",
+        "OutputPort",
+        "Requirement",
+        "EvidenceAssessment",
+        "EvidenceSpan",
+        "EvidenceGap",
+        "SourceWork",
+        "SourceRevision",
+        "SourceArtifact",
+        "ScientificStatement",
+        "StatementRevision",
+        "ReferenceArtifact",
+        "ReferenceArtifactRevision"
+      ],
+      "cardinality": "1",
+      "rule": "Entity or exact assertion missing evidence."
+    },
+    {
+      "field": "ParameterDefinition.owner_operator_ref",
+      "range": [
+        "Operator"
+      ],
+      "cardinality": "1",
+      "rule": "has_parameter operator revision must belong to this Operator."
+    },
+    {
+      "field": "OutputPort.lineage_input_port_ids",
+      "range": [
+        "InputPort"
+      ],
+      "cardinality": "0..*",
+      "rule": "Each input belongs to the same OperatorRevision."
+    }
+  ],
+  "structural_constraints": {
+    "release_family": "OperatorRevision bound_to_release PackageRelease must have the same Package reached through revision_of Operator belongs_to_package.",
+    "port_ownership": "Every InputPort and OutputPort belongs to exactly one OperatorRevision; output lineage inputs belong to that same operator revision.",
+    "source_binding": "EvidenceSpan span_in_revision must equal the SourceRevision of its span_in_artifact SourceArtifact.",
+    "property_cardinality": "Required properties are present once; arrays have the declared value shape; required_links override a general 0..* link minimum to at least one for that class. Link cardinality 1 remains exactly one.",
+    "scope_payload": "ApplicabilityScope requires id, scope_status, combination and qualifiers. Reject unknown with known context; combination is preserved; scope context changes require a new ID. See scope_policy.shared_scope_contract.",
+    "parameter_ownership": "ParameterDefinition references an Operator; the subject OperatorRevision must implement that Operator and include the parameter in its declared revision-specific parameter set.",
+    "numeric_constraints": "Validate finite typed bounds per field and explicit unit, reject empty intersections; no implicit unit conversion or guessed thresholds.",
+    "requirement_targets": "At least one requires_constraint or requires_reference target. Representation-only, reference-only, and mixed targets are allowed; ALL_OF/ANY_OF apply across the whole target set. Reference targets must be ReferenceArtifactRevision with valid revision_of ReferenceArtifact and immutable content_hash.",
+    "activation": "Requirement.strength and when are orthogonal. activation_status explicitly distinguishes specified/unconditional/unknown; unknown does not satisfy an activation check."
+  }
+}

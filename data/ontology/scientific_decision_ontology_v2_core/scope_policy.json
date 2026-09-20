@@ -1,0 +1,69 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "SCOPE_AS_QUALIFIER_RULES": [
+    "Use inline qualifiers for simple single-statement context.",
+    "Do not allocate an ApplicabilityScope for every statement.",
+    "Inline qualifiers are ALL_OF. A shared scope preserves its own ALL_OF/ANY_OF; inline-only conditions are conjoined with the shared expression, never flattened.",
+    "Unknown context must be explicit and is never a wildcard."
+  ],
+  "SCOPE_AS_OBJECT_RULES": [
+    "Admit an immutable identified scope when reused across statements/capabilities, or when independent governance/versioning requires identity.",
+    "scope_ref resolves to ApplicabilityScope; changes receive a new ID, preserving earlier revision meaning.",
+    "A shared scope is not a universal qualifier template: only dimensions allowed by the predicate may occur in the referenced scope."
+  ],
+  "qualifier_storage": "StatementRevision.qualifiers or ApplicabilityScope.qualifiers use the same registered value shapes.",
+  "conflict_rule": "Inline and referenced values for the same dimension must agree exactly; otherwise reject. Never choose a silent precedence or widen scope.",
+  "scope_status": [
+    "explicit",
+    "partially_known",
+    "unknown",
+    "not_applicable"
+  ],
+  "explicit_rule": "explicit requires nonempty inline or referenced context; not_applicable forbids context; partially_known requires at least one known dimension; unknown carries no known dimensions.",
+  "scope_reuse_not_mandatory": true,
+  "temporal_scope": "Validity intervals and fully governed scope revision lineages are deferred; versions use subject-bound version_constraint values.",
+  "requirement_strengths": [
+    "REQUIRED",
+    "RECOMMENDED",
+    "OPTIONAL",
+    "DISCOURAGED"
+  ],
+  "activation_policy": {
+    "status": [
+      "specified",
+      "unconditional",
+      "unknown"
+    ],
+    "specified": "Nonempty when; every condition is required (ALL_OF); strength is unchanged.",
+    "unconditional": "Explicit absence of additional activation condition: when may be empty/absent; other statement applicability still applies.",
+    "unknown": "when must be empty/absent; condition information unavailable; never interpreted as universal.",
+    "optional_when": "OPTIONAL + specified when is allowed as conditional admissibility/advice only; it does not become REQUIRED.",
+    "no_verb_inference": true
+  },
+  "shared_scope_contract": {
+    "required_fields": [
+      "id",
+      "scope_status",
+      "combination",
+      "qualifiers"
+    ],
+    "scope_status": [
+      "explicit",
+      "partially_known",
+      "unknown",
+      "not_applicable"
+    ],
+    "combination": [
+      "ALL_OF",
+      "ANY_OF"
+    ],
+    "known_status_rule": "explicit requires known context; partially_known requires known dimensions and a nonempty disjoint unknown_dimensions list. unknown requires empty qualifiers. not_applicable requires empty qualifiers. Unknown is not a wildcard.",
+    "duplicate_rule": "Equal same-dimension inline/shared values are deduplicated as shared members, preserving the shared combination. Conflicts reject/REVIEW_REQUIRED even for ANY_OF.",
+    "composition": "(shared expression with its original combination) AND (inline dimensions absent from shared); never flatten an ANY_OF group into an ALL_OF map.",
+    "evaluation": "ALL_OF: false if any false, true if all true, otherwise unknown. ANY_OF: true if any true, false if all false, otherwise unknown. scope_status=unknown returns unknown; partially_known contributes an unknown branch. Empty not_applicable is a neutral context, not proof of applicability.",
+    "immutability": "Existing scope ID cannot be reused with changed status/combination/context/unknown dimensions; use new ID.",
+    "temporal_lineage": "DEFERRED"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "identity": {
+    "class": "ScientificStatement",
+    "fields": [
+      "statement_id",
+      "schema_version",
+      "ontology_version"
+    ],
+    "large_text_bag": false
+  },
+  "revision": {
+    "class": "StatementRevision",
+    "required_fields": [
+      "statement_revision_id",
+      "statement_id",
+      "subject_id",
+      "predicate",
+      "polarity",
+      "qualifiers",
+      "scope_status",
+      "epistemic_status",
+      "schema_version",
+      "ontology_version",
+      "assertion_kind"
+    ],
+    "optional_fields": [
+      "object_id",
+      "literal_value",
+      "scope_ref",
+      "activity_ref"
+    ],
+    "exactly_one": [
+      "object_id",
+      "literal_value"
+    ],
+    "identity_link": "revision_of",
+    "polarity": [
+      "POSITIVE",
+      "NEGATIVE"
+    ],
+    "predicate_rule": "Only links with statement_predicate_allowed=true or properties with assertion_allowed=true; predicate domain applies to subject entity, never ScientificStatement identity.",
+    "immutability": "Any change of S/P/O, polarity, qualifier or referenced scope creates a new revision; exact duplicates do not add evidence. A different independent proposition gets a different statement_id.",
+    "atomicity": "One independently judgeable proposition; split independent conjunctions, keep conditions and comparison operators attached to their proposition.",
+    "negation": "NEGATIVE denies only the qualified proposition. Not REQUIRED does not imply incompatible or DISCOURAGED; missing evidence never implies NEGATIVE.",
+    "evidence_binding": "Assessments point to exact revision IDs; do not require evidence to exist before recording an untrusted assertion.",
+    "epistemic_status": [
+      "asserted",
+      "hypothesized",
+      "uncertain"
+    ],
+    "assertion_kind": [
+      "definition",
+      "capability",
+      "requirement",
+      "recommendation",
+      "empirical_observation",
+      "limitation"
+    ]
+  },
+  "atomicity_examples": {
+    "compound": "Data are sparse, clustering is recommended, and clustering allows information sharing.",
+    "split": [
+      "Single-cell expression data are sparse.",
+      "Clustering information is recommended for subtraction.",
+      "Clustering allows information sharing between cells."
+    ],
+    "status": "ILLUSTRATIVE_ONLY_NOT_KNOWLEDGE",
+    "rule": "No example is ingested, assessed or declared source-supported; each would need its own typed entity predicate mapping and evidence."
+  },
+  "compatibility": {
+    "AtomicClaimRevision": "StatementRevision-compatible view only; V1 claim_id/claim_revision_id map conceptually to statement_id/statement_revision_id.",
+    "implemented": false
+  },
+  "effect_policy": {
+    "display_only_property": "effect_description",
+    "assertion_allowed": false,
+    "forbidden_uses": [
+      "Planner gate",
+      "blocking",
+      "applicability decision",
+      "capability authorization",
+      "derived scientific truth",
+      "trusted statement projection"
+    ],
+    "machine_readable_effect_requires": [
+      "StatementRevision",
+      "EvidenceAssessment"
+    ],
+    "rule": "A decision-bearing effect must use an already admitted typed assertion predicate with source assessment; if core cannot express it, defer for review instead of using display text. This is necessary evidence structure, not sufficient policy authorization.",
+    "runtime_owner": [
+      "RepresentationLedger",
+      "Trace"
+    ],
+    "production_gate_implemented": false
+  },
+  "external_governance": "Review status, risk, trust and retrieval eligibility remain external; structural validity is not promotion."
+}

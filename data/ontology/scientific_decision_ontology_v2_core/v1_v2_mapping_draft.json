@@ -1,0 +1,584 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "status": "NON_EXECUTABLE_DRAFT",
+  "migration_implemented": false,
+  "class_dispositions": [
+    {
+      "item_id": "ScientificTask",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "Method",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "MethodVariant",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "ParameterDefinition",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "Limitation",
+      "disposition": "MERGE",
+      "replacement": "StatementRevision",
+      "reason": "Use assertion_kind=limitation and an entity subject; defer reusable limitation-object taxonomy."
+    },
+    {
+      "item_id": "SoftwareProject",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "Package",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "PackageRelease",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "Operator",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "OperatorRevision",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "ReferenceArtifact",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "N02: existing versioned model, explicit reference, atlas/mapping and pinned-resource scientific requirements need this minimal identity/revision pair."
+    },
+    {
+      "item_id": "ReferenceArtifactRevision",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "N02: existing versioned model, explicit reference, atlas/mapping and pinned-resource scientific requirements need this minimal identity/revision pair."
+    },
+    {
+      "item_id": "RepresentationType",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "RepresentationConstraint",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "ApplicabilityScope",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "InputPort",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "OutputPort",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "Requirement",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "AtomicClaimRevision",
+      "disposition": "MERGE",
+      "replacement": "StatementRevision",
+      "reason": "V1 compatibility surface only; conceptual mapping, no second assertion model or adapter."
+    },
+    {
+      "item_id": "EvidenceAssessment",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "EvidenceSpan",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "EvidenceGap",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "ReviewDecision",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Exact-hash human review remains an external governance owner; no review record is created in 5C."
+    },
+    {
+      "item_id": "DerivedRelation",
+      "disposition": "MERGE",
+      "replacement": "link_type_registry",
+      "reason": "Projection metadata on derived links; no independent core scientific object."
+    },
+    {
+      "item_id": "MetricDefinition",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Metric definitions belong to an optional comparison module."
+    },
+    {
+      "item_id": "EvaluationDataset",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Dataset revisions, split and leakage controls require the comparison module."
+    },
+    {
+      "item_id": "BenchmarkStudy",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Comparison protocol and evaluated subjects are beyond minimal analysis core."
+    },
+    {
+      "item_id": "EmpiricalResult",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Numeric measured performance needs dataset, metric and protocol context."
+    },
+    {
+      "item_id": "SupersessionRecord",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Governed replacement decisions are external to core revision membership."
+    },
+    {
+      "item_id": "RepresentationInstanceBinding",
+      "disposition": "MERGE",
+      "replacement": "RepresentationRecord",
+      "reason": "Runtime-owned binding reference; no scientific-owned duplicate of ledger state."
+    },
+    {
+      "item_id": "SourceWork",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "SourceRevision",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "SourceArtifact",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "RepresentationRecord",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "TraceSpan",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Existing runtime trace schema remains external and unchanged."
+    },
+    {
+      "item_id": "ScientificStatement",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "StatementRevision",
+      "disposition": "CORE_OBJECT_TYPE",
+      "replacement": null,
+      "reason": "Independent referent needed by the listed scientific use cases; lifecycle and relationships cannot be represented by a scalar alone."
+    },
+    {
+      "item_id": "IdentityAssertion",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Reifies subject_resource/relation_type/object_resource and review; resources, not the assertion, are endpoints."
+    },
+    {
+      "item_id": "ExtractionRun",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Future extraction activity contract; no extractor changes."
+    },
+    {
+      "item_id": "ReviewActivity",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Activity/agent contracts await governance review."
+    },
+    {
+      "item_id": "EvidenceDriftAssessment",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Drift comparison inputs remain in core; monitoring and revalidation lifecycle are deferred."
+    },
+    {
+      "item_id": "OntologyConceptRevision",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Full ontology change framework is outside bounded core."
+    },
+    {
+      "item_id": "OntologyMigrationPlan",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Migration framework explicitly outside this checkpoint."
+    },
+    {
+      "item_id": "GovernedAction",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Permissions, effects and execution are not universal scientific facts."
+    },
+    {
+      "item_id": "ActionPolicy",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Authorization remains owned by existing policy; no action ontology implementation."
+    }
+  ],
+  "predicate_dispositions": [
+    {
+      "predicate_id": "implements_method",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "implements_method",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "implements_method_variant",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "implements_method_variant",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "belongs_to_package",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "belongs_to_package",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "belongs_to_project",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "belongs_to_project",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "revision_of",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "revision_of",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "consumes",
+      "disposition": "DERIVED_PROJECTION",
+      "replacement": "consumes",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "produces",
+      "disposition": "DERIVED_PROJECTION",
+      "replacement": "produces",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "derives_from",
+      "disposition": "MERGE",
+      "replacement": "was_derived_from",
+      "reason": "Use one future provenance relation; no duplicate internal lineage vocabulary."
+    },
+    {
+      "predicate_id": "transforms",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "effect_description",
+      "reason": "Display-only description may summarize transformations; decision-bearing effects require typed StatementRevision plus EvidenceAssessment. No general Effect ontology."
+    },
+    {
+      "predicate_id": "preserves",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "preserves",
+      "reason": "Describe implemented Method/MethodVariant and typed input/output semantics; no additional transformation verb is necessary in core."
+    },
+    {
+      "predicate_id": "invalidates",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Runtime invalidation belongs to Ledger/Trace. Display-only effect_description cannot express decision-bearing scientific effects; those require a registered StatementRevision and EvidenceAssessment, otherwise defer."
+    },
+    {
+      "predicate_id": "modifies",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate."
+    },
+    {
+      "predicate_id": "filters",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate."
+    },
+    {
+      "predicate_id": "normalizes",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate."
+    },
+    {
+      "predicate_id": "integrates",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate."
+    },
+    {
+      "predicate_id": "aggregates",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate."
+    },
+    {
+      "predicate_id": "projects_to",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "definition",
+      "reason": "Use Method.definition and MethodVariant defining_parameter_conditions together with implements_method and typed input/output ports; no extra transformation predicate."
+    },
+    {
+      "predicate_id": "requires_input",
+      "disposition": "MERGE",
+      "replacement": "has_requirement",
+      "reason": "Strength/condition belong to Requirement, referenced through typed entity/port links."
+    },
+    {
+      "predicate_id": "requires_metadata",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "required_metadata",
+      "reason": "Names required by a constraint are scalar metadata requirements, not undefined PropertyDefinition nodes."
+    },
+    {
+      "predicate_id": "requires_reference",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "requires_reference",
+      "reason": "N02: reuse the historical requires_reference relation with a precise Requirement domain instead of introducing a reference predicate family."
+    },
+    {
+      "predicate_id": "requires_assay_property",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "assay",
+      "reason": "Use simple context or shared ApplicabilityScope."
+    },
+    {
+      "predicate_id": "requires_study_design",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "study_design",
+      "reason": "Use simple context or shared ApplicabilityScope."
+    },
+    {
+      "predicate_id": "applicable_to",
+      "disposition": "CORE_LINK_TYPE",
+      "replacement": "applicable_to",
+      "reason": "Minimal link needed for the cited identity, scientific or evidence use case; not a scalar value."
+    },
+    {
+      "predicate_id": "validated_on",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Requires assessment criteria and evaluation module; evaluated never implies validated."
+    },
+    {
+      "predicate_id": "evaluated_under",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Requires comparison protocol module."
+    },
+    {
+      "predicate_id": "incompatible_with",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "A negative requires_input assertion is not incompatibility; defer a precise incompatibility relation."
+    },
+    {
+      "predicate_id": "contraindicated_for",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "DISCOURAGED strength can encode advice; stronger contraindication semantics await review."
+    },
+    {
+      "predicate_id": "assumes",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Higher-order statement dependencies need scope and identity semantics beyond core."
+    },
+    {
+      "predicate_id": "has_limitation",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "assertion_kind",
+      "reason": "Use limitation statement kind about the scientific entity; no statement-to-statement catch-all."
+    },
+    {
+      "predicate_id": "has_recommendation",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "strength",
+      "reason": "RECOMMENDED or DISCOURAGED requirement strength; no duplicate predicate family."
+    },
+    {
+      "predicate_id": "supports",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "support_type",
+      "reason": "DIRECT/PARTIAL/CONTEXTUAL support is a reified EvidenceAssessment value."
+    },
+    {
+      "predicate_id": "contradicts",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "support_type",
+      "reason": "Conflicting evidence is an independent assessment; not a generic statement-level contradiction link."
+    },
+    {
+      "predicate_id": "refutes",
+      "disposition": "PROPERTY_OR_QUALIFIER",
+      "replacement": "support_type",
+      "reason": "Refutation is assessed against the same proposition/scope."
+    },
+    {
+      "predicate_id": "was_generated_by",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "External provenance binding only in core; activity modeling is deferred."
+    },
+    {
+      "predicate_id": "generated",
+      "disposition": "MERGE",
+      "replacement": "was_generated_by",
+      "reason": "Inverse display can be derived in the optional provenance module; no duplicate authoritative fields."
+    },
+    {
+      "predicate_id": "used",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "General activity use awaits provenance module; EvidenceAssessment uses_evidence is specific."
+    },
+    {
+      "predicate_id": "was_used_by",
+      "disposition": "MERGE",
+      "replacement": "used",
+      "reason": "Inverse display only; avoid duplicate authoritative storage."
+    },
+    {
+      "predicate_id": "was_derived_from",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Single selected future provenance relation; direct declared derivation, no transitive inference."
+    },
+    {
+      "predicate_id": "was_associated_with",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Agent/activity semantics are external and unavailable to core links."
+    },
+    {
+      "predicate_id": "supersedes",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Governed revision replacement requires same family and stable identity; revision_of alone is not replacement."
+    },
+    {
+      "predicate_id": "superseded_by",
+      "disposition": "MERGE",
+      "replacement": "supersedes",
+      "reason": "Inverse display of governed replacement."
+    },
+    {
+      "predicate_id": "alias_of",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Reified identity assertion links two resources with namespace-aware identity review."
+    },
+    {
+      "predicate_id": "deprecated_by",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Deprecation is metadata; replacement is not guaranteed and is not necessarily functional."
+    },
+    {
+      "predicate_id": "fork_of",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Identity module: SoftwareProject to SoftwareProject, asymmetric/nontransitive and no biological qualifiers."
+    },
+    {
+      "predicate_id": "equivalent_to",
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "reason": "Identity module uses resource endpoints of matching type and scope; symmetric only within that scope, not transitive identity merging."
+    },
+    {
+      "predicate_id": "replaced_by",
+      "disposition": "DEFERRED",
+      "replacement": null,
+      "reason": "Ontology migration concepts outside current core."
+    }
+  ],
+  "compatibility_fields": {
+    "AtomicClaimRevision.claim_id": "ScientificStatement.statement_id",
+    "AtomicClaimRevision.claim_revision_id": "StatementRevision.statement_revision_id",
+    "AtomicClaimRevision.subject_id": "StatementRevision.subject_id",
+    "AtomicClaimRevision.object_id": "StatementRevision.object_id",
+    "AtomicClaimRevision.object_value": "StatementRevision.literal_value; explicit datatype needed, never guessed",
+    "AtomicClaimRevision.polarity": "positive/negative -> POSITIVE/NEGATIVE",
+    "Requirement.level": "V1 mandatory/recommended/optional map conceptually to strength; V1 conditional needs explicit reviewed strength plus activation when, never infer strength. No adapter or migration implemented.",
+    "RepresentationType.feature_identity": "Abstract namespace semantics reviewed into feature_namespace; do not migrate runtime feature hashes",
+    "EvidenceAssessment.stance": "supports is not automatically DIRECT_SUPPORT; re-assess exact S/P/O and scope"
+  },
+  "legacy_predicate_notes": {
+    "accepts_representation": "Port/Requirement with explicit reviewed level; do not guess REQUIRED.",
+    "accepts_optional_representation": "Requirement.strength=OPTIONAL only when established by evidence; activation is independent.",
+    "has_key_parameter": "has_parameter plus source-bound parameter semantics.",
+    "implemented_in_release": "bound_to_release with same-package identity check.",
+    "project_guardrail": "DEFERRED; project policy is not universal scientific fact.",
+    "project_profile_requires": "DEFERRED; workflow profile is not scientific prerequisite.",
+    "supports_task": "Core entity-to-ScientificTask relation."
+  },
+  "schema_owner": "core/scientific_knowledge_conformance_models.py remains unchanged; candidate JSON schemas are generated exports.",
+  "observed_graph": "data/evidence_candidates/scientific_kg_v1_inventory/scientific_kg_v1_consolidated_graph.json is candidate inventory, not production ontology.",
+  "historical_status": {
+    "STATUS": "DESIGN_AUDIT",
+    "HUMAN_REVIEW_RESULT": "NEEDS_REVISION",
+    "artifacts_modified": false
+  }
+}

@@ -1,0 +1,594 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "items": [
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "ReviewDecision",
+      "module": "governance",
+      "definition": "A governed decision over exact reviewed artifacts.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Exact-hash human review remains an external governance owner; no review record is created in 5C.",
+      "supporting_cq_ids": [
+        "CQ-J03"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "MetricDefinition",
+      "module": "evaluation",
+      "definition": "A definition of an evaluation metric.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Metric definitions belong to an optional comparison module.",
+      "supporting_cq_ids": [
+        "CQ-K01"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "EvaluationDataset",
+      "module": "evaluation",
+      "definition": "A versioned evaluation dataset and split definition.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Dataset revisions, split and leakage controls require the comparison module.",
+      "supporting_cq_ids": [
+        "CQ-K01"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "BenchmarkStudy",
+      "module": "evaluation",
+      "definition": "A bounded comparison protocol.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Comparison protocol and evaluated subjects are beyond minimal analysis core.",
+      "supporting_cq_ids": [
+        "CQ-D06"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "EmpiricalResult",
+      "module": "evaluation",
+      "definition": "A scoped metric observation from a benchmark.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Numeric measured performance needs dataset, metric and protocol context.",
+      "supporting_cq_ids": [
+        "CQ-D06"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "SupersessionRecord",
+      "module": "governance",
+      "definition": "A governed revision replacement assertion.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Governed replacement decisions are external to core revision membership.",
+      "supporting_cq_ids": [
+        "CQ-E07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "OBJECT_TYPE",
+      "item_id": "IdentityAssertion",
+      "module": "identity-governance",
+      "definition": "Reviewable claim that two identifiers have a typed identity relationship.",
+      "current_status": "PROPOSED_V2",
+      "design1_status": "PROPOSED_V2",
+      "disposition": "EXTENSION",
+      "reason": "Reifies subject_resource/relation_type/object_resource and review; resources, not the assertion, are endpoints.",
+      "supporting_cq_ids": [
+        "CQ-A03",
+        "CQ-B07"
+      ],
+      "replacement": null
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "validated_on",
+      "predicate_id": "validated_on",
+      "module": "non-core-review",
+      "definition": "Requires assessment criteria and evaluation module; evaluated never implies validated.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "EvaluationDataset"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "EvaluationDataset"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Requires assessment criteria and evaluation module; evaluated never implies validated.",
+      "supporting_cq_ids": [
+        "CQ-D06",
+        "CQ-K05"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "evaluated_under",
+      "predicate_id": "evaluated_under",
+      "module": "non-core-review",
+      "definition": "Requires comparison protocol module.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ScientificStatement"
+      ],
+      "design1_range": [
+        "BenchmarkStudy"
+      ],
+      "domain": [
+        "Method",
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "range": [
+        "BenchmarkStudy"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Requires comparison protocol module.",
+      "supporting_cq_ids": [
+        "CQ-D06",
+        "CQ-K06"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "was_generated_by",
+      "predicate_id": "was_generated_by",
+      "module": "non-core-review",
+      "definition": "External provenance binding only in core; activity modeling is deferred.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "design1_range": [
+        "Activity"
+      ],
+      "domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "range": [
+        "Activity"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "External provenance binding only in core; activity modeling is deferred.",
+      "supporting_cq_ids": [
+        "CQ-G02",
+        "CQ-G03"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "used",
+      "predicate_id": "used",
+      "module": "non-core-review",
+      "definition": "General activity use awaits provenance module; EvidenceAssessment uses_evidence is specific.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Activity"
+      ],
+      "design1_range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "domain": [
+        "Activity"
+      ],
+      "range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "General activity use awaits provenance module; EvidenceAssessment uses_evidence is specific.",
+      "supporting_cq_ids": [
+        "CQ-G04"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "was_derived_from",
+      "predicate_id": "was_derived_from",
+      "module": "non-core-review",
+      "definition": "Single selected future provenance relation; direct declared derivation, no transitive inference.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "design1_range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "domain": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "range": [
+        "ProvenanceTrackedArtifact"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Single selected future provenance relation; direct declared derivation, no transitive inference.",
+      "supporting_cq_ids": [
+        "CQ-G05"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "was_associated_with",
+      "predicate_id": "was_associated_with",
+      "module": "non-core-review",
+      "definition": "Agent/activity semantics are external and unavailable to core links.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "Activity"
+      ],
+      "design1_range": [
+        "Agent"
+      ],
+      "domain": [
+        "Activity"
+      ],
+      "range": [
+        "Agent"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": false,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Agent/activity semantics are external and unavailable to core links.",
+      "supporting_cq_ids": [
+        "CQ-G03"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "supersedes",
+      "predicate_id": "supersedes",
+      "module": "non-core-review",
+      "definition": "Governed revision replacement requires same family and stable identity; revision_of alone is not replacement.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "VersionedResource"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "VersionedResource"
+      ],
+      "range": [
+        "VersionedResource"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Governed revision replacement requires same family and stable identity; revision_of alone is not replacement.",
+      "supporting_cq_ids": [
+        "CQ-E07",
+        "CQ-H06"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "alias_of",
+      "predicate_id": "alias_of",
+      "module": "non-core-review",
+      "definition": "Reified identity assertion links two resources with namespace-aware identity review.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "IdentityAssertion"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "range": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Reified identity assertion links two resources with namespace-aware identity review.",
+      "supporting_cq_ids": [
+        "CQ-A03"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "fork_of",
+      "predicate_id": "fork_of",
+      "module": "non-core-review",
+      "definition": "Identity module: SoftwareProject to SoftwareProject, asymmetric/nontransitive and no biological qualifiers.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "SoftwareProject"
+      ],
+      "design1_range": [
+        "SoftwareProject"
+      ],
+      "domain": [
+        "SoftwareProject"
+      ],
+      "range": [
+        "SoftwareProject"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Project lineage has no biological context qualifiers."
+      },
+      "reason": "Identity module: SoftwareProject to SoftwareProject, asymmetric/nontransitive and no biological qualifiers.",
+      "supporting_cq_ids": [
+        "CQ-A04"
+      ]
+    },
+    {
+      "item_type": "LINK_TYPE",
+      "item_id": "equivalent_to",
+      "predicate_id": "equivalent_to",
+      "module": "non-core-review",
+      "definition": "Identity module uses resource endpoints of matching type and scope; symmetric only within that scope, not transitive identity merging.",
+      "design1_status": "PROPOSED_V2",
+      "design1_domain": [
+        "IdentityAssertion"
+      ],
+      "design1_range": [
+        "VersionedResource"
+      ],
+      "domain": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "range": [
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "disposition": "EXTENSION",
+      "replacement": null,
+      "evidence_required": true,
+      "qualifier_policy": {
+        "allowed": [],
+        "rule": "Not admitted as a core link; proposed external semantics are non-executable and require review."
+      },
+      "reason": "Identity module uses resource endpoints of matching type and scope; symmetric only within that scope, not transitive identity merging.",
+      "supporting_cq_ids": [
+        "CQ-B07"
+      ]
+    }
+  ],
+  "external_alignment_research": [
+    {
+      "decision": "Reuse identifiers for established operations/data/formats; retain local representation-state and governance semantics.",
+      "external_model": "EDAM",
+      "mappings": [
+        {
+          "external_concept": "EDAM:operation",
+          "local_concept": "ScientificTask",
+          "mapping_type": "CLOSE_MATCH"
+        },
+        {
+          "external_concept": "EDAM:data",
+          "local_concept": "RepresentationType",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "EDAM:format",
+          "local_concept": "SourceArtifact.format",
+          "mapping_type": "CLOSE_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Operation",
+        "Data",
+        "Format",
+        "Topic"
+      ],
+      "source_url": "https://edamontology.org/"
+    },
+    {
+      "decision": "Adopt PROV-O relation semantics and qualified influence where role/time is needed.",
+      "external_model": "PROV-O",
+      "mappings": [
+        {
+          "external_concept": "prov:Activity",
+          "local_concept": "ExtractionRun",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "prov:Entity",
+          "local_concept": "SourceArtifact",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "prov:wasGeneratedBy",
+          "local_concept": "was_generated_by",
+          "mapping_type": "EXACT_MATCH"
+        },
+        {
+          "external_concept": "prov:used",
+          "local_concept": "used",
+          "mapping_type": "EXACT_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Entity",
+        "Activity",
+        "Agent",
+        "used",
+        "wasGeneratedBy",
+        "wasDerivedFrom",
+        "wasAssociatedWith"
+      ],
+      "source_url": "https://www.w3.org/TR/prov-o/"
+    },
+    {
+      "decision": "Reuse the S-P-O-Q pattern while retaining scKG revision, scope, evidence assessment, and governance requirements.",
+      "external_model": "Biolink Model",
+      "mappings": [
+        {
+          "external_concept": "biolink:Association",
+          "local_concept": "StatementRevision",
+          "mapping_type": "CLOSE_MATCH"
+        },
+        {
+          "external_concept": "biolink:qualifier",
+          "local_concept": "qualifiers",
+          "mapping_type": "CLOSE_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Association",
+        "subject",
+        "predicate",
+        "object",
+        "qualifier",
+        "sources"
+      ],
+      "source_url": "https://biolink.github.io/biolink-model/understanding-the-model/"
+    },
+    {
+      "decision": "Search and reuse RO/OBO relations before minting; local relations need explicit domain/range and mapping review.",
+      "external_model": "OBO Relation Ontology",
+      "mappings": [
+        {
+          "external_concept": "RO candidate mapping required",
+          "local_concept": "derives_from",
+          "mapping_type": "NO_MAPPING"
+        },
+        {
+          "external_concept": "RO search required before minting",
+          "local_concept": "transforms",
+          "mapping_type": "NO_MAPPING"
+        }
+      ],
+      "relevant_concepts": [
+        "relation reuse",
+        "domain",
+        "range",
+        "inverse",
+        "property characteristics"
+      ],
+      "source_url": "https://obofoundry.org/principles/fp-007-relations.html"
+    },
+    {
+      "decision": "Use an RO-Crate profile for exchange packaging later; do not make RO-Crate the internal scientific statement model.",
+      "external_model": "RO-Crate 1.3",
+      "mappings": [
+        {
+          "external_concept": "RO-Crate Data Entity",
+          "local_concept": "SourceArtifact",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "RO-Crate provenance of entities",
+          "local_concept": "ProvenanceTrackedArtifact",
+          "mapping_type": "CLOSE_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Root Data Entity",
+        "Data Entity",
+        "Contextual Entity",
+        "provenance",
+        "profiles",
+        "workflows"
+      ],
+      "source_url": "https://www.researchobject.org/ro-crate/specification/1.3/index.html"
+    }
+  ],
+  "external_alignment_status": "Historical research preserved as unapproved mapping proposals, not imported or newly verified external ontology axioms.",
+  "identity_policy": {
+    "IdentityAssertion_fields": [
+      "subject_resource",
+      "relation_type",
+      "object_resource",
+      "scope_ref",
+      "evidence_refs",
+      "review_refs"
+    ],
+    "endpoint_rule": "The two resources are endpoints, never IdentityAssertion itself.",
+    "alias_of": "Same identity under namespace-aware aliases requires review, not name similarity.",
+    "equivalent_to": "Same entity type and same declared scope; symmetric within scope, not transitively merged.",
+    "fork_of": "SoftwareProject to SoftwareProject, asymmetric and nontransitive; no assay/organism qualifiers.",
+    "supersedes": "Same revision family and stable identity; reject self-supersession and cycles.",
+    "deprecated_by": "Deferred; multiple successors possible; deprecation alone does not establish replacement."
+  },
+  "provenance_policy": "One optional was_derived_from relation; derives_from merges into it. Activity/Agent references remain opaque external IDs in core; no wholesale PROV-O import."
+}

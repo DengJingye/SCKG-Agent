@@ -1,0 +1,1143 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "original_question_count": 77,
+  "added_question_count": 6,
+  "question_count": 83,
+  "coverage_counts": {
+    "ANSWERABLE_BY_CORE": 39,
+    "ANSWERABLE_BY_EXTENSION": 11,
+    "PARTIALLY_ANSWERABLE": 17,
+    "OUT_OF_SCOPE": 2,
+    "DEFERRED": 14
+  },
+  "coverage_interpretation": "Design representability, never runtime/product answerability or verified scientific truth. Extension answerability denotes an identified design dependency, not a completed module.",
+  "questions": [
+    {
+      "competency_question_id": "CQ-A01",
+      "group": "Identity",
+      "question": "Which OperatorRevision implements a given Method?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "OperatorRevision",
+        "Method"
+      ],
+      "required_link_types": [
+        "implements_method"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-A02",
+      "group": "Identity",
+      "question": "Which PackageRelease binds a specific OperatorRevision?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "OperatorRevision",
+        "PackageRelease"
+      ],
+      "required_link_types": [
+        "bound_to_release"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-A03",
+      "group": "Identity",
+      "question": "Which aliases identify a renamed software project without merging unrelated projects?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "IdentityAssertion"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-A04",
+      "group": "Identity",
+      "question": "Is a software project a fork, replacement, or compatible continuation of another project?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "IdentityAssertion",
+        "SoftwareProject"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-A05",
+      "group": "Identity",
+      "question": "How is an operator identity preserved when its API path moves between releases?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "Operator",
+        "OperatorRevision"
+      ],
+      "required_link_types": [
+        "revision_of"
+      ],
+      "reason": "Stable identity/revision binding is explicit; deciding API rename equivalence requires identity review."
+    },
+    {
+      "competency_question_id": "CQ-A06",
+      "group": "Identity",
+      "question": "Which stable identity is shared by records extracted from multiple SourceRevisions?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "SourceWork",
+        "SourceRevision"
+      ],
+      "required_link_types": [
+        "revision_of"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-A07",
+      "group": "Identity",
+      "question": "Which genes or proteins are biologically true causal drivers of a disease?",
+      "design1_coverage": "NOT_IN_SCOPE",
+      "coverage": "OUT_OF_SCOPE",
+      "required_object_types": [],
+      "required_link_types": [],
+      "reason": "Biological truth or clinical diagnosis lies outside bounded scientific analysis decisions."
+    },
+    {
+      "competency_question_id": "CQ-B01",
+      "group": "Method / implementation",
+      "question": "Which project, package, operator, and revision form an implementation chain?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "ScientificTask",
+        "Method",
+        "SoftwareProject",
+        "Package",
+        "Operator",
+        "OperatorRevision"
+      ],
+      "required_link_types": [
+        "supports_task",
+        "belongs_to_project",
+        "belongs_to_package",
+        "implements_method"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-B02",
+      "group": "Method / implementation",
+      "question": "Which MethodVariant does an OperatorRevision implement?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "MethodVariant",
+        "OperatorRevision"
+      ],
+      "required_link_types": [
+        "variant_of",
+        "implements_method_variant"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-B03",
+      "group": "Method / implementation",
+      "question": "Which parameter conditions select a MethodVariant?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "MethodVariant",
+        "ParameterDefinition"
+      ],
+      "required_link_types": [
+        "has_parameter"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-B04",
+      "group": "Method / implementation",
+      "question": "Is an OperatorRevision deprecated, and what replaces it?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "OperatorRevision",
+        "SupersessionRecord"
+      ],
+      "required_link_types": [],
+      "reason": "deprecated property is core, but replacement needs external SupersessionRecord."
+    },
+    {
+      "competency_question_id": "CQ-B05",
+      "group": "Method / implementation",
+      "question": "Which API path and release expose an executable operator?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "OperatorRevision",
+        "PackageRelease"
+      ],
+      "required_link_types": [
+        "bound_to_release"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-B06",
+      "group": "Method / implementation",
+      "question": "Is a statement about a Method or about one implementation revision?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "Method",
+        "OperatorRevision",
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-B07",
+      "group": "Method / implementation",
+      "question": "Which implementation revisions are equivalent only under a declared scope?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "IdentityAssertion"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-C01",
+      "group": "Representation / transformation",
+      "question": "What RepresentationType does an OperatorRevision consume?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "InputPort",
+        "Requirement",
+        "RepresentationConstraint",
+        "RepresentationType"
+      ],
+      "required_link_types": [
+        "consumes"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-C02",
+      "group": "Representation / transformation",
+      "question": "What RepresentationType does an OperatorRevision produce?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "OutputPort",
+        "RepresentationType"
+      ],
+      "required_link_types": [
+        "produces"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-C03",
+      "group": "Representation / transformation",
+      "question": "Which input lineage is a produced representation derived from?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "InputPort",
+        "OutputPort"
+      ],
+      "required_link_types": [],
+      "reason": "Declared output-to-input port lineage is answerable; actual dataset lineage remains runtime-owned."
+    },
+    {
+      "competency_question_id": "CQ-C04",
+      "group": "Representation / transformation",
+      "question": "Which transformations preserve observation and feature identity?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "OutputPort",
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Declared preserves/effect properties are supported; actual preservation must be verified at runtime."
+    },
+    {
+      "competency_question_id": "CQ-C05",
+      "group": "Representation / transformation",
+      "question": "Which transformation invalidates an existing neighbor graph?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "OutputPort",
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "N03: effect_description is display-only. Decision-bearing invalidation semantics require a registered StatementRevision plus EvidenceAssessment; no generic effect predicate is admitted in this targeted correction."
+    },
+    {
+      "competency_question_id": "CQ-C06",
+      "group": "Representation / transformation",
+      "question": "When is a representation stale because its upstream lineage changed?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "RepresentationRecord"
+      ],
+      "required_link_types": [
+        "binds_to_type"
+      ],
+      "reason": "Runtime bridge identifies the owner; freshness evaluation is not implemented in the ontology."
+    },
+    {
+      "competency_question_id": "CQ-C07",
+      "group": "Representation / transformation",
+      "question": "Which parameter conditions change an output representation's validity?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "OutputPort",
+        "ParameterDefinition"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-D01",
+      "group": "Applicability",
+      "question": "Is raw UMI required, optional, or recommended for an operator revision?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "Requirement",
+        "RepresentationConstraint"
+      ],
+      "required_link_types": [
+        "has_requirement",
+        "requires_constraint"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-D02",
+      "group": "Applicability",
+      "question": "Which metadata fields are mandatory for a method?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "Method",
+        "Requirement",
+        "RepresentationConstraint"
+      ],
+      "required_link_types": [
+        "has_requirement"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-D03",
+      "group": "Applicability",
+      "question": "Which reference artifact revision is required?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "ReferenceArtifact",
+        "ReferenceArtifactRevision"
+      ],
+      "required_link_types": [
+        "requires_reference",
+        "revision_of"
+      ],
+      "reason": "N02: minimal ReferenceArtifact/Revision and typed Requirement reference target now belong to Core."
+    },
+    {
+      "competency_question_id": "CQ-D04",
+      "group": "Applicability",
+      "question": "Under which organism, assay, observation unit, and study design is a statement valid?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "ApplicabilityScope",
+        "StatementRevision"
+      ],
+      "required_link_types": [
+        "applicable_to"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-D05",
+      "group": "Applicability",
+      "question": "What is incompatible with or contraindicated for a method?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "Requirement",
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "DISCOURAGED advice and negative assertions are expressible; full incompatibility/contraindication calculus is deferred."
+    },
+    {
+      "competency_question_id": "CQ-D06",
+      "group": "Applicability",
+      "question": "Was a capability merely evaluated under a scope or validated for that scope?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "BenchmarkStudy",
+        "EmpiricalResult",
+        "EvidenceAssessment"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-D07",
+      "group": "Applicability",
+      "question": "Which clinical diagnosis should be assigned to an individual patient?",
+      "design1_coverage": "NOT_IN_SCOPE",
+      "coverage": "OUT_OF_SCOPE",
+      "required_object_types": [],
+      "required_link_types": [],
+      "reason": "Biological truth or clinical diagnosis lies outside bounded scientific analysis decisions."
+    },
+    {
+      "competency_question_id": "CQ-E01",
+      "group": "Scientific claims",
+      "question": "What is the atomic subject-predicate-object assertion?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "ScientificStatement",
+        "StatementRevision"
+      ],
+      "required_link_types": [
+        "revision_of"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-E02",
+      "group": "Scientific claims",
+      "question": "Which qualifiers are required for the assertion to remain true?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision",
+        "ApplicabilityScope"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-E03",
+      "group": "Scientific claims",
+      "question": "Does a sentence contain multiple propositions that require separate statements?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-E04",
+      "group": "Scientific claims",
+      "question": "Is a limitation a named reusable object or a statement kind?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-E05",
+      "group": "Scientific claims",
+      "question": "Which statement contradicts an existing statement under the same scope?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "StatementRevision",
+        "EvidenceAssessment"
+      ],
+      "required_link_types": [
+        "assesses_statement"
+      ],
+      "reason": "Simultaneous supporting/contradictory evidence is retained; automatic statement-to-statement contradiction detection is deferred."
+    },
+    {
+      "competency_question_id": "CQ-E06",
+      "group": "Scientific claims",
+      "question": "Which graph edge is a projection rather than the authoritative statement?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "InputPort",
+        "OutputPort",
+        "StatementRevision"
+      ],
+      "required_link_types": [
+        "consumes",
+        "produces"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-E07",
+      "group": "Scientific claims",
+      "question": "Which statement revision supersedes an earlier revision?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "StatementRevision",
+        "SupersessionRecord"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-F01",
+      "group": "Evidence",
+      "question": "Which exact EvidenceSpan directly supports a statement revision?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "EvidenceSpan",
+        "EvidenceAssessment",
+        "StatementRevision"
+      ],
+      "required_link_types": [
+        "uses_evidence",
+        "assesses_statement"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-F02",
+      "group": "Evidence",
+      "question": "Which SourceRevision contains an EvidenceSpan?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "EvidenceSpan",
+        "SourceRevision"
+      ],
+      "required_link_types": [
+        "span_in_revision"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-F03",
+      "group": "Evidence",
+      "question": "Is support direct, partial, contextual, contradictory, refuting, absent, or uncertain?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "EvidenceAssessment"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-F04",
+      "group": "Evidence",
+      "question": "Does evidence align with the statement subject, predicate, object, and scope?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "EvidenceAssessment",
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-F05",
+      "group": "Evidence",
+      "question": "Is an EvidenceSpan boundary contaminated by a heading, example, or next section?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "EvidenceSpan"
+      ],
+      "required_link_types": [],
+      "reason": "Exact boundaries/locator/hash can be represented and checked; semantic contamination detection is future extraction work."
+    },
+    {
+      "competency_question_id": "CQ-F06",
+      "group": "Evidence",
+      "question": "Does a source merely exist, or has its evidence been assessed as supporting?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "SourceWork",
+        "SourceArtifact",
+        "EvidenceAssessment"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-F07",
+      "group": "Evidence",
+      "question": "Which EvidenceGap blocks review or execution eligibility?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "EvidenceGap"
+      ],
+      "required_link_types": [],
+      "reason": "EvidenceGap records what is missing and impact; policy decides whether it blocks execution."
+    },
+    {
+      "competency_question_id": "CQ-G01",
+      "group": "Version / provenance / temporal",
+      "question": "Which SourceWork and SourceRevision generated an EvidenceSpan?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "SourceWork",
+        "SourceRevision",
+        "SourceArtifact",
+        "EvidenceSpan"
+      ],
+      "required_link_types": [
+        "revision_of",
+        "artifact_of",
+        "span_in_revision"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-G02",
+      "group": "Version / provenance / temporal",
+      "question": "Which ExtractionRun generated a candidate statement?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "ExtractionRun"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-G03",
+      "group": "Version / provenance / temporal",
+      "question": "Which agent and activity are responsible for a ReviewDecision?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "ReviewActivity",
+        "ReviewDecision"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-G04",
+      "group": "Version / provenance / temporal",
+      "question": "What entity was used by an extraction or review activity?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "ExtractionRun",
+        "ReviewActivity"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-G05",
+      "group": "Version / provenance / temporal",
+      "question": "Which artifact was derived from another artifact?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "SourceArtifact"
+      ],
+      "required_link_types": [],
+      "reason": "Optional provenance module preserves derivation meaning; no core activity graph."
+    },
+    {
+      "competency_question_id": "CQ-G06",
+      "group": "Version / provenance / temporal",
+      "question": "Which ontology and schema versions governed a record?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-G07",
+      "group": "Version / provenance / temporal",
+      "question": "During what interval was a scoped statement valid?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "ApplicabilityScope"
+      ],
+      "required_link_types": [],
+      "reason": "Full valid-time interval semantics are deferred; software version conditions alone do not answer arbitrary temporal validity."
+    },
+    {
+      "competency_question_id": "CQ-H01",
+      "group": "Knowledge evolution",
+      "question": "Did a new SourceRevision leave evidence unchanged?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "SourceRevision",
+        "EvidenceSpan"
+      ],
+      "required_link_types": [],
+      "reason": "Exact text and artifact digests support byte comparison; semantic continuity/revalidation is deferred."
+    },
+    {
+      "competency_question_id": "CQ-H02",
+      "group": "Knowledge evolution",
+      "question": "Did evidence move while remaining semantically unchanged?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "SourceRevision",
+        "EvidenceSpan"
+      ],
+      "required_link_types": [],
+      "reason": "Locators and exact text allow movement comparison; semantic equivalence assessment is deferred."
+    },
+    {
+      "competency_question_id": "CQ-H03",
+      "group": "Knowledge evolution",
+      "question": "Did evidence text change enough to require revalidation?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "EvidenceDriftAssessment"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-H04",
+      "group": "Knowledge evolution",
+      "question": "Did a statement's applicability scope change?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "ApplicabilityScope",
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Immutable scopes and revision bindings preserve change evidence; automated scope-drift assessment is deferred."
+    },
+    {
+      "competency_question_id": "CQ-H05",
+      "group": "Knowledge evolution",
+      "question": "Has evidence become stale, unsupported, or contradictory?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "EvidenceDriftAssessment"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-H06",
+      "group": "Knowledge evolution",
+      "question": "Which claim or evidence revision was superseded?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "SupersessionRecord"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-H07",
+      "group": "Knowledge evolution",
+      "question": "Which ontology migration is required after a class, predicate, cardinality, or constraint change?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "OntologyMigrationPlan"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-I01",
+      "group": "Planning / actions",
+      "question": "May an existing RepresentationRecord be reused?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "RepresentationRecord",
+        "RepresentationConstraint"
+      ],
+      "required_link_types": [
+        "binds_to_type"
+      ],
+      "reason": "Core exposes constraints and runtime references; existing Ledger/Planner determine actual reuse."
+    },
+    {
+      "competency_question_id": "CQ-I02",
+      "group": "Planning / actions",
+      "question": "Must a representation be recomputed after lineage change?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "RepresentationRecord",
+        "OutputPort"
+      ],
+      "required_link_types": [],
+      "reason": "Scientific effects and lineage inputs are described; recomputation scheduling is external."
+    },
+    {
+      "competency_question_id": "CQ-I03",
+      "group": "Planning / actions",
+      "question": "Which action invalidates a representation?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "GovernedAction",
+        "TraceSpan"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-I04",
+      "group": "Planning / actions",
+      "question": "When must execution be blocked?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "Requirement",
+        "EvidenceGap"
+      ],
+      "required_link_types": [],
+      "reason": "Mandatory requirements/gaps are represented; execution blocking and authorization remain external policy."
+    },
+    {
+      "competency_question_id": "CQ-I05",
+      "group": "Planning / actions",
+      "question": "Which action may create a CandidateStatement or EvidenceGap?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "GovernedAction"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-I06",
+      "group": "Planning / actions",
+      "question": "Which action requires human approval and what permission is required?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "ActionPolicy"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-I07",
+      "group": "Planning / actions",
+      "question": "What side effects, outputs, trace stage, and rollback apply to an action?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "GovernedAction",
+        "TraceSpan"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-J01",
+      "group": "Governance",
+      "question": "Is knowledge candidate, reviewed, trusted, superseded, or rejected?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "ReviewDecision"
+      ],
+      "required_link_types": [],
+      "reason": "Ontology records alone cannot infer reviewed/trusted status; governance is external."
+    },
+    {
+      "competency_question_id": "CQ-J02",
+      "group": "Governance",
+      "question": "Who may review a high-risk candidate?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "ReviewDecision"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-J03",
+      "group": "Governance",
+      "question": "Does a ReviewDecision apply to the exact artifact hashes shown to the reviewer?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "ReviewDecision"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-J04",
+      "group": "Governance",
+      "question": "May a candidate be promoted without supporting evidence and required approval?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "ReviewDecision",
+        "EvidenceAssessment"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-J05",
+      "group": "Governance",
+      "question": "Which identity merge or supersession decisions remain reversible?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_EXTENSION",
+      "required_object_types": [
+        "IdentityAssertion",
+        "SupersessionRecord"
+      ],
+      "required_link_types": [],
+      "reason": "Requires the named optional identity, reference, provenance, evaluation or governance module; not claimed implemented."
+    },
+    {
+      "competency_question_id": "CQ-J06",
+      "group": "Governance",
+      "question": "Are runtime state, scientific knowledge, and governed action represented separately?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "RepresentationRecord",
+        "StatementRevision"
+      ],
+      "required_link_types": [
+        "binds_to_type"
+      ],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-J07",
+      "group": "Governance",
+      "question": "Which schema changes require a migration plan before release?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "OntologyMigrationPlan"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-K01",
+      "group": "Evaluation",
+      "question": "What fraction of competency questions is answerable by current v1?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "MetricDefinition"
+      ],
+      "required_link_types": [],
+      "reason": "Historical answerability labels are preserved, not newly proven by executing all v1 questions."
+    },
+    {
+      "competency_question_id": "CQ-K02",
+      "group": "Evaluation",
+      "question": "What class and predicate documentation coverage has been achieved?",
+      "design1_coverage": "ANSWERABLE_CURRENT_V1",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "ScientificStatement"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-K03",
+      "group": "Evaluation",
+      "question": "Which predicates lack domain, range, inverse, or evidence requirements?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-K04",
+      "group": "Evaluation",
+      "question": "How many duplicate or ambiguous semantic concepts remain?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Review dispositions expose named duplication issues; no claim of complete semantic ambiguity detection."
+    },
+    {
+      "competency_question_id": "CQ-K05",
+      "group": "Evaluation",
+      "question": "Do constraint shapes detect invalid endpoint and cardinality bindings?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision",
+        "RepresentationConstraint"
+      ],
+      "required_link_types": [],
+      "reason": "Representable by the listed core types/links and their explicit property/constraint rules; this is design answerability, not deployed query capability."
+    },
+    {
+      "competency_question_id": "CQ-K06",
+      "group": "Evaluation",
+      "question": "Which external vocabulary mappings are exact, close, broader, narrower, or absent?",
+      "design1_coverage": "PARTIALLY_ANSWERABLE",
+      "coverage": "PARTIALLY_ANSWERABLE",
+      "required_object_types": [
+        "OntologyConceptRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Historical external mappings remain unapproved research, not verified exact equivalences."
+    },
+    {
+      "competency_question_id": "CQ-K07",
+      "group": "Evaluation",
+      "question": "Does a newer ontology release preserve migration coverage for deprecated concepts?",
+      "design1_coverage": "ANSWERABLE_V2_DESIGN",
+      "coverage": "DEFERRED",
+      "required_object_types": [
+        "OntologyMigrationPlan"
+      ],
+      "required_link_types": [],
+      "reason": "Requires deferred provenance, action, drift or migration semantics outside this checkpoint."
+    },
+    {
+      "competency_question_id": "CQ-L01",
+      "group": "Cross-cutting 5C",
+      "question": "Can a positive and explicitly negated proposition be distinguished without a duplicate predicate?",
+      "design1_coverage": null,
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision"
+      ],
+      "required_link_types": [],
+      "reason": "Cross-cutting constraint validation using existing admitted object types; no new class or predicate added for this question."
+    },
+    {
+      "competency_question_id": "CQ-L02",
+      "group": "Cross-cutting 5C",
+      "question": "Can required, recommended, optional and discouraged strength be distinguished independently from activation conditions?",
+      "design1_coverage": null,
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "Requirement"
+      ],
+      "required_link_types": [
+        "has_requirement"
+      ],
+      "reason": "N01: four strengths plus orthogonal when/activation_status; no CONDITIONAL strength."
+    },
+    {
+      "competency_question_id": "CQ-L03",
+      "group": "Cross-cutting 5C",
+      "question": "Can a typed numeric constraint be represented without inventing a threshold?",
+      "design1_coverage": null,
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "RepresentationConstraint"
+      ],
+      "required_link_types": [],
+      "reason": "Cross-cutting constraint validation using existing admitted object types; no new class or predicate added for this question."
+    },
+    {
+      "competency_question_id": "CQ-L04",
+      "group": "Cross-cutting 5C",
+      "question": "Can one statement retain simultaneous direct support and contradictory evidence?",
+      "design1_coverage": null,
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "StatementRevision",
+        "EvidenceAssessment",
+        "EvidenceSpan"
+      ],
+      "required_link_types": [
+        "assesses_statement",
+        "uses_evidence"
+      ],
+      "reason": "Cross-cutting constraint validation using existing admitted object types; no new class or predicate added for this question."
+    },
+    {
+      "competency_question_id": "CQ-L05",
+      "group": "Cross-cutting 5C",
+      "question": "Can repeated excerpts and editions be kept distinct without counting them as independent evidence?",
+      "design1_coverage": null,
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "SourceWork",
+        "SourceRevision",
+        "EvidenceSpan",
+        "EvidenceAssessment"
+      ],
+      "required_link_types": [
+        "revision_of",
+        "span_in_revision"
+      ],
+      "reason": "Cross-cutting constraint validation using existing admitted object types; no new class or predicate added for this question."
+    },
+    {
+      "competency_question_id": "CQ-L06",
+      "group": "Cross-cutting 5C",
+      "question": "Can a runtime representation refer to its scientific type without moving instance state into the KG?",
+      "design1_coverage": null,
+      "coverage": "ANSWERABLE_BY_CORE",
+      "required_object_types": [
+        "RepresentationRecord",
+        "RepresentationType"
+      ],
+      "required_link_types": [
+        "binds_to_type"
+      ],
+      "reason": "Cross-cutting constraint validation using existing admitted object types; no new class or predicate added for this question."
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": "sckg-ontology-core-5c-design-v1",
+  "ontology_version": "2.0.0-core-review.1",
+  "design_only": true,
+  "EVIDENCE_SPAN_CORE_FIELDS": [
+    "evidence_span_id",
+    "source_revision_id",
+    "source_artifact_id",
+    "exact_text",
+    "content_hash",
+    "locator",
+    "schema_version"
+  ],
+  "EVIDENCE_SPAN_OPTIONAL_FIELDS": [
+    "page",
+    "section",
+    "start_offset",
+    "end_offset",
+    "activity_ref",
+    "ontology_version"
+  ],
+  "EVIDENCE_SPAN_REMOVED_OR_EXTERNALIZED_FIELDS": [
+    {
+      "field": "review_status",
+      "owner": "governance",
+      "reason": "Review applies to exact artifact hashes, independently of semantic support."
+    },
+    {
+      "field": "knowledge_status",
+      "owner": "governance",
+      "reason": "Candidate/reviewed/trusted lifecycle belongs to governance."
+    },
+    {
+      "field": "trusted",
+      "owner": "governance",
+      "reason": "Never intrinsic to an excerpt."
+    },
+    {
+      "field": "candidate_only",
+      "owner": "governance",
+      "reason": "Knowledge handling policy, not evidence text."
+    },
+    {
+      "field": "retrieval_eligible",
+      "owner": "retrieval-projection",
+      "reason": "Derived retrieval eligibility; no new retrieval implementation."
+    },
+    {
+      "field": "recommendation_eligible",
+      "owner": "governance",
+      "reason": "No eligibility change in 5C."
+    },
+    {
+      "field": "authority",
+      "owner": "assessment-context",
+      "reason": "Source authority assessment may inform a judgment; source authority alone is not support."
+    },
+    {
+      "field": "normalized_proposition",
+      "owner": "StatementRevision",
+      "reason": "Interpretation is separated from the verbatim excerpt."
+    },
+    {
+      "field": "scientific_interpretation",
+      "owner": "StatementRevision",
+      "reason": "An interpretation is an independently judgeable statement."
+    },
+    {
+      "field": "support_type",
+      "owner": "EvidenceAssessment",
+      "reason": "Support is assessed against an exact proposition."
+    }
+  ],
+  "span_constraints": [
+    "Exact text is immutable; content_hash is SHA256 of its exact UTF-8 bytes, with no whitespace normalization.",
+    "Artifact hash is resolved through source_artifact_id and verified against acquired bytes; do not confuse text digest and artifact digest.",
+    "Artifact and span must identify the same SourceRevision.",
+    "Locator required; page optional except a pdf_page locator requires page>=1.",
+    "Offsets occur as a pair, start>=0 and end>start, in the named immutable Unicode text stream; raw PDF byte offsets are not text offsets.",
+    "New source revision creates a new span even if text is identical; old source edition is not automatically unsupported."
+  ],
+  "assessment": {
+    "class": "EvidenceAssessment",
+    "required_fields": [
+      "assessment_id",
+      "statement_revision_id",
+      "evidence_span_id",
+      "support_type",
+      "assessment_method",
+      "assessor_ref",
+      "created_at",
+      "status",
+      "subject_aligned",
+      "predicate_aligned",
+      "object_aligned",
+      "scope_alignment",
+      "rationale"
+    ],
+    "optional_fields": [
+      "activity_ref",
+      "confidence"
+    ],
+    "links": [
+      "assesses_statement",
+      "uses_evidence"
+    ],
+    "status": [
+      "draft",
+      "completed",
+      "superseded"
+    ],
+    "confidence_rule": "If supplied, finite number within [0,1]; no automatic trust threshold.",
+    "direct_support_rule": "DIRECT_SUPPORT requires subject/predicate/object aligned and scope_alignment=aligned; completed is not reviewed/trusted.",
+    "refutation_rule": "REFUTES requires aligned subject/predicate/object and aligned scope; broader/different scope can at most be conflicting or uncertain."
+  },
+  "support_types": [
+    {
+      "value": "DIRECT_SUPPORT",
+      "definition": "Exact evidence entails the statement's subject, predicate, object, and compatible scope."
+    },
+    {
+      "value": "PARTIAL_SUPPORT",
+      "definition": "Evidence supports a proper subset of the statement or a narrower scope."
+    },
+    {
+      "value": "CONTEXTUAL_SUPPORT",
+      "definition": "Evidence supplies relevant context but does not entail the assertion alone."
+    },
+    {
+      "value": "CONTRADICTS",
+      "definition": "Evidence presents an incompatible assertion without establishing formal refutation."
+    },
+    {
+      "value": "REFUTES",
+      "definition": "Evidence directly establishes the negation or invalidity of the assertion under the same scope."
+    },
+    {
+      "value": "DOES_NOT_SUPPORT",
+      "definition": "Evidence is topically related but supplies no support for the assertion."
+    },
+    {
+      "value": "UNCERTAIN",
+      "definition": "Support cannot be determined without additional evidence or review."
+    }
+  ],
+  "multiple_evidence": "One StatementRevision can have many independent assessments and spans; contradictory and supporting assessments coexist, without majority-vote collapse.",
+  "independence": "Group by SourceWork and derivation lineage; preprint/journal/mirrors or repeated spans are not automatically independent. Distinct work IDs also do not prove independence. Missing independence data stays unknown.",
+  "distinct_gates": [
+    "source_exists",
+    "evidence_exists",
+    "evidence_supports",
+    "statement_reviewed",
+    "statement_trusted"
+  ],
+  "automatic_promotion": false,
+  "retrieval_changes": false
+}
