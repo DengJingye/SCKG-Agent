@@ -87,6 +87,21 @@ SCANPY_CORE_DIAGNOSTICS = {
 }
 
 
+def _inspected_cluster_label_keys(context: dict[str, object]) -> list[str]:
+    """Resolve display bindings from current inspector records, not column names."""
+    ledger = context.get("representation_ledger") or {}
+    keys = []
+    for record in ledger.get("records", []):
+        if (record.get("representation_id") != "cluster_labels"
+                or record.get("status") != "current"
+                or not record.get("validated")):
+            continue
+        slot = record.get("slot", "")
+        if slot.startswith("obs/") and slot[4:] and slot[4:] not in keys:
+            keys.append(slot[4:])
+    return keys
+
+
 class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
     def __init__(self) -> None:
         super().__init__(
@@ -182,15 +197,27 @@ class ScanpyCoreNotebookRenderer(MaintainerTemplateRenderer):
         if "umap" in context.get("reused_target_representations", []):
             cells.extend([
                 {"cell_type": "markdown", "id": "reused-umap-description", "metadata": {},
-                 "source": "## Inspect existing UMAP (no recomputation)\n\nThe planner reused the registered embedding. This unlabelled plot does not infer cell identities."},
+                 "source": "## Reusing existing UMAP; no recomputation\n\nThe planner reused the registered embedding. Colors use existing cluster labels bound by the deterministic inspector, when available; no cluster labels or cell identities are inferred."},
                 {"cell_type": "code", "id": "reused-umap-inspection", "metadata": {},
                  "execution_count": None, "outputs": [], "source": (
                     "umap_coordinates = np.asarray(adata.obsm['X_umap'])\n"
                     "assert umap_coordinates.ndim == 2 and umap_coordinates.shape[1] >= 2, 'UMAP needs two components for this plot'\n"
                     "assert umap_coordinates.shape[0] == adata.n_obs, 'UMAP observation mismatch'\n"
                     "assert np.isfinite(umap_coordinates).all(), 'Non-finite UMAP coordinates'\n"
-                    "print(f'Reusing UMAP: {umap_coordinates.shape}; no UMAP recomputation')\n"
-                    "sc.pl.umap(adata, color=None, frameon=False, show=False)\n"
+                    "umap_title = 'Reusing existing UMAP; no recomputation'\n"
+                    "print(f'{umap_title}: {umap_coordinates.shape}')\n"
+                    f"inspected_cluster_keys = {json.dumps(_inspected_cluster_label_keys(context))}\n"
+                    "cluster_keys = [key for key in inspected_cluster_keys if key in adata.obs.columns]\n"
+                    "missing_cluster_keys = [key for key in inspected_cluster_keys if key not in adata.obs.columns]\n"
+                    "if missing_cluster_keys:\n"
+                    "    print(f'Inspected cluster label columns unavailable: {missing_cluster_keys}; not inferred.')\n"
+                    "if cluster_keys:\n"
+                    "    print(f'Coloring by existing cluster labels: {cluster_keys}')\n"
+                    "else:\n"
+                    "    print('No current inspector-bound cluster labels available; showing an unlabelled UMAP.')\n"
+                    "sc.pl.umap(adata, color=cluster_keys or None,\n"
+                    "           title=[umap_title] * len(cluster_keys) if cluster_keys else umap_title,\n"
+                    "           frameon=False, show=False)\n"
                     "sckg_save_and_display(plt.gcf(), 'existing_umap.png')\n"
                  )},
             ])
