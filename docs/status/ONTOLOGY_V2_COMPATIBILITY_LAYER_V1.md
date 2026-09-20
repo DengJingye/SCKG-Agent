@@ -1,12 +1,14 @@
-# Ontology v2 read-only compatibility safety patch
+# Ontology v2 final read-only compatibility closure
 
 WINDOW=02-Core-Implementation
 
-CHECKPOINT=5E.1-Compatibility-Safety-Patch
+CHECKPOINT=5E.2-Final-Compatibility-Closure
 
 STATUS=PASS
 
-BASE_COMMIT=6a7fc238676a3389c7e556b16ab8bac33d53e7bd
+BASE_COMMIT=392c5d9c0b2140abdaf5b952f7fce1cee29f4554
+
+EVALUATED_REVISION=7fb9f2f08cb123d1828dd77b26f0e266fb09acd3
 
 ACCEPTED_ONTOLOGY_COMMIT=46910b46b41fe83cc4b11316028db5bfd77647f9
 
@@ -31,6 +33,10 @@ It does not start 5F and does not change any production ontology or schema.
 - Effective scope retains shared qualifiers and inline-only qualifiers separately.
   Equal duplicates are deduplicated, conflicts are ambiguous, and shared `ANY_OF`
   plus inline conjunction is represented without flattening or dropping context.
+- `StatementRevisionView` now retains inline-only qualifiers through the final
+  returned and serialized claim view. `scope_ref` preserves the shared scope while
+  `context_composition=SHARED_SCOPE_AND_INLINE` makes the conjunction explicit;
+  different inline flavors are therefore semantically distinct.
 - Predicate/link semantics and source-record authority are separate fields.
   An authoritative link type does not promote a candidate or legacy record, invalid
   endpoint pairs remain unresolved, and every relation view is non-trusted and
@@ -46,9 +52,10 @@ It does not start 5F and does not change any production ontology or schema.
 - Evidence assessment binding checks the actual span view and provenance identity,
   and the inventory builder retains multiple assessment identities per statement.
   Support and refutation remain independent and never aggregate into trust.
-- Test evidence is structured as `PASS`, `FAIL`, `NOT_RUN` or `UNVERIFIED`; overall
-  checkpoint `PASS` requires verified focused and regression passes with commands and
-  positive pass counts.
+- Declared test status is separated from verified evidence status. A checkpoint
+  `PASS` requires repository-local result JSON and JUnit artifacts whose suite ID,
+  tested revision, counts, required node IDs and SHA-256 values all verify. Recorded
+  commands are provenance only and are never executed by the evaluation builder.
 
 ## Full physical-inventory qualification
 
@@ -66,6 +73,11 @@ accuracy.
 | RepresentationType | 98 | 98 adapter views |
 | Reference resource | 0 current inventory | 1 existing v1.1 qualification fixture mapped |
 | Graph relations | 2,429 | 1,182 authoritative link types; 331 derived projections; 916 unresolved predicates |
+
+Relation semantics and record authority remain separate: 1,099 records combine an
+authoritative link type with candidate authority, 83 combine that link type with
+unresolved record authority, 331 are derived projections/derived records, and 916
+have unresolved predicates/records. There are zero supported-authoritative records.
 
 The previously reviewed 217 ambiguous claims remain explainable as 198
 non-Statement relations and 19 incomplete partially-known scopes. Executing the
@@ -89,10 +101,20 @@ and synthetic focused fixtures verify independent support and refutation behavio
 
 ## Artifacts and validation
 
-The deterministic evaluation packet remains in
+The deterministic mapping packet remains in
 `data/evaluation/ontology_v2_compatibility_v1/`. Its manifest, mapping summary,
 counts, unresolved records, integrity hashes and structured test summary are
 generated together. No generated scientific content is written to the KG.
+
+Run-specific, machine-verifiable evidence is retained under `test_evidence/`:
+
+- `focused_5e2.junit.xml` and `focused_5e2.json`: 54 passed.
+- `regression_5e2.junit.xml` and `regression_5e2.json`: 88 passed.
+
+Both result records identify evaluated revision
+`7fb9f2f08cb123d1828dd77b26f0e266fb09acd3`, bind the raw JUnit SHA-256 and list
+every executed pytest node. The builder independently verifies the result JSON hash,
+nested JUnit hash and required node coverage before emitting `PASS`.
 
 Focused compatibility tests cover every H01-H03 and M01-M05 requirement, inventory
 root-cause counts, deterministic output and protected production wiring. Bounded
@@ -115,17 +137,18 @@ involved.
 
 ```text
 WINDOW=02-Core-Implementation
-CHECKPOINT=5E.1-Compatibility-Safety-Patch
+CHECKPOINT=5E.2-Final-Compatibility-Closure
 STATUS=PASS
-BASE_COMMIT=6a7fc238676a3389c7e556b16ab8bac33d53e7bd
+BASE_COMMIT=392c5d9c0b2140abdaf5b952f7fce1cee29f4554
+EVALUATED_REVISION=7fb9f2f08cb123d1828dd77b26f0e266fb09acd3
 H01_SCOPE_IDENTITY=PASS
-H02_INLINE_QUALIFIERS=PASS
+H02_INLINE_CONTEXT_END_TO_END=PASS
 H03_AUTHORITY_SEPARATION=PASS
 M01_FROZEN_CONSTRAINTS=PASS
 M02_SOURCE_IDENTITY=PASS
 M03_EVIDENCE_SEPARATION=PASS
 M04_ASSESSMENT_BINDING=PASS
-M05_TEST_STATUS=PASS
+M05_VERIFIABLE_TEST_EVIDENCE=PASS
 ATOMIC_CLAIMS_INSPECTED=380
 DIRECT_COMPATIBLE=0
 COMPATIBLE_WITH_ADAPTER=0
@@ -141,13 +164,21 @@ ASSESSMENTS_INSPECTED=380
 ASSESSMENT_VIEWS=0
 ASSESSMENT_AMBIGUOUS=0
 ASSESSMENT_NOT_MAPPABLE=380
+FOCUSED_TEST_EVIDENCE=VERIFIED
+REGRESSION_TEST_EVIDENCE=VERIFIED
+FOCUSED_TESTS=54 passed
+REGRESSION_TESTS=88 passed
+CHAT_IMPORT=PASS
+CHAT_RUNTIME=PASS
+CHAT_RETRIEVAL=PASS
+CHAT_PLANNER=PASS
 SCIENTIFIC_KG_CHANGED=false
 CATALOG_KG_CHANGED=false
 RAG_CHANGED=false
 PLANNER_CHANGED=false
-PRODUCTION_ONTOLOGY_CHANGED=false
+FROZEN_ONTOLOGY_CHANGED=false
 PRIMARY_LIMITATION=Current v1 records do not satisfy all frozen v2 qualifier and provenance requirements.
 EARLIEST_DIVERGENCE=Predicate qualifier policy for claims; EvidenceSpan artifact/revision identity for evidence.
-NEXT_RECOMMENDED_ACTION=STOP_FOR_QA_RECHECK
+NEXT_RECOMMENDED_ACTION=STOP_FOR_FINAL_QA
 STOPPED=true
 ```
