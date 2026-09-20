@@ -1,0 +1,481 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sckg.local/schemas/raw-question-seed-v1.json",
+  "title": "scKG V3 raw question seed",
+  "description": "Append-only provenance record for an unadjudicated question seed. This record is not an EvaluationCase, NaturalQueryCase, DEV case, or Gold case.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_type",
+    "seed_id",
+    "question_text",
+    "language",
+    "question_origin",
+    "source_kind",
+    "source",
+    "provenance",
+    "license_or_access_policy",
+    "pii_redaction_status",
+    "thread_context",
+    "transformation_history",
+    "content_sha256",
+    "gold_eligible"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "sckg-raw-question-seed-v1"
+    },
+    "record_type": {
+      "const": "raw_seed",
+      "default": "raw_seed"
+    },
+    "seed_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:-]+$",
+      "minLength": 3
+    },
+    "question_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The minimally transformed question text permitted by the source policy. Any redaction or extraction must be recorded in transformation_history."
+    },
+    "language": {
+      "type": "string",
+      "minLength": 2,
+      "description": "BCP 47 language tag when known, for example en or zh-CN."
+    },
+    "question_origin": {
+      "enum": [
+        "real-user",
+        "paper-notebook",
+        "controlled-probe"
+      ]
+    },
+    "source_kind": {
+      "enum": [
+        "external_forum",
+        "official_issue",
+        "real_history",
+        "paper_notebook",
+        "controlled_probe"
+      ],
+      "description": "Compatible with existing NaturalQuerySourceKind where possible; paper_notebook and controlled_probe are raw-mining extensions and require adjudication before any model mapping."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "collection_name",
+        "external_id",
+        "canonical_url",
+        "source_title",
+        "published_at",
+        "updated_at"
+      ],
+      "properties": {
+        "platform": {
+          "type": "string",
+          "minLength": 1
+        },
+        "collection_name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Forum, repository, benchmark release, or local fixture collection."
+        },
+        "external_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "source_title": {
+          "type": "string"
+        },
+        "published_at": {
+          "$ref": "#/$defs/nullable_timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/nullable_timestamp"
+        },
+        "version_context": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          "default": {}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "collected_at",
+        "collection_method",
+        "collector_id",
+        "collector_version",
+        "endpoint_or_query",
+        "raw_record_sha256"
+      ],
+      "properties": {
+        "collected_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "collection_method": {
+          "enum": [
+            "manual",
+            "official_api",
+            "rss",
+            "authorized_export",
+            "local_authorized_history",
+            "controlled_generation"
+          ]
+        },
+        "collector_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "collector_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endpoint_or_query": {
+          "type": "string"
+        },
+        "source_snapshot_at": {
+          "$ref": "#/$defs/nullable_timestamp"
+        },
+        "http_etag": {
+          "type": "string",
+          "default": ""
+        },
+        "raw_record_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "license_or_access_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "access_mode",
+        "storage_permission",
+        "policy_review_status",
+        "policy_url",
+        "license_identifier",
+        "reviewed_at",
+        "notes"
+      ],
+      "properties": {
+        "access_mode": {
+          "enum": [
+            "public_page",
+            "official_api",
+            "rss",
+            "authorized_export",
+            "local_authorized",
+            "controlled_generated"
+          ]
+        },
+        "storage_permission": {
+          "enum": [
+            "metadata_only",
+            "title_only",
+            "excerpt",
+            "full_text",
+            "unknown"
+          ]
+        },
+        "policy_review_status": {
+          "enum": [
+            "pending",
+            "reviewed",
+            "restricted",
+            "prohibited"
+          ]
+        },
+        "policy_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "license_identifier": {
+          "type": "string",
+          "description": "SPDX identifier when applicable; otherwise a concise site-specific label or unknown."
+        },
+        "reviewed_at": {
+          "$ref": "#/$defs/nullable_timestamp"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "pii_redaction_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewed_at",
+        "redaction_count",
+        "notes"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_reviewed",
+            "no_pii_detected",
+            "redacted",
+            "contains_sensitive_data",
+            "do_not_use"
+          ]
+        },
+        "reviewed_at": {
+          "$ref": "#/$defs/nullable_timestamp"
+        },
+        "redaction_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "thread_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "thread_external_id",
+        "parent_external_id",
+        "context_refs"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "references_only",
+            "title_only",
+            "excerpt",
+            "selected_messages"
+          ]
+        },
+        "thread_external_id": {
+          "type": "string"
+        },
+        "parent_external_id": {
+          "type": "string"
+        },
+        "context_refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "external_id",
+              "relation",
+              "canonical_url",
+              "content_sha256"
+            ],
+            "properties": {
+              "external_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "relation": {
+                "enum": [
+                  "root",
+                  "parent",
+                  "previous_user_message",
+                  "accepted_answer",
+                  "maintainer_reply",
+                  "other_reply"
+                ]
+              },
+              "canonical_url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "content_sha256": {
+                "$ref": "#/$defs/sha256"
+              }
+            }
+          },
+          "default": []
+        }
+      }
+    },
+    "transformation_history": {
+      "type": "array",
+      "description": "Ordered, append-only record of extraction, normalization, or redaction applied between the retrieved source representation and question_text. Empty means byte-identical text extraction.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sequence",
+          "operation",
+          "performed_at",
+          "tool_id",
+          "tool_version",
+          "input_sha256",
+          "output_sha256",
+          "notes"
+        ],
+        "properties": {
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "operation": {
+            "enum": [
+              "html_to_text",
+              "title_extraction",
+              "whitespace_normalization",
+              "pii_redaction",
+              "policy_truncation",
+              "manual_correction"
+            ]
+          },
+          "performed_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "tool_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tool_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_sha256": {
+            "$ref": "#/$defs/sha256"
+          },
+          "output_sha256": {
+            "$ref": "#/$defs/sha256"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "default": []
+    },
+    "content_sha256": {
+      "$ref": "#/$defs/sha256",
+      "description": "SHA-256 of the UTF-8 question_text stored in this record."
+    },
+    "gold_eligible": {
+      "const": false,
+      "default": false,
+      "description": "Raw seeds are never eligible as Gold. Gold eligibility can only exist in a separately adjudicated downstream artifact."
+    },
+    "quality_flags": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "empty_context",
+          "ambiguous_title",
+          "possible_duplicate",
+          "version_missing",
+          "policy_review_required",
+          "pii_review_required",
+          "source_removed"
+        ]
+      },
+      "uniqueItems": true,
+      "default": []
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "question_origin": {
+            "const": "real-user"
+          }
+        },
+        "required": [
+          "question_origin"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_kind": {
+            "enum": [
+              "external_forum",
+              "official_issue",
+              "real_history"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "question_origin": {
+            "const": "paper-notebook"
+          }
+        },
+        "required": [
+          "question_origin"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_kind": {
+            "const": "paper_notebook"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "question_origin": {
+            "const": "controlled-probe"
+          }
+        },
+        "required": [
+          "question_origin"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source_kind": {
+            "const": "controlled_probe"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "nullable_timestamp": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/timestamp"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
