@@ -4060,6 +4060,52 @@ def _render_evaluation_admin_panel() -> None:
         st.info("No real group trial feedback has been recorded.")
 
 
+_CANDIDATE_RELATION_LABELS = {
+    "revision_of": "is version of",
+    "implements_method": "implements method",
+    "supports_task": "supports task",
+    "has_requirement": "has requirement",
+    "output_type": "has output representation",
+}
+
+
+def _candidate_entity_display_label(packet: Dict[str, Any], canonical_id: str | None) -> str:
+    if not canonical_id:
+        return "—"
+    for entity in packet.get("linked_entities") or []:
+        if entity.get("candidate_id") == canonical_id and entity.get("mention"):
+            label = str(entity["mention"]).replace("_", " ")
+            return label[:1].upper() + label[1:]
+    fallback = canonical_id.rsplit(":", 1)[-1].replace("__", "::").replace("_", " ")
+    return fallback[:1].upper() + fallback[1:]
+
+
+def _candidate_relation_display(packet: Dict[str, Any]) -> Dict[str, str]:
+    canonical = packet.get("canonical_statement") or {}
+    predicate_id = canonical.get("predicate")
+    relation_label = _CANDIDATE_RELATION_LABELS.get(
+        predicate_id,
+        str(predicate_id).replace("_", " ") if predicate_id else "—",
+    )
+    if canonical.get("is_scientific_statement"):
+        relation_class = "Scientific statement candidate"
+    elif canonical.get("canonical_kind") == "STRUCTURAL_IDENTITY_BINDING":
+        relation_class = "Structural identity relation"
+    elif canonical.get("canonical_kind") == "STRUCTURAL_OUTPUT_BINDING":
+        relation_class = "Structural output relation"
+    else:
+        relation_class = "Structural / provenance relation"
+    return {
+        "subject_label": _candidate_entity_display_label(packet, canonical.get("subject_id")),
+        "relation_label": relation_label,
+        "object_label": _candidate_entity_display_label(packet, canonical.get("object_id")),
+        "relation_class": relation_class,
+        "subject_id": canonical.get("subject_id") or "—",
+        "predicate_id": predicate_id or "—",
+        "object_id": canonical.get("object_id") or "—",
+    }
+
+
 def _render_hardened_document_ingestion_payload(
     summary: Dict[str, Any], packets: List[Dict[str, Any]]
 ) -> None:
@@ -4093,22 +4139,33 @@ def _render_hardened_document_ingestion_payload(
         return
 
     ready_packets = [packet for packet in packets if packet["final_disposition"] == "CANDIDATE_READY"]
-    st.markdown("### Candidate KG ready set")
+    st.markdown("### Candidate KG Relations")
+    st.caption(
+        "Human-readable ontology labels are primary; canonical IDs are shown as secondary audit fields. "
+        "This set includes structural/provenance relations as well as scientific statement candidates."
+    )
     if ready_packets:
-        st.dataframe(
-            [
+        ready_rows = []
+        for packet in ready_packets:
+            display = _candidate_relation_display(packet)
+            ready_rows.append(
                 {
-                    "Subject": packet["canonical_statement"]["subject_id"],
-                    "Predicate": packet["canonical_statement"]["predicate"],
-                    "Object": packet["canonical_statement"]["object_id"],
+                    "Subject": display["subject_label"],
+                    "Relation": display["relation_label"],
+                    "Object": display["object_label"],
+                    "Relation class": display["relation_class"],
                     "Scope": packet["scope"]["core_scope_status"],
                     "EvidenceSpan": packet["evidence_span"]["locator"],
                     "SourceRevision": packet["source"]["source_revision_id"],
                     "Validation": packet["validation_report"]["stage_status"]["SEMANTIC_VALIDATION"],
                     "Governance": packet["governance"]["human_review_status"],
+                    "Subject canonical ID": display["subject_id"],
+                    "Predicate canonical ID": display["predicate_id"],
+                    "Object canonical ID": display["object_id"],
                 }
-                for packet in ready_packets
-            ],
+            )
+        st.dataframe(
+            ready_rows,
             use_container_width=True,
             hide_index=True,
         )
@@ -4116,19 +4173,26 @@ def _render_hardened_document_ingestion_payload(
         st.warning("No CANDIDATE_READY packet was produced.")
 
     ordered_packets = ready_packets + [packet for packet in packets if packet["final_disposition"] != "CANDIDATE_READY"]
-    labels = {
-        f"{index + 1}. {packet['block_type']} → {packet['final_disposition']}": packet
-        for index, packet in enumerate(ordered_packets)
-    }
+    labels = {}
+    for index, packet in enumerate(ordered_packets):
+        if packet["final_disposition"] == "CANDIDATE_READY":
+            display = _candidate_relation_display(packet)
+            label = (
+                f"{index + 1}. {display['subject_label']} — "
+                f"{display['relation_label']} → {display['object_label']}"
+            )
+        else:
+            label = f"{index + 1}. {packet['block_type']} → {packet['final_disposition']}"
+        labels[label] = packet
     selected_label = st.selectbox("HumanReviewPacket", list(labels), key="hardened_ingestion_packet")
     packet = labels[selected_label]
-    st.markdown("### Block → proposition → candidate")
+    st.markdown("### Block → proposition → Candidate KG relation")
     raw_col, normalized_col = st.columns(2)
     raw_col.markdown("#### Raw block")
     raw_col.code(packet["raw_block"], language=None)
     normalized_col.markdown("#### Normalized block")
     normalized_col.code(packet["normalized_block"], language=None)
-    canonical = packet.get("canonical_statement") or {}
+    canonical_display = _candidate_relation_display(packet)
     evidence = packet.get("evidence_span") or {}
     scope = packet.get("scope") or {}
     governance = packet["governance"]
@@ -4136,9 +4200,13 @@ def _render_hardened_document_ingestion_payload(
         [
             {"Field": "Block type", "Value": packet["block_type"]},
             {"Field": "Final disposition", "Value": packet["final_disposition"]},
-            {"Field": "Subject", "Value": canonical.get("subject_id", "—")},
-            {"Field": "Predicate", "Value": canonical.get("predicate", "—")},
-            {"Field": "Object", "Value": canonical.get("object_id", "—")},
+            {"Field": "Subject", "Value": canonical_display["subject_label"]},
+            {"Field": "Subject canonical ID", "Value": canonical_display["subject_id"]},
+            {"Field": "Relation", "Value": canonical_display["relation_label"]},
+            {"Field": "Predicate canonical ID", "Value": canonical_display["predicate_id"]},
+            {"Field": "Object", "Value": canonical_display["object_label"]},
+            {"Field": "Object canonical ID", "Value": canonical_display["object_id"]},
+            {"Field": "Relation class", "Value": canonical_display["relation_class"]},
             {"Field": "Scope", "Value": json.dumps(scope, ensure_ascii=False)},
             {"Field": "EvidenceSpan", "Value": evidence.get("locator", "—")},
             {"Field": "SourceRevision", "Value": packet["source"]["source_revision_id"]},
@@ -4156,7 +4224,7 @@ def _render_hardened_document_ingestion_payload(
                 ),
             },
             {"Field": "Raw proposition", "Value": json.dumps(packet.get("raw_proposition"), ensure_ascii=False)},
-            {"Field": "Canonical candidate", "Value": json.dumps(packet.get("canonical_statement"), ensure_ascii=False)},
+            {"Field": "Canonical relation payload", "Value": json.dumps(packet.get("canonical_statement"), ensure_ascii=False)},
         ]
     )
 

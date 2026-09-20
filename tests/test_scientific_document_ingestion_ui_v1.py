@@ -27,12 +27,56 @@ def test_hardened_ingestion_ui_uses_dispositions_and_stage_states() -> None:
     captions = "\n".join(str(item.value) for item in app.caption)
     assert "not judgments that a scientific proposition is true or false" in captions
     assert "scientific validity is not assessed" in captions
+    assert "Human-readable ontology labels are primary" in captions
+    markdown = "\n".join(str(item.value) for item in app.markdown)
+    assert "Candidate KG Relations" in markdown
+    assert "structural/provenance relations" in captions
+    selectbox = next(item for item in app.selectbox if item.label == "HumanReviewPacket")
+    assert "SoupX::adjustCounts@1.6.2" in selectbox.options[0]
+    assert "operator-revision:soupx" not in selectbox.options[0]
+    relations = next(
+        dataframe.value
+        for dataframe in app.dataframe
+        if "Relation class" in dataframe.value.columns
+    )
+    assert len(relations) == 5
+    assert relations[["Subject", "Relation", "Object"]].to_dict("records") == [
+        {
+            "Subject": "SoupX::adjustCounts@1.6.2",
+            "Relation": "is version of",
+            "Object": "SoupX::adjustCounts",
+        },
+        {
+            "Subject": "SoupX::adjustCounts@1.6.2",
+            "Relation": "implements method",
+            "Object": "Ambient RNA count correction",
+        },
+        {
+            "Subject": "SoupX::adjustCounts@1.6.2",
+            "Relation": "supports task",
+            "Object": "Ambient RNA contamination correction",
+        },
+        {
+            "Subject": "SoupX::adjustCounts@1.6.2",
+            "Relation": "has requirement",
+            "Object": "Estimated ambient contamination model input",
+        },
+        {
+            "Subject": "Corrected counts output",
+            "Relation": "has output representation",
+            "Object": "Ambient-corrected counts",
+        },
+    ]
+    assert "contamination_model_input2" not in relations.to_string()
     source = (ROOT / "app.py").read_text(encoding="utf-8")
     for label in [
-        '"Subject"', '"Predicate"', '"Object"', '"Scope"', '"EvidenceSpan"',
+        '"Subject"', '"Relation"', '"Object"', '"Scope"', '"EvidenceSpan"',
         '"SourceRevision"', '"Validation"', '"Governance status"',
     ]:
         assert label in source
+    assert '"Subject canonical ID"' in source
+    assert '"Predicate canonical ID"' in source
+    assert '"Object canonical ID"' in source
 
 
 def test_legacy_replay_labels_validation_as_structural_not_scientific_truth() -> None:
