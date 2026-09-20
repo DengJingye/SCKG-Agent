@@ -1,0 +1,42 @@
+{
+  "authoritative_model": {
+    "atomization_rule": "One independently reviewable proposition per StatementRevision; conjunctions require separate revisions unless the predicate itself defines a compound relation.",
+    "identity_class": "ScientificStatement",
+    "object_rule": "Exactly one entity object or typed literal value.",
+    "optional_fields": [
+      "qualifiers",
+      "version_conditions",
+      "knowledge_status",
+      "supersedes"
+    ],
+    "required_fields": [
+      "id",
+      "subject",
+      "predicate",
+      "object",
+      "scope_id",
+      "evidence_assessment_ids",
+      "epistemic_status",
+      "review_status",
+      "schema_version",
+      "ontology_version",
+      "provenance_activity_id"
+    ],
+    "revision_class": "StatementRevision"
+  },
+  "decision": "AtomicClaimRevision becomes a backward-compatible implementation surface for StatementRevision during a future migration; ScientificStatement supplies stable assertion identity.",
+  "graph_projection": {
+    "allowed": true,
+    "authoritative": false,
+    "example": "OperatorRevision -> requires_input -> RepresentationConstraint",
+    "must_preserve_scope_and_qualifiers": true,
+    "must_reference_statement_revision": true
+  },
+  "layer_separation": {
+    "governed_action": "Block this Scrublet execution with a traceable reason.",
+    "runtime_state": "This dataset has no raw UMI.",
+    "scientific_knowledge": "Scrublet requires raw UMI under a declared scope."
+  },
+  "ontology_version": "2.0.0-design.1",
+  "schema_version": "sckg-scientific-decision-ontology-v2-design-audit-v1"
+}

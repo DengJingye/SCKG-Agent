@@ -1,0 +1,152 @@
+{
+  "external_models": [
+    {
+      "decision": "Reuse identifiers for established operations/data/formats; retain local representation-state and governance semantics.",
+      "external_model": "EDAM",
+      "mappings": [
+        {
+          "external_concept": "EDAM:operation",
+          "local_concept": "ScientificTask",
+          "mapping_type": "CLOSE_MATCH"
+        },
+        {
+          "external_concept": "EDAM:data",
+          "local_concept": "RepresentationType",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "EDAM:format",
+          "local_concept": "SourceArtifact.format",
+          "mapping_type": "CLOSE_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Operation",
+        "Data",
+        "Format",
+        "Topic"
+      ],
+      "source_url": "https://edamontology.org/"
+    },
+    {
+      "decision": "Adopt PROV-O relation semantics and qualified influence where role/time is needed.",
+      "external_model": "PROV-O",
+      "mappings": [
+        {
+          "external_concept": "prov:Activity",
+          "local_concept": "ExtractionRun",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "prov:Entity",
+          "local_concept": "SourceArtifact",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "prov:wasGeneratedBy",
+          "local_concept": "was_generated_by",
+          "mapping_type": "EXACT_MATCH"
+        },
+        {
+          "external_concept": "prov:used",
+          "local_concept": "used",
+          "mapping_type": "EXACT_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Entity",
+        "Activity",
+        "Agent",
+        "used",
+        "wasGeneratedBy",
+        "wasDerivedFrom",
+        "wasAssociatedWith"
+      ],
+      "source_url": "https://www.w3.org/TR/prov-o/"
+    },
+    {
+      "decision": "Reuse the S-P-O-Q pattern while retaining scKG revision, scope, evidence assessment, and governance requirements.",
+      "external_model": "Biolink Model",
+      "mappings": [
+        {
+          "external_concept": "biolink:Association",
+          "local_concept": "StatementRevision",
+          "mapping_type": "CLOSE_MATCH"
+        },
+        {
+          "external_concept": "biolink:qualifier",
+          "local_concept": "qualifiers",
+          "mapping_type": "CLOSE_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Association",
+        "subject",
+        "predicate",
+        "object",
+        "qualifier",
+        "sources"
+      ],
+      "source_url": "https://biolink.github.io/biolink-model/understanding-the-model/"
+    },
+    {
+      "decision": "Search and reuse RO/OBO relations before minting; local relations need explicit domain/range and mapping review.",
+      "external_model": "OBO Relation Ontology",
+      "mappings": [
+        {
+          "external_concept": "RO candidate mapping required",
+          "local_concept": "derives_from",
+          "mapping_type": "NO_MAPPING"
+        },
+        {
+          "external_concept": "RO search required before minting",
+          "local_concept": "transforms",
+          "mapping_type": "NO_MAPPING"
+        }
+      ],
+      "relevant_concepts": [
+        "relation reuse",
+        "domain",
+        "range",
+        "inverse",
+        "property characteristics"
+      ],
+      "source_url": "https://obofoundry.org/principles/fp-007-relations.html"
+    },
+    {
+      "decision": "Use an RO-Crate profile for exchange packaging later; do not make RO-Crate the internal scientific statement model.",
+      "external_model": "RO-Crate 1.3",
+      "mappings": [
+        {
+          "external_concept": "RO-Crate Data Entity",
+          "local_concept": "SourceArtifact",
+          "mapping_type": "NARROWER_THAN"
+        },
+        {
+          "external_concept": "RO-Crate provenance of entities",
+          "local_concept": "ProvenanceTrackedArtifact",
+          "mapping_type": "CLOSE_MATCH"
+        }
+      ],
+      "relevant_concepts": [
+        "Root Data Entity",
+        "Data Entity",
+        "Contextual Entity",
+        "provenance",
+        "profiles",
+        "workflows"
+      ],
+      "source_url": "https://www.researchobject.org/ro-crate/specification/1.3/index.html"
+    }
+  ],
+  "ontology_version": "2.0.0-design.1",
+  "schema_version": "sckg-scientific-decision-ontology-v2-design-audit-v1",
+  "valid_mapping_types": [
+    "EXACT_MATCH",
+    "CLOSE_MATCH",
+    "BROADER_THAN",
+    "NARROWER_THAN",
+    "NO_MAPPING"
+  ],
+  "wholesale_import": false
+}

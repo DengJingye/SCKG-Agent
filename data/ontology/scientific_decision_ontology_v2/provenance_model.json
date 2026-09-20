@@ -1,0 +1,49 @@
+{
+  "activity_types": [
+    "ExtractionRun",
+    "ReviewActivity",
+    "GovernedAction"
+  ],
+  "agent_types": [
+    "HumanReviewer",
+    "SoftwareAgent",
+    "DesignatedOwner"
+  ],
+  "alignment": "Use PROV-O Entity/Activity/Agent and qualified influence patterns where role or time is required; retain scKG domain classes.",
+  "entity_types": [
+    "SourceWork",
+    "SourceRevision",
+    "SourceArtifact",
+    "EvidenceSpan",
+    "StatementRevision",
+    "ReviewDecision"
+  ],
+  "ontology_version": "2.0.0-design.1",
+  "relations": [
+    "was_generated_by",
+    "used",
+    "was_derived_from",
+    "was_associated_with",
+    "revision_of",
+    "supersedes",
+    "superseded_by"
+  ],
+  "required_chains": [
+    [
+      "SourceWork",
+      "revision_of<-SourceRevision",
+      "contains->EvidenceSpan"
+    ],
+    [
+      "ExtractionRun",
+      "generated->StatementRevision",
+      "used->EvidenceSpan"
+    ],
+    [
+      "ReviewActivity",
+      "generated->ReviewDecision",
+      "used->StatementRevision"
+    ]
+  ],
+  "schema_version": "sckg-scientific-decision-ontology-v2-design-audit-v1"
+}

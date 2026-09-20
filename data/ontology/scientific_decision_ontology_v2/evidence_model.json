@@ -1,0 +1,80 @@
+{
+  "distinct_gates": [
+    "source_exists",
+    "evidence_exists",
+    "evidence_supports",
+    "statement_reviewed",
+    "statement_trusted"
+  ],
+  "drift_inputs": [
+    "prior_source_revision",
+    "new_source_revision",
+    "prior_evidence_span",
+    "candidate_evidence_span",
+    "statement_revision",
+    "scope"
+  ],
+  "drift_outcomes": [
+    "unchanged",
+    "moved_semantically_unchanged",
+    "text_changed",
+    "scope_changed",
+    "unsupported",
+    "contradicted",
+    "requires_review"
+  ],
+  "evidence_drift_states": [
+    {
+      "operational_definition": "Evidence content and binding remain valid for the active statement revision.",
+      "state": "CURRENT"
+    },
+    {
+      "operational_definition": "Bound text or its semantic content changed in a newer SourceRevision.",
+      "state": "EVIDENCE_CHANGED"
+    },
+    {
+      "operational_definition": "The evidence binding points to a non-current or invalidated source revision.",
+      "state": "STALE_EVIDENCE"
+    },
+    {
+      "operational_definition": "Change may affect support, scope, or statement identity and requires review.",
+      "state": "REVALIDATION_REQUIRED"
+    },
+    {
+      "operational_definition": "A governed newer evidence or statement revision replaces this record.",
+      "state": "SUPERSEDED"
+    }
+  ],
+  "ontology_version": "2.0.0-design.1",
+  "schema_version": "sckg-scientific-decision-ontology-v2-design-audit-v1",
+  "support_states": [
+    {
+      "operational_definition": "Exact evidence entails the statement's subject, predicate, object, and compatible scope.",
+      "state": "DIRECT_SUPPORT"
+    },
+    {
+      "operational_definition": "Evidence supports a proper subset of the statement or a narrower scope.",
+      "state": "PARTIAL_SUPPORT"
+    },
+    {
+      "operational_definition": "Evidence supplies relevant context but does not entail the assertion alone.",
+      "state": "CONTEXTUAL_SUPPORT"
+    },
+    {
+      "operational_definition": "Evidence presents an incompatible assertion without establishing formal refutation.",
+      "state": "CONTRADICTS"
+    },
+    {
+      "operational_definition": "Evidence directly establishes the negation or invalidity of the assertion under the same scope.",
+      "state": "REFUTES"
+    },
+    {
+      "operational_definition": "Evidence is topically related but supplies no support for the assertion.",
+      "state": "DOES_NOT_SUPPORT"
+    },
+    {
+      "operational_definition": "Support cannot be determined without additional evidence or review.",
+      "state": "UNCERTAIN"
+    }
+  ]
+}
