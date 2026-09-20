@@ -1,0 +1,1182 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [
+    {
+      "best_for": "作为检索候选，需要结合数据与合同继续核对。",
+      "caveats": [
+        "Unsurprisingly, the choice of reference has a major impact on the annotation results. We need to pick a reference that contains a superset of the labels that we expect to be present in our test dataset..."
+      ],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset...",
+      "mechanism": "机制说明仍需从 source-bound corpus 补齐。",
+      "output": "未确认",
+      "readiness": "catalog_only",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "SingleR"
+    }
+  ],
+  "answerability": {
+    "reason_codes": [
+      "source_bound_context_with_optional_model_knowledge"
+    ],
+    "unverified_model_knowledge_allowed": true,
+    "verdict": "ANSWER_DUAL_LAYER",
+    "verified_context_available": true
+  },
+  "candidate_tools": [
+    "SingleR"
+  ],
+  "canonical_trace_id": "trace_c2ecf75f274d4e5d840b71098ce36f61",
+  "claim_audit": {
+    "caution_context": [],
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [
+      1
+    ],
+    "claims": [
+      {
+        "authority": "source_bound",
+        "citation_mapping": "valid",
+        "claim_id": "claim-001",
+        "claim_text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。",
+        "claim_type": "input_requirement",
+        "governance_action": "keep",
+        "lexical_support": 0.04878,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "match",
+        "semantic_review_status": "not_run",
+        "source_span_ids": [
+          "uat-authoritative-span:singler.interface"
+        ]
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "verified_claims": [
+      {
+        "authority": "source_bound",
+        "citation_mapping": "valid",
+        "claim_id": "claim-001",
+        "claim_text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。",
+        "claim_type": "input_requirement",
+        "governance_action": "keep",
+        "lexical_support": 0.04878,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "match",
+        "semantic_review_status": "not_run",
+        "source_span_ids": [
+          "uat-authoritative-span:singler.interface"
+        ]
+      }
+    ],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [
+        {
+          "citations": [
+            {
+              "index": 1,
+              "quote": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset."
+            }
+          ],
+          "claim_id": "answer-1",
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。[1]"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-2",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-3",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-4",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。"
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "text": "你是否有可用的 Ensembl 到 HGNC 基因映射表，或者希望先对测试 UMI counts 进行 log 归一化？"
+        }
+      ],
+      "kg_facts_used": [],
+      "knowledge_sources": [
+        "MODEL_KNOWLEDGE",
+        "RETRIEVAL_GROUNDED"
+      ],
+      "references": [
+        {
+          "authority": "source_bound",
+          "claim_text": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "claim_type": "input_requirement",
+          "exact_excerpt": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "index": 1,
+          "kg_statements": [],
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "selected_for_claim_types": [
+            "input_requirement"
+          ],
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L1-L14",
+          "source_span_id": "uat-authoritative-span:singler.interface",
+          "source_type": "source_document",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+          "tool_name": "SingleR"
+        }
+      ],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": false,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "source_bound_context_with_optional_model_knowledge"
+      ],
+      "unverified_model_knowledge_allowed": true,
+      "verdict": "ANSWER_DUAL_LAYER",
+      "verified_context_available": true
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=cell_type_annotation;task_source=semantic_parser;semantic=ready",
+        "elapsed_ms": 4126.536,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "deterministic task/claim normalization",
+        "elapsed_ms": 4.056,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "candidate_tools=1",
+        "elapsed_ms": 0.005,
+        "stage": "kg_filter",
+        "status": "skipped"
+      },
+      {
+        "detail": "hits=48",
+        "elapsed_ms": 19.161,
+        "stage": "bm25",
+        "status": "completed"
+      },
+      {
+        "detail": "status=not_requested;hits=0",
+        "elapsed_ms": 0.002,
+        "stage": "dense_encode",
+        "status": "skipped"
+      },
+      {
+        "detail": "fused=48;reranked=48",
+        "elapsed_ms": 0.046,
+        "stage": "fusion",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.011,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=ready",
+        "elapsed_ms": 4825.58,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "cell_type_annotation",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "SingleR"
+      ],
+      "runtime_build_id": "debf9cc2d7279888c79a8969387d508789dc4092945383a4a8378ac207ef5c4b",
+      "state_epoch": 0,
+      "user_reported_context": {}
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 3,
+    "external_reasoning": {
+      "answer_claims": [
+        {
+          "citations": [
+            {
+              "index": 1,
+              "quote": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset."
+            }
+          ],
+          "claim_id": "answer-1",
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。[1]"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-2",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-3",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-4",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。"
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "text": "你是否有可用的 Ensembl 到 HGNC 基因映射表，或者希望先对测试 UMI counts 进行 log 归一化？"
+        }
+      ],
+      "error_type": "",
+      "input_tokens": 1643,
+      "latency_ms": 4816.816833990742,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": 368,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 2,
+      "status": "ready",
+      "support_check": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 0,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    "grounded_answer_audit": {
+      "caution_context": [],
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [
+        1
+      ],
+      "claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。",
+          "claim_type": "input_requirement",
+          "governance_action": "keep",
+          "lexical_support": 0.04878,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "match",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "uat-authoritative-span:singler.interface"
+          ]
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "verified_claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。",
+          "claim_type": "input_requirement",
+          "governance_action": "keep",
+          "lexical_support": 0.04878,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "match",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "uat-authoritative-span:singler.interface"
+          ]
+        }
+      ],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "llm-tool-1",
+        "latency_ms": 26.754,
+        "payload": {
+          "answerability": null,
+          "chunk_ids": [
+            "gold-span:singler:reference-choice:3.22",
+            "uat-authoritative-span:singler.reference_state",
+            "uat-authoritative-span:singler.interface",
+            "uat-authoritative-span:singler.feature_intersection",
+            "uat-authoritative-span:singler.reference_labels"
+          ],
+          "mode": "bm25",
+          "query": "SingleR classic mode input requirements: gene identifier matching between test and reference, assay type compatibility, and preconditions for annotation"
+        },
+        "result_count": 5,
+        "source_bound_count": 5,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode",
+            "caveat"
+          ],
+          "query": "SingleR classic mode input requirements: gene identifier matching between test and reference, assay type compatibility, and preconditions for annotation",
+          "reason": "User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode and what conditions should be verified first.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 5
+        }
+      ],
+      "rationale": "LLM proposed bounded read-only tools; local policy normalized the plan.",
+      "source": "semantic_parser"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "cell_type_annotation",
+      "current_user_reported_context": {},
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "claim_type": "input_requirement",
+          "index": 1,
+          "kg_statements": [],
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L1-L14",
+          "source_span_id": "uat-authoritative-span:singler.interface",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+          "tool_name": "SingleR"
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "For SingleR classic mode cell type annotation, what are the input requirements regarding gene identifier matching between test (Ensembl IDs) and reference (HGNC symbols), assay type (UMI counts vs log-normalized), and what conditions should be verified before starting?",
+      "schema_version": "scientific-response-context-v1",
+      "scientific_kg": {
+        "adapter_called": false,
+        "approved_kg_sha256": null,
+        "caution_context": [],
+        "coverage": "no_direct_statement",
+        "facts": [],
+        "gaps": [],
+        "identity": "Legacy / candidate evidence",
+        "legacy_kg_consulted": null,
+        "snapshot_id": null
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:generic_rag",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": null,
+      "governance_leakage_count": 0,
+      "latency_ms": 23.537,
+      "mode": "bm25",
+      "pipeline": [
+        "query_classification",
+        "canonical_task_normalization",
+        "kg_filter_skipped",
+        "sqlite_fts5_bm25",
+        "local_dense_skipped",
+        "rrf_fusion",
+        "governance_rerank_skipped",
+        "tool_contract_gate_skipped",
+        "retrieval_context_only"
+      ],
+      "scientific_evidence": null,
+      "snippets": [
+        {
+          "chunk_id": "gold-span:singler:reference-choice:3.22",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Unsurprisingly, the choice of reference has a major impact on the annotation results. We need to pick a reference that contains a superset of the labels that we expect to be present in our test dataset. We would also prefer a reference that is generated from a similar technology or protocol as our test dataset.",
+          "claim_type": "failure_mode",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:SingleRBook:3.22",
+          "relevance_score": 0.01639344,
+          "source_bound": true,
+          "source_id": "source-revision:SingleRBook:3.22",
+          "source_span": "Chapter 2, section 2.5 Choice of reference",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: gold-span:singler:reference-choice:3.22",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.reference_state",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.01612903,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.interface",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.01587302,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L1-L14",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.feature_intersection",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "This function is just a convenient wrapper around trainSingleR and classifySingleR. The function will automatically restrict the analysis to the intersection of the genes in both ref and test. If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.015625,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L35-L38",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.feature_intersection",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.reference_labels",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Train the SingleR classifier on one or more reference datasets with known labels. ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples). labels A character vector or factor of known labels for all samples in ref.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.01538462,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/trainSingleR.R#L3-L12",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_labels",
+          "tool_name": "SingleR"
+        }
+      ],
+      "stage_timings": [
+        {
+          "detail": "deterministic task/claim normalization",
+          "elapsed_ms": 4.056,
+          "stage": "intent",
+          "status": "completed"
+        },
+        {
+          "detail": "candidate_tools=1",
+          "elapsed_ms": 0.005,
+          "stage": "kg_filter",
+          "status": "skipped"
+        },
+        {
+          "detail": "hits=48",
+          "elapsed_ms": 19.161,
+          "stage": "bm25",
+          "status": "completed"
+        },
+        {
+          "detail": "status=not_requested;hits=0",
+          "elapsed_ms": 0.002,
+          "stage": "dense_encode",
+          "status": "skipped"
+        },
+        {
+          "detail": "fused=48;reranked=48",
+          "elapsed_ms": 0.046,
+          "stage": "fusion",
+          "status": "completed"
+        }
+      ]
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+      "process_id": 5775,
+      "process_started_at": "2026-09-20T18:37:52.896237Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "debf9cc2d7279888c79a8969387d508789dc4092945383a4a8378ac207ef5c4b",
+      "version": "2.7.2-rc",
+      "worktree_digest": "ccbdd3a2e7345982d2d11060c3c21c189c42e4f7643298612134c49b7283fae6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "cell_type_annotation",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.95,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "SINGLE_CELL",
+      "error_type": "",
+      "input_tokens": 2028,
+      "intent": "evidence_qa",
+      "latency_ms": 4041.610333006247,
+      "model_name": "deepseek-v4-pro",
+      "needs_clarification": false,
+      "output_tokens": 444,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "requested_tools": [],
+      "retrieval_query": "For SingleR classic mode cell type annotation, what are the input requirements regarding gene identifier matching between test (Ensembl IDs) and reference (HGNC symbols), assay type (UMI counts vs log-normalized), and what conditions should be verified before starting?",
+      "status": "ready",
+      "task_switch": false,
+      "tool_calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode",
+            "caveat"
+          ],
+          "query": "SingleR classic mode input requirements: gene identifier matching between test and reference, assay type compatibility, and preconditions for annotation",
+          "reason": "User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode and what conditions should be verified first.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 5
+        },
+        {
+          "call_id": "llm-tool-2",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "parameter",
+            "output"
+          ],
+          "query": "SingleR classic mode contract: required inputs, gene identifier handling, assay normalization expectations",
+          "reason": "Inspect governed inputs and parameters to confirm readiness for SingleR classic mode.",
+          "tool_name": "get_tool_contract",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 3
+        }
+      ],
+      "user_reported_context": {}
+    },
+    "semantic_route": {
+      "confidence": 0.95,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "semantic_primary",
+      "source": "semantic_parser"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 8980.341,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "dev-K03-reference-annotation-b--generic_rag--r0",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "cell_type_annotation",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [
+      "claim-001"
+    ],
+    "last_plan_id": null,
+    "referenced_tools": [
+      "SingleR"
+    ],
+    "runtime_build_id": "debf9cc2d7279888c79a8969387d508789dc4092945383a4a8378ac207ef5c4b",
+    "state_epoch": 0,
+    "user_reported_context": {}
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "EVIDENCE_QA",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "EVIDENCE_QA",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "cell_type_annotation",
+    "modality": "scRNA-seq",
+    "task": "cell_type_annotation"
+  },
+  "final_report": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。[1]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。\n\n测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。\n\n在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。\n\n你是否有可用的 Ensembl 到 HGNC 基因映射表，或者希望先对测试 UMI counts 进行 log 归一化？",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [
+    {
+      "authority": "source_bound",
+      "claim_text": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "claim_type": "input_requirement",
+      "exact_excerpt": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "index": 1,
+      "kg_statements": [],
+      "knowledge_source": "RETRIEVAL_GROUNDED",
+      "selected_for_claim_types": [
+        "input_requirement"
+      ],
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L1-L14",
+      "source_span_id": "uat-authoritative-span:singler.interface",
+      "source_type": "source_document",
+      "support_claim_types": [
+        "input_requirement"
+      ],
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+      "tool_name": "SingleR"
+    }
+  ],
+  "request_id": "dev-K03-reference-annotation-b--generic_rag--r0",
+  "response_intent": "evidence_qa",
+  "retrieval_results": [
+    {
+      "chunk_id": "gold-span:singler:reference-choice:3.22",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Unsurprisingly, the choice of reference has a major impact on the annotation results. We need to pick a reference that contains a superset of the labels that we expect to be present in our test dataset. We would also prefer a reference that is generated from a similar technology or protocol as our test dataset.",
+      "claim_type": "failure_mode",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:SingleRBook:3.22",
+      "relevance_score": 0.01639344,
+      "source_bound": true,
+      "source_id": "source-revision:SingleRBook:3.22",
+      "source_span": "Chapter 2, section 2.5 Choice of reference",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: gold-span:singler:reference-choice:3.22",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.reference_state",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.01612903,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.interface",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.01587302,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L1-L14",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.feature_intersection",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "This function is just a convenient wrapper around trainSingleR and classifySingleR. The function will automatically restrict the analysis to the intersection of the genes in both ref and test. If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.015625,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L35-L38",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.feature_intersection",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.reference_labels",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Train the SingleR classifier on one or more reference datasets with known labels. ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples). labels A character vector or factor of known labels for all samples in ref.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.01538462,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L3-L12",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_labels",
+      "tool_name": "SingleR"
+    }
+  ],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+    "process_id": 5775,
+    "process_started_at": "2026-09-20T18:37:52.896237Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "debf9cc2d7279888c79a8969387d508789dc4092945383a4a8378ac207ef5c4b",
+    "version": "2.7.2-rc",
+    "worktree_digest": "ccbdd3a2e7345982d2d11060c3c21c189c42e4f7643298612134c49b7283fae6"
+  },
+  "runtime_mode": "external_reasoning_with_deterministic_governance",
+  "scored_tools": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "SingleR"
+    }
+  ],
+  "semantic_route": {
+    "confidence": 0.95,
+    "domain": "SINGLE_CELL",
+    "intent": "evidence_qa",
+    "needs_clarification": false,
+    "source": "semantic_parser",
+    "task": "cell_type_annotation"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "SingleR"
+    }
+  ],
+  "unverified_model_knowledge_claims": [
+    {
+      "authority": "model_knowledge_unverified",
+      "citation_mapping": "not_applicable",
+      "claim_id": "claim-001",
+      "claim_text": "测试矩阵与参考矩阵的基因标识符必须一致，才能进行相关性计算；当前测试为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此不能直接开始。",
+      "claim_type": "scientific",
+      "governance_action": "label_unverified",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "not_scientific_authority"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": []
+    },
+    {
+      "authority": "model_knowledge_unverified",
+      "citation_mapping": "not_applicable",
+      "claim_id": "claim-001",
+      "claim_text": "测试数据为 UMI counts，而参考为 log-normalized expression，两者尺度不同；SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度。",
+      "claim_type": "scientific",
+      "governance_action": "label_unverified",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "not_scientific_authority"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": []
+    },
+    {
+      "authority": "model_knowledge_unverified",
+      "citation_mapping": "not_applicable",
+      "claim_id": "claim-001",
+      "claim_text": "在开始前应先验证：是否存在可靠的 Ensembl 到 HGNC 映射表、测试数据是否需要 log 归一化、以及 SingleR 版本是否与 Bioconductor 3.21 兼容。",
+      "claim_type": "scientific",
+      "governance_action": "label_unverified",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "not_scientific_authority"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": []
+    }
+  ],
+  "user_id": "local-research-user",
+  "user_query": "我想用 SingleR classic mode 给测试细胞做参考注释。输入尺度与基因对应关系是否足以直接开始？哪些条件应先验证？\n\n已提供的条件（未提供的值不作推断）：\nenvironment=Bioconductor 3.21 / version must be checked against book session\nmapping_table_provided=false\nmarker_mode=classic\nreference_assay=log-normalized expression\nreference_gene_namespace=HGNC symbols\nspecies=human for both test and reference\ntest_assay=UMI counts\ntest_gene_namespace=Ensembl stable IDs",
+  "verified_claims": [
+    {
+      "authority": "source_bound",
+      "citation_mapping": "valid",
+      "claim_id": "claim-001",
+      "claim_text": "SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的参考为 log-normalized expression，符合这一输入要求。",
+      "claim_type": "input_requirement",
+      "governance_action": "keep",
+      "lexical_support": 0.04878,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [],
+      "scope_match": "match",
+      "semantic_review_status": "not_run",
+      "source_span_ids": [
+        "uat-authoritative-span:singler.interface"
+      ]
+    }
+  ],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "cell_type_annotation",
+    "tool_name": null
+  }
+}

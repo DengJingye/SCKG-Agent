@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"PrepSCTFindMarkers 在低中位 UMI 的 SCT 模型上产生全零计数，而 correct_counts() 返回非零，通常与 SCT 模型的计数校正和差异检验的预处理步骤有关，而不是原始 UMI 计数本身为零。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"排查时首先确认 PrepSCTFindMarkers 使用的 assay 和 slot 是否与 correct_counts() 输出一致，例如是否误用了未校正的 counts 或错误的数据层。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"检查 SCT 模型是否在低 UMI 细胞上被正确拟合，低中位 UMI 可能导致部分基因的校正因子不稳定，从而在差异检验时被置零。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"可以对比 correct_counts() 与 PrepSCTFindMarkers 内部使用的数据矩阵，确认是否存在基因过滤或最小表达阈值导致全零。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarifying_question\": \"您是否已经确认 PrepSCTFindMarkers 使用的 assay 和 slot 与 correct_counts() 的输出完全一致？\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929509,
+  "id": "afcfb02c-52cc-43c7-91da-5e4c7475889a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 331,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 1602,
+    "prompt_tokens": 2626,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 2957
+  }
+}

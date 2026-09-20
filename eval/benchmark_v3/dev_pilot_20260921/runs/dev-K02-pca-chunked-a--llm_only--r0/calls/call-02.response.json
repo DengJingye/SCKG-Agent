@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，当 chunked=false 且 zero_center=false 时，PCA 会走截断 SVD 分支，此时 svd_solver=arpack 会被传递给 scipy.sparse.linalg.svds。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"zero_center=false 会生效，因为代码中只有 zero_center=true 时才进行中心化；false 时直接对原始矩阵做 SVD。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"svd_solver=arpack 在截断 SVD 分支中会生效，但 arpack 要求 k < min(shape)-1，这里 k=10，矩阵为 500x100，满足条件。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"chunk_size=100 在 chunked=false 时不会影响 PCA 计算，因为数据不会被分块处理。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarifying_question\": \"\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929546,
+  "id": "a62fd5f3-2cde-416d-b235-1c113e4a2687",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 297,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1408,
+    "prompt_cache_miss_tokens": 50,
+    "prompt_tokens": 1458,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1408
+    },
+    "total_tokens": 1755
+  }
+}

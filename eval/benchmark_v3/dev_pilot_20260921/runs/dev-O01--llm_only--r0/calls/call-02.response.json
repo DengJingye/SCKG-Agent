@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"PrepSCTFindMarkers 对每个基因拟合两个模型（低中位 UMI 和高中位 UMI），并在下游使用中位数 UMI 更接近的模型；如果低中位 UMI 模型被选中，而该模型对某些基因的计数预测为零，就可能出现全零计数。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"correct_counts() 返回非零而 PrepSCTFindMarkers 输出全零，可能源于模型选择差异、计数取整或不同基因集合/批次之间的模型不一致，需要检查具体基因在两个模型中的预测值。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"建议先确认 PrepSCTFindMarkers 使用的 assay 和 slot 是否与 correct_counts() 一致，并检查低中位 UMI 模型是否因数据稀疏或过拟合导致零膨胀。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"可以尝试提高 PrepSCTFindMarkers 的 min_cells 或调整模型拟合参数，或对低中位 UMI 模型单独检查其计数分布，以判断是否为模型不稳定所致。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarifying_question\": \"您是否已经检查过这些全零基因在低中位 UMI 模型中的原始预测计数（而非 correct_counts 结果），以及两个模型的中位数 UMI 差异？\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929506,
+  "id": "57a20f10-dc8b-456c-8b0f-5e7a0d33673a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 375,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 365,
+    "prompt_tokens": 1389,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1764
+  }
+}

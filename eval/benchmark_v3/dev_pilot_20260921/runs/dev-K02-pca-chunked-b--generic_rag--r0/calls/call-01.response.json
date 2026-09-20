@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"domain\": \"SINGLE_CELL\",\n  \"intent\": \"evidence_qa\",\n  \"canonical_task\": \"scanpy_core_workflow\",\n  \"confidence\": 0.95,\n  \"needs_clarification\": false,\n  \"clarification_question\": \"\",\n  \"capability_request\": null,\n  \"constraints\": {},\n  \"requested_tools\": [\"sc.pp.pca\"],\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"search_evidence\",\n      \"query\": \"In Scanpy 1.11.2, when calling sc.pp.pca with zero_center=false and svd_solver=arpack, do these parameters take effect as specified? What are the implementation conditions, especially regarding chunked=True and dense matrix?\",\n      \"canonical_task\": \"scanpy_core_workflow\",\n      \"tool_names\": [\"sc.pp.pca\"],\n      \"claim_types\": [\"parameter\", \"caveat\", \"mechanism\"],\n      \"top_k\": 5,\n      \"reason\": \"User asks whether zero_center and svd_solver are honored under given conditions; need evidence about parameter behavior and implementation constraints.\"\n    },\n    {\n      \"tool_name\": \"get_tool_contract\",\n      \"query\": \"sc.pp.pca\",\n      \"canonical_task\": \"scanpy_core_workflow\",\n      \"tool_names\": [\"sc.pp.pca\"],\n      \"claim_types\": [\"parameter\", \"input_requirement\"],\n      \"top_k\": 1,\n      \"reason\": \"Inspect official contract for sc.pp.pca to verify parameter semantics and any conditions affecting zero_center and svd_solver.\"\n    }\n  ],\n  \"retrieval_query\": \"In Scanpy 1.11.2, when calling sc.pp.pca with zero_center=false and svd_solver=arpack on a dense log-normalized expression matrix (500 cells x 100 genes) with chunked=True and chunk_size=100, do these parameters take effect as specified? What are the implementation conditions?\",\n  \"user_reported_context\": {\n    \"sample_count\": null,\n    \"capture_layout\": null,\n    \"merged\": null,\n    \"raw_counts\": null,\n    \"sample_id\": null,\n    \"ecosystem\": null\n  },\n  \"data_dependency\": \"none\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929523,
+  "id": "09bb367d-3832-4221-8cfb-6ddac6016c5a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 503,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 726,
+    "prompt_tokens": 2006,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1280
+    },
+    "total_tokens": 2509
+  }
+}

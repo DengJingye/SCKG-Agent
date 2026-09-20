@@ -1,0 +1,77 @@
+{
+  "case_id": "dev-O04",
+  "lane": "legacy_kg",
+  "result": {
+    "applicable_case_ids": [
+      "dev-O04"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "bounded_hypotheses": false,
+        "necessary_clarification": true,
+        "no_unsupported_root_cause_assertion": true,
+        "targeted_triage": true
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "有针对性澄清且未认定根因，但将use_raw同时切换var注释当作确定API事实；版本化Scanpy实现仍使用adata.var，缺版本不应作普遍断言。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "O.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "会优先使用 adata.raw 中的矩阵和变量注释，而不是 adata.X 和 adata.var"
+    ],
+    "blind_id": "review-fc0bffb3b39c",
+    "checks": {
+      "bounded_hypotheses": false,
+      "necessary_clarification": true,
+      "no_unsupported_root_cause_assertion": true,
+      "targeted_triage": true
+    },
+    "failure": {
+      "error_type": "unsupported_api_semantics_in_triage",
+      "evidence_bindings": [
+        {
+          "file_sha256": "6843903adac5d2ed537fc710db05d64a62ad28845a96ba4f9c66103b2858fe54",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "0fc5493b3a18ba268ad809f62fb8f40e6cb9d1ec07af309bd167228e0f91b11c",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "dbc0cc889eece819045d5bd618cc8ac237de2504d5a4c7946a794bb83fa13c07",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "82b57959e1e30692cfe6cd771f3ea93c266799632d1318b245b7a967dd993bf9",
+          "ref": "output.json#final_report"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report"
+      ],
+      "owner_module": "agent.research_chat_reasoner",
+      "rationale": "O仅需有界triage。原始用户输入与实际prompt没有足以确认根因/API环境的信息，provider生成确定机制/参数断言且终答保留。归因到可直接观察的无依据确定性表达，而不是知识源缺失、真实issue根因或检索召回率。",
+      "stage": "synthesis"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "3970a5c12354937f0eeaca478c74147bfbbc7202828840ea1cef9135be1ffaf1",
+    "rationale": "有针对性澄清且未认定根因，但将use_raw同时切换var注释当作确定API事实；版本化Scanpy实现仍使用adata.var，缺版本不应作普遍断言。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-O04--legacy_kg--r0",
+  "track": "O"
+}

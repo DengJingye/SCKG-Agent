@@ -1,0 +1,208 @@
+{
+  "answer_hash": "3738792d0479b54d07fdfe5c0933251a61638cb6a6b0d980200f160383aeaa7a",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_49b91b6bb10a418385b8fbedb5abba5c",
+  "case_id": "dev-K03-reference-annotation-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-pilot-20260921-v1",
+  "input_tokens": 24876,
+  "latency_ms": 11343.875874998048,
+  "observed": {
+    "answer": "测试与参考的基因交集必须非空；若两者使用不同基因注释命名空间（如 HGNC 符号与 Ensembl ID），可能直接导致交集为空并报错。[1]\n\n参考矩阵要求行名为基因名，且表达值通常应为归一化并 log 转换后的值。[2]\n\n测试输入应为基因×细胞表达矩阵，或携带该矩阵的 SummarizedExperiment 容器。[3]\n\n提醒：测试表达不要求 log 转换，因为 SingleR 只使用秩；原始 UMI 计数或转录计数也可直接使用，但这属于可检测性说明，不代表已确认你的数据满足该条件。[7]\n\n提醒：参考数据需要实际可用的带注释参考表达数据；论文中列出的参考资源只是示例，不能仅凭引用就假定已获得可用的参考数据文件。[6]\n\n测试数据的 Ensembl stable IDs 与参考的 HGNC symbols 是否已提供映射表，或是否已统一为同一命名空间？",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1018,
+  "repetition": 0,
+  "run_id": "dev-K03-reference-annotation-b--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-K03-reference-annotation-b--scientific_kg--r0",
+      "created_at": "2026-09-20T18:37:55.340937+00:00",
+      "finished_at": "2026-09-20T18:38:06.677680+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:042aff6edcbb89d0",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-K03-reference-annotation-b--scientific_kg--r0",
+      "root_span_id": "span_4d58178c8c2f4462905b77c0728ea9b1",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 11336.711,
+          "ended_at": "2026-09-20T18:38:06.677680+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_4d58178c8c2f4462905b77c0728ea9b1",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T18:37:55.340964+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_49b91b6bb10a418385b8fbedb5abba5c"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "cell_type_annotation",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3942.357,
+          "ended_at": "2026-09-20T18:37:59.302912+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-K03-reference-annotation-b--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_4d58178c8c2f4462905b77c0728ea9b1",
+          "sequence": 2,
+          "span_id": "span_771f2244493046cabcdb90bcf06158ea",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T18:37:55.360540+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_49b91b6bb10a418385b8fbedb5abba5c"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 2,
+            "result_count": 5,
+            "source_bound_count": 5,
+            "tool_call_count": 2
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:scientific_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 13.626,
+          "ended_at": "2026-09-20T18:37:59.316935+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            },
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-v2:a90fcf086e1d71d73a6e9502",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:8c6e4d35063c19b8a67f5eab",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:3b13d3a12cc8354dc5dcd765",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:3baaf9c26e5bfc94a0951e93",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:bf28f60dbfacce443e310e6f",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_4d58178c8c2f4462905b77c0728ea9b1",
+          "sequence": 3,
+          "span_id": "span_8248b673f644438a91bcbc2719f04d50",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T18:37:59.303310+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_49b91b6bb10a418385b8fbedb5abba5c"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_49b91b6bb10a418385b8fbedb5abba5c",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

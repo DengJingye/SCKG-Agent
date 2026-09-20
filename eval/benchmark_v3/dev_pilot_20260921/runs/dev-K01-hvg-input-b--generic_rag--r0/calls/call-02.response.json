@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"Scanpy 的 highly_variable_genes 在 flavor='seurat_v3' 时，官方实现期望输入是原始计数矩阵（raw counts），而不是已经 library-normalized 并 log1p 变换后的矩阵。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"当前矩阵状态为 library_normalized_log1p，不符合 seurat_v3 对原始计数的输入要求，因此不能直接作为该 flavor 的输入。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"如果没有可用的原始 counts 层，一个常见的替代方案是改用 flavor='cell_ranger' 或 'seurat'，它们接受已经 log1p 归一化的数据。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"必要的下一步是：确认是否存在未提供的原始计数矩阵；若存在，应使用该原始计数层作为 seurat_v3 的输入；若不存在，则考虑更换 flavor 或重新获取原始计数数据。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarifying_question\": \"是否存在未提供的原始计数矩阵（raw counts）层？\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929562,
+  "id": "beaa012d-7354-4bd5-afd3-d2bed93d564c",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 312,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 438,
+    "prompt_tokens": 1462,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1774
+  }
+}

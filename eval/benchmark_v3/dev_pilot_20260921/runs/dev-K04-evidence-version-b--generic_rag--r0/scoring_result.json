@@ -1,0 +1,79 @@
+{
+  "case_id": "dev-K04-evidence-version-b",
+  "lane": "generic_rag",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K04-evidence-version-b"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "executable_recommendation_respects_installed_version_uncertainty": false,
+        "version_matched_parameter_semantics": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "给出HVG片段而非PCA mask_var版本判断；未识别未知installed version需核实。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "Scanpy · 输入要求",
+      "Expects logarithmized data, except when"
+    ],
+    "blind_id": "review-59777a87ad1a",
+    "checks": {
+      "executable_recommendation_respects_installed_version_uncertainty": false,
+      "version_matched_parameter_semantics": false
+    },
+    "failure": {
+      "error_type": "off_target_answer",
+      "evidence_bindings": [
+        {
+          "file_sha256": "2e78d5dda8914f03f74323da3cb324d20add70ac8374635db064dda9674fa1e6",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "97c29816b20d9e7bffa1684ef836b0919ee21aae12a3115699f357850ffde205",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "52a907be82b54eccec519317f7a7fdb9ce952a250a54522747487d4518674b38",
+          "ref": "output.json#context_pack.external_reasoning.support_check"
+        },
+        {
+          "file_sha256": "52a907be82b54eccec519317f7a7fdb9ce952a250a54522747487d4518674b38",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "75ddb54be20c6e5b79947fe829a4b0a2b884b2311b0f01bedd08550b897ee46d",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#context_pack.external_reasoning.support_check",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "owner_module": "agent.research_chat_reasoner",
+      "rationale": "provider原始回答含需要核实installed version的针对性澄清；产品记录AnswerContractViolation / invalid_clarification后替换成泛化或HVG fallback，终答丢失版本澄清。定位的是下游丢失，不代表原始回答已完全通过K04。",
+      "stage": "validation-governance"
+    },
+    "major_scientific_error": false,
+    "output_sha256": "e8f6129187c6abbc1e00c613aa7e2bd5edfcbee5e027f9d77e9da464ebbc0e3d",
+    "rationale": "给出HVG片段而非PCA mask_var版本判断；未识别未知installed version需核实。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K04-evidence-version-b--generic_rag--r0",
+  "track": "K"
+}

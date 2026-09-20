@@ -1,0 +1,85 @@
+{
+  "case_id": "dev-K04-evidence-version-a",
+  "lane": "generic_rag",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K04-evidence-version-a"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "executable_recommendation_respects_installed_version_uncertainty": false,
+        "version_matched_parameter_semantics": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "提及参数掩码但没有回答安装版和文档同为1.11.2时的证据适用性；引入与此PCA参数无关的flavor疑问。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "无法确认其精确措辞、默认值或与 flavor 相关的条件限制",
+      "能否提供 Scanpy 1.11.2 文档中 mask_var 参数的原文摘录"
+    ],
+    "blind_id": "review-0bc13d6a67d0",
+    "checks": {
+      "executable_recommendation_respects_installed_version_uncertainty": false,
+      "version_matched_parameter_semantics": false
+    },
+    "failure": {
+      "error_type": "version_applicability_omission",
+      "evidence_bindings": [
+        {
+          "file_sha256": "72b8ebc25db1f4b023e928694f1350d48610937505d94f83b4882ae0b0739a91",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "a5c4b4966665f376c6df5443d1c42eda92bd0c4e179c73a473e4aa0bddadf7db",
+          "ref": "calls/call-01.response.json"
+        },
+        {
+          "file_sha256": "30152287f9aa1974379bc4739e33e4a43e5fb6cced1c9f1510e9bf20ec98d967",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "defe9d865065f72f63b2e5cf3f8fa2edd02627d09d529b76db3cc7513b5fdc74",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "365a17ba7bf9a96fee7338eb3cf710744ee26f98559109336bb1bbc6db470783",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "08327668617a457726e5efb8c11868b2e4cdadc9f5a9c494784106b11b691e25",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-01.response.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "终答主要索要mask_var原文，未完整解释版本相符/未知的证据边界。semantic resolved_question偏向参数定义，但完整用户问题仍送给synthesis；本地context不含mask_var原文。不能证明单一routing/retrieval/synthesis根因。针对未知版本的合理澄清本身不算失败。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": false,
+    "output_sha256": "301eb458e09a7e84ab3f7f9adbfc73b3877034863d6385a9859eecad0774aa53",
+    "rationale": "提及参数掩码但没有回答安装版和文档同为1.11.2时的证据适用性；引入与此PCA参数无关的flavor疑问。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K04-evidence-version-a--generic_rag--r0",
+  "track": "K"
+}

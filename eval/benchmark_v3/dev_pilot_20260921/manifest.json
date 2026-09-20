@@ -1,0 +1,647 @@
+{
+  "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+  "authority": "00 approval in user message; single-review exception DEV only; formal Gold still requires dual independent review",
+  "benchmark_base_commit": "bf73ba04c6d827770c56a07029379040bf82335b",
+  "budgets": {
+    "maximum_concurrent_units": 4,
+    "no_automatic_reruns": true,
+    "provider_parameters": "unchanged frozen 07 parameters and timeouts",
+    "unit_watchdog_seconds": 360
+  },
+  "coverage_status": "unknown; not relabeled from these runs",
+  "data_disclosure": "frozen public/redacted issue titles, authored conditions, tiny project-owned W02 text fixture; no private dataset",
+  "deterministic_provider_claimed": false,
+  "digest_convention": "SHA256 of canonical JSON; explicit file_sha256 and rendered text use bytes",
+  "experiment_id": "dev-pilot-20260921-v1",
+  "fixture_file_sha256": "cd5f68646fbd575484cbec62df4b4300550440b45e69a047c25df1588680d8d2",
+  "formal_gold_created": false,
+  "generator": {
+    "configuration_source": "SCKG_ENV_FILE",
+    "credentials_present": true,
+    "disabled": false,
+    "model": "deepseek-v4-pro",
+    "network_verified": false,
+    "provider": "api.deepseek.com"
+  },
+  "harness_sha256_at_freeze": "3eb6d75cb05bdecef8b96177bfa79ef08c3c2cc2fae1c3fe6e864f5e92cde1c5",
+  "implementation_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+  "lane_manifest": {
+    "actual_request_receipts_required": true,
+    "approved_consumer_invariants": {
+      "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statement_count": 121,
+      "caution_context_count": 166,
+      "direct_assessment_binding_count": 134,
+      "held_statement_id": "statement-revision:d0d887b96b7a1cf45e2c47bf:1",
+      "held_statement_visible": false,
+      "source_artifact_count": 61,
+      "source_revision_count": 48
+    },
+    "baseline_truth": {
+      "integration_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+      "rule": "07 runtime implementation at this commit is the only lane definition"
+    },
+    "comparison_estimand": "product bundle, not graph structure alone",
+    "configuration_observation": "static immutable-code inspection; no runtime observations",
+    "coverage_exclusion_rule": "Planner, ToolContracts, execution guards, validation contracts, and approval system are common infrastructure. Their records and behavior cannot establish any V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.",
+    "formal_agent_gain_run": false,
+    "frozen_at": "2026-09-21",
+    "lane_order": [
+      "llm_only",
+      "generic_rag",
+      "legacy_kg",
+      "scientific_kg"
+    ],
+    "lanes": [
+      {
+        "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval (no-retrieval branch)",
+        "caution_policy": "no local caution channel",
+        "corpus_digests": {},
+        "corpus_snapshot_id": "none",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled",
+        "implementation_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+        "lane_name": "llm_only",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": false,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "maximum_returned_hits": 0,
+          "sparse_candidate_limit": 0,
+          "top_k": "incoming request may vary; no-retrieval backend returns zero hits",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService",
+        "caution_policy": "no Scientific KG caution context",
+        "corpus_digests": {
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+          "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
+          "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
+          "manifest_sha256": "0afc019e7c4cb5b52ea89dbccdb70b2d1e40cf3100efbd4562e0966d2a78d92a"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled (use_kg=false; scientific evidence adapter disabled)",
+        "implementation_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+        "lane_name": "generic_rag",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService + engine.scientific_kg_evidence.ScientificKGEvidence + engine.evidence_graph_query.EvidenceGraphQuery",
+        "caution_policy": "candidate-only evidence-gap diagnostics may abstain; no approved-v2 caution context",
+        "corpus_digests": {
+          "candidate_bindings_sha256": "b9b77442968a705787b77c2b1a74c094d9a7223bd7d3eeebc7e028954c66c76f",
+          "candidate_bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "candidate_manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "legacy_inventory_sha256": "9a6da2e3981bbeddd5654d3f59b766bdc55d805ba52dec9beaead90294cdb138",
+          "legacy_tool_graph_edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
+          "legacy_tool_graph_nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3",
+          "retrieval_corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4 + scientific_kg_v1_uat_decision_rules + kg-v2.3.0-canonical:6b20b21847be",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "candidate ScientificKGEvidence direct-evidence channel enabled; 7,537-node legacy tool/catalog graph enabled only for candidate-tool filtering",
+        "implementation_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+        "lane_name": "legacy_kg",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": true,
+          "use_scientific_evidence": true
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.approved_scientific_kg.ApprovedScientificKG",
+        "caution_policy": {
+          "count": 166,
+          "execution_authorized": false,
+          "execution_gate": false,
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "trusted": false
+        },
+        "corpus_digests": {
+          "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+          "caution_context_index_sha256": "5e782d1a21ceb0789afc2392c901556f24ba763ca6a39a55052c0e3be5805062",
+          "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda"
+        },
+        "corpus_snapshot_id": "approved-scientific-kg-v2-01",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "approved allowlist, evidence-chain joins, exact scope policy, and separate caution context; generic RAG and both legacy graphs are not consulted",
+        "implementation_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+        "lane_name": "scientific_kg",
+        "retrieval_budget": {
+          "algorithm": "approved exact-evidence in-memory ranking",
+          "generic_dense_consumer_used": false,
+          "generic_sparse_consumer_used": false,
+          "legacy_kg_used": false,
+          "maximum_approved_facts": 12,
+          "maximum_caution_contexts": 4,
+          "top_k": "per request; approved facts capped at min(request.top_k, 12)"
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      }
+    ],
+    "run_id": "lane-alignment-20260921-v2-withdrawal",
+    "schema_version": "sckg-evaluation-lane-manifest-v2",
+    "shared_runtime": [
+      {
+        "component": "Planner",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "agent.research_chat_service.ResearchChatService tool-plan path"
+      },
+      {
+        "component": "ToolContracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "contracts/tools plus shared research/execution services"
+      },
+      {
+        "component": "execution guards",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared execution policy, authorization, and runtime guards"
+      },
+      {
+        "component": "validation contracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared artifact and result validation contracts"
+      },
+      {
+        "component": "approval system",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared plan-specific approval and approval-consumption path"
+      }
+    ]
+  },
+  "lane_manifest_file_sha256": "dd86366807d97002ce9a82e7d90719248eb45e82bf03be1aeff08e395b89d418",
+  "phase": "DEV-PILOT-RUN",
+  "provider_seed": null,
+  "repetitions": 1,
+  "rubric_authority": "00 scientific boundaries, O triage-only, W02 content validation and approval boundary",
+  "scenario_file_sha256": "5a3b4c48d8fe9660215c8830eb4e9287df63a14b9c3b9cf25cfaef1cdd255fbb",
+  "schedule": [
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-O02--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-O02--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-O02--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-O02--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-a",
+      "input_sha256": "1892e1ff65df23fd6c8ee4dbfd2a330070539ee027e6d97e5058449fae472a0c",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-a",
+      "input_sha256": "1892e1ff65df23fd6c8ee4dbfd2a330070539ee027e6d97e5058449fae472a0c",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-a",
+      "input_sha256": "1892e1ff65df23fd6c8ee4dbfd2a330070539ee027e6d97e5058449fae472a0c",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-a--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-a",
+      "input_sha256": "1892e1ff65df23fd6c8ee4dbfd2a330070539ee027e6d97e5058449fae472a0c",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-a--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-O03",
+      "input_sha256": "ee03b0bb5fe6253bde13d0bf27806f93bc8daad57b814525480b9ccd2340ac46",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-O03--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-O03",
+      "input_sha256": "ee03b0bb5fe6253bde13d0bf27806f93bc8daad57b814525480b9ccd2340ac46",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-O03--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-O03",
+      "input_sha256": "ee03b0bb5fe6253bde13d0bf27806f93bc8daad57b814525480b9ccd2340ac46",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-O03--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-O03",
+      "input_sha256": "ee03b0bb5fe6253bde13d0bf27806f93bc8daad57b814525480b9ccd2340ac46",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-O03--llm_only--r0"
+    },
+    {
+      "case_id": "dev-O01",
+      "input_sha256": "60cc5438783453d333c6328311b64574862f09960e71711b403b08725fa32afc",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-O01--llm_only--r0"
+    },
+    {
+      "case_id": "dev-O01",
+      "input_sha256": "60cc5438783453d333c6328311b64574862f09960e71711b403b08725fa32afc",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-O01--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-O01",
+      "input_sha256": "60cc5438783453d333c6328311b64574862f09960e71711b403b08725fa32afc",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-O01--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-O01",
+      "input_sha256": "60cc5438783453d333c6328311b64574862f09960e71711b403b08725fa32afc",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-O01--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-O04",
+      "input_sha256": "9274ab2e3a149fc9a6638f12583a5498c0db3fa89e8e4234dd64532e36a1786f",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-O04--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-O04",
+      "input_sha256": "9274ab2e3a149fc9a6638f12583a5498c0db3fa89e8e4234dd64532e36a1786f",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-O04--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-O04",
+      "input_sha256": "9274ab2e3a149fc9a6638f12583a5498c0db3fa89e8e4234dd64532e36a1786f",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-O04--llm_only--r0"
+    },
+    {
+      "case_id": "dev-O04",
+      "input_sha256": "9274ab2e3a149fc9a6638f12583a5498c0db3fa89e8e4234dd64532e36a1786f",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-O04--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-b",
+      "input_sha256": "c3bcef1bc45f7bce8a775cfcf8a2f4f9ddc246427ee6cdbb83576d1ad858e8a0",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-b--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-b",
+      "input_sha256": "c3bcef1bc45f7bce8a775cfcf8a2f4f9ddc246427ee6cdbb83576d1ad858e8a0",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-b",
+      "input_sha256": "c3bcef1bc45f7bce8a775cfcf8a2f4f9ddc246427ee6cdbb83576d1ad858e8a0",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-b",
+      "input_sha256": "c3bcef1bc45f7bce8a775cfcf8a2f4f9ddc246427ee6cdbb83576d1ad858e8a0",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-b--llm_only--r0"
+    },
+    {
+      "case_id": "dev-W01",
+      "input_sha256": "cf7016d8e703a6405fdc0b433a78c945152c5352236cf47b1fbba598c24e8846",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-W01--llm_only--r0"
+    },
+    {
+      "case_id": "dev-W01",
+      "input_sha256": "cf7016d8e703a6405fdc0b433a78c945152c5352236cf47b1fbba598c24e8846",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-W01--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-W01",
+      "input_sha256": "cf7016d8e703a6405fdc0b433a78c945152c5352236cf47b1fbba598c24e8846",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-W01--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-W01",
+      "input_sha256": "cf7016d8e703a6405fdc0b433a78c945152c5352236cf47b1fbba598c24e8846",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-W01--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--llm_only--r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-W02--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-W02--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-W02--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-W02--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--scientific_kg--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-a",
+      "input_sha256": "8d122adff47668201874e19b6bca59d45a0954af35fdab509ca5d9734d284146",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-a--legacy_kg--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-a",
+      "input_sha256": "8d122adff47668201874e19b6bca59d45a0954af35fdab509ca5d9734d284146",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-a--llm_only--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-a",
+      "input_sha256": "8d122adff47668201874e19b6bca59d45a0954af35fdab509ca5d9734d284146",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-a--generic_rag--r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-a",
+      "input_sha256": "8d122adff47668201874e19b6bca59d45a0954af35fdab509ca5d9734d284146",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-a--scientific_kg--r0"
+    }
+  ],
+  "schedule_seed": 20260921,
+  "shared_execution_preflight": {
+    "evidence": [
+      {
+        "path": "execution/wrappers/scanpy_core.py",
+        "relevant_lines": [
+          "    sc.pp.highly_variable_genes(adata, n_top_genes=n_top, flavor=\"seurat\")"
+        ],
+        "sha256": "66663e9991d7dba4960f549f63b7954e687acb2877b03b1d7892e6d59f8e9de3"
+      },
+      {
+        "path": "execution/renderers/scanpy_core.py",
+        "relevant_lines": [
+          "    \"highly_variable_genes\": \"sc.pp.highly_variable_genes(adata, n_top_genes=STEP_PARAMETERS.get('n_top_genes', 2000))\","
+        ],
+        "sha256": "3b551cf1fbc35360e991e9661357429d9cf78814efc4a9ceedb4f113a930bc55"
+      }
+    ],
+    "reason": "shared_execution_interface_unavailable",
+    "scope": "frozen seurat_v3 task; not a claim that all Scanpy execution is absent",
+    "status": "not_run"
+  },
+  "smoke_policy": "first K01a block is part of the 56 scheduled units; no extra scientific repetitions"
+}

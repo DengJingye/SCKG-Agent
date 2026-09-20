@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SingleR classic 模式要求测试与参考基因交集非空；若两者使用不同基因注释命名空间，可能因交集为空而报错。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"The function will automatically restrict the analysis to the intersection of the genes in both \\\\code{ref} and \\\\code{test}.\\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"参考矩阵要求行为基因、列为已知标签的参考样本，且每行应以基因名命名。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\\n#' Each row should be named with the gene name.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"测试输入应为基因×细胞的数值表达矩阵，或携带该矩阵的 SummarizedExperiment 容器。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"@param test A numeric matrix of single-cell expression values where rows are genes and columns are cells.\\n#' Alternatively, a \\\\link[SummarizedExperiment]{SummarizedExperiment} object containing such a matrix.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"测试表达无需 log 变换，因为 SingleR 只使用秩；原始 UMI 计数或转录计数也可直接使用。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 7,\n          \"quote\": \"The test dataset does not need to be log-transformed, as only the ranks will be used by `SingleR()`.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"参考表达一般期望为归一化并 log 变换后的值，但该归一化条件与是否启用自动 marker 检测相关，不能无条件推广到所有输入。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"In general, the expression values are expected to be normalized and log-transformed, see Details.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"提醒：经典 marker 选择主要面向高非零密度的 bulk 参考数据，对稀疏单细胞参考可能效果较差，这属于可检测性局限，不代表禁止使用。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"This is intended for reference datasets derived from bulk transcriptomic data (e.g., microarrays) with a high density of non-zero values. \\n#' It is less effective for single-cell data, where it is not uncommon to have more than 50\\\\% zero counts for a given gene such that the median is also zero for each group.\"\n        }\n      ]\n    }\n  ],\n  \"clarifying_question\": \"参考矩阵的行名是否与测试矩阵的行名使用完全相同的 Ensembl stable ID 版本（例如均不含版本号后缀）？\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929580,
+  "id": "0e2238f2-4416-4f6a-8d17-164e5afaf757",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 729,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 16440,
+    "prompt_tokens": 17464,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 18193
+  }
+}

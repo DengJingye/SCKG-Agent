@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，当 flavor 为 seurat_v3 或 seurat_v3_paper 时，输入应为计数数据，而不是对数化数据。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"该要求对应的表示约束是原始 UMI 计数，要求数值状态为 fresh 和 integer_like_counts，并禁止 normalized、log1p、scaled、integrated 等变换。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"required_value_states\\\": [\\\"fresh\\\", \\\"integer_like_counts\\\"], \\\"required_transformations\\\": [], \\\"forbidden_transformations\\\": [\\\"normalized\\\", \\\"log1p\\\", \\\"scaled\\\", \\\"integrated\\\"]\"\n        }\n      ]\n    },\n    {\n      \"text\": \"你提供的矩阵状态为 raw_integer_counts，形状为 [3000, 12000]，这符合计数数据的要求，因此可以直接作为输入。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"由于没有提供 counts 层，下一步应直接将该原始整数计数矩阵传入 highly_variable_genes 函数，并设置 flavor='seurat_v3' 和 n_top_genes=2000。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarifying_question\": \"\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929271,
+  "id": "7ed296c7-9925-4c39-a837-8cc5816a9025",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 404,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 2381,
+    "prompt_tokens": 3405,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 3809
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "method": "Post-score AI-assisted trace review; labels are diagnostic proposals for 00, not a causal intervention or Gold. No evidence replay or additional provider calls.",
+  "groups": [
+    {
+      "blind_ids": ["review-5b6f61587b0c", "review-30b42d115d81", "review-fe5683f4c3ac"],
+      "stage": "validation-governance",
+      "owner_module": "agent.research_chat_reasoner",
+      "evidence_refs": ["calls/call-02.request.json", "calls/call-02.response.json", "calls/call-03.request.json", "calls/call-03.response.json", "output.json#context_pack.external_reasoning.support_check", "final_context.json", "trace.jsonl"],
+      "rationale": "原始synthesis包含评分所需的关键条件说明；same-provider support_check返回空supported_indexes，相关说明从终答消失。由实际前后输出定位到治理链，不将知识覆盖标签据此改为absent，也不声称最初回答每个细节均正确。"
+    },
+    {
+      "blind_ids": ["review-652bf5f376ad"],
+      "stage": "validation-governance",
+      "owner_module": "agent.research_chat_reasoner",
+      "evidence_refs": ["calls/call-02.request.json", "calls/call-02.response.json", "calls/call-03.request.json", "calls/call-03.response.json", "output.json#context_pack.external_reasoning.support_check", "final_context.json"],
+      "rationale": "原始synthesis含test raw counts可用的caution文字，后续precheck/support/compile链未保留该事实。该科学事实正确性与其是否具有approved authority分开；不主张将caution提升为approved知识。治理链造成终答遗漏，可保留MODEL_KNOWLEDGE解释是否合规须另审，当前不修07。"
+    },
+    {
+      "blind_ids": ["review-59777a87ad1a", "review-d1718ef54832", "review-8465152beb01"],
+      "stage": "validation-governance",
+      "owner_module": "agent.research_chat_reasoner",
+      "evidence_refs": ["calls/call-02.request.json", "calls/call-02.response.json", "output.json#context_pack.external_reasoning.support_check", "output.json#final_report", "final_context.json"],
+      "rationale": "provider原始回答含需要核实installed version的针对性澄清；产品记录AnswerContractViolation / invalid_clarification后替换成泛化或HVG fallback，终答丢失版本澄清。定位的是下游丢失，不代表原始回答已完全通过K04。"
+    },
+    {
+      "blind_ids": ["review-968e9a995401", "review-b56c668ec720", "review-d9f7206c3d4b", "review-3a8e140d61c5"],
+      "stage": "routing",
+      "owner_module": "agent.research_chat_service",
+      "evidence_refs": ["input.json", "output.json#semantic_route", "output.json#action_safety", "trace.jsonl"],
+      "rationale": "输入是对给定header-only产物的审查，未授权修复。实际路由走workflow/RUN或unsupported_action，并在canonical_task_unresolved/域门禁停止，未进入内容验证。安全禁止未授权执行是正确的；错误是没有回答可独立回答的产物审查。无执行器运行，因此不归execution。"
+    },
+    {
+      "blind_ids": ["review-5493ce6c328b", "review-5407a13c0936", "review-d26278698ba0", "review-43bcec4337b0", "review-fc0bffb3b39c"],
+      "stage": "synthesis",
+      "owner_module": "agent.research_chat_reasoner",
+      "evidence_refs": ["input.json", "calls/call-02.request.json", "calls/call-02.response.json", "output.json#final_report"],
+      "rationale": "O仅需有界triage。原始用户输入与实际prompt没有足以确认根因/API环境的信息，provider生成确定机制/参数断言且终答保留。归因到可直接观察的无依据确定性表达，而不是知识源缺失、真实issue根因或检索召回率。"
+    },
+    {
+      "blind_ids": ["review-f505e1ed0b7a", "review-1e2f10e937a4", "review-47c76111d2c5", "review-482232077e0a", "review-d60825ba80f4", "review-b21a5d2a5312", "review-f47adab19930", "review-26a5eb6b10a1", "review-fa9397e3274b"],
+      "stage": "unresolved",
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "evidence_refs": ["input.json", "calls/call-02.request.json", "calls/call-02.response.json", "output.json#final_report", "final_context.json"],
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。"
+    },
+    {
+      "blind_ids": ["review-0bc13d6a67d0", "review-1c046ad218cd", "review-d1ea93277d6c", "review-8d5dd8ee92ed"],
+      "stage": "unresolved",
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "evidence_refs": ["input.json", "calls/call-01.response.json", "calls/call-02.request.json", "calls/call-02.response.json", "output.json#final_report", "final_context.json"],
+      "rationale": "终答主要索要mask_var原文，未完整解释版本相符/未知的证据边界。semantic resolved_question偏向参数定义，但完整用户问题仍送给synthesis；本地context不含mask_var原文。不能证明单一routing/retrieval/synthesis根因。针对未知版本的合理澄清本身不算失败。"
+    }
+  ]
+}

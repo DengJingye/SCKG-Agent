@@ -1,0 +1,82 @@
+{
+  "case_id": "dev-K03-reference-annotation-b",
+  "lane": "llm_only",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K03-reference-annotation-b"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "namespace_and_common_genes_verified_before_use": false,
+        "reference_log_normalized": false,
+        "test_counts_acceptable": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "错误要求test/ref同尺度，甚至允许把classic reference改回counts；虽发现namespace不一致，未检查共同基因，违反00边界。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "要求测试与参考的表达尺度一致",
+      "或对参考取回 counts"
+    ],
+    "blind_id": "review-26a5eb6b10a1",
+    "checks": {
+      "namespace_and_common_genes_verified_before_use": false,
+      "reference_log_normalized": false,
+      "test_counts_acceptable": false
+    },
+    "failure": {
+      "error_type": "incorrect_test_and_reference_input_requirements",
+      "evidence_bindings": [
+        {
+          "file_sha256": "307e18a3c07ff0122c13149d655cd16990e9c3e10800ddc373bd97652001c6d5",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "dfe30fa285964118bd52cc02ae38ed88312906be116560103bf74f777ea285cc",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "6824f5f72180f94be08d58fed728148a3af99a63b90c3a0e325f2ff0507d02cc",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "00afbd544a05845447c756fdf57af29b4c461b7da353ce1368645edafd274245",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "ed67da68d344ee904ca6b91c5341783891b8fadbf43991bcf9e6fdeec9664a75",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "cbe5f18ffee5778be546bcbb6a66db66f81665f10f3b5fe0aaa3497a4a9f3815",
+    "rationale": "错误要求test/ref同尺度，甚至允许把classic reference改回counts；虽发现namespace不一致，未检查共同基因，违反00边界。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K03-reference-annotation-b--llm_only--r0",
+  "track": "K"
+}

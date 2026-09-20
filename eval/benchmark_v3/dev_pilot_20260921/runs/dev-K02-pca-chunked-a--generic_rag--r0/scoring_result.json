@@ -1,0 +1,81 @@
+{
+  "case_id": "dev-K02-pca-chunked-a",
+  "lane": "generic_rag",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K02-pca-chunked-a"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "correct_conditional_algorithm": true,
+        "correct_zero_center_solver_behavior": false,
+        "not_conflated_with_ordinary_pca": true
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "TruncatedSVD识别正确，却错说arpack被忽略或固定randomized；版本化实现允许arpack。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "randomized"
+    ],
+    "blind_id": "review-f505e1ed0b7a",
+    "checks": {
+      "correct_conditional_algorithm": true,
+      "correct_zero_center_solver_behavior": false,
+      "not_conflated_with_ordinary_pca": true
+    },
+    "failure": {
+      "error_type": "incorrect_solver_semantics",
+      "evidence_bindings": [
+        {
+          "file_sha256": "87baf00cbfe5189650f6d71f93bce72493879f6ab8c48d1e415a7193666c3aa9",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "b7405fe5334874089160bbbaaeb41dbc4235e837ba42543dfd03283bff33df05",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "b69918d8c88da8b1626dd0526800d69751d846cf6b71d9d4a6db75def546b657",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "b1d925663b0c2c81a3e88a20b84c5087370e455d2ee53dfa9efe95d690d5dfe0",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "e1ffe278e2fea106fd5f288ab594d5086dca72c5994d06f0667a86e855fc4302",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "a17031d5cef1fe776fa64cbdd3e0b295b9104b000607abea2696c3d64578eda3",
+    "rationale": "TruncatedSVD识别正确，却错说arpack被忽略或固定randomized；版本化实现允许arpack。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K02-pca-chunked-a--generic_rag--r0",
+  "track": "K"
+}

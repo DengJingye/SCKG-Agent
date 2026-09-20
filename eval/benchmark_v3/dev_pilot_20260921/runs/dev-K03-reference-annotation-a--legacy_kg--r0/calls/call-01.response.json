@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"domain\": \"SINGLE_CELL\",\n  \"intent\": \"evidence_qa\",\n  \"canonical_task\": \"cell_type_annotation\",\n  \"confidence\": 0.95,\n  \"needs_clarification\": false,\n  \"clarification_question\": \"请确认测试数据是否已经过质控、归一化等预处理，以及参考数据是否已按 SingleR 要求整理（如 log-normalized、基因 ID 匹配）。\",\n  \"capability_request\": null,\n  \"constraints\": {},\n  \"requested_tools\": [],\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"search_evidence\",\n      \"query\": \"SingleR classic mode input requirements: test assay UMI counts, reference assay log-normalized expression, gene namespace Ensembl stable IDs, human species, scale and gene correspondence\",\n      \"canonical_task\": \"cell_type_annotation\",\n      \"tool_names\": [\"SingleR\"],\n      \"claim_types\": [\"input_requirement\", \"failure_mode\", \"parameter\"],\n      \"top_k\": 5,\n      \"reason\": \"User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode and what conditions to verify first. Need evidence on input requirements and potential failure modes.\"\n    },\n    {\n      \"tool_name\": \"get_tool_contract\",\n      \"query\": \"SingleR classic mode\",\n      \"canonical_task\": \"cell_type_annotation\",\n      \"tool_names\": [\"SingleR\"],\n      \"claim_types\": [\"input_requirement\", \"parameter\"],\n      \"top_k\": 1,\n      \"reason\": \"Inspect governed inputs and parameters for SingleR classic mode to verify scale and gene namespace requirements.\"\n    }\n  ],\n  \"retrieval_query\": \"SingleR classic mode input requirements: test assay UMI counts, reference assay log-normalized expression, gene namespace Ensembl stable IDs, human species, scale and gene correspondence\",\n  \"user_reported_context\": {\n    \"sample_count\": null,\n    \"capture_layout\": null,\n    \"merged\": null,\n    \"raw_counts\": null,\n    \"sample_id\": null,\n    \"ecosystem\": null\n  },\n  \"data_dependency\": \"none\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929569,
+  "id": "265f0d9e-6240-46d2-bf72-a96c6cd96dc2",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 470,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 749,
+    "prompt_tokens": 2029,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1280
+    },
+    "total_tokens": 2499
+  }
+}

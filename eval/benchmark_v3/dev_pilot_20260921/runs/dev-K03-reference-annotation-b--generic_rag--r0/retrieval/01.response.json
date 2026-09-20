@@ -1,0 +1,153 @@
+{
+  "answerability": null,
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "gold-span:singler:reference-choice:3.22",
+      "claim_type": "failure_mode",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_bound": true,
+      "source_id": "source-revision:SingleRBook:3.22",
+      "source_span": "Chapter 2, section 2.5 Choice of reference",
+      "sparse_rank": 1,
+      "text": "Unsurprisingly, the choice of reference has a major impact on the annotation results. We need to pick a reference that contains a superset of the labels that we expect to be present in our test dataset. We would also prefer a reference that is generated from a similar technology or protocol as our test dataset.",
+      "title": "Authoritative bounded evidence: gold-span:singler:reference-choice:3.22",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.reference_state",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01612903,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+      "sparse_rank": 2,
+      "text": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.interface",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01587302,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L1-L14",
+      "sparse_rank": 3,
+      "text": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.feature_intersection",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.015625,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L35-L38",
+      "sparse_rank": 4,
+      "text": "This function is just a convenient wrapper around trainSingleR and classifySingleR. The function will automatically restrict the analysis to the intersection of the genes in both ref and test. If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.feature_intersection",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.reference_labels",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01538462,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L3-L12",
+      "sparse_rank": 5,
+      "text": "Train the SingleR classifier on one or more reference datasets with known labels. ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples). labels A character vector or factor of known labels for all samples in ref.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_labels",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    }
+  ],
+  "index_build_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+  "latency_ms": 23.537,
+  "mode": "bm25",
+  "pipeline": [
+    "query_classification",
+    "canonical_task_normalization",
+    "kg_filter_skipped",
+    "sqlite_fts5_bm25",
+    "local_dense_skipped",
+    "rrf_fusion",
+    "governance_rerank_skipped",
+    "tool_contract_gate_skipped",
+    "retrieval_context_only"
+  ],
+  "query": "SingleR classic mode input requirements: gene identifier matching between test and reference, assay type compatibility, and preconditions for annotation",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": null,
+  "stage_timings": [
+    {
+      "detail": "deterministic task/claim normalization",
+      "elapsed_ms": 4.056,
+      "stage": "intent",
+      "status": "completed"
+    },
+    {
+      "detail": "candidate_tools=1",
+      "elapsed_ms": 0.005,
+      "stage": "kg_filter",
+      "status": "skipped"
+    },
+    {
+      "detail": "hits=48",
+      "elapsed_ms": 19.161,
+      "stage": "bm25",
+      "status": "completed"
+    },
+    {
+      "detail": "status=not_requested;hits=0",
+      "elapsed_ms": 0.002,
+      "stage": "dense_encode",
+      "status": "skipped"
+    },
+    {
+      "detail": "fused=48;reranked=48",
+      "elapsed_ms": 0.046,
+      "stage": "fusion",
+      "status": "completed"
+    }
+  ],
+  "warnings": []
+}

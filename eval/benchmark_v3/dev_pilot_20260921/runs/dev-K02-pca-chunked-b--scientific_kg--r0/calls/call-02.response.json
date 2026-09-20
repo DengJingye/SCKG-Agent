@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，当 chunked=true 时，会执行增量 PCA，并自动进行零中心化。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"chunked\\n        If `True`, perform an incremental PCA on segments of `chunk_size`.\\n        Automatically zero centers and ignores settings of `zero_center`, `random_seed` and `svd_solver`.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"因此，在 chunked=true 的条件下，你设置的 zero_center=false 和 svd_solver=arpack 会被忽略，不会按你的设定生效。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Automatically zero centers and ignores settings of `zero_center`, `random_seed` and `svd_solver`.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"只有当 chunked=false 时，zero_center 和 svd_solver 才会被考虑；此时 zero_center=false 会执行截断 SVD 而不是 PCA。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"If `False`, perform a full PCA/truncated SVD (see `svd_solver` and `zero_center`).\"\n        },\n        {\n          \"index\": 3,\n          \"quote\": \"zero_center\\n        If `True`, compute (or approximate) PCA from covariance matrix.\\n        If `False`, performa a truncated SVD instead of PCA.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"提醒：截断 SVD 分支的完整条件需要 chunked=false 且 zero_center=false，仅凭 zero_center=false 不能单独确定该分支；这属于可检测性局限，不代表无条件成立。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"zero_center\\n        If `True`, compute (or approximate) PCA from covariance matrix.\\n        If `False`, performa a truncated SVD instead of PCA.\"\n        }\n      ]\n    }\n  ],\n  \"clarifying_question\": \"\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929530,
+  "id": "d1401b28-67ca-4bc0-b1cb-035c4bac01e9",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 534,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 26263,
+    "prompt_tokens": 27287,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 27821
+  }
+}

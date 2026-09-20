@@ -1,0 +1,80 @@
+{
+  "case_id": "dev-K04-evidence-version-a",
+  "lane": "llm_only",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K04-evidence-version-a"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "executable_recommendation_respects_installed_version_uncertainty": false,
+        "version_matched_parameter_semantics": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "将选用变量的mask描述为排除变量，并虚构列名列表形式；也没有回答给定版本匹配的适用判断。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "mask_var 参数用于在 PCA 计算中屏蔽指定变量（基因），使其不参与主成分分析",
+      "输入要求是布尔数组或与数据变量名对应的列名列表"
+    ],
+    "blind_id": "review-fa9397e3274b",
+    "checks": {
+      "executable_recommendation_respects_installed_version_uncertainty": false,
+      "version_matched_parameter_semantics": false
+    },
+    "failure": {
+      "error_type": "unsupported_parameter_semantics",
+      "evidence_bindings": [
+        {
+          "file_sha256": "72b8ebc25db1f4b023e928694f1350d48610937505d94f83b4882ae0b0739a91",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "30152287f9aa1974379bc4739e33e4a43e5fb6cced1c9f1510e9bf20ec98d967",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "d1d5d86fae0c9511fd73bb48377b1967e168a618ba87c06b07da95ed25959723",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "a0dd989abf6b940e73526f014aa6d26bbc8c2358c5573e9b3097bd444d314cfa",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "eca3f7cdd4a9d7bad120779ab7a8988889bb386bc0c5dd78beea338e13627e73",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "f2b893e047b3b81864070eaeb1760cf567b5178233a61b652342cfbb4d862729",
+    "rationale": "将选用变量的mask描述为排除变量，并虚构列名列表形式；也没有回答给定版本匹配的适用判断。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K04-evidence-version-a--llm_only--r0",
+  "track": "K"
+}

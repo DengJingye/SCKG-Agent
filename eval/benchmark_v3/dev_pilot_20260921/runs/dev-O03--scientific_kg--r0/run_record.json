@@ -1,0 +1,178 @@
+{
+  "answer_hash": "8ac5fb40950c25f1c7bb7426a3d425a4466ee8722fcf6139564026bc51b29780",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_9017026acc014d76b4d88d14fec46420",
+  "case_id": "dev-O03",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-pilot-20260921-v1",
+  "input_tokens": 3334,
+  "latency_ms": 5904.700916013098,
+  "observed": {
+    "answer": "模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前没有检索到与 sc.pl.paga 的 cax 参数及多颜色场景直接相关的已批准科学知识图谱陈述，因此无法基于权威证据判断具体原因。\n\n从一般 API 行为看，cax 通常用于指定单个颜色条坐标轴，当传入多个颜色时，绘图函数可能期望多个 cax 或改用其他布局参数，导致类型不匹配。\n\n建议先检查传入 cax 的类型和数量是否与颜色数量一致，并确认 scanpy 版本中 sc.pl.paga 对多颜色 cax 的支持情况。\n\n您能否提供触发 TypeError 的最小代码片段、scanpy 版本以及传入 cax 的具体对象类型和颜色列表？",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 498,
+  "repetition": 0,
+  "run_id": "dev-O03--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-O03--scientific_kg--r0",
+      "created_at": "2026-09-20T18:38:14.796736+00:00",
+      "finished_at": "2026-09-20T18:38:20.697800+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:90eadaa4a6403756",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-O03--scientific_kg--r0",
+      "root_span_id": "span_d894f030067d464bad99eeeb395eb8db",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 5901.018,
+          "ended_at": "2026-09-20T18:38:20.697800+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_d894f030067d464bad99eeeb395eb8db",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T18:38:14.796770+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_9017026acc014d76b4d88d14fec46420"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "single_cell_entity_or_tool_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2645.51,
+          "ended_at": "2026-09-20T18:38:17.472043+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-O03--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_d894f030067d464bad99eeeb395eb8db",
+          "sequence": 2,
+          "span_id": "span_7dbdc2fb93c24455b1050f3192cc87eb",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T18:38:14.826534+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_9017026acc014d76b4d88d14fec46420"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 2.886,
+          "ended_at": "2026-09-20T18:38:17.476201+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_d894f030067d464bad99eeeb395eb8db",
+          "sequence": 3,
+          "span_id": "span_bf0b38e0d678420bb6a55f26ed3a0a1f",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T18:38:17.473312+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_9017026acc014d76b4d88d14fec46420"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_9017026acc014d76b4d88d14fec46420",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

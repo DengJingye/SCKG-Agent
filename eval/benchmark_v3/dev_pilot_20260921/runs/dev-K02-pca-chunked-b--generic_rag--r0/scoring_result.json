@@ -1,0 +1,81 @@
+{
+  "case_id": "dev-K02-pca-chunked-b",
+  "lane": "generic_rag",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K02-pca-chunked-b"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "correct_conditional_algorithm": false,
+        "correct_zero_center_solver_behavior": false,
+        "not_conflated_with_ordinary_pca": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "颠倒chunked优先级，错误称回退到TruncatedSVD且固定randomized。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "当 zero_center=false 时，chunked 参数不会生效"
+    ],
+    "blind_id": "review-47c76111d2c5",
+    "checks": {
+      "correct_conditional_algorithm": false,
+      "correct_zero_center_solver_behavior": false,
+      "not_conflated_with_ordinary_pca": false
+    },
+    "failure": {
+      "error_type": "incorrect_chunked_algorithm_and_ignored_parameters",
+      "evidence_bindings": [
+        {
+          "file_sha256": "757119d1d2fc1b60130b354cd1d66a74281c66c5ce1a40d0cb0fae7dc64d20a6",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "405c370e76cd9e6df1899a46f2662274bd416433be1a6d34bfaaf6c0fcff718d",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "729e62b20b074cd79aa925879a68465880481dd8918dba832ee25e87483b0765",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "b1b9a1022bbf58209e372b91c08ab87968b8878887751d8bb41a3c587ebff405",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "e74d27f206e45a1a3b8725b738afbb1d29e70a51d953aa1348da45bf1a0ad982",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "a146ead7969411bf817a7b02e875eaab242a78324a994775dd5f90c7ce9c882d",
+    "rationale": "颠倒chunked优先级，错误称回退到TruncatedSVD且固定randomized。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K02-pca-chunked-b--generic_rag--r0",
+  "track": "K"
+}

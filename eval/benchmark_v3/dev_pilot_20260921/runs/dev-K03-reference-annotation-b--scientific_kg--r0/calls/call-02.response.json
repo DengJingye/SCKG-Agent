@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"测试与参考的基因交集必须非空；若两者使用不同基因注释命名空间（如 HGNC 符号与 Ensembl ID），可能直接导致交集为空并报错。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"参考矩阵要求行名为基因名，且表达值通常应为归一化并 log 转换后的值。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"Each row should be named with the gene name. In general, the expression values are expected to be normalized and log-transformed, see Details.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"测试输入应为基因×细胞表达矩阵，或携带该矩阵的 SummarizedExperiment 容器。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"A numeric matrix of single-cell expression values where rows are genes and columns are cells. Alternatively, a SummarizedExperiment object containing such a matrix.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"提醒：测试表达不要求 log 转换，因为 SingleR 只使用秩；原始 UMI 计数或转录计数也可直接使用，但这属于可检测性说明，不代表已确认你的数据满足该条件。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 7,\n          \"quote\": \"In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"提醒：参考数据需要实际可用的带注释参考表达数据；论文中列出的参考资源只是示例，不能仅凭引用就假定已获得可用的参考数据文件。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"SingleR can be used with any reference data set. For mouse samples, we used the ImmGen database...\"\n        }\n      ]\n    }\n  ],\n  \"clarifying_question\": \"测试数据的 Ensembl stable IDs 与参考的 HGNC symbols 是否已提供映射表，或是否已统一为同一命名空间？\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789929479,
+  "id": "61fdcf4c-5d3c-4c96-9306-14b93271c49c",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 568,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1024,
+    "prompt_cache_miss_tokens": 16092,
+    "prompt_tokens": 17116,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1024
+    },
+    "total_tokens": 17684
+  }
+}

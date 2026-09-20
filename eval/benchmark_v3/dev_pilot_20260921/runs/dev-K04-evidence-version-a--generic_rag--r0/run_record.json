@@ -1,0 +1,178 @@
+{
+  "answer_hash": "301eb458e09a7e84ab3f7f9adbfc73b3877034863d6385a9859eecad0774aa53",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_155d43d74c0d44a1892791a5bac9e36e",
+  "case_id": "dev-K04-evidence-version-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-pilot-20260921-v1",
+  "input_tokens": 3453,
+  "latency_ms": 7583.859165999456,
+  "observed": {
+    "answer": "模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nScanpy 1.11.2 文档中 sc.pp.pca 的 mask_var 参数用于在 PCA 计算前基于 HVG 布尔掩码筛选变量，输入应为与数据变量数等长的布尔数组。\n\n当前未提供该文档中 mask_var 的原文摘录或相关 KG 声明，因此无法确认其精确措辞、默认值或与 flavor 相关的条件限制。\n\n要给出可执行参数建议，还需核实 mask_var 是否要求数据已进行 HVG 选择、是否接受 pandas Series 或 numpy 数组，以及文档中是否注明与 use_highly_variable 的互斥关系。\n\n能否提供 Scanpy 1.11.2 文档中 mask_var 参数的原文摘录或相关 KG 声明？",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 790,
+  "repetition": 0,
+  "run_id": "dev-K04-evidence-version-a--generic_rag--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-K04-evidence-version-a--generic_rag--r0",
+      "created_at": "2026-09-20T18:38:09.759601+00:00",
+      "finished_at": "2026-09-20T18:38:17.340541+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:289cd574b6af0008",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-K04-evidence-version-a--generic_rag--r0",
+      "root_span_id": "span_4d0850088f27434584a4ff01a7530c55",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 7580.906,
+          "ended_at": "2026-09-20T18:38:17.340541+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_4d0850088f27434584a4ff01a7530c55",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T18:38:09.759629+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_155d43d74c0d44a1892791a5bac9e36e"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_workflow_plan",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 4448.166,
+          "ended_at": "2026-09-20T18:38:14.236257+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-K04-evidence-version-a--generic_rag--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_4d0850088f27434584a4ff01a7530c55",
+          "sequence": 2,
+          "span_id": "span_dde74df856bf450383a94f39b762ac8b",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T18:38:09.788105+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_155d43d74c0d44a1892791a5bac9e36e"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 27.589,
+          "ended_at": "2026-09-20T18:38:14.265563+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_4d0850088f27434584a4ff01a7530c55",
+          "sequence": 3,
+          "span_id": "span_54cefe61601e4171a88b842789605198",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T18:38:14.237974+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_155d43d74c0d44a1892791a5bac9e36e"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_155d43d74c0d44a1892791a5bac9e36e",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

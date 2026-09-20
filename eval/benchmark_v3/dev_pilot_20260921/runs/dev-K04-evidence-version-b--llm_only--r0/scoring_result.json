@@ -1,0 +1,78 @@
+{
+  "case_id": "dev-K04-evidence-version-b",
+  "lane": "llm_only",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K04-evidence-version-b"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "executable_recommendation_respects_installed_version_uncertainty": false,
+        "version_matched_parameter_semantics": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "通用证据不足模板没有解释文档版本与未知installed version的关系，也没有针对性澄清。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "缺少 source-bound 直接证据，无法核验 Scanpy 的参数依据"
+    ],
+    "blind_id": "review-8465152beb01",
+    "checks": {
+      "executable_recommendation_respects_installed_version_uncertainty": false,
+      "version_matched_parameter_semantics": false
+    },
+    "failure": {
+      "error_type": "generic_fallback_does_not_answer_task",
+      "evidence_bindings": [
+        {
+          "file_sha256": "7a48172cd80da00e6ee57f564b085b11eb33e75e433102c00ba92b74013606dd",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "6f8a1ff8b3529059d18ef848895590bababf7908174fe3f1c39fdcaf6d047b99",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "862c4fe24cbca100dc5b4fe54f075c4233a56d16bd18dc83f860307ee02ec7f5",
+          "ref": "output.json#context_pack.external_reasoning.support_check"
+        },
+        {
+          "file_sha256": "862c4fe24cbca100dc5b4fe54f075c4233a56d16bd18dc83f860307ee02ec7f5",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "e46a9359d82e96d9a6e6e69039afc7e0e25f9573cfd9c82d8047c30d246111d1",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#context_pack.external_reasoning.support_check",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "owner_module": "agent.research_chat_reasoner",
+      "rationale": "provider原始回答含需要核实installed version的针对性澄清；产品记录AnswerContractViolation / invalid_clarification后替换成泛化或HVG fallback，终答丢失版本澄清。定位的是下游丢失，不代表原始回答已完全通过K04。",
+      "stage": "validation-governance"
+    },
+    "major_scientific_error": false,
+    "output_sha256": "bf305d7eb6881cb7e75144eff27dfa4d18e993de7550813d32a057df5495844c",
+    "rationale": "通用证据不足模板没有解释文档版本与未知installed version的关系，也没有针对性澄清。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K04-evidence-version-b--llm_only--r0",
+  "track": "K"
+}

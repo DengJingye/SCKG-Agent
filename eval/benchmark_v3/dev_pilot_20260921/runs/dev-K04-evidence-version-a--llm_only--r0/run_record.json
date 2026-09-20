@@ -1,0 +1,172 @@
+{
+  "answer_hash": "f2b893e047b3b81864070eaeb1760cf567b5178233a61b652342cfbb4d862729",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_95f7cb960e414147a9a69defa0ddf826",
+  "case_id": "dev-K04-evidence-version-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-pilot-20260921-v1",
+  "input_tokens": 3453,
+  "latency_ms": 8098.312166999676,
+  "observed": {
+    "answer": "模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nScanpy 1.11.2 文档中 sc.pp.pca 的 mask_var 参数用于在 PCA 计算中屏蔽指定变量（基因），使其不参与主成分分析。\n\nmask_var 的输入要求是布尔数组或与数据变量名对应的列名列表，长度需与数据中的变量数一致。\n\n使用 mask_var 时需注意，被屏蔽的变量不会影响 PCA 结果，但后续基于 PCA 的分析（如邻居图）可能因变量缺失而改变。\n\n当前知识库中没有直接引用 Scanpy 1.11.2 文档中关于 mask_var 的原文，因此无法提供由文档直接支撑的可执行参数建议。\n\n您能否提供 Scanpy 1.11.2 文档中 mask_var 参数的具体描述或截图，以便核实其输入要求和注意事项？",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 858,
+  "repetition": 0,
+  "run_id": "dev-K04-evidence-version-a--llm_only--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-K04-evidence-version-a--llm_only--r0",
+      "created_at": "2026-09-20T18:38:05.533970+00:00",
+      "finished_at": "2026-09-20T18:38:13.627510+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:2263ef9aaea680aa",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-K04-evidence-version-a--llm_only--r0",
+      "root_span_id": "span_67ec63959f54418e9de32020a624548c",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 8093.518,
+          "ended_at": "2026-09-20T18:38:13.627510+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_67ec63959f54418e9de32020a624548c",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T18:38:05.533994+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_95f7cb960e414147a9a69defa0ddf826"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_workflow_plan",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 4278.203,
+          "ended_at": "2026-09-20T18:38:09.833531+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-K04-evidence-version-a--llm_only--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_67ec63959f54418e9de32020a624548c",
+          "sequence": 2,
+          "span_id": "span_a1bf60bb5db74cfbba84f930668b4e72",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T18:38:05.555340+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_95f7cb960e414147a9a69defa0ddf826"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.338,
+          "ended_at": "2026-09-20T18:38:09.836057+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_67ec63959f54418e9de32020a624548c",
+          "sequence": 3,
+          "span_id": "span_1bdbe2a0a083439bb696083af205b676",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T18:38:09.835710+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_95f7cb960e414147a9a69defa0ddf826"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_95f7cb960e414147a9a69defa0ddf826",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

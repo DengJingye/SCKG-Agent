@@ -1,0 +1,81 @@
+{
+  "case_id": "dev-K02-pca-chunked-b",
+  "lane": "legacy_kg",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K02-pca-chunked-b"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "correct_conditional_algorithm": false,
+        "correct_zero_center_solver_behavior": false,
+        "not_conflated_with_ordinary_pca": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "错误称启用chunked满足arpack前提且继续尊重zero_center/solver，违反00明确边界。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "arpack"
+    ],
+    "blind_id": "review-482232077e0a",
+    "checks": {
+      "correct_conditional_algorithm": false,
+      "correct_zero_center_solver_behavior": false,
+      "not_conflated_with_ordinary_pca": false
+    },
+    "failure": {
+      "error_type": "incorrect_chunked_algorithm_and_ignored_parameters",
+      "evidence_bindings": [
+        {
+          "file_sha256": "757119d1d2fc1b60130b354cd1d66a74281c66c5ce1a40d0cb0fae7dc64d20a6",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "a1752a11212b351bc02a902c76784e45e67ff5122932f2c1ee15cd8387ddc483",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "85c59a91f4fd3012abff5f62ef0ad1b35a68c3c8e2340b9b819205f36551dbdc",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "e8e1eb27161af30da1a7738319b3cb65f0f66ec1ab7d53255a297ce45f160c92",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "3ad6ea73b406847c0eecf3bc16c9b38e450651f52651a3323745829cb34b0ccd",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "d2bd83de60039769c81dd5fa31cf1bde51cba11635e4b0aebb333f8e4c24ba46",
+    "rationale": "错误称启用chunked满足arpack前提且继续尊重zero_center/solver，违反00明确边界。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K02-pca-chunked-b--legacy_kg--r0",
+  "track": "K"
+}

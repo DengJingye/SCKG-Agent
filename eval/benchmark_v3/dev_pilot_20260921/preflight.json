@@ -1,0 +1,74 @@
+{
+  "W01": {
+    "evidence": [
+      {
+        "path": "execution/wrappers/scanpy_core.py",
+        "relevant_lines": [
+          "    sc.pp.highly_variable_genes(adata, n_top_genes=n_top, flavor=\"seurat\")"
+        ],
+        "sha256": "66663e9991d7dba4960f549f63b7954e687acb2877b03b1d7892e6d59f8e9de3"
+      },
+      {
+        "path": "execution/renderers/scanpy_core.py",
+        "relevant_lines": [
+          "    \"highly_variable_genes\": \"sc.pp.highly_variable_genes(adata, n_top_genes=STEP_PARAMETERS.get('n_top_genes', 2000))\","
+        ],
+        "sha256": "3b551cf1fbc35360e991e9661357429d9cf78814efc4a9ceedb4f113a930bc55"
+      }
+    ],
+    "reason": "shared_execution_interface_unavailable",
+    "scope": "frozen seurat_v3 task; not a claim that all Scanpy execution is absent",
+    "status": "not_run"
+  },
+  "configuration": {
+    "configuration_source": "SCKG_ENV_FILE",
+    "credentials_present": true,
+    "disabled": false,
+    "model": "deepseek-v4-pro",
+    "network_verified": false,
+    "provider": "api.deepseek.com"
+  },
+  "dependencies": {
+    "jsonschema": "4.23.0",
+    "numpy": "1.26.4",
+    "openai": "1.109.1",
+    "pydantic": "2.8.2",
+    "scipy": "1.13.1"
+  },
+  "executable": "/opt/anaconda3/bin/python",
+  "lane_initialization": [
+    {
+      "approved_hash": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statements": 121,
+      "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval",
+      "lane": "llm_only",
+      "profile": "llm_only"
+    },
+    {
+      "approved_hash": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statements": 121,
+      "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval",
+      "lane": "generic_rag",
+      "profile": "generic_rag"
+    },
+    {
+      "approved_hash": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statements": 121,
+      "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval",
+      "lane": "legacy_kg",
+      "profile": "legacy_kg"
+    },
+    {
+      "approved_hash": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statements": 121,
+      "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval",
+      "lane": "scientific_kg",
+      "profile": "scientific_kg"
+    }
+  ],
+  "optional_scheduler": "deterministic_graph",
+  "provider_calls": 0,
+  "python": "3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:54:21) [Clang 16.0.6 ]",
+  "runtime_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+  "status": "ready"
+}

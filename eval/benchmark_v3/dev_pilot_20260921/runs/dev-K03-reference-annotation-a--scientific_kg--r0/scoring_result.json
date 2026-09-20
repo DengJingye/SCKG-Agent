@@ -1,0 +1,85 @@
+{
+  "case_id": "dev-K03-reference-annotation-a",
+  "lane": "scientific_kg",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K03-reference-annotation-a"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "namespace_and_common_genes_verified_before_use": true,
+        "reference_log_normalized": true,
+        "test_counts_acceptable": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "解释reference及共同基因条件，但未回答test raw counts是否可接受。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "测试输入应为基因×细胞的数值表达矩阵"
+    ],
+    "blind_id": "review-652bf5f376ad",
+    "checks": {
+      "namespace_and_common_genes_verified_before_use": true,
+      "reference_log_normalized": true,
+      "test_counts_acceptable": false
+    },
+    "failure": {
+      "error_type": "critical_input_fact_omitted",
+      "evidence_bindings": [
+        {
+          "file_sha256": "b6b01cead254d534cd1ab24f0219a6293b1a3761bc459dce0a827fcb3d511f17",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "e0562d60b2ef8c321ecfa77bf4b709bfb0158d77bbd33a876ee1ca3d50bbb2bc",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "9705ba17740aab2a8bb53d51305ed1bfd67e16a069aeb529d491f30759a16f62",
+          "ref": "calls/call-03.request.json"
+        },
+        {
+          "file_sha256": "92ee39d3bda429c6f8c5acabb81324baca896b517b9dedb25df6463af6abee0a",
+          "ref": "calls/call-03.response.json"
+        },
+        {
+          "file_sha256": "626120f9bdb74fccdf87f77dfa93b17c9db9558b4ecd8d9f1af36252de496619",
+          "ref": "output.json#context_pack.external_reasoning.support_check"
+        },
+        {
+          "file_sha256": "d4403b8774a5468f8c46312ee2d160fd06b26159197996fa8280f752f94691dc",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "calls/call-03.request.json",
+        "calls/call-03.response.json",
+        "output.json#context_pack.external_reasoning.support_check",
+        "final_context.json"
+      ],
+      "owner_module": "agent.research_chat_reasoner",
+      "rationale": "原始synthesis含test raw counts可用的caution文字，后续precheck/support/compile链未保留该事实。该科学事实正确性与其是否具有approved authority分开；不主张将caution提升为approved知识。治理链造成终答遗漏，可保留MODEL_KNOWLEDGE解释是否合规须另审，当前不修07。",
+      "stage": "validation-governance"
+    },
+    "major_scientific_error": false,
+    "output_sha256": "5dbafaa6fb12344809068cd23c12b55923b4835e6501787ee9f7c23a081f5361",
+    "rationale": "解释reference及共同基因条件，但未回答test raw counts是否可接受。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K03-reference-annotation-a--scientific_kg--r0",
+  "track": "K"
+}

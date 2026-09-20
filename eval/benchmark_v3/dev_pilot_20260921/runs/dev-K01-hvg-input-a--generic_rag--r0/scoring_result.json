@@ -1,0 +1,90 @@
+{
+  "case_id": "dev-K01-hvg-input-a",
+  "lane": "generic_rag",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K01-hvg-input-a"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "count_input_required": false,
+        "decision_matches_provided_matrix": true,
+        "no_invented_counts_source": true
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "当前输入的下一步可行，但最终回答没有说明关键的count-input适用要求；属于关键事实遗漏，不是已证明的错误方法推荐。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "直接调用 highly_variable_genes 并指定 flavor='seurat_v3' 和 n_top_genes=2000，无需预先对数转换"
+    ],
+    "blind_id": "review-5b6f61587b0c",
+    "checks": {
+      "count_input_required": false,
+      "decision_matches_provided_matrix": true,
+      "no_invented_counts_source": true
+    },
+    "failure": {
+      "error_type": "critical_fact_omission",
+      "evidence_bindings": [
+        {
+          "file_sha256": "c63d78a3ecb19ccf777096dcea3abf6e891f0a99de60f057f23ee236eab85081",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "99aa3332c7445e0c9e758d4fd223d0cd9941b5e5f863712bfbbacf052241bfe4",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "9b6b8206b65394c2ccc425e8c0a358ad1e5f601292ee0b3bcb70a113ed385d95",
+          "ref": "calls/call-03.request.json"
+        },
+        {
+          "file_sha256": "4d0fa7f284e20dc251390300341fc10560f852f00311e57a9fc748a811ead5f3",
+          "ref": "calls/call-03.response.json"
+        },
+        {
+          "file_sha256": "ec955f1e8497fb1852e5dfa6cfab8306644bd874489dc59b7011615338c2274c",
+          "ref": "output.json#context_pack.external_reasoning.support_check"
+        },
+        {
+          "file_sha256": "38503e15da7d738feb10c10c83f6ed2db9dc9e7effd532477a25a9cd61285f99",
+          "ref": "final_context.json"
+        },
+        {
+          "file_sha256": "fa290257bc135044698c1c94f095e8b45c00976745255a89fc47c0e8b7283327",
+          "ref": "trace.jsonl"
+        }
+      ],
+      "evidence_refs": [
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "calls/call-03.request.json",
+        "calls/call-03.response.json",
+        "output.json#context_pack.external_reasoning.support_check",
+        "final_context.json",
+        "trace.jsonl"
+      ],
+      "owner_module": "agent.research_chat_reasoner",
+      "rationale": "原始synthesis包含评分所需的关键条件说明；same-provider support_check返回空supported_indexes，相关说明从终答消失。由实际前后输出定位到治理链，不将知识覆盖标签据此改为absent，也不声称最初回答每个细节均正确。",
+      "stage": "validation-governance"
+    },
+    "major_scientific_error": false,
+    "output_sha256": "0824c15c83e9e714f5563ac608d3e07bbaf43fdeeab412561cb7b9c66e3d664e",
+    "rationale": "当前输入的下一步可行，但最终回答没有说明关键的count-input适用要求；属于关键事实遗漏，不是已证明的错误方法推荐。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K01-hvg-input-a--generic_rag--r0",
+  "track": "K"
+}

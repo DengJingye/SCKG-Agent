@@ -1,0 +1,81 @@
+{
+  "case_id": "dev-K03-reference-annotation-b",
+  "lane": "generic_rag",
+  "result": {
+    "applicable_case_ids": [
+      "dev-K03-reference-annotation-b"
+    ],
+    "denominator": 1,
+    "details": {
+      "checks": {
+        "namespace_and_common_genes_verified_before_use": false,
+        "reference_log_normalized": true,
+        "test_counts_acceptable": false
+      },
+      "method": "AI-assisted analyst DEV review; 00-approved criteria; not independent human Gold/judge calibration",
+      "rationale": "参考log输入正确，但将test UMI counts作为需要统一尺度的问题，违背00允许raw test的边界；未检查实际共同基因。"
+    },
+    "direction": null,
+    "evaluator_id": "dev-00-rubric-v1",
+    "limitations": [],
+    "metric_id": "K.task_pass",
+    "numerator": 0.0,
+    "signal": "blocked",
+    "status": "measured",
+    "threshold": null,
+    "value": 0.0
+  },
+  "review": {
+    "answer_excerpts": [
+      "SingleR 通常期望测试与参考具有可比的表达尺度，因此需要先确认或统一尺度"
+    ],
+    "blind_id": "review-f47adab19930",
+    "checks": {
+      "namespace_and_common_genes_verified_before_use": false,
+      "reference_log_normalized": true,
+      "test_counts_acceptable": false
+    },
+    "failure": {
+      "error_type": "incorrect_test_input_requirement",
+      "evidence_bindings": [
+        {
+          "file_sha256": "307e18a3c07ff0122c13149d655cd16990e9c3e10800ddc373bd97652001c6d5",
+          "ref": "input.json"
+        },
+        {
+          "file_sha256": "57c60a75e0eacefff5f831ef3d72ff9b3ab1ef46872279439e1a0777e2dfdaf0",
+          "ref": "calls/call-02.request.json"
+        },
+        {
+          "file_sha256": "e1612ba535ec96bae244ec5ae20d4b23bcc76107057ba19cf2f65bba7d8e2654",
+          "ref": "calls/call-02.response.json"
+        },
+        {
+          "file_sha256": "0d2994be0c2787502ef4055ec90e3e5912dbc57d6a4fd5a24adba5ec5e10b56c",
+          "ref": "output.json#final_report"
+        },
+        {
+          "file_sha256": "00d1053b4a8ca5be1f5967934c313dea0fffedea055b242a941f91c3761158aa",
+          "ref": "final_context.json"
+        }
+      ],
+      "evidence_refs": [
+        "input.json",
+        "calls/call-02.request.json",
+        "calls/call-02.response.json",
+        "output.json#final_report",
+        "final_context.json"
+      ],
+      "observed_stage": "synthesis",
+      "owner_module": "unresolved",
+      "rationale": "已观察到原始生成与终答的科学条件错误，但实际context未包含足以纠正全部错误的直接事实。不能只凭单次检索空/片段不足区分coverage gap、retrieval/context筛选与模型知识错误，根因保留unresolved。未做新的coverage裁决或诊断重放。",
+      "stage": "unresolved"
+    },
+    "major_scientific_error": true,
+    "output_sha256": "4928ff3f2a60c85b4313564fd72d28d07ae69d07ac6468eb9a5da8f665120a72",
+    "rationale": "参考log输入正确，但将test UMI counts作为需要统一尺度的问题，违背00允许raw test的边界；未检查实际共同基因。",
+    "reviewer": "AI-assisted analyst; not a human reviewer; 00 final review pending"
+  },
+  "run_id": "dev-K03-reference-annotation-b--generic_rag--r0",
+  "track": "K"
+}

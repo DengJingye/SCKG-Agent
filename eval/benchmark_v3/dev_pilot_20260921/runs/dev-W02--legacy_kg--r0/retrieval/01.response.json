@@ -1,0 +1,349 @@
+{
+  "answerability": {
+    "candidate_only": true,
+    "claim_ids": [],
+    "direct_evidence_chunk_ids": [],
+    "evidence_gap_id": "",
+    "evidence_span_ids": [],
+    "fallback_reason": "unsupported_operator",
+    "operator_revision_id": "",
+    "reason": "unsupported_operator",
+    "scientific_kg_used": false,
+    "scope_status": "",
+    "source_revision_ids": [],
+    "status": "UNRESOLVED",
+    "version_status": ""
+  },
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "sourcev2:52181cd818bb5c745a96",
+      "claim_type": "output",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_bound": true,
+      "source_id": "SRCV2_6225b07438c4a2cd",
+      "source_span": "section:Singularity;paragraph:89-94",
+      "sparse_rank": 1,
+      "text": "Use the `singularity pull` command to download the container from the given container registry: ```bash singularity pull celltypist-latest.sif docker://quay.io/teichlab/celltypist:latest ``` Then run the downloaded image as a container. **Simple usage:** ```bash singularity run \\ -B /path/to/data:/data \\ celltypist-latest.sif \\ celltypist --indata /data/file --model Immune_All_Low.pkl --outdir /data/output ``` **Usage with custom models:** ```bash singularity run \\ -B /path/to/data:/data \\ -B /path/to/models:/opt/celltypist/data/models \\ celltypist-latest.sif \\ celltypist --indata /data/file --model My_Custom_Model.pkl --outdir /data/output ``` <details> <summary><strong>Supplemental guidance</strong></summary> + <details> <summary><strong>Generate a custom model</strong></summary> As well as the models provided by CellTypist (see `1.2.`), you can generate your own model from which th...",
+      "title": "CellTypist official GitHub README",
+      "tool_name": "CellTypist",
+      "tool_names": [
+        "CellTypist"
+      ]
+    },
+    {
+      "canonical_task": "clustering",
+      "chunk_id": "sourcev2:4683c5a098304ff63f39",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01612903,
+      "source_bound": true,
+      "source_id": "SRCV2_6225b07438c4a2cd",
+      "source_span": "section:Examine the matrix representing the decision score of each cell belonging to a given cell type.;paragraph:78-82",
+      "sparse_rank": 2,
+      "text": "See `1.7.` for how the majority voting classifier works. ```bash celltypist --indata /path/to/input/file --model Immune_All_Low.pkl --outdir /path/to/outdir --majority-voting ``` During the majority voting, to define cell-cell relations, CellTypist will use a heuristic over-clustering approach according to the size of the input data with the aid of a Leiden clustering pipeline. Users can also provide their own over-clustering result to the `--over-clustering` option. This option can be specified in several ways: 1) an input plain file with the over-clustering result of one cell per line. 2) a string key specifying an existing cell metadata column in the `AnnData` (pre-created by the user). 3) if none of the above is provided, will use a heuristic over-clustering approach, noted above. ```bash celltypist --indata /path/to/input/file --model Immune_All_Low.pkl --outdir /path/to/outdir -...",
+      "title": "CellTypist official GitHub README",
+      "tool_name": "CellTypist",
+      "tool_names": [
+        "CellTypist"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "sourcev2:a890f23bcb6584bec1c4",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01587302,
+      "source_bound": true,
+      "source_id": "SRCV2_6225b07438c4a2cd",
+      "source_span": "section:Inputs for data training;paragraph:94",
+      "sparse_rank": 3,
+      "text": "The inputs for CellTypist training comprise the gene expression data, the cell annotation details (i.e., cell type labels), and in some scenarios the genes used. To facilitate the training process, the `train` function (see below) has been designed to accommodate different kinds of input formats: 1) The gene expression data can be provided as a path to the expression table (such as `.csv` and `.mtx`), or a path to the `AnnData` (`.h5ad`), with the former containing raw counts (in order to reduce the file size) while the latter containing log1p normalised expression (to 10,000 counts per cell) stored in `.X` or `.raw.X`. In addition to specifying the paths, you can provide any array-like objects (e.g., `csr_matrix`) or `AnnData` which are already loaded in memory (both should be in the log1p format). A cell-by-gene format (cells as rows and genes as columns) is required. 2) The cell ty...",
+      "title": "CellTypist official GitHub README",
+      "tool_name": "CellTypist",
+      "tool_names": [
+        "CellTypist"
+      ]
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:d66c87684e7925f1ca5c",
+      "claim_type": "general",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.015625,
+      "source_bound": true,
+      "source_id": "SRCV2_daf1d29894245278",
+      "source_span": "section:Data processing;paragraph:33-37",
+      "sparse_rank": 4,
+      "text": "The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the rows correspond to genes. A sample file looks something like: ``` gene cell_a cell_b gene_1 10 10 gene_2 20 20 ``` The second is a sparse matrix format used by 10X Genomics (example [here](http://cf.10xgenomics.com/samples/cell-exp/1.1.0/293t/293t_filtered_gene_bc_matrices.tar.gz)). This format has a directory where one file has a list of gene names (`genes.tsv`) and one file has a list of the nonzero transcript counts at certain gene/cell coordinates (`matrix.mtx`). To ensure a consistent data format, the examples first processes these raw files and saves them in `.npz` files along with some related metadata. To generate these files, run the command: ``` python bin/process.py conf/panorama.txt ``` The corresponding `.npz` files will be saved...",
+      "title": "Scanorama official GitHub README",
+      "tool_name": "Scanorama",
+      "tool_names": [
+        "Scanorama"
+      ]
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:2b88831596c4bbf3a834",
+      "claim_type": "general",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01470588,
+      "source_bound": true,
+      "source_id": "SRCV2_daf1d29894245278",
+      "source_span": "section:Setup;paragraph:28-35",
+      "sparse_rank": 8,
+      "text": "If for some reason this doesn't work, you can also install from within the Scanorama repository: ``` git clone https://github.com/brianhie/scanorama.git cd scanorama/ python setup.py install --user ``` If you are running inside an anaconda environment, first install annoy by doing: ``` conda install -c conda-forge python-annoy ``` All of the data used in our study (around 4 GB) can be downloaded from http://cb.csail.mit.edu/cb/scanorama/data.tar.gz. Download and unpack this data with the command: ``` wget http://cb.csail.mit.edu/cb/scanorama/data.tar.gz tar xvf data.tar.gz ``` A smaller version of the data (around 720 MB), including 26 heterogeneous datasets, can be similarly downloaded from http://scanorama.csail.mit.edu/data_light.tar.gz. The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the r...",
+      "title": "Scanorama official GitHub README",
+      "tool_name": "Scanorama",
+      "tool_names": [
+        "Scanorama"
+      ]
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:f1a596c7cdc59b5702f8",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01388889,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:8;section:results;paragraph:23",
+      "sparse_rank": 12,
+      "text": "Scales well to large datasets on CPU Method has GPU support Scales well to feature spaces beyond genes Method shows corrected expression Method gives relative cell embeddings Scib resultsTask detailsSpeedOutput Input Batch effect strength Fig. 5 | Guidelines to choose an integration method. a, T able of criteria to consider when choosing an integration method, and which methods fulfill each criterion. Ticks show which methods fulfill each criterion and gray dashes indicate partial fulfillment. When more than half of the methods fulfill a criterion, we instead highlight the methods that do not by a cross; hence blank spaces denote a cross except in the three rows with labeled crosses. Method outputs are ordered by their overall rank on RNa tasks. Python and R symbols indicate the primary language in which the method is programmed and used. Considerations are divided into the five broad...",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:66a842d1b6b73f17825b",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01369863,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:13;section:32. Using this approach, we;paragraph:36",
+      "sparse_rank": 13,
+      "text": "AnAl ysisNATurE METhODS assigned the same rank as unintegrated data on this task. For scRNA-seq tasks, we chose the best performing combination of features (HVG or full features) and scaling flavors for each integration method, and then ranked these from best- to worst-performing to give a final ranking per task. By taking the mean of these per-task rankings we ordered the methods by overall performance across tasks. Benchmarking setup. All integration runs were performed using our Snakemake pipeline. Methods were tested with scaled and unscaled data as input, using the full feature (gene/open chromatin window or peak) set or only HVGs. Where HVGs were used, the top 2,000 were selected using a custom method, which selected HVGs in a manner unaffected by batch variance. Specifically, we initially built the hvg_batch function on top of the highly_variable_genes function from Scanpy. Usi...",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony",
+      "tool_names": [
+        "Seurat"
+      ]
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:727704405771292b6bfc",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01315789,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:25;section:52. Benchmarking atlas-level data integration in single-cell genomics—integration;paragraph:51",
+      "sparse_rank": 16,
+      "text": "2 nature research | reporting summaryApril 2020 MTAB-5061 (ArrayExpress); immune cell bone marrow - GSE120221, GSE107727 (GEO); immune cell peripheral blood – 10X data from https:// support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_v3, GSE115189, GSE128066, GSE94820 (GEO); in addition to the Mouse Cell Atlas datasets of bone marrow and peripheral blood downloaded from https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop- seq data was available from GEO (GSE130148), while the 10X data was obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the snRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain.org; file name L5_all.loom), and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (ht...",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:55991224448b32e4adf4",
+      "claim_type": "output",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01298701,
+      "source_bound": true,
+      "source_id": "SRCV2_2c0511efe147368a",
+      "source_span": "page:16;section:Umap 1;paragraph:28",
+      "sparse_rank": 17,
+      "text": "the correction procedure. Thus, the ﬁnal ˆZ would be the result of a series of linear corrections of the original embedding.236 While this allows for more expressive transformations, we found that in practice, this can over correct the data. Our choice to237 limit the transformation reﬂects the notion in the introduction. Namely, if we had perfect knowledge of the cell types before238 correction, we would linearly regress out batch within each cell type.239 Lastly, we note that Z can be any arbitrary embedding of the cells. In this paper, we use principal components for240 scRNAseq datasets. However, Harmony can be efﬁciently run on any low dimensional embedding of the data, including241 diffusion maps, autoencoders, or independent components.242 Glossary243 For reference, we deﬁne all data structures used in all Harmony functions. For each one, we deﬁne its dimensions and244 possible...",
+      "title": "Fast, sensitive, and accurate integration of single cell data with Harmony",
+      "tool_name": "Harmony",
+      "tool_names": [
+        "Harmony"
+      ]
+    },
+    {
+      "canonical_task": "doublet_detection",
+      "chunk_id": "sourcev2:a5d5ae025bf3f95f22bc",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01282051,
+      "source_bound": true,
+      "source_id": "SRCV2_fb20454c775afc2b",
+      "source_span": "section:Frequently Asked Questions;paragraph:16-26",
+      "sparse_rank": 18,
+      "text": "Question: What is my anticipated doublet rate? Answer: This is dependent on your platform (10x, parse, etc.) and will vary with the number of input cells. It will not always be 7.5% as is used in the tutorial. This information is available in the user guides for each technology. See https://github.com/chris-mcginnis-ucsf/DoubletFinder/issues/76 and https://github.com/chris-mcginnis-ucsf/DoubletFinder/issues/156 Question: Can I run DoubletFinder on merged data from multiple 10x lanes? Answer: Technically yes but I would only do this if you were splitting the same sample across multiple lanes. You want to avoid instances where DoubletFinder is attempting to find doublets that do not actually exist in the data. I would also not advise running DF on integrated Seurat objects. See https://github.com/chris-mcginnis-ucsf/DoubletFinder/issues/101 Question: I see multiple potential pK values w...",
+      "title": "DoubletFinder official GitHub README",
+      "tool_name": "DoubletFinder",
+      "tool_names": [
+        "DoubletFinder"
+      ]
+    },
+    {
+      "canonical_task": "rna_velocity",
+      "chunk_id": "sourcev2:e6cc1f5899f7e339d72c",
+      "claim_type": "parameter",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01265823,
+      "source_bound": true,
+      "source_id": "SRCV2_2299659ba3176976",
+      "source_span": "page:14;section:3. We make our framework faster by accelerating our main estima-;paragraph:36",
+      "sparse_rank": 19,
+      "text": "Nature Methods Article https://doi.org/10.1038/s41592-024-02303-9 Thresholding transport maps for scalability. In the single-cell domain, most OT-based approaches, including WOT, rely on entropic regularization36 to speed up the computation of transport maps; how- ever, entropic regularization leads to dense transport maps πt j ,t j+1 , rendering downstream computations based on the RealTimeKernel extremely expensive for larger datasets (Extended Data Fig. 6c); most of the entries found in πt j ,t j+1 are extremely small, though. As a result, these entries contribute only marginally to the observed dynamics (Extended Data Fig. 6d). T o ensure fast RealTimeKernel-based computations, we devised an adaptive thresholding scheme resulting in sparse transition matrices. Transition probabilities falling below a certain threshold are set to zero, all others are kept unchanged. Per default, we...",
+      "title": "CellRank 2: unified fate mapping in multiview single-cell data",
+      "tool_name": "CellRank",
+      "tool_names": [
+        "CellRank"
+      ]
+    },
+    {
+      "canonical_task": "rna_velocity",
+      "chunk_id": "sourcev2:af65fb75038196e39397",
+      "claim_type": "output",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01234568,
+      "source_bound": true,
+      "source_id": "SRCV2_f5744b9da459eb17",
+      "source_span": "page:4;section:Opc Ol;paragraph:14",
+      "sparse_rank": 21,
+      "text": "Mossy Cck Steady Dyn. 10 Consistency scores u s u s Fig. 2 | Resolving subpopulation kinetics and identifying dynamical genes in neurogenesis. a, Velocities derived from the dynamical model for dentate gyrus neurogenesis19 are projected into a UMAP-based embedding. The main gene-averaged flow visualized by velocity streamlines corresponds to the granule lineage, in which neuroblasts develop into granule cells. The remaining populations form distinct cell types that are either differentiated, for example Cr cells, or cell types that form sublineages, for example the GABA and oligodendrocyte lineages (OPC to OL). When zooming into the cell types to examine single-cell velocities, fundamental differences between the velocities derived from the steady-state and dynamical model become apparent. Only the dynamical model identifies Cr cells to be terminal by assigning no velocity and indicat...",
+      "title": "Generalizing RNA velocity to transient cell states through dynamical modeling",
+      "tool_name": "scVelo",
+      "tool_names": [
+        "scVelo"
+      ]
+    }
+  ],
+  "index_build_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+  "latency_ms": 240.831,
+  "mode": "kg_bm25",
+  "pipeline": [
+    "query_classification",
+    "canonical_task_normalization",
+    "kg_hard_filter",
+    "sqlite_fts5_bm25",
+    "local_dense_skipped",
+    "scientific_kg_evidence_lookup",
+    "rrf_fusion",
+    "governance_rerank_skipped",
+    "tool_contract_gate_skipped",
+    "retrieval_context_only"
+  ],
+  "query": "How to verify that a genes.tsv output contains one row per input gene when the file only has a header and no data rows, and what are the required approval steps for repair?",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": {
+    "baseline_identity": "Legacy KG (frozen 1651-node scientific inventory)",
+    "eligible_chunk_ids": [],
+    "execution_authorized": false,
+    "fallback_reason": "unsupported_operator",
+    "final_graph_chunk_ids": [],
+    "gaps": [],
+    "graph_identity": {
+      "bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+      "manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+      "path": "data/evidence_candidates/scientific_kg_v1_uat_decision_rules",
+      "schema": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+      "snapshot": "scientific_kg_v1_uat_decision_rules",
+      "source_manifest_sha256": "6e9833933b5f0be991c67a0466d6af79fb970419a806608067d1b8654c62740b"
+    },
+    "knowledge_status": "candidate",
+    "mapped_chunk_ids": [],
+    "merge_policy": "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification",
+    "parsed": {
+      "ecosystem": "",
+      "explicit_modality": [],
+      "explicit_species": [],
+      "fallback_reason": "unsupported_operator",
+      "flavor": null,
+      "information_needs": [
+        "input_requirement",
+        "output"
+      ],
+      "operator": null,
+      "operator_id": null,
+      "resolution": "bounded_scanpy_alias",
+      "version": null
+    },
+    "paths": [],
+    "public_filter_identity_basis": "bound_scientific_claim_ownership_for_exact_graph_chunks;chunk_metadata_for_other_retrieval_channels",
+    "public_filter_rejected_chunk_ids": [],
+    "recommendation_eligible": false,
+    "subject_resolution": {
+      "ambiguity_reason": "subject_not_resolved",
+      "candidate_operator_ids": [],
+      "candidate_operator_revision_ids": [],
+      "coverage_status": "UNKNOWN_SUBJECT",
+      "provenance": [],
+      "resolved_method": "",
+      "resolved_package": "",
+      "resolved_project": "",
+      "resolved_subject_type": "",
+      "selected_operator_id": "",
+      "selected_operator_revision_id": "",
+      "status": "UNRESOLVED",
+      "subject_text": "How to verify that a genes.tsv output contains one row per input gene when the file only has a header and no data rows, and what are the required approval steps for repair?"
+    }
+  },
+  "stage_timings": [
+    {
+      "detail": "deterministic task/claim normalization",
+      "elapsed_ms": 8.522,
+      "stage": "intent",
+      "status": "completed"
+    },
+    {
+      "detail": "candidate_tools=0",
+      "elapsed_ms": 0.01,
+      "stage": "kg_filter",
+      "status": "completed"
+    },
+    {
+      "detail": "hits=143",
+      "elapsed_ms": 35.095,
+      "stage": "bm25",
+      "status": "completed"
+    },
+    {
+      "detail": "status=not_requested;hits=0",
+      "elapsed_ms": 0.004,
+      "stage": "dense_encode",
+      "status": "skipped"
+    },
+    {
+      "detail": "fused=143;reranked=143",
+      "elapsed_ms": 194.862,
+      "stage": "fusion",
+      "status": "completed"
+    }
+  ],
+  "warnings": []
+}

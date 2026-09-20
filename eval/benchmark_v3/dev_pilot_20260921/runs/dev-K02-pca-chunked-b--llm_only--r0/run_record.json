@@ -1,0 +1,172 @@
+{
+  "answer_hash": "d7129437721b38c64715d47983d3a99c730e6bcd13672dc2a5f2316cb9f35848",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_522c85fea0d64747ac33feaff8eab47b",
+  "case_id": "dev-K02-pca-chunked-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-pilot-20260921-v1",
+  "input_tokens": 3495,
+  "latency_ms": 7950.729958000011,
+  "observed": {
+    "answer": "模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n在 Scanpy 1.11.2 中，当 zero_center=false 且 svd_solver=arpack 时，PCA 会走非中心化分支，使用截断 SVD 而非标准 PCA。\n\n该非中心化分支要求 chunked=false 才能被正确识别；若 chunked=true，即使 zero_center=false，也会进入增量 PCA 路径，参数不会按预期生效。\n\n你提供的 chunked=true 与 zero_center=false 组合不满足非中心化截断 SVD 的实现条件，因此 svd_solver=arpack 不会按指定方式生效。\n\n你是否需要将 chunked 改为 false 以启用非中心化截断 SVD？",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 802,
+  "repetition": 0,
+  "run_id": "dev-K02-pca-chunked-b--llm_only--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-K02-pca-chunked-b--llm_only--r0",
+      "created_at": "2026-09-20T18:38:49.802727+00:00",
+      "finished_at": "2026-09-20T18:38:57.750671+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:96fc1b559a51e1d5",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-K02-pca-chunked-b--llm_only--r0",
+      "root_span_id": "span_dc232df925cd4977a9bd645a3373a2cc",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 7947.92,
+          "ended_at": "2026-09-20T18:38:57.750671+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_dc232df925cd4977a9bd645a3373a2cc",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T18:38:49.802752+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_522c85fea0d64747ac33feaff8eab47b"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 5040.43,
+          "ended_at": "2026-09-20T18:38:54.866012+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-K02-pca-chunked-b--llm_only--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_dc232df925cd4977a9bd645a3373a2cc",
+          "sequence": 2,
+          "span_id": "span_98f5d1199135419b8ffdb8bd57fa2d0e",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T18:38:49.825603+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_522c85fea0d64747ac33feaff8eab47b"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.368,
+          "ended_at": "2026-09-20T18:38:54.868128+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_dc232df925cd4977a9bd645a3373a2cc",
+          "sequence": 3,
+          "span_id": "span_540c33bb470b45b4a62a1851fd5717dc",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T18:38:54.867744+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_522c85fea0d64747ac33feaff8eab47b"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_522c85fea0d64747ac33feaff8eab47b",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}
