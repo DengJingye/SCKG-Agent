@@ -36,6 +36,7 @@ def resolve_conversation_task_state(
             last_action_bundle_ids=_strings(payload.get("last_action_bundle_ids")),
             state_epoch=epoch,
             runtime_build_id=runtime_build_id or prior_build,
+            user_reported_context=dict(payload.get("user_reported_context") or {}),
         )
 
     # Backward-compatible recovery from old message metadata. It deliberately
@@ -71,10 +72,11 @@ def next_conversation_task_state(
         confirmed_task=task,
         referenced_tools=list(dict.fromkeys(referenced_tools))[:8],
         last_answer_claims=list(dict.fromkeys(claim_ids))[:20],
-        last_plan_id=plan_id,
+        last_plan_id=plan_id or (None if task_switched else previous.last_plan_id),
         last_action_bundle_ids=list(dict.fromkeys(action_bundle_ids))[:8],
         state_epoch=epoch,
         runtime_build_id=previous.runtime_build_id,
+        user_reported_context={} if task_switched else previous.user_reported_context,
     )
 
 

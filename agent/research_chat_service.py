@@ -30,6 +30,10 @@ from agent.conversation_state import (
     next_conversation_task_state,
     resolve_conversation_task_state,
 )
+from agent.scientific_response_context import (
+    response_context as build_response_context, enrich_references,
+    decision_local_projection, audit_answer,
+)
 from agent.claim_grounding import (
     ClaimEvidenceBinding,
     bind_claim_evidence,
@@ -43,7 +47,7 @@ from agent.claim_grounding import (
     render_grounded_recommendation,
 )
 from agent.grounded_answer_audit import audit_grounded_answer_v3
-from agent.research_tool_registry import ResearchToolRegistry
+from agent.research_tool_registry import ResearchToolRegistry, ResearchToolExecution
 from core.canonical_task_ontology import (
     CANONICAL_TASKS,
     TOOL_TASK_IDS,
@@ -54,6 +58,7 @@ from core.knowledge_intelligence_models import (
     AdaptiveRetrievalDecision,
     ChatStageTiming,
     HybridRetrievalRequest,
+    HybridRetrievalResult,
 )
 from core.settings import PROJECT_ROOT, get_settings
 from core.research_agent_models import (
@@ -362,7 +367,7 @@ _TOOL_DISPLAY_NAMES: dict[str, str] = {
 
 
 class ResearchChatService:
-    """Deterministic local Parent Agent for evidence Q&A and governed planning."""
+    """Semantic orchestration and grounded synthesis over deterministic execution."""
 
     def __init__(
         self,
@@ -378,7 +383,13 @@ class ResearchChatService:
         trace_collector: Optional[TraceCollector] = None,
         data_registry: Any = None,
     ) -> None:
-        self.retrieval = retrieval or HybridRetrievalService()
+        if retrieval is None:
+            from agent.research_runtime import build_chat_retrieval
+            retrieval = build_chat_retrieval()
+        self.retrieval = retrieval
+        if hasattr(self.retrieval, "configure_profile"):
+            self.retrieval.configure_profile(evaluation_retrieval_profile)
+        self._governed_scientific = bool(getattr(self.retrieval, "governed_scientific", False))
         self._data_registry = data_registry
         self._parent_agent = parent_agent
         self._audited_parent: Optional[AuditedParentAgent] = (
@@ -391,6 +402,7 @@ class ResearchChatService:
         self._research_tools = research_tools or ResearchToolRegistry(
             retrieval=self.retrieval,
             workflow_code=self._workflow_code,
+            scientific_evidence_enabled=evaluation_retrieval_profile not in {"llm_only", "generic_rag", "legacy_kg", "bm25", "kg_hybrid", "kg_hybrid_contract"},
         )
         self._reasoner = reasoner
         self._parent_lock = threading.Lock()
@@ -405,6 +417,7 @@ class ResearchChatService:
             "bm25",
             "kg_hybrid",
             "kg_hybrid_contract",
+            "llm_only", "generic_rag", "legacy_kg", "scientific_kg",
         }
         if evaluation_retrieval_profile not in allowed_profiles:
             raise ValueError(
@@ -574,7 +587,11 @@ class ResearchChatService:
         query = request.query
         intent_started = time.perf_counter()
         context = conversation_context or []
+        if hasattr(self.retrieval, "begin_turn"):
+            self.retrieval.begin_turn(query, context)
         runtime_config = dict(user_runtime_config or {})
+        if runtime_config.get("offline_llm") or get_settings().offline_llm:
+            runtime_config["privacy_authorized"] = False
         instrumentation = trace_context.instrumentation()
         routing_span = instrumentation.span(
             stage=TraceStage.ROUTING,
@@ -639,6 +656,11 @@ class ResearchChatService:
                 run_started=run_started,
             )
         reasoner = self._reasoner or ExternalResearchReasoner()
+        if query.strip().strip("！!。.").casefold() in {"你好", "您好", "hi", "hello", "嗨"}:
+            _close_research_trace_span(routing_span, TraceStatus.SUCCESS,
+                outcome="general_chat", reason_code="greeting")
+            return _general_chat_result(request=request, runtime_config=runtime_config,
+                conversation_context=context, reasoner=reasoner, run_started=run_started)
         bound_operator_task = self._bound_operator_task(request)
         explicit_task = bound_operator_task or _task_for_query(query)
         inheritable_task = (
@@ -709,6 +731,13 @@ class ResearchChatService:
             )
         semantic_parse = SemanticParseResult(status="not_requested")
         analysis_context = self._semantic_analysis_context(request)
+        if runtime_config.get("input_binding_status") == "stale":
+            analysis_context.update(input_registered=False, data_status="stale")
+        if (preliminary_mode is AgentMode.RUN and analysis_context.get("data_status") == "stale"
+                and (request.mode is AgentMode.RUN or re.search(r"现在运行|立即运行|请运行|执行|\brun\b", query, re.I))):
+            _close_research_trace_span(routing_span, TraceStatus.BLOCKED,
+                outcome="stale_artifact", reason_code="stale_artifact_requires_rebind")
+            return _stale_artifact_run_result(request, run_started, conversation_state)
         if (
             runtime_config.get("privacy_authorized")
             and runtime_config.get("privacy_mode") != "strict_offline"
@@ -724,6 +753,16 @@ class ResearchChatService:
                 runtime_config=runtime_config,
                 capability_context=analysis_context,
             )
+        if (semantic_parse.status == "ready" and semantic_parse.data_dependency != "none"
+                and semantic_parse.intent not in {"workflow", "execution"}):
+            semantic_parse = semantic_parse.model_copy(update={
+                "needs_clarification": True,
+                "clarification_question": (
+                    "这份数据的绑定已失效，请重新选择或恢复文件。我还没有读取或分析它。"
+                    if analysis_context.get("data_status") == "stale"
+                    else "我还没有本次数据的已授权检查结果。请先绑定数据并生成检查计划；不会根据对话猜测分析结果。"
+                ),
+            })
         semantic_task = (
             next((item for item in CANONICAL_TASKS if item.task_id == semantic_parse.canonical_task), None)
             if semantic_parse.status == "ready" and semantic_parse.canonical_task
@@ -746,10 +785,16 @@ class ResearchChatService:
                     "clarification_question": "所请求的分析目标尚未匹配到已登记能力，请明确希望得到的结果；我不会用其他分析替代。",
                 })
             elif not analysis_context["input_registered"]:
-                semantic_parse = semantic_parse.model_copy(update={
-                    "needs_clarification": True,
-                    "clarification_question": "请先通过 ＋ 上传或选择本次分析的数据，再为这份数据生成计划。",
-                })
+                if (semantic_parse.intent == "workflow" and semantic_parse.data_dependency == "none"
+                        and (request.mode is AgentMode.PLAN or conversation_state.last_plan_id
+                             or re.search(r"计划|方案|\bplan\b|\bworkflow\b", query, re.I))):
+                    semantic_parse = semantic_parse.model_copy(update={"capability_request": None})
+                    semantic_task = explicit_task or semantic_task
+                else:
+                    semantic_parse = semantic_parse.model_copy(update={
+                        "needs_clarification": True,
+                        "clarification_question": "请先通过 ＋ 上传或选择本次分析的数据，再为这份数据生成计划。",
+                    })
             elif semantic_parse.intent in {"workflow", "execution"}:
                 resolved_capability_request = proposed.model_dump(mode="json")
                 semantic_task = _RegisteredCapabilityTask(
@@ -794,6 +839,10 @@ class ResearchChatService:
         domain_decision = route_fusion.domain_decision
         intent = route_fusion.intent
         mode = route_fusion.mode
+        if mode is AgentMode.RUN and analysis_context.get("data_status") == "stale":
+            _close_research_trace_span(routing_span, TraceStatus.BLOCKED,
+                outcome="stale_artifact", reason_code="stale_artifact_requires_rebind")
+            return _stale_artifact_run_result(request, run_started, conversation_state)
         if domain_decision.domain == DomainKind.GENERAL.value:
             if mode is AgentMode.ASK:
                 _close_research_trace_span(
@@ -898,6 +947,8 @@ class ResearchChatService:
             task_id=task_id,
             intent=intent,
         )
+        if semantic_parse.status == "ready" and semantic_parse.retrieval_query:
+            contextual_query = semantic_parse.retrieval_query
         explicit_query_tools = _known_tools_in_query(query)
         required_claim_types = _claim_types_for_tool_query(query, intent)
         retrieval_span = instrumentation.span(
@@ -919,6 +970,9 @@ class ResearchChatService:
                 else []
             ),
         )
+        if self._evaluation_retrieval_profile in {"llm_only", "generic_rag", "legacy_kg", "scientific_kg"} or (self._governed_scientific and mode is AgentMode.ASK):
+            tool_plan = tool_plan.model_copy(update={"calls": [c for c in tool_plan.calls
+                if c.tool_name in {"search_catalog", "search_evidence"}]})
         for call in tool_plan.calls:
             retrieval_span.add_input_ref(
                 record_type="research_tool_call",
@@ -944,7 +998,8 @@ class ResearchChatService:
             use_kg=retrieval_options["use_kg"],
             use_governance_rerank=retrieval_options["use_governance_rerank"],
             use_contract_gate=retrieval_options["use_contract_gate"],
-        )
+        ) if self._evaluation_retrieval_profile != "llm_only" else ResearchToolExecution(
+            retrieval_results=[HybridRetrievalResult(query=contextual_query, mode="bm25", latency_ms=0)])
         retrieval = tool_execution.retrieval
         if retrieval is None:
             retrieval = self.retrieval.search(
@@ -993,7 +1048,19 @@ class ResearchChatService:
                 escalated=True,
                 source_bound_hits_before_escalation=source_bound_hits,
             )
-        candidates = self._candidate_rows(retrieval, task_id)
+        candidates = self._candidate_rows(retrieval, task_id) if not self._governed_scientific and self._evaluation_retrieval_profile not in {"llm_only", "generic_rag", "legacy_kg", "scientific_kg"} else []
+        if self._governed_scientific or self._evaluation_retrieval_profile in {"llm_only", "generic_rag", "legacy_kg", "scientific_kg"}:
+            # Same sparse corpus and candidate extraction in paired ablations.
+            # Avoid leaking graph-derived shortlist entries into the generic lane.
+            seen = set()
+            candidates = []
+            for hit in retrieval.hits:
+                if hit.tool_name and hit.tool_name not in seen:
+                    seen.add(hit.tool_name)
+                    candidates.append({"tool_name": hit.tool_name, "score": hit.score,
+                                       "recommendation_eligible": False, "source_chunk_count": 1})
+        retrieval_options["use_scientific_evidence"] = self._research_tools.scientific_evidence_enabled and bool(
+            getattr(reasoner, "supports_response_context", False) and runtime_config.get("privacy_authorized"))
         if intent in {
             ResearchChatIntent.TOOL_RECOMMENDATION,
             ResearchChatIntent.CAVEAT_COMPARISON,
@@ -1231,16 +1298,20 @@ class ResearchChatService:
         )
         reference_tools = requested_answer_tools or explicit_query_tools
         claim_bindings: list[ClaimEvidenceBinding] = []
+        binding_query = query
+        if (getattr(reasoner, "supports_response_context", False) and semantic_parse.status == "ready"):
+            binding_query = " ".join([contextual_query, *[call.query for call in tool_plan.calls
+                if call.tool_name == "search_evidence"]])
         if response_intent is ResearchChatIntent.EVIDENCE_QA:
             claim_requests = claim_requests_for_query(
-                query,
+                binding_query,
                 subjects=reference_tools,
                 snippets=snippets,
             )
             claim_bindings = bind_claim_evidence(
                 claim_requests,
                 snippets,
-                query=query,
+                query=binding_query,
             )
             references = references_from_bindings(claim_bindings)
         elif response_intent is ResearchChatIntent.TOOL_RECOMMENDATION:
@@ -1266,6 +1337,34 @@ class ResearchChatService:
                 intent=response_intent,
                 requested_tools=reference_tools,
             )
+        references = enrich_references(references, retrieval.scientific_evidence,
+            getattr(self.retrieval, "_scientific_evidence_adapter", None),
+                getattr(self.retrieval, "_chunks_by_id", {}))
+        if retrieval_options.get("use_scientific_evidence"):
+            # Direct KG requirements must reach synthesis even when a generic
+            # natural-language question did not request an exact predicate.
+            direct_ids = set((retrieval.scientific_evidence or {}).get("final_graph_chunk_ids", []))
+            existing_ids = {ref.get("source_span_id") for ref in references}
+            for hit in retrieval.hits:
+                if hit.chunk_id in direct_ids and hit.chunk_id not in existing_ids and len(references) < 8:
+                    references.append({"index": len(references)+1, "tool_name": hit.tool_name,
+                        "title": hit.title, "source_id": hit.source_id, "source_span": hit.source_span,
+                        "source_span_id": hit.chunk_id, "claim_text": hit.text,
+                        "claim_type": hit.claim_type, "source_bound": hit.source_bound, "authority": "source_bound"})
+            references = enrich_references(references, retrieval.scientific_evidence,
+                getattr(self.retrieval, "_scientific_evidence_adapter", None),
+                getattr(self.retrieval, "_chunks_by_id", {}))
+        if self._governed_scientific:
+            from agent.scientific_response_context import append_caution_references
+            references = append_caution_references(references, retrieval.scientific_evidence,
+                                                  self.retrieval._scientific_evidence_adapter)
+        synthesis_context = build_response_context(
+            conversation=context, conversation_state=conversation_state.model_dump(mode="json"),
+            semantic=semantic_parse.model_dump(mode="json"), references=references,
+            data_state={"status": analysis_context.get("data_status", "not_bound"),
+                        "input_registered": analysis_context["input_registered"], "measurements_available": False},
+            contracts=tool_execution.contract_context, planner=parent_result,
+            diagnostic=retrieval.scientific_evidence)
         workflow_code_bundle = (
             tool_execution.workflow_bundles[0]
             if tool_execution.workflow_bundles
@@ -1310,7 +1409,6 @@ class ResearchChatService:
             runtime_config.get("privacy_authorized")
             and mode is AgentMode.ASK
             and intent is not ResearchChatIntent.MIGRATION_EXPLORATION
-            and bool(task_id)
             and hasattr(reasoner, "synthesize")
         ):
             binding_grounded_reasoning = intent in {
@@ -1369,6 +1467,8 @@ class ResearchChatService:
                 ),
                 allow_unverified_model_knowledge=not binding_grounded_reasoning,
                 runtime_config=runtime_config,
+                **({"response_context": synthesis_context}
+                   if getattr(reasoner, "supports_response_context", False) else {}),
             )
             if external_reasoning.status == "ready":
                 external_answer_audit = _audit_grounded_answer_v3(
@@ -1376,8 +1476,11 @@ class ResearchChatService:
                     references=references,
                     execution_request_count=int(parent_result.get("execution_request_count") or 0),
                 ).model_dump(mode="json")
+                if external_reasoning.answer_claims:
+                    external_answer_audit = audit_answer(external_reasoning.answer_claims, references)
                 answer_shape_valid = (
                     intent is not ResearchChatIntent.CAVEAT_COMPARISON
+                    or (external_reasoning.answer_claims and not re.search(r"top\s*[- ]?\d|前[一二三四五\d]+", query, re.I))
                     or _top_k_answer_is_valid(query, external_reasoning.content)
                 )
                 requested_tool_coverage_valid = _requested_tool_coverage_is_valid(
@@ -1400,6 +1503,8 @@ class ResearchChatService:
                         external_answer_audit.get("governance_violation_count") or 0
                     ) + 1
                 binding_shape_valid = (
+                    bool(external_reasoning.answer_claims)
+                    or
                     not binding_grounded_reasoning
                     or external_answer_preserves_bindings(
                         external_reasoning.content,
@@ -1428,6 +1533,7 @@ class ResearchChatService:
             and evidence_answerability is not None
             and evidence_answerability.status
             in {"INSUFFICIENT_EVIDENCE", "CLARIFICATION_REQUIRED"}
+            and not external_answer_used
         ):
             if evidence_answerability.status == "INSUFFICIENT_EVIDENCE":
                 report = "当前受治理知识库中没有足够证据支持该命题。"
@@ -1447,6 +1553,7 @@ class ResearchChatService:
             and evidence_answerability is not None
             and evidence_answerability.status == "UNRESOLVED"
             and not references
+            and not external_answer_used
         ):
             report = (
                 "当前无法可靠解析该实体或条件；以下仅保留检索到的候选上下文，不构成确定性证据结论。\n\n"
@@ -1495,6 +1602,9 @@ class ResearchChatService:
                 "can_affect_scientific_authority": False,
             },
             "conversation_turns_used": len(context),
+            "response_context": synthesis_context,
+            "answer_provenance": decision_local_projection(report, references,
+                external_reasoning.answer_claims if external_answer_used else []),
             "uploaded_context_present": bool(uploaded_context),
             "external_reasoning": external_reasoning.model_dump(
                 mode="json",
@@ -1522,7 +1632,7 @@ class ResearchChatService:
             "external_provider_call_count": int(
                 semantic_parse.provider_call_attempted
             )
-            + int(external_reasoning.provider_call_attempted),
+            + (external_reasoning.provider_call_count or int(external_reasoning.provider_call_attempted)),
             "chat_stage_timings": [
                 item.model_dump(mode="json") for item in stage_timings
             ],
@@ -1567,7 +1677,8 @@ class ResearchChatService:
             conversation_state,
             domain=DomainKind.SINGLE_CELL,
             task=task_id,
-            referenced_tools=[item["tool_name"] for item in candidates[:5]],
+            referenced_tools=(list(dict.fromkeys(ref["tool_name"] for ref in
+                context_pack["answer_provenance"]["references"])) or [item["tool_name"] for item in candidates[:5]]),
             claim_ids=[
                 str(item.get("claim_id"))
                 for item in audit_claims
@@ -1586,6 +1697,7 @@ class ResearchChatService:
             ],
             task_switched=task_switched,
         )
+        updated_conversation_state.user_reported_context.update(semantic_parse.user_reported_context)
         context_pack["conversation_state"] = updated_conversation_state.model_dump(
             mode="json"
         )
@@ -2208,7 +2320,13 @@ class ResearchChatService:
                     }
             capabilities.append({"pack_id": pack.pack_id,
                 "task_family": pack.task_families[0], "outputs": list(outputs.values())})
-        return {"input_registered": registered, "input_kind": "AnnData" if registered else None,
+        data_status = "registered_not_inspected" if registered else "stale" if request.artifact_id else "not_bound"
+        if registered and hasattr(self._data_registry, "path_authorized"):
+            if not self._data_registry.path_authorized(request.artifact_id, user_id=request.user_id):
+                data_status = "stale"
+                registered = False
+        return {"input_registered": registered, "data_status": data_status,
+                "input_kind": "AnnData" if registered else None,
                 "capabilities": capabilities}
 
     def _bound_operator_task(self, request: ResearchAgentRequest) -> Any:
@@ -2598,6 +2716,12 @@ def _retrieval_options(
     evaluation_profile: Optional[str],
 ) -> dict[str, Any]:
     """Resolve retrieval controls; overrides are restricted to offline evaluation."""
+
+    if evaluation_profile in {"llm_only", "generic_rag", "legacy_kg", "scientific_kg"}:
+        return {"decision": AdaptiveRetrievalDecision(route="bm25", enable_dense=False,
+                    reason="paired_ablation:" + evaluation_profile),
+                "enable_dense": False, "use_kg": evaluation_profile in {"legacy_kg", "scientific_kg"},
+                "use_governance_rerank": False, "use_contract_gate": False}
 
     if evaluation_profile == "bm25":
         return {
@@ -3465,6 +3589,13 @@ def _clarification_result(
         conversation_turns_used=len(conversation_context),
     )
     context_pack["semantic_parse"] = semantic_parse.model_dump(mode="json")
+    prior = resolve_conversation_task_state(conversation_context,
+        runtime_build_id=get_runtime_build_identity().source_fingerprint)
+    if semantic_parse.canonical_task:
+        prior.confirmed_task = semantic_parse.canonical_task
+        prior.confirmed_domain = DomainKind.SINGLE_CELL
+    prior.user_reported_context.update(semantic_parse.user_reported_context)
+    context_pack["conversation_state"] = prior.model_dump(mode="json")
     context_pack["semantic_route"] = {
         "domain": domain_decision.domain,
         "confidence": domain_decision.confidence,
@@ -3542,11 +3673,9 @@ def _general_chat_result(
         report = external.content
         runtime_mode = "external_general_reasoning"
     elif external.status == "not_authorized":
-        report = (
-            "这是一个通用问答，不应进入单细胞 KG/RAG。当前会话尚未启用外部 LLM，"
-            "因此我没有用工具目录拼接答案。请在 Settings 解锁配置，并显式启用本会话的 "
-            "DeepSeek 语义推理后重试。"
-        )
+        report = ("你好！你可以直接告诉我你在做哪一步单细胞分析，或者把数据和问题发给我。"
+            if request.query.strip().strip("！!。.").casefold() in {"你好", "您好", "hi", "hello", "嗨"}
+            else "当前使用本地模式。启用设置中的外部模型后，我可以继续回答这个问题。")
         runtime_mode = "general_local_fallback"
     else:
         report = (
@@ -3586,6 +3715,14 @@ def _general_chat_result(
         runtime_mode=runtime_mode,
         context_pack=context_pack,
     )
+
+
+def _stale_artifact_run_result(request, run_started, conversation_state):
+    result = _unsupported_action_result(request=request, mode=AgentMode.RUN,
+        run_started=run_started, reason="stale_artifact_requires_rebind",
+        conversation_state=conversation_state)
+    result["final_report"] = "尚未执行：本次数据绑定已失效。请重新选择或恢复文件，再检查计划并审批运行。"
+    return result
 
 
 def _unsupported_action_result(
@@ -4703,6 +4840,7 @@ def _complete_top_tool_evidence(
         if hit.source_bound
     }
     supplemental = []
+    scientific_diagnostics = [retrieval.scientific_evidence] if retrieval.scientific_evidence else []
     warnings = list(retrieval.warnings)
     timings = list(retrieval.stage_timings)
     extra_latency = 0.0
@@ -4763,9 +4901,12 @@ def _complete_top_tool_evidence(
                     retrieval_options["use_governance_rerank"]
                 ),
                 use_contract_gate=bool(retrieval_options["use_contract_gate"]),
+                use_scientific_evidence=bool(retrieval_options.get("use_scientific_evidence")),
             )
         )
         supplemental.extend(result.hits)
+        if result.scientific_evidence:
+            scientific_diagnostics.append(result.scientific_evidence)
         warnings.extend(result.warnings)
         timings.extend(result.stage_timings)
         extra_latency += result.latency_ms
@@ -4781,6 +4922,9 @@ def _complete_top_tool_evidence(
             "warnings": list(dict.fromkeys(warnings)),
             "governance_leakage_count": leakage,
             "stage_timings": timings,
+            "scientific_evidence": {"queries": scientific_diagnostics,
+                "final_graph_chunk_ids": sorted({cid for d in scientific_diagnostics
+                    for cid in d.get("final_graph_chunk_ids", [])})} if scientific_diagnostics else None,
         }
     )
 
@@ -5564,8 +5708,8 @@ def _workflow_report(
         lines.extend(
             [
                 "",
-                "### 已通过 smoke 的完整脚本",
-                "完整 Python 配方显示在回答下方的 **Verified runnable recipe** 面板中；展开后可一键复制。",
+                "### 完整脚本" + (" · smoke 已验证" if workflow_code_bundle.get("smoke_tested") else " · smoke 待验证"),
+                "完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。",
                 "",
                 "### 使用前必须理解的限制",
             ]

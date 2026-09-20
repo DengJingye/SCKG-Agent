@@ -46,11 +46,13 @@ class ResearchToolRegistry:
         contracts: ToolContractRegistry | None = None,
         workflow_code: WorkflowCodeService | None = None,
         capability_packs: CapabilityPackRegistry | None = None,
+        scientific_evidence_enabled: bool = True,
     ) -> None:
         self.retrieval = retrieval
         self.contracts = contracts or ToolContractRegistry()
         self.workflow_code = workflow_code or WorkflowCodeService()
         self.capability_packs = capability_packs or CapabilityPackRegistry()
+        self.scientific_evidence_enabled = scientific_evidence_enabled
 
     def execute(
         self,
@@ -219,7 +221,7 @@ class ResearchToolRegistry:
                 use_contract_gate=(
                     use_contract_gate and call.tool_name == "search_evidence"
                 ),
-                use_scientific_evidence=call.tool_name == "search_evidence",
+                use_scientific_evidence=self.scientific_evidence_enabled and call.tool_name == "search_evidence",
             )
         )
 

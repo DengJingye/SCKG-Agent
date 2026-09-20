@@ -1083,8 +1083,8 @@ EXAMPLES = {
 
 
 WELCOME_MESSAGE = (
-    "这是统一 Research Chat。你可以查询工具、输入要求、参数、输出、失败模式与原文定位，"
-    "也可以为已资格化任务生成 dry-run plan；真正执行仍需数据登记与 plan-specific approval。"
+    "你好！直接告诉我你的单细胞分析问题。我可以结合科学知识和原文证据讨论方法，"
+    "也可以帮你准备分析计划；实际运行前会请你确认数据和计划。"
 )
 
 
@@ -1102,56 +1102,31 @@ def _run_agent(
     uploaded_context: Optional[Dict[str, Any]] = None,
     user_runtime_config: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    previous = os.environ.get("SCKG_OFFLINE_LLM")
-    previous_network = os.environ.get("SCKG_EXTERNAL_NETWORK_ALLOWED")
-    previous_privacy = os.environ.get("SCKG_PRIVACY_MODE")
-    runtime_config = user_runtime_config or {}
-    privacy_authorized = bool(runtime_config.get("privacy_authorized"))
+    runtime_config = dict(user_runtime_config or {})
+    runtime_config["offline_llm"] = offline_llm
     if offline_llm:
-        os.environ["SCKG_OFFLINE_LLM"] = "true"
-    os.environ["SCKG_EXTERNAL_NETWORK_ALLOWED"] = (
-        "true" if privacy_authorized and not offline_llm else "false"
+        runtime_config["privacy_authorized"] = False
+    state = _research_agent_backend().run(
+        user_query,
+        mode=agent_mode,
+        user_id=user_id,
+        conversation_id=conversation_id,
+        artifact_id=artifact_id,
+        requested_tool=requested_tool,
+        project_memory=project_memory,
+        uploaded_context=uploaded_context,
+        conversation_context=conversation_context,
+        user_runtime_config=runtime_config,
     )
-    os.environ["SCKG_PRIVACY_MODE"] = str(
-        runtime_config.get("privacy_mode") or PrivacyMode.LOCAL_HYBRID.value
-    )
-    get_settings.cache_clear()
     try:
-        state = _research_agent_backend().run(
-            user_query,
-            mode=agent_mode,
-            user_id=user_id,
-            conversation_id=conversation_id,
-            artifact_id=artifact_id,
-            requested_tool=requested_tool,
-            project_memory=project_memory,
-            uploaded_context=uploaded_context,
-            conversation_context=conversation_context,
-            user_runtime_config=runtime_config,
+        reflection = reflect_agent_run(
+            state,
+            str(state.get("canonical_trace_id") or ""),
         )
-        try:
-            reflection = reflect_agent_run(
-                state,
-                str(state.get("canonical_trace_id") or ""),
-            )
-            state["reflection_event"] = reflection.model_dump(mode="json")
-        except Exception as exc:
-            state["reflection_error"] = f"{type(exc).__name__}: {exc}"
-        return dict(state)
-    finally:
-        if previous is None:
-            os.environ.pop("SCKG_OFFLINE_LLM", None)
-        else:
-            os.environ["SCKG_OFFLINE_LLM"] = previous
-        if previous_network is None:
-            os.environ.pop("SCKG_EXTERNAL_NETWORK_ALLOWED", None)
-        else:
-            os.environ["SCKG_EXTERNAL_NETWORK_ALLOWED"] = previous_network
-        if previous_privacy is None:
-            os.environ.pop("SCKG_PRIVACY_MODE", None)
-        else:
-            os.environ["SCKG_PRIVACY_MODE"] = previous_privacy
-        get_settings.cache_clear()
+        state["reflection_event"] = reflection.model_dump(mode="json")
+    except Exception as exc:
+        state["reflection_error"] = f"{type(exc).__name__}: {exc}"
+    return dict(state)
 
 
 def _state_get_list(state: Dict[str, Any], key: str) -> List[Any]:
@@ -1773,12 +1748,15 @@ def _render_assistant_report(report: str) -> None:
 def _render_algorithm_surface(state: Dict[str, Any]) -> None:
     intent = str(state.get("response_intent") or "")
     bundle = state.get("workflow_code_bundle") or {}
+    if (state.get("context_pack") or {}).get("answer_provenance") and intent != "workflow" and not bundle:
+        return
     if intent == "workflow" or bundle:
         if not bundle:
             return
         smoke_status = str(bundle.get("smoke_status") or "not_run").upper()
         st.markdown(
-            '<div class="algorithm-surface-title">Verified runnable recipe</div>',
+            '<div class="algorithm-surface-title">' +
+            ('已验证脚本' if bundle.get("smoke_tested") else '计划脚本 · 当前版本待验证') + '</div>',
             unsafe_allow_html=True,
         )
         status_style = "good" if bool(bundle.get("smoke_tested")) else "warn"
@@ -2588,8 +2566,7 @@ def _greeting_reply(project_memory: Optional[Dict[str, Any]] = None) -> str:
             memory_bits.append(f"{key}: {value}")
 
     lines = [
-        "你好，我在。当前正式支持 scRNA-seq 的 Doublet Detection 与 Batch Integration。",
-        "直接描述问题即可：我会逐条识别问答、工作流或运行意图；真正执行仍需数据授权和 plan-specific approval。",
+        "你好！你可以直接告诉我你在做哪一步单细胞分析，或者把数据和问题发给我。",
     ]
     if memory_bits:
         lines.append("我记得你的项目偏好：" + "，".join(memory_bits) + "。")
@@ -2676,6 +2653,21 @@ def _render_response_details(state: Dict[str, Any]) -> None:
 
 
 def _render_response_runtime(state: Dict[str, Any]) -> None:
+    from observability.research_answer_evidence import render_answer_evidence
+    render_answer_evidence(st, state, source_manifest=Path(__file__).parent / "data/indexes/source_documents_v2.jsonl")
+    context = state.get("context_pack") or {}
+    if context.get("answer_provenance"):
+        prose = context.get("external_reasoning") or {}
+        if state.get("runtime_mode") == "external_reasoning_with_deterministic_governance":
+            st.caption("Runtime: LLM ONLINE · " + str(prose.get("model_name") or "configured model"))
+        else:
+            st.caption("Runtime: Local fallback · 本轮回答使用本地逻辑")
+        with st.expander("运行详情", expanded=False):
+            st.write({"模型": prose.get("model_name"), "生成状态": prose.get("status"),
+                      "来源检查": prose.get("support_check"),
+                      "数据状态": (context.get("response_context") or {}).get("data_state"),
+                      "追踪": state.get("canonical_trace_id")})
+        return
     # Display links by stored source ID; never manufacture citations from titles.
     from observability.research_source_links import source_links
     links = source_links(state.get("references") or [],
@@ -5658,6 +5650,11 @@ def _render_defense_demo_page() -> None:
 
 _BACKEND_IMPLEMENTATION_FILES = (
     "agent/research_chat_service.py",
+    "agent/research_chat_reasoner.py",
+    "agent/scientific_response_context.py",
+    "agent/research_runtime.py",
+    "engine/approved_scientific_kg.py",
+    "agent/conversation_state.py",
     "execution/research_input_binding.py",
     "core/capability_composition_models.py",
     "core/capability_pack_models.py",
@@ -5715,7 +5712,9 @@ def _cached_research_agent_backend(implementation_digest: str):
         environment_registry=execution.environment_registry,
         orchestrator=execution.orchestrator,
     )
-    return ResearchChatService(parent_agent=parent, data_registry=execution.data_registry)
+    from agent.research_runtime import build_chat_retrieval
+    return ResearchChatService(parent_agent=parent, data_registry=execution.data_registry,
+                               retrieval=build_chat_retrieval(), dense_default_enabled=False)
 
 
 def _research_agent_backend():
@@ -7853,8 +7852,13 @@ def _render_research_shell(*, offline: bool) -> None:
         model["plan"] = prepared_plan
         model["outputs"] = [str(item.get("artifact_type") or item.get("artifact_id") or "")
                             for item in prepared_plan.get("expected_outputs", [])]
-    runtime_label = "本地模式 · 外部模型关闭" if offline else str(
-        (st.session_state.get("user_api_config") or {}).get("model_name") or get_settings().model_name or "外部模型已启用")
+    from agent.research_runtime import runtime_configuration_status
+    runtime_status = runtime_configuration_status(st.session_state.get("user_api_config"))
+    latest = next((m.get("state") for m in reversed(st.session_state.messages) if m.get("state")), {})
+    last_mode = str(latest.get("runtime_mode", ""))
+    runtime_label = ("Local fallback · 外部模型关闭" if offline else
+        f"LLM ONLINE · {runtime_status['model']}" if last_mode in {"external_general_reasoning", "external_reasoning_with_deterministic_governance"}
+        else f"{runtime_status['model']} · 已授权，等待本轮验证")
     details = information_html(model, session, runtime_label)
     with st.container():
         st.markdown('<span class="shell-toolbar-marker"></span>', unsafe_allow_html=True)
@@ -8190,14 +8194,15 @@ with st.sidebar:
             }[value],
             help="矩阵、barcode、完整路径和上传文件不会外发。STRICT_OFFLINE 禁止全部外部模型调用。",
         )
-        offline_llm = privacy_mode == PrivacyMode.STRICT_OFFLINE.value
+        offline_llm = privacy_mode == PrivacyMode.STRICT_OFFLINE.value or settings.offline_llm
         env_llm_configured = bool(
             (settings.deepseek_api_key or settings.openai_api_key)
-            and settings.model_name
+            and (settings.model_name or settings.extract_model)
         )
+        from agent.research_runtime import startup_chat_consent
         run_live = st.checkbox(
             "本会话启用 DeepSeek（发送脱敏后的问题与受控上下文）",
-            value=False,
+            value=startup_chat_consent(),
             key="research_external_reasoning_consent",
             disabled=(
                 offline_llm
@@ -8499,9 +8504,9 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                     authorize_uploaded_binding(_execution_ui_backend().data_registry, request_input_binding, user_id=local_user_id)
                     run_artifact_id = request_input_binding["artifact_id"]
                 except Exception as exc:
-                    st.error("这份数据暂时无法访问，请通过 ＋ 重新选择文件。" +
-                             _execution_ui_backend().redact_text(str(exc)))
-                    st.stop()
+                    st.warning("之前绑定的数据暂时无法访问，普通问答仍可继续；涉及该数据时需要重新选择文件。")
+                    run_artifact_id = None
+            request_binding_stale = bool(request_input_binding and not run_artifact_id)
             if request_draft.get("input_binding"):
                 _bind_research_input(request_input_binding)
             _clear_research_attachments()
@@ -8553,7 +8558,7 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                     _render_assistant_report(report)
                     live_key = f"live_{st.session_state.session_id}_{int(time.time() * 1000)}"
                     _render_followups(followups, key_prefix=live_key, source_query=query)
-                elif _is_greeting_query(query):
+                elif _is_greeting_query(query) and (not run_live or offline_llm):
                     report = _greeting_reply(project_memory)
                     followups = _greeting_followups()
                     state = None
@@ -8580,6 +8585,8 @@ if st.session_state.current_view in {"home", "chat", "data_preview"}:
                             runtime_config = dict(
                                 st.session_state.get("user_api_config") or {}
                             )
+                            if request_binding_stale:
+                                runtime_config["input_binding_status"] = "stale"
                             live_query = query
                             live_conversation = _conversation_context(
                                 st.session_state.messages[:-1]

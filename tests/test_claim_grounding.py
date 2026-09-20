@@ -621,8 +621,10 @@ class _CaptureReasoner:
 
 
 def test_evidence_qa_reasoner_receives_bindings_without_static_knowledge(tmp_path):
+    from engine.hybrid_retrieval import HybridRetrievalService
     reasoner = _CaptureReasoner()
     service = ResearchChatService(
+        retrieval=HybridRetrievalService(),  # Preserve the Legacy source binding regression.
         dense_default_enabled=False,
         trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     )

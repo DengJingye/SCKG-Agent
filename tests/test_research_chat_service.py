@@ -97,7 +97,10 @@ def _service(tmp_path):
 
 
 def _default_service(tmp_path):
+    # This historical suite pins Legacy KG/sourcev2 IDs. Keep it as the explicit
+    # baseline; approved-v2 production qualification lives in its own test suite.
     return ResearchChatService(
+        retrieval=HybridRetrievalService(),
         dense_default_enabled=False,
         trace_collector=TraceCollector(tmp_path / "traces.jsonl"),
     )

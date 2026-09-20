@@ -112,6 +112,7 @@ class ConversationTaskState(StrictModel):
     last_action_bundle_ids: list[str] = Field(default_factory=list)
     state_epoch: int = Field(default=0, ge=0)
     runtime_build_id: str = ""
+    user_reported_context: dict[str, str] = Field(default_factory=dict)
 
 
 class ResearchAgentRequest(StrictModel):
