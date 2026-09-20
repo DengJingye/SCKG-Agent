@@ -1034,6 +1034,11 @@ from engine.knowledge_graph_view import (
     build_knowledge_graph_view,
 )
 from engine.scientific_kg_admin import ScientificKGAdminSnapshotService
+from engine.ontology_manager import (
+    OntologyIntegrityError,
+    OntologyManagerReadOnlyService,
+    build_ontology_schema_graph_html,
+)
 from engine.scientific_knowledge_studio import (
     ScientificKnowledgeStudioService,
     load_studio_evaluation_snapshot,
@@ -4243,6 +4248,252 @@ def _render_candidate_studio(
     )
 
 
+def _render_ontology_manager() -> None:
+    """Render the verified, schema-only Ontology v2 design workspace."""
+
+    try:
+        service = OntologyManagerReadOnlyService(Path(__file__).resolve().parent)
+    except OntologyIntegrityError as exc:
+        st.error(f"Ontology Manager fail-closed: {exc}")
+        return
+
+    overview = service.overview()
+    st.warning("DESIGN FROZEN · This is a read-only design registry, not a production KG.")
+    st.info("PRODUCTION MIGRATION = NO")
+    st.caption(
+        "Authoritative source: data/ontology/scientific_decision_ontology_v2_core/ · "
+        f"{service.integrity()['artifact_count']} manifest hashes verified"
+    )
+
+    (
+        overview_tab,
+        object_tab,
+        link_tab,
+        property_tab,
+        schema_tab,
+    ) = st.tabs(
+        [
+            "Ontology Overview",
+            "Object Types",
+            "Link Types",
+            "Properties & Qualifiers",
+            "Schema Graph",
+        ]
+    )
+
+    with overview_tab:
+        version_cols = st.columns(3)
+        version_cols[0].metric("Ontology version", overview["ontology_version"])
+        version_cols[1].metric("Schema version", overview["schema_version"])
+        version_cols[2].metric("Freeze commit", overview["freeze_commit"][:12])
+        count_cols = st.columns(4)
+        count_cols[0].metric("Core object types", overview["core_object_type_count"])
+        count_cols[1].metric("Authoritative links", overview["authoritative_link_count"])
+        count_cols[2].metric("Derived projections", overview["derived_projection_count"])
+        count_cols[3].metric("Properties", overview["property_count"])
+        more_cols = st.columns(3)
+        more_cols[0].metric("Qualifiers", overview["qualifier_count"])
+        more_cols[1].metric("Extension count", overview["extension_count"])
+        more_cols[2].metric("Deferred count", overview["deferred_count"])
+        st.caption(
+            f"Registry inventory: {overview['extension_registry_item_count']} extension items · "
+            f"{overview['deferred_registry_item_count']} deferred/disposition items · "
+            f"{overview['merged_compatibility_object_count']} compatibility object concepts merged, not active object types"
+        )
+        st.markdown("#### Design boundary")
+        st.table(
+            [
+                {"Boundary": "Design state", "Value": "DESIGN FROZEN"},
+                {"Boundary": "Production migration", "Value": "NO"},
+                {"Boundary": "Scientific KG mutation", "Value": "DISABLED"},
+                {"Boundary": "Ontology editing", "Value": "DISABLED"},
+            ]
+        )
+
+    with object_tab:
+        st.markdown("#### Object Types")
+        controls = st.columns([1.5, 1.3, 1.2, 1.2])
+        with controls[0]:
+            object_query = st.text_input(
+                "Search object types", key="ontology_object_search", placeholder="name or definition"
+            )
+        with controls[1]:
+            object_modules = st.multiselect(
+                "Module", service.modules(), key="ontology_object_modules"
+            )
+        with controls[2]:
+            object_statuses = st.multiselect(
+                "Core / Extension / Deferred",
+                ["Core", "Extension", "Deferred"],
+                key="ontology_object_statuses",
+            )
+        with controls[3]:
+            object_layers = st.multiselect(
+                "Scientific / runtime bridge",
+                ["scientific", "runtime bridge"],
+                key="ontology_object_layers",
+            )
+        object_rows = service.object_types(
+            object_query,
+            modules=object_modules,
+            statuses=object_statuses,
+            layers=object_layers,
+        )
+        st.caption(
+            f"{len(object_rows)} active design object types · "
+            "26 core / 7 extension / 8 deferred before filters"
+        )
+        st.dataframe(object_rows, use_container_width=True, hide_index=True, height=430)
+        if object_rows:
+            selected_object = st.selectbox(
+                "Inspect object type",
+                [row["Object Type"] for row in object_rows],
+                key="ontology_object_detail",
+            )
+            detail = service.object_detail(selected_object)
+            detail_cols = st.columns([1.0, 1.2])
+            with detail_cols[0]:
+                st.markdown(f"##### {detail['object_type']}")
+                st.write(detail["definition"])
+                st.table(
+                    [
+                        {"Field": "Module", "Value": detail["module"]},
+                        {"Field": "Status", "Value": detail["status"]},
+                        {"Field": "Layer", "Value": detail["layer"]},
+                        {
+                            "Field": "CQ support",
+                            "Value": ", ".join(detail["cq_support"]) or "None declared",
+                        },
+                    ]
+                )
+                st.markdown("##### v1 compatibility status")
+                st.json(detail["v1_compatibility"])
+            with detail_cols[1]:
+                st.markdown("##### Allowed / required fields")
+                st.json(
+                    {
+                        "required_properties": detail["required_properties"],
+                        "optional_properties": detail["optional_properties"],
+                        "required_links": detail["required_links"],
+                        "required_incoming_links": detail["required_incoming_links"],
+                    }
+                )
+                st.markdown("##### Links in / out")
+                st.json({"in": detail["links_in"], "out": detail["links_out"]})
+
+    with link_tab:
+        st.markdown("#### Link Types")
+        st.caption(
+            "AUTHORITATIVE links are frozen schema statements. DERIVED PROJECTION links are computed views and are not equivalent to authoritative statements."
+        )
+        link_controls = st.columns([1.6, 1.2, 1.3])
+        link_modules_available = sorted(
+            {row["module"] for row in service.schema_graph()["edges"]}
+        )
+        with link_controls[0]:
+            link_query = st.text_input(
+                "Search link types", key="ontology_link_search", placeholder="predicate or definition"
+            )
+        with link_controls[1]:
+            link_modules = st.multiselect(
+                "Link module", link_modules_available, key="ontology_link_modules"
+            )
+        with link_controls[2]:
+            link_classes = st.multiselect(
+                "Authority",
+                ["AUTHORITATIVE", "DERIVED_PROJECTION"],
+                key="ontology_link_classifications",
+            )
+        link_rows = service.link_types(
+            link_query, modules=link_modules, classifications=link_classes
+        )
+        st.caption(f"{len(link_rows)} core link types")
+        st.dataframe(link_rows, use_container_width=True, hide_index=True, height=440)
+        if link_rows:
+            selected_link = st.selectbox(
+                "Inspect link type",
+                [row["Predicate"] for row in link_rows],
+                key="ontology_link_detail",
+            )
+            link_detail = service.link_detail(selected_link)
+            if link_detail["classification"] == "DERIVED_PROJECTION":
+                st.warning("DERIVED PROJECTION · non-authoritative computed view")
+            else:
+                st.info("AUTHORITATIVE LINK")
+            link_detail_cols = st.columns([1.0, 1.2])
+            with link_detail_cols[0]:
+                st.markdown(f"##### {link_detail['predicate']}")
+                st.write(link_detail["definition"])
+                st.json(
+                    {
+                        "domain": link_detail["domain"],
+                        "range": link_detail["range"],
+                        "module": link_detail["module"],
+                        "status": link_detail["status"],
+                        "CQ support": link_detail["cq_support"],
+                    }
+                )
+            with link_detail_cols[1]:
+                st.markdown("##### Evidence policy")
+                st.json(link_detail["evidence_policy"])
+                st.markdown("##### Qualifier policy")
+                st.json(link_detail["qualifier_policy"])
+
+    with property_tab:
+        properties_tab, qualifiers_tab = st.tabs(["Properties", "Qualifiers"])
+        with properties_tab:
+            property_query = st.text_input(
+                "Search properties", key="ontology_property_search", placeholder="name or owner"
+            )
+            property_rows = service.properties(property_query)
+            effect = next(row for row in property_rows if row["Name"] == "effect_description") if any(
+                row["Name"] == "effect_description" for row in property_rows
+            ) else None
+            if effect:
+                st.warning(
+                    "effect_description → DISPLAY ONLY / NO MACHINE AUTHORITY · "
+                    "never decision evidence or an assertion predicate"
+                )
+            st.caption(f"{len(property_rows)} properties")
+            st.dataframe(property_rows, use_container_width=True, hide_index=True, height=500)
+        with qualifiers_tab:
+            qualifier_query = st.text_input(
+                "Search qualifiers", key="ontology_qualifier_search", placeholder="name or context"
+            )
+            qualifier_rows = service.qualifiers(qualifier_query)
+            st.caption(f"{len(qualifier_rows)} qualifiers")
+            st.dataframe(qualifier_rows, use_container_width=True, hide_index=True, height=500)
+
+    with schema_tab:
+        st.markdown("#### Bounded schema graph")
+        st.caption(
+            "Object Types and Core Link Types only · 0 Scientific KG instance nodes loaded"
+        )
+        graph_controls = st.columns([1.8, 1.0, 1.1])
+        with graph_controls[0]:
+            graph_modules = st.multiselect(
+                "Graph modules", service.schema_modules(), key="ontology_graph_modules"
+            )
+        with graph_controls[1]:
+            authoritative_only = st.checkbox(
+                "Authoritative only", value=False, key="ontology_graph_authoritative_only"
+            )
+        with graph_controls[2]:
+            show_derived = st.checkbox(
+                "Show derived projections", value=True, key="ontology_graph_show_derived"
+            )
+        graph = service.schema_graph(
+            modules=graph_modules,
+            authoritative_only=authoritative_only,
+            show_derived=show_derived,
+        )
+        st.caption(
+            f"Bounded: {graph['node_count']} object types · {graph['edge_count']} endpoint edges · "
+            f"instance nodes loaded: {graph['instance_nodes_loaded']}"
+        )
+        components.html(build_ontology_schema_graph_html(graph), height=730, scrolling=False)
+
+
 def _render_scientific_kg_admin_page() -> None:
     """Render the read-only Scientific KG checkpoint snapshot."""
 
@@ -4262,8 +4513,8 @@ def _render_scientific_kg_admin_page() -> None:
         "SCIENTIFIC_KG only · checkpoint-1 physical layer counts · "
         "candidate ≠ reviewed ≠ trusted ≠ execution-authorized"
     )
-    overview_tab, graph_tab, readiness_tab, studio_tab = st.tabs(
-        ["Overview", "Scientific Graph", "Readiness & Integrity", "Candidate Studio"]
+    overview_tab, graph_tab, readiness_tab, studio_tab, ontology_tab = st.tabs(
+        ["Overview", "Scientific Graph", "Readiness & Integrity", "Candidate Studio", "Ontology"]
     )
 
     with overview_tab:
@@ -4462,6 +4713,9 @@ def _render_scientific_kg_admin_page() -> None:
 
     with studio_tab:
         _render_candidate_studio(summary)
+
+    with ontology_tab:
+        _render_ontology_manager()
 
 def _render_memory_admin_panel() -> None:
     _render_admin_header(
