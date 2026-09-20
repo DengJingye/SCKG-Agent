@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SingleR classic 模式要求参考表达矩阵与测试表达矩阵使用相同的基因标识符体系，否则无法正确匹配基因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的参考基因标识符为 HGNC symbols，而测试数据为 Ensembl stable IDs，两者不一致，因此不能直接开始注释。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_gene_namespace\", \"user:test_gene_namespace\"]\n    },\n    {\n      \"text\": \"参考表达为 log-normalized expression，测试数据为 UMI counts，两者尺度不同；SingleR 通常要求参考与测试使用相同的表达尺度。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"在开始前，需要先将测试数据的 Ensembl IDs 映射为 HGNC symbols，或统一为同一标识符体系。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"同时需要确认测试数据的表达尺度是否与参考一致，例如是否需要对 UMI counts 进行 log-normalization。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"当前状态显示输入数据尚未注册，测量数据不可用，因此无法执行实际注释。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:input_registered\", \"observed:measurements_available\"]\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935211,
+  "id": "2c424e95-575d-4926-9f3d-def8d954b8c8",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 424,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1863,
+    "prompt_tokens": 3015,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3439
+  }
+}

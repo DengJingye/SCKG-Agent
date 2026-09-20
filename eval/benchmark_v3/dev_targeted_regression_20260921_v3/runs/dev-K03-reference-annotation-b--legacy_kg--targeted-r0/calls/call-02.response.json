@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SingleR 的查询矩阵可以接受原始 UMI 计数，无需预先归一化和 log 变换。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"SingleR accepts a gene-by-cell query matrix, including raw UMI counts or transcript counts without normalization and log transformation.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"测试基因使用 Ensembl ID、参考基因使用 HGNC 符号，且未提供映射表，因此需要先建立基因标识符对应关系。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:test_gene_namespace\",\n        \"user:reference_gene_namespace\",\n        \"user:mapping_table_provided\"\n      ]\n    },\n    {\n      \"text\": \"当前检查结果显示尚未绑定输入数据，因此无法直接开始注释。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"observed:status\",\n        \"observed:input_registered\"\n      ]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供测试与参考之间基因标识符的映射方式或映射表，以便确认特征对齐条件。\",\n    \"missing_field\": \"gene_identifier_mapping\",\n    \"why_needed\": \"测试基因使用 Ensembl ID，参考基因使用 HGNC 符号，且未提供映射表；缺少映射方式无法判断特征交集是否满足 SingleR 的 feature_alignment=intersection 要求。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935213,
+  "id": "ac88df74-4797-40b3-9119-d7320c63875a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 459,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 3574,
+    "prompt_tokens": 4726,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 5185
+  }
+}

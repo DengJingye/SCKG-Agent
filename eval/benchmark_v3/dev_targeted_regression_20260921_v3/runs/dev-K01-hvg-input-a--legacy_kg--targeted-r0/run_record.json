@@ -1,0 +1,203 @@
+{
+  "answer_hash": "ff9702e591d59ac80907f5947d6242acfc429f201b284b0e57e59007dd92041c",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_aa312d4845fa41ab9291349e7943f3b8",
+  "case_id": "dev-K01-hvg-input-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-targeted-regression-20260921-v3",
+  "input_tokens": 7415,
+  "latency_ms": 11649.360916999285,
+  "observed": {
+    "answer": "在 Scanpy 1.11.2 中，当 flavor='seurat_v3' 时，高变基因选择期望输入为计数数据，而不是对数化数据。[1]\n\n你提供的矩阵状态为 raw_integer_counts，属于原始整数计数，符合 seurat_v3 对计数数据的要求。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此，在未提供 counts 层且矩阵本身为原始整数计数的情况下，该矩阵可以直接作为 seurat_v3 高变基因选择的输入。\n\n必要的下一步是确认矩阵中的值确实为原始 UMI 计数，且未经过任何归一化或对数变换；若存在其他预处理，则需先恢复为计数数据。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1113,
+  "repetition": 0,
+  "run_id": "dev-K01-hvg-input-a--legacy_kg--targeted-r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-K01-hvg-input-a--legacy_kg--targeted-r0",
+      "created_at": "2026-09-20T20:13:03.977391+00:00",
+      "finished_at": "2026-09-20T20:13:15.623239+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:0c1a247ae9e894af",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-K01-hvg-input-a--legacy_kg--targeted-r0",
+      "root_span_id": "span_60a9c848d7c043efb9bfa50f733f5188",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 11645.602,
+          "ended_at": "2026-09-20T20:13:15.623239+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_60a9c848d7c043efb9bfa50f733f5188",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T20:13:03.977414+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_aa312d4845fa41ab9291349e7943f3b8"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 4931.602,
+          "ended_at": "2026-09-20T20:13:08.930293+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-K01-hvg-input-a--legacy_kg--targeted-r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_60a9c848d7c043efb9bfa50f733f5188",
+          "sequence": 2,
+          "span_id": "span_83cd5e271f6141babf2824f531c9e4db",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T20:13:03.998592+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_aa312d4845fa41ab9291349e7943f3b8"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 5,
+            "source_bound_count": 5,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:legacy_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 763.608,
+          "ended_at": "2026-09-20T20:13:09.695082+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "scanpy-authoritative-span:hvg.flavor_input:1.11.2",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "gold-span:scanpy:hvg-default-flavor:1.11.2",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "scanpy-authoritative-span:hvg.output:1.11.2",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "scanpy-authoritative-span:leiden.input:1.11.2",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "scanpy-authoritative-span:pca.input:1.11.2",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_60a9c848d7c043efb9bfa50f733f5188",
+          "sequence": 3,
+          "span_id": "span_167872a3cbde4e0d8b108fbfee9bf7cf",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T20:13:08.931462+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_aa312d4845fa41ab9291349e7943f3b8"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_aa312d4845fa41ab9291349e7943f3b8",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

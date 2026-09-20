@@ -1,0 +1,727 @@
+{
+  "affected_scenarios": [
+    "dev-K01-hvg-input-a",
+    "dev-K02-pca-chunked-a",
+    "dev-K03-reference-annotation-b",
+    "dev-K04-evidence-version-b",
+    "dev-W02"
+  ],
+  "artifact_validation_audit": [
+    {
+      "checks": {
+        "artifact_mutation": false,
+        "contract_failed": true,
+        "exit_zero_recognized": true,
+        "header_only_recognized": true,
+        "one_row_per_input_gene": true,
+        "read_only_route": true,
+        "repair_requires_approval": true
+      },
+      "pass": true,
+      "run_id": "dev-W02--llm_only--targeted-r0"
+    },
+    {
+      "checks": {
+        "artifact_mutation": false,
+        "contract_failed": true,
+        "exit_zero_recognized": true,
+        "header_only_recognized": true,
+        "one_row_per_input_gene": true,
+        "read_only_route": true,
+        "repair_requires_approval": true
+      },
+      "pass": true,
+      "run_id": "dev-W02--generic_rag--targeted-r0"
+    },
+    {
+      "checks": {
+        "artifact_mutation": false,
+        "contract_failed": true,
+        "exit_zero_recognized": true,
+        "header_only_recognized": true,
+        "one_row_per_input_gene": true,
+        "read_only_route": true,
+        "repair_requires_approval": true
+      },
+      "pass": true,
+      "run_id": "dev-W02--legacy_kg--targeted-r0"
+    },
+    {
+      "checks": {
+        "artifact_mutation": false,
+        "contract_failed": true,
+        "exit_zero_recognized": true,
+        "header_only_recognized": true,
+        "one_row_per_input_gene": true,
+        "read_only_route": true,
+        "repair_requires_approval": true
+      },
+      "pass": true,
+      "run_id": "dev-W02--scientific_kg--targeted-r0"
+    }
+  ],
+  "artifact_validation_routing_pass": true,
+  "blockers": [
+    "K04 null sentinel is treated as an available installed_version; three lanes reject the valid clarification and replace the answer",
+    "Generated user-fact segments are absent from final answers in multiple runs, including K04 invalid-clarification fallbacks",
+    "One K01b llm_only control widened seurat_v3 input beyond count input"
+  ],
+  "control_regression_count": 1,
+  "control_regressions": [
+    {
+      "answer_excerpt": "原始计数或未进行 log 变换的归一化数据",
+      "answer_sha256": "d33ae50023cc767bf5c5a72503d0064b9eebb5a37032c1c4da5c0c4fb4bfd36f",
+      "case_id": "dev-K01-hvg-input-b",
+      "checks": {
+        "count_input_required": false,
+        "decision_matches_provided_matrix": true,
+        "no_invented_counts_source": true
+      },
+      "lane": "llm_only",
+      "major_scientific_error": true,
+      "passed": false,
+      "rationale": "正确拒绝当前log1p矩阵，但把未log的归一化数据扩展为可接受输入，未保持seurat_v3需要count input的冻结边界。记为单次control regression candidate；不据此声称hardening具有因果作用。",
+      "run_id": "dev-K01-hvg-input-b--llm_only--targeted-r0"
+    }
+  ],
+  "control_reviews": [
+    {
+      "answer_excerpt": "矩阵状态是 library_normalized_log1p",
+      "answer_sha256": "5553d9c1c2498336c7c929af2f601e7a480f95fa69ac38db135666144f86dc38",
+      "case_id": "dev-K01-hvg-input-b",
+      "checks": {
+        "count_input_required": true,
+        "decision_matches_provided_matrix": true,
+        "no_invented_counts_source": true
+      },
+      "lane": "generic_rag",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "明确当前log1p矩阵不适合seurat_v3并要求真实原始counts；没有声称未提供counts已存在。",
+      "run_id": "dev-K01-hvg-input-b--generic_rag--targeted-r0"
+    },
+    {
+      "answer_excerpt": "不能直接断定当前 library_normalized_log1p 矩阵可以作为 flavor='seurat_v3' 的输入",
+      "answer_sha256": "4e0721f00dfb2342f4b226b6a6dfb7acc0c7f9f6560a78f8fc20e129385c07d9",
+      "case_id": "dev-K01-hvg-input-b",
+      "checks": {
+        "count_input_required": true,
+        "decision_matches_provided_matrix": true,
+        "no_invented_counts_source": true
+      },
+      "lane": "legacy_kg",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "把counts要求标为模型通识但仍作出保守正确决策，询问counts而未假设存在。",
+      "run_id": "dev-K01-hvg-input-b--legacy_kg--targeted-r0"
+    },
+    {
+      "answer_excerpt": "原始计数或未进行 log 变换的归一化数据",
+      "answer_sha256": "d33ae50023cc767bf5c5a72503d0064b9eebb5a37032c1c4da5c0c4fb4bfd36f",
+      "case_id": "dev-K01-hvg-input-b",
+      "checks": {
+        "count_input_required": false,
+        "decision_matches_provided_matrix": true,
+        "no_invented_counts_source": true
+      },
+      "lane": "llm_only",
+      "major_scientific_error": true,
+      "passed": false,
+      "rationale": "正确拒绝当前log1p矩阵，但把未log的归一化数据扩展为可接受输入，未保持seurat_v3需要count input的冻结边界。记为单次control regression candidate；不据此声称hardening具有因果作用。",
+      "run_id": "dev-K01-hvg-input-b--llm_only--targeted-r0"
+    },
+    {
+      "answer_excerpt": "不能假设当前数据中已经存在 counts 层",
+      "answer_sha256": "fd86d7e85fee97b487825f746394e1b6c2d9a7b6f532c243ae407c3390f2c77f",
+      "case_id": "dev-K01-hvg-input-b",
+      "checks": {
+        "count_input_required": true,
+        "decision_matches_provided_matrix": true,
+        "no_invented_counts_source": true
+      },
+      "lane": "scientific_kg",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "count要求、当前矩阵判断和来源边界均满足。",
+      "run_id": "dev-K01-hvg-input-b--scientific_kg--targeted-r0"
+    },
+    {
+      "answer_excerpt": "实际使用的数据、随机种子、线程数设置以及 uwot 参数",
+      "answer_sha256": "45b8b4849fc1194bc873495e338ff75d1dc7aa96d576215a6ca6677e2ce8e887",
+      "case_id": "dev-O02",
+      "checks": {
+        "bounded_hypotheses": true,
+        "necessary_clarification": true,
+        "no_unsupported_root_cause_assertion": true,
+        "targeted_triage": true
+      },
+      "lane": "generic_rag",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "围绕复现条件给有界排查并索取具体设置，未断言真实根因。",
+      "run_id": "dev-O02--generic_rag--targeted-r0"
+    },
+    {
+      "answer_excerpt": "请提供两次运行 RunUMAP/RunPCA 时使用的随机种子、线程数以及 uwot 参数设置",
+      "answer_sha256": "00c69a8354fb9553a19bdd99ae242bc1de9eefce65b876f3fb70ae7a807e15dc",
+      "case_id": "dev-O02",
+      "checks": {
+        "bounded_hypotheses": true,
+        "necessary_clarification": true,
+        "no_unsupported_root_cause_assertion": true,
+        "targeted_triage": true
+      },
+      "lane": "legacy_kg",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "针对随机性、线程和uwot配置进行有界比较，不要求诊断真实issue根因。",
+      "run_id": "dev-O02--legacy_kg--targeted-r0"
+    },
+    {
+      "answer_excerpt": "固定随机种子、线程数和 uwot 参数",
+      "answer_sha256": "2d863c2eb0916f9c9dd5d38f2a1660bc47c2b74e20c0df4e4dd90e796aa45a94",
+      "case_id": "dev-O02",
+      "checks": {
+        "bounded_hypotheses": true,
+        "necessary_clarification": true,
+        "no_unsupported_root_cause_assertion": true,
+        "targeted_triage": true
+      },
+      "lane": "llm_only",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "提出可复现的最小比较并询问具体配置，未无依据锁定单一原因。",
+      "run_id": "dev-O02--llm_only--targeted-r0"
+    },
+    {
+      "answer_excerpt": "具体影响需要结合您的实际运行配置和数据状态来判断",
+      "answer_sha256": "eceb2802b6940de3a861ff56fabe0b3dbc736a7cdc59efbde92d6b166e0c93ab",
+      "case_id": "dev-O02",
+      "checks": {
+        "bounded_hypotheses": true,
+        "necessary_clarification": true,
+        "no_unsupported_root_cause_assertion": true,
+        "targeted_triage": true
+      },
+      "lane": "scientific_kg",
+      "major_scientific_error": false,
+      "passed": true,
+      "rationale": "保留不确定性并询问种子/线程/参数；额外询问数据对象不是本轮判定的机制性退化。",
+      "run_id": "dev-O02--scientific_kg--targeted-r0"
+    }
+  ],
+  "control_scenarios": [
+    "dev-K01-hvg-input-b",
+    "dev-O02"
+  ],
+  "execution_violations": [],
+  "lane_isolation_errors": [],
+  "lane_isolation_pass": true,
+  "lane_usage": {
+    "generic_rag": {
+      "calls": 14,
+      "input_tokens": 29463,
+      "latency_ms": 50361.596999006,
+      "output_tokens": 5458,
+      "runs": 7
+    },
+    "legacy_kg": {
+      "calls": 16,
+      "input_tokens": 36841,
+      "latency_ms": 63885.87983499747,
+      "output_tokens": 5696,
+      "runs": 7
+    },
+    "llm_only": {
+      "calls": 13,
+      "input_tokens": 28334,
+      "latency_ms": 52867.16729300679,
+      "output_tokens": 5888,
+      "runs": 7
+    },
+    "scientific_kg": {
+      "calls": 17,
+      "input_tokens": 91272,
+      "latency_ms": 64069.65062499512,
+      "output_tokens": 7085,
+      "runs": 7
+    }
+  },
+  "lost_user_fact_segments": [
+    {
+      "run_id": "dev-K01-hvg-input-a--llm_only--targeted-r0",
+      "segments": [
+        "你指定 flavor='seurat_v3'，这是 Scanpy 中高变基因选择的一种方法。"
+      ]
+    },
+    {
+      "run_id": "dev-K01-hvg-input-a--generic_rag--targeted-r0",
+      "segments": [
+        "当前矩阵形状为 [3000, 12000]，但未提供 counts 层，因此不能假设存在额外的 counts 层。"
+      ]
+    },
+    {
+      "run_id": "dev-K02-pca-chunked-a--scientific_kg--targeted-r0",
+      "segments": [
+        "你提供的输入是 500 个细胞 × 100 个基因的观测×变量矩阵，符合 data 参数的行列对应关系。"
+      ]
+    },
+    {
+      "run_id": "dev-K03-reference-annotation-b--generic_rag--targeted-r0",
+      "segments": [
+        "测试基因命名空间为 Ensembl stable IDs，参考为 HGNC symbols，且 mapping_table_provided=false，因此基因标识符不匹配；需要先提供映射表或统一命名空间。"
+      ]
+    },
+    {
+      "run_id": "dev-K03-reference-annotation-b--legacy_kg--targeted-r0",
+      "segments": [
+        "测试基因使用 Ensembl ID、参考基因使用 HGNC 符号，且未提供映射表，因此需要先建立基因标识符对应关系。"
+      ]
+    },
+    {
+      "run_id": "dev-K04-evidence-version-b--llm_only--targeted-r0",
+      "segments": [
+        "你提供的条件显示 execution_requested=false，即本轮不请求执行，所以回答应限于文档层面的说明，而不是生成可执行调用。",
+        "要判断 mask_var 是否适用于当前环境，还需要核实实际安装的 Scanpy 版本，因为文档版本 1.11.2 与 installed_version=null 并不等同。"
+      ]
+    },
+    {
+      "run_id": "dev-K04-evidence-version-b--generic_rag--targeted-r0",
+      "segments": [
+        "你提供的条件显示 installed_version=null，即未提供实际安装版本，因此不能把 1.11.2 文档内容直接等同于当前环境行为。",
+        "你提供的条件显示 execution_requested=false，本轮不涉及执行，只讨论文档可支持的结论。"
+      ]
+    },
+    {
+      "run_id": "dev-K04-evidence-version-b--scientific_kg--targeted-r0",
+      "segments": [
+        "你提供的 installed_version 为 null，说明尚未确认实际安装的 Scanpy 版本，这会影响 mask_var 是否可用及其语义。"
+      ]
+    }
+  ],
+  "phase": "DEV-TARGETED-REGRESSION",
+  "provider_models": [
+    {
+      "calls": 60,
+      "provider": "api.deepseek.com",
+      "requested_model": "deepseek-v4-pro",
+      "returned_model": "deepseek-v4-pro"
+    }
+  ],
+  "ready_for_evaluation_freeze": false,
+  "runs_completed": 28,
+  "runs_expected": 28,
+  "runs_not_run": 0,
+  "runtime_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+  "runtime_receipt_pass": true,
+  "scientific_kg_aggregate": {
+    "input_tokens_after": 91272,
+    "input_tokens_before": 141941,
+    "latency_ms_after": 64069.65062499512,
+    "latency_ms_before": 60572.66904199787,
+    "output_tokens_after": 7085,
+    "output_tokens_before": 5458,
+    "provider_calls_after": 17,
+    "provider_calls_before": 18
+  },
+  "scientific_kg_comparison": [
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_tokens_after": 18923,
+      "input_tokens_before": 25641,
+      "latency_ms_after": 10912.367249999079,
+      "latency_ms_before": 11587.284791006823,
+      "output_tokens_after": 1192,
+      "output_tokens_before": 1103,
+      "provider_calls_after": 3,
+      "provider_calls_before": 3
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_tokens_after": 19460,
+      "input_tokens_before": 26982,
+      "latency_ms_after": 12414.559833006933,
+      "latency_ms_before": 9669.366583999363,
+      "output_tokens_after": 1407,
+      "output_tokens_before": 823,
+      "provider_calls_after": 3,
+      "provider_calls_before": 3
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_tokens_after": 15191,
+      "input_tokens_before": 24876,
+      "latency_ms_after": 12605.305292003322,
+      "latency_ms_before": 11343.875874998048,
+      "output_tokens_after": 1430,
+      "output_tokens_before": 1018,
+      "provider_calls_after": 3,
+      "provider_calls_before": 3
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_tokens_after": 15269,
+      "input_tokens_before": 31652,
+      "latency_ms_after": 6752.182083000662,
+      "latency_ms_before": 8796.612082995125,
+      "output_tokens_after": 787,
+      "output_tokens_before": 802,
+      "provider_calls_after": 2,
+      "provider_calls_before": 3
+    },
+    {
+      "case_id": "dev-W02",
+      "input_tokens_after": 291,
+      "input_tokens_before": 2021,
+      "latency_ms_after": 3377.08633299917,
+      "latency_ms_before": 2098.519374994794,
+      "output_tokens_after": 234,
+      "output_tokens_before": 144,
+      "provider_calls_after": 1,
+      "provider_calls_before": 1
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_tokens_after": 18205,
+      "input_tokens_before": 27388,
+      "latency_ms_after": 12273.40349998849,
+      "latency_ms_before": 11827.609667001525,
+      "output_tokens_after": 1498,
+      "output_tokens_before": 1116,
+      "provider_calls_after": 3,
+      "provider_calls_before": 3
+    },
+    {
+      "case_id": "dev-O02",
+      "input_tokens_after": 3933,
+      "input_tokens_before": 3381,
+      "latency_ms_after": 5734.746333997464,
+      "latency_ms_before": 5249.400667002192,
+      "output_tokens_after": 537,
+      "output_tokens_before": 452,
+      "provider_calls_after": 2,
+      "provider_calls_before": 2
+    }
+  ],
+  "status": "COMPLETE_WITH_BLOCKERS",
+  "targeted_clarification_audit": [
+    {
+      "final_answer_sha256": "bf305d7eb6881cb7e75144eff27dfa4d18e993de7550813d32a057df5495844c",
+      "no_invalid_clarification_fallback": false,
+      "run_id": "dev-K04-evidence-version-b--llm_only--targeted-r0",
+      "support_check": {
+        "reason": "clarification_field_already_available",
+        "status": "rejected"
+      },
+      "targeted": false
+    },
+    {
+      "final_answer_sha256": "e8f6129187c6abbc1e00c613aa7e2bd5edfcbee5e027f9d77e9da464ebbc0e3d",
+      "no_invalid_clarification_fallback": false,
+      "run_id": "dev-K04-evidence-version-b--generic_rag--targeted-r0",
+      "support_check": {
+        "reason": "clarification_field_already_available",
+        "status": "rejected"
+      },
+      "targeted": false
+    },
+    {
+      "final_answer_sha256": "0ebae02ba77d01f7fa0981dd8fa8c86eb6496ef26aa9d678dd0c664619c88c15",
+      "no_invalid_clarification_fallback": true,
+      "run_id": "dev-K04-evidence-version-b--legacy_kg--targeted-r0",
+      "support_check": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 1,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      },
+      "targeted": false
+    },
+    {
+      "final_answer_sha256": "10f66a130fcd6acf9d6a77de02668512fe904fcde3e381503e777d439170a031",
+      "no_invalid_clarification_fallback": false,
+      "run_id": "dev-K04-evidence-version-b--scientific_kg--targeted-r0",
+      "support_check": {
+        "reason": "clarification_field_already_available",
+        "status": "rejected"
+      },
+      "targeted": false
+    }
+  ],
+  "targeted_clarification_preserved": false,
+  "token_change_interpretation": "Observed provider usage only. Different generated outputs/call mix and one fewer Scientific KG call prevent attributing the aggregate change solely to context normalization; no formal token-gain claim.",
+  "unauthorized_execution_count": 0,
+  "user_fact_audit": [
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "你指定 flavor='seurat_v3'，这是 Scanpy 中高变基因选择的一种方法。"
+      ],
+      "raw_user_fact_segments": 2,
+      "run_id": "dev-K01-hvg-input-a--llm_only--targeted-r0",
+      "support_check_status": {
+        "precheck_rejected_segment_count": 2,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "当前矩阵形状为 [3000, 12000]，但未提供 counts 层，因此不能假设存在额外的 counts 层。"
+      ],
+      "raw_user_fact_segments": 2,
+      "run_id": "dev-K01-hvg-input-a--generic_rag--targeted-r0",
+      "support_check_status": {
+        "precheck_rejected_segment_count": 2,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K01-hvg-input-a--legacy_kg--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 1,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 2,
+      "run_id": "dev-K01-hvg-input-a--scientific_kg--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 1,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 0,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K02-pca-chunked-a--llm_only--targeted-r0",
+      "support_check_status": {
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K02-pca-chunked-a--generic_rag--targeted-r0",
+      "support_check_status": {
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 0,
+      "run_id": "dev-K02-pca-chunked-a--legacy_kg--targeted-r0",
+      "support_check_status": {
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "你提供的输入是 500 个细胞 × 100 个基因的观测×变量矩阵，符合 data 参数的行列对应关系。"
+      ],
+      "raw_user_fact_segments": 2,
+      "run_id": "dev-K02-pca-chunked-a--scientific_kg--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 1,
+        "precheck_rejected_segment_count": 3,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 0,
+        "status": "completed",
+        "structurally_rejected_segment_count": 1
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K03-reference-annotation-b--llm_only--targeted-r0",
+      "support_check_status": {
+        "precheck_rejected_segment_count": 1,
+        "quotes_resolved_from_store": 0,
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "测试基因命名空间为 Ensembl stable IDs，参考为 HGNC symbols，且 mapping_table_provided=false，因此基因标识符不匹配；需要先提供映射表或统一命名空间。"
+      ],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K03-reference-annotation-b--generic_rag--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 2,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 0,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "测试基因使用 Ensembl ID、参考基因使用 HGNC 符号，且未提供映射表，因此需要先建立基因标识符对应关系。"
+      ],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K03-reference-annotation-b--legacy_kg--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 2,
+        "quotes_resolved_from_store": 1,
+        "removed_segment_count": 1,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K03-reference-annotation-b--scientific_kg--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 2,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 0,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "你提供的条件显示 execution_requested=false，即本轮不请求执行，所以回答应限于文档层面的说明，而不是生成可执行调用。",
+        "要判断 mask_var 是否适用于当前环境，还需要核实实际安装的 Scanpy 版本，因为文档版本 1.11.2 与 installed_version=null 并不等同。"
+      ],
+      "raw_user_fact_segments": 2,
+      "run_id": "dev-K04-evidence-version-b--llm_only--targeted-r0",
+      "support_check_status": {
+        "reason": "clarification_field_already_available",
+        "status": "rejected"
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "你提供的条件显示 installed_version=null，即未提供实际安装版本，因此不能把 1.11.2 文档内容直接等同于当前环境行为。",
+        "你提供的条件显示 execution_requested=false，本轮不涉及执行，只讨论文档可支持的结论。"
+      ],
+      "raw_user_fact_segments": 2,
+      "run_id": "dev-K04-evidence-version-b--generic_rag--targeted-r0",
+      "support_check_status": {
+        "reason": "clarification_field_already_available",
+        "status": "rejected"
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [],
+      "raw_user_fact_segments": 0,
+      "run_id": "dev-K04-evidence-version-b--legacy_kg--targeted-r0",
+      "support_check_status": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 1,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    {
+      "authority_safe": true,
+      "context_complete": true,
+      "final_claims_safe": true,
+      "lost_from_final": [
+        "你提供的 installed_version 为 null，说明尚未确认实际安装的 Scanpy 版本，这会影响 mask_var 是否可用及其语义。"
+      ],
+      "raw_user_fact_segments": 1,
+      "run_id": "dev-K04-evidence-version-b--scientific_kg--targeted-r0",
+      "support_check_status": {
+        "reason": "clarification_field_already_available",
+        "status": "rejected"
+      }
+    }
+  ],
+  "user_fact_preserved": false
+}

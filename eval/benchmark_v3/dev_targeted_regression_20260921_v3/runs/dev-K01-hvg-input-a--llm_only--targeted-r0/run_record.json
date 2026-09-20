@@ -1,0 +1,172 @@
+{
+  "answer_hash": "a1511f8bfd3ccd493ef8e90aa4e6f0c41ffa9e84f71d541ab933c9c6a6f09873",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_b1cc3b674a654792bd0a5838842d8138",
+  "case_id": "dev-K01-hvg-input-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-targeted-regression-20260921-v3",
+  "input_tokens": 4751,
+  "latency_ms": 8813.098292012,
+  "observed": {
+    "answer": "你提供的矩阵状态是 raw_integer_counts，形状为 [3000, 12000]，这属于原始整数计数矩阵。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n根据 Scanpy 的通用设计，seurat_v3 方法通常期望输入为原始计数矩阵，并在内部进行标准化和对数化处理。\n\n由于当前没有直接的科学知识图谱证据支持 seurat_v3 对原始整数计数矩阵的具体要求，无法给出确切的适用性结论。\n\n必要的下一步是确认矩阵是否已经过标准化或对数化，或者直接使用原始计数矩阵并依赖 Scanpy 内部处理。",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1006,
+  "repetition": 0,
+  "run_id": "dev-K01-hvg-input-a--llm_only--targeted-r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-K01-hvg-input-a--llm_only--targeted-r0",
+      "created_at": "2026-09-20T20:13:01.277711+00:00",
+      "finished_at": "2026-09-20T20:13:10.088726+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:7e46e4f6a155b5c3",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-K01-hvg-input-a--llm_only--targeted-r0",
+      "root_span_id": "span_3eab6188c4c04f589b92b3cdae057a87",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 8810.818,
+          "ended_at": "2026-09-20T20:13:10.088726+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_3eab6188c4c04f589b92b3cdae057a87",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T20:13:01.277738+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_b1cc3b674a654792bd0a5838842d8138"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 5051.838,
+          "ended_at": "2026-09-20T20:13:06.350208+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-K01-hvg-input-a--llm_only--targeted-r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_3eab6188c4c04f589b92b3cdae057a87",
+          "sequence": 2,
+          "span_id": "span_ff65c30c2bc743c2a801d3c25be1d788",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T20:13:01.298270+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_b1cc3b674a654792bd0a5838842d8138"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.226,
+          "ended_at": "2026-09-20T20:13:06.351601+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_3eab6188c4c04f589b92b3cdae057a87",
+          "sequence": 3,
+          "span_id": "span_9f9995d4640e4a0aae235e5ebecf56f6",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T20:13:06.351370+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_b1cc3b674a654792bd0a5838842d8138"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_b1cc3b674a654792bd0a5838842d8138",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

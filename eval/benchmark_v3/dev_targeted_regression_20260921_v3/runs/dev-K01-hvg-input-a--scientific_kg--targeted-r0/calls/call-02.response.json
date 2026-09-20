@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，flavor='seurat_v3' 时高变基因选择期望的是计数数据，而不是对数化数据。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是 raw_integer_counts，符合 seurat_v3 对计数输入的期望，因此可以直接作为输入。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"seurat_v3 的计算流程是先对每个基因做带正则化标准差的 z-score 标准化，再计算标准化后方差并按该方差对基因排序。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"For `flavor='seurat_v3'`/`'seurat_v3_paper'` :cite:p:`Stuart2019`, a normalized variance for each gene\\n    is computed. First, the data are standardized (i.e., z-score normalization\\n    per feature) with a regularized standard deviation. Next, the normalized variance\\n    is computed as the variance of each gene after the transformation. Genes are ranked\\n    by the normalized variance.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"在 flavor='seurat_v3' 下，n_top_genes 是必须提供的参数；你已提供 n_top_genes=2000，因此该条件已满足。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"n_top_genes\\n        Number of highly-variable genes to keep. Mandatory if `flavor='seurat_v3'`.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 batch_key=null 表示未指定批次；在无批次时 seurat_v3 与 seurat_v3_paper 的排序差异不适用，因此不需要额外批次处理。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:batch_key\"]\n    },\n    {\n      \"text\": \"必要的下一步是确认 AnnData 对象已正确装载该原始整数计数矩阵，并显式传入 flavor='seurat_v3' 与 n_top_genes=2000 调用 highly_variable_genes。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935185,
+  "id": "42bfe69e-d1f4-4f95-a76b-739177ce4e82",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 673,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 12472,
+    "prompt_tokens": 13624,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 14297
+  }
+}

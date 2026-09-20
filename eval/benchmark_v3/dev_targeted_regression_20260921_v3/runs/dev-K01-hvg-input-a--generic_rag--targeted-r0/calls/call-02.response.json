@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，当 flavor='seurat_v3' 时，高变基因选择期望输入计数数据，而不是对数化数据。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是 raw_integer_counts，符合 seurat_v3 对计数数据输入的期望。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"当前矩阵形状为 [3000, 12000]，但未提供 counts 层，因此不能假设存在额外的 counts 层。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_shape\"]\n    },\n    {\n      \"text\": \"必要的下一步是确认该原始整数计数矩阵就是用于高变基因选择的输入矩阵，并直接将其传递给 Scanpy 的 highly_variable_genes 函数。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935188,
+  "id": "0d104bd7-8d5b-4e7a-ae1a-5d90524cec1c",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 348,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1771,
+    "prompt_tokens": 2923,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3271
+  }
+}

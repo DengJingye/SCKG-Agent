@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SingleR 的参考矩阵 ref 要求是数值矩阵，通常为归一化并 log 转换后的表达值；你提供的 reference_assay=log-normalized expression 符合这一通常形式。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"测试数据 test_assay=UMI counts 与参考的 log-normalized 尺度不一致，不能仅凭当前信息直接开始；需要先确认 SingleR 对测试矩阵的预期尺度或进行相应转换。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"测试基因命名空间为 Ensembl stable IDs，参考为 HGNC symbols，且 mapping_table_provided=false，因此基因标识符不匹配；需要先提供映射表或统一命名空间。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:test_gene_namespace\",\n        \"user:reference_gene_namespace\",\n        \"user:mapping_table_provided\"\n      ]\n    },\n    {\n      \"text\": \"当前状态显示输入尚未注册、测量数据不可用，因此无法开始实际注释；需要先绑定测试与参考数据。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"observed:input_registered\",\n        \"observed:measurements_available\"\n      ]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"测试数据的 UMI counts 是否已经过 log 归一化，或需要先转换为与参考一致的 log-normalized 尺度？\",\n    \"missing_field\": \"test_assay_scale\",\n    \"why_needed\": \"SingleR 参考矩阵通常为 log 归一化表达，测试矩阵尺度不一致会影响注释结果，需确认测试数据当前的实际尺度。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935208,
+  "id": "1a265dd8-88f2-47e3-8be8-c37d5b2040e0",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 488,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 2010,
+    "prompt_tokens": 3162,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3650
+  }
+}

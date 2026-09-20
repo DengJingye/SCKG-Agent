@@ -1,0 +1,2808 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [
+    {
+      "best_for": "作为检索候选，需要结合数据与合同继续核对。",
+      "caveats": [],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation...",
+      "mechanism": "机制说明仍需从 source-bound corpus 补齐。",
+      "output": "未确认",
+      "readiness": "catalog_only",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "SingleR"
+    }
+  ],
+  "answerability": {
+    "reason_codes": [
+      "source_bound_context_with_optional_model_knowledge"
+    ],
+    "unverified_model_knowledge_allowed": true,
+    "verdict": "ANSWER_DUAL_LAYER",
+    "verified_context_available": true
+  },
+  "candidate_tools": [
+    "SingleR"
+  ],
+  "canonical_trace_id": "trace_7a81642a4c29461bad466dddf7e9a48f",
+  "claim_audit": {
+    "caution_context": [],
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [
+      1
+    ],
+    "claims": [
+      {
+        "authority": "source_bound",
+        "citation_mapping": "valid",
+        "claim_id": "claim-001",
+        "claim_text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。",
+        "claim_type": "scientific",
+        "governance_action": "qualify",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "lexical_support_is_weak_semantic_review_not_run"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": [
+          "uat-authoritative-span:singler.interface"
+        ]
+      }
+    ],
+    "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [],
+    "verified_claims": [
+      {
+        "authority": "source_bound",
+        "citation_mapping": "valid",
+        "claim_id": "claim-001",
+        "claim_text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。",
+        "claim_type": "scientific",
+        "governance_action": "qualify",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "lexical_support_is_weak_semantic_review_not_run"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": [
+          "uat-authoritative-span:singler.interface"
+        ]
+      }
+    ],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [
+        {
+          "citations": [
+            {
+              "index": 1,
+              "quote": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset."
+            }
+          ],
+          "claim_id": "answer-1",
+          "knowledge_source": "KG_GROUNDED",
+          "text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。[1]"
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "gene_identifier_mapping",
+          "text": "请提供测试与参考之间基因标识符的映射方式或映射表，以便确认特征对齐条件？",
+          "why_needed": "测试基因使用 Ensembl ID，参考基因使用 HGNC 符号，且未提供映射表；缺少映射方式无法判断特征交集是否满足 SingleR 的 feature_alignment=intersection 要求。"
+        }
+      ],
+      "kg_facts_used": [
+        {
+          "assessment_ids": [
+            "evidence-assessment:uat:singler-query"
+          ],
+          "binding_verified": true,
+          "citation_index": 1,
+          "constraints": [
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-query-log",
+              "feature_alignment": "intersection",
+              "forbidden_transformations": [
+                "integrated"
+              ],
+              "observation_alignment": "same_observations",
+              "representation_type_id": "representation-type:gene_by_cell_expression",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_observation_ids",
+                "ordered_feature_ids",
+                "feature_namespace"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "log_expression"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            },
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-query-raw",
+              "feature_alignment": "intersection",
+              "forbidden_transformations": [
+                "integrated"
+              ],
+              "observation_alignment": "same_observations",
+              "representation_type_id": "representation-type:gene_by_cell_expression",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_observation_ids",
+                "ordered_feature_ids",
+                "feature_namespace"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "raw_counts"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            },
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-reference-expression",
+              "feature_alignment": "intersection",
+              "forbidden_transformations": [],
+              "observation_alignment": "not_applicable",
+              "representation_type_id": "representation-type:reference_expression",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_reference_ids",
+                "ordered_feature_ids",
+                "feature_namespace",
+                "biological_applicability_confirmed",
+                "organism_taxon"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "reference_annotated",
+                "log_expression"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            },
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-reference-labels",
+              "feature_alignment": "not_applicable",
+              "forbidden_transformations": [],
+              "observation_alignment": "not_applicable",
+              "representation_type_id": "representation-type:reference_labels",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_reference_ids",
+                "label_namespace"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "reference_annotated"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            }
+          ],
+          "evidence_span_id": "uat-authoritative-span:singler.interface",
+          "execution_authorized": false,
+          "knowledge_status": "candidate",
+          "locator": "SingleR/R/SingleR.R#L1-L14",
+          "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+          "predicate": "accepts_representation",
+          "recommendation_eligible": false,
+          "requirements": [
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-query-raw"
+              ],
+              "requirement_id": "requirement:uat:singler:query-raw",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-query-log"
+              ],
+              "requirement_id": "requirement:uat:singler:query-log",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-reference-expression"
+              ],
+              "requirement_id": "requirement:uat:singler:reference-expression",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-reference-labels"
+              ],
+              "requirement_id": "requirement:uat:singler:reference-labels",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            }
+          ],
+          "scope": {
+            "condition_status": "not_required",
+            "data_compatibility_assessed": false,
+            "registered_scope": {
+              "assay_technology_ids": [],
+              "biological_context_ids": [],
+              "combination": "all_of",
+              "evaluation_context_ids": [],
+              "modalities": [
+                "rna"
+              ],
+              "observation_units": [
+                "cell"
+              ],
+              "organism_taxa": [],
+              "parameter_conditions": [],
+              "representation_constraint_ids": [],
+              "resource_constraints": [],
+              "schema_version": "sckg-applicability-scope-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "study_design_constraints": [
+                "reference_labels_must_cover_biological_target_space"
+              ],
+              "task_ids": [
+                "task:cell_type_annotation"
+              ],
+              "valid_from": null,
+              "valid_to": null,
+              "version_constraints": [
+                {
+                  "expression": "2.14.1",
+                  "status": "exact",
+                  "subject_id": "package-release:singler:2.14.1"
+                }
+              ]
+            },
+            "scope_id": "scope:uat:singler:2.14.1",
+            "scope_status": "explicit",
+            "version_status": "unspecified_scoped_evidence_only"
+          },
+          "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "statement": "SingleR accepts a gene-by-cell query matrix, including raw UMI counts or transcript counts without normalization and log transformation.",
+          "statement_id": "claim-revision:uat:singler-query:v1"
+        }
+      ],
+      "knowledge_sources": [
+        "KG_GROUNDED",
+        "USER_CLARIFICATION"
+      ],
+      "references": [
+        {
+          "authority": "source_bound",
+          "claim_text": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "claim_type": "input_requirement",
+          "exact_excerpt": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "index": 1,
+          "kg_statements": [
+            {
+              "assessment_ids": [
+                "evidence-assessment:uat:singler-query"
+              ],
+              "binding_verified": true,
+              "constraints": [
+                {
+                  "allow_missing_modalities": false,
+                  "constraint_id": "representation-constraint:uat:singler-query-log",
+                  "feature_alignment": "intersection",
+                  "forbidden_transformations": [
+                    "integrated"
+                  ],
+                  "observation_alignment": "same_observations",
+                  "representation_type_id": "representation-type:gene_by_cell_expression",
+                  "required_component_roles": [],
+                  "required_metadata": [
+                    "ordered_observation_ids",
+                    "ordered_feature_ids",
+                    "feature_namespace"
+                  ],
+                  "required_modalities": [
+                    "rna"
+                  ],
+                  "required_provenance_method_ids": [],
+                  "required_transformations": [],
+                  "required_value_states": [
+                    "fresh",
+                    "log_expression"
+                  ],
+                  "schema_version": "sckg-representation-constraint-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1"
+                },
+                {
+                  "allow_missing_modalities": false,
+                  "constraint_id": "representation-constraint:uat:singler-query-raw",
+                  "feature_alignment": "intersection",
+                  "forbidden_transformations": [
+                    "integrated"
+                  ],
+                  "observation_alignment": "same_observations",
+                  "representation_type_id": "representation-type:gene_by_cell_expression",
+                  "required_component_roles": [],
+                  "required_metadata": [
+                    "ordered_observation_ids",
+                    "ordered_feature_ids",
+                    "feature_namespace"
+                  ],
+                  "required_modalities": [
+                    "rna"
+                  ],
+                  "required_provenance_method_ids": [],
+                  "required_transformations": [],
+                  "required_value_states": [
+                    "fresh",
+                    "raw_counts"
+                  ],
+                  "schema_version": "sckg-representation-constraint-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1"
+                },
+                {
+                  "allow_missing_modalities": false,
+                  "constraint_id": "representation-constraint:uat:singler-reference-expression",
+                  "feature_alignment": "intersection",
+                  "forbidden_transformations": [],
+                  "observation_alignment": "not_applicable",
+                  "representation_type_id": "representation-type:reference_expression",
+                  "required_component_roles": [],
+                  "required_metadata": [
+                    "ordered_reference_ids",
+                    "ordered_feature_ids",
+                    "feature_namespace",
+                    "biological_applicability_confirmed",
+                    "organism_taxon"
+                  ],
+                  "required_modalities": [
+                    "rna"
+                  ],
+                  "required_provenance_method_ids": [],
+                  "required_transformations": [],
+                  "required_value_states": [
+                    "fresh",
+                    "reference_annotated",
+                    "log_expression"
+                  ],
+                  "schema_version": "sckg-representation-constraint-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1"
+                },
+                {
+                  "allow_missing_modalities": false,
+                  "constraint_id": "representation-constraint:uat:singler-reference-labels",
+                  "feature_alignment": "not_applicable",
+                  "forbidden_transformations": [],
+                  "observation_alignment": "not_applicable",
+                  "representation_type_id": "representation-type:reference_labels",
+                  "required_component_roles": [],
+                  "required_metadata": [
+                    "ordered_reference_ids",
+                    "label_namespace"
+                  ],
+                  "required_modalities": [
+                    "rna"
+                  ],
+                  "required_provenance_method_ids": [],
+                  "required_transformations": [],
+                  "required_value_states": [
+                    "fresh",
+                    "reference_annotated"
+                  ],
+                  "schema_version": "sckg-representation-constraint-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1"
+                }
+              ],
+              "evidence_span_id": "uat-authoritative-span:singler.interface",
+              "execution_authorized": false,
+              "knowledge_status": "candidate",
+              "locator": "SingleR/R/SingleR.R#L1-L14",
+              "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+              "predicate": "accepts_representation",
+              "recommendation_eligible": false,
+              "requirements": [
+                {
+                  "level": "mandatory",
+                  "reference_artifact_revision_ids": [],
+                  "representation_constraint_ids": [
+                    "representation-constraint:uat:singler-query-raw"
+                  ],
+                  "requirement_id": "requirement:uat:singler:query-raw",
+                  "schema_version": "sckg-requirement-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1",
+                  "when": []
+                },
+                {
+                  "level": "mandatory",
+                  "reference_artifact_revision_ids": [],
+                  "representation_constraint_ids": [
+                    "representation-constraint:uat:singler-query-log"
+                  ],
+                  "requirement_id": "requirement:uat:singler:query-log",
+                  "schema_version": "sckg-requirement-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1",
+                  "when": []
+                },
+                {
+                  "level": "mandatory",
+                  "reference_artifact_revision_ids": [],
+                  "representation_constraint_ids": [
+                    "representation-constraint:uat:singler-reference-expression"
+                  ],
+                  "requirement_id": "requirement:uat:singler:reference-expression",
+                  "schema_version": "sckg-requirement-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1",
+                  "when": []
+                },
+                {
+                  "level": "mandatory",
+                  "reference_artifact_revision_ids": [],
+                  "representation_constraint_ids": [
+                    "representation-constraint:uat:singler-reference-labels"
+                  ],
+                  "requirement_id": "requirement:uat:singler:reference-labels",
+                  "schema_version": "sckg-requirement-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1",
+                  "when": []
+                }
+              ],
+              "scope": {
+                "condition_status": "not_required",
+                "data_compatibility_assessed": false,
+                "registered_scope": {
+                  "assay_technology_ids": [],
+                  "biological_context_ids": [],
+                  "combination": "all_of",
+                  "evaluation_context_ids": [],
+                  "modalities": [
+                    "rna"
+                  ],
+                  "observation_units": [
+                    "cell"
+                  ],
+                  "organism_taxa": [],
+                  "parameter_conditions": [],
+                  "representation_constraint_ids": [],
+                  "resource_constraints": [],
+                  "schema_version": "sckg-applicability-scope-v1.1",
+                  "scope_id": "scope:uat:singler:2.14.1",
+                  "scope_status": "explicit",
+                  "study_design_constraints": [
+                    "reference_labels_must_cover_biological_target_space"
+                  ],
+                  "task_ids": [
+                    "task:cell_type_annotation"
+                  ],
+                  "valid_from": null,
+                  "valid_to": null,
+                  "version_constraints": [
+                    {
+                      "expression": "2.14.1",
+                      "status": "exact",
+                      "subject_id": "package-release:singler:2.14.1"
+                    }
+                  ]
+                },
+                "scope_id": "scope:uat:singler:2.14.1",
+                "scope_status": "explicit",
+                "version_status": "unspecified_scoped_evidence_only"
+              },
+              "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+              "statement": "SingleR accepts a gene-by-cell query matrix, including raw UMI counts or transcript counts without normalization and log transformation.",
+              "statement_id": "claim-revision:uat:singler-query:v1"
+            }
+          ],
+          "knowledge_source": "KG_GROUNDED",
+          "selected_for_claim_types": [
+            "input_requirement"
+          ],
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L1-L14",
+          "source_span_id": "uat-authoritative-span:singler.interface",
+          "source_type": "source_document",
+          "source_url": "https://bioconductor.org/packages/release/bioc/src/contrib/SingleR_2.14.1.tar.gz",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+          "tool_name": "SingleR"
+        }
+      ],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": true,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "source_bound_context_with_optional_model_knowledge"
+      ],
+      "unverified_model_knowledge_allowed": true,
+      "verdict": "ANSWER_DUAL_LAYER",
+      "verified_context_available": true
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=cell_type_annotation;task_source=semantic_parser;semantic=ready",
+        "elapsed_ms": 4628.33,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "deterministic task/claim normalization",
+        "elapsed_ms": 6.341,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "candidate_tools=200",
+        "elapsed_ms": 1075.24,
+        "stage": "kg_filter",
+        "status": "completed"
+      },
+      {
+        "detail": "hits=25",
+        "elapsed_ms": 62.293,
+        "stage": "bm25",
+        "status": "completed"
+      },
+      {
+        "detail": "status=not_requested;hits=0",
+        "elapsed_ms": 0.004,
+        "stage": "dense_encode",
+        "status": "skipped"
+      },
+      {
+        "detail": "fused=25;reranked=25",
+        "elapsed_ms": 121.651,
+        "stage": "fusion",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.007,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=ready",
+        "elapsed_ms": 6072.252,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "cell_type_annotation",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "SingleR"
+      ],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {
+        "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+        "mapping_table_provided": "false (user: mapping_table_provided=false)",
+        "marker_mode": "classic (user: marker_mode=classic)",
+        "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+        "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+        "species": "human for both test and reference (user: species=human for both test and reference)",
+        "test_assay": "UMI counts (user: test_assay=UMI counts)",
+        "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+      }
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 3,
+    "external_reasoning": {
+      "answer_claims": [
+        {
+          "citations": [
+            {
+              "index": 1,
+              "quote": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset."
+            }
+          ],
+          "claim_id": "answer-1",
+          "knowledge_source": "KG_GROUNDED",
+          "text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。[1]"
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "gene_identifier_mapping",
+          "text": "请提供测试与参考之间基因标识符的映射方式或映射表，以便确认特征对齐条件？",
+          "why_needed": "测试基因使用 Ensembl ID，参考基因使用 HGNC 符号，且未提供映射表；缺少映射方式无法判断特征交集是否满足 SingleR 的 feature_alignment=intersection 要求。"
+        }
+      ],
+      "error_type": "",
+      "input_tokens": 4726,
+      "latency_ms": 6061.136499993154,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": 459,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 2,
+      "status": "ready",
+      "support_check": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 2,
+        "quotes_resolved_from_store": 1,
+        "removed_segment_count": 1,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    "grounded_answer_audit": {
+      "caution_context": [],
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [
+        1
+      ],
+      "claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。",
+          "claim_type": "scientific",
+          "governance_action": "qualify",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "lexical_support_is_weak_semantic_review_not_run"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "uat-authoritative-span:singler.interface"
+          ]
+        }
+      ],
+      "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [],
+      "verified_claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。",
+          "claim_type": "scientific",
+          "governance_action": "qualify",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "lexical_support_is_weak_semantic_review_not_run"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "uat-authoritative-span:singler.interface"
+          ]
+        }
+      ],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "llm-tool-1",
+        "latency_ms": 1270.678,
+        "payload": {
+          "answerability": {
+            "candidate_only": true,
+            "claim_ids": [
+              "claim-revision:uat:singler-features:v1",
+              "claim-revision:uat:singler-query:v1",
+              "claim-revision:uat:singler-reference-expression:v1",
+              "claim-revision:uat:singler-reference-labels:v1"
+            ],
+            "direct_evidence_chunk_ids": [
+              "uat-authoritative-span:singler.raw_query",
+              "uat-authoritative-span:singler.interface",
+              "uat-authoritative-span:singler.feature_intersection",
+              "uat-authoritative-span:singler.reference_state",
+              "uat-authoritative-span:singler.reference_labels"
+            ],
+            "evidence_gap_id": "",
+            "evidence_span_ids": [
+              "uat-authoritative-span:singler.feature_intersection",
+              "uat-authoritative-span:singler.interface",
+              "uat-authoritative-span:singler.raw_query",
+              "uat-authoritative-span:singler.reference_labels",
+              "uat-authoritative-span:singler.reference_state"
+            ],
+            "fallback_reason": "",
+            "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+            "reason": "direct_source_bound_graph_evidence_resolved",
+            "scientific_kg_used": true,
+            "scope_status": "explicit",
+            "source_revision_ids": [
+              "source-revision:bioconductor:SingleR:2.14.1"
+            ],
+            "status": "SUPPORTED",
+            "version_status": "unspecified_scoped_evidence_only"
+          },
+          "answerability_reason": "direct_source_bound_graph_evidence_resolved",
+          "answerability_status": "SUPPORTED",
+          "chunk_ids": [
+            "uat-authoritative-span:singler.raw_query",
+            "uat-authoritative-span:singler.interface",
+            "uat-authoritative-span:singler.feature_intersection",
+            "uat-authoritative-span:singler.reference_state",
+            "uat-authoritative-span:singler.reference_labels"
+          ],
+          "claim_ids": [
+            "claim-revision:uat:singler-features:v1",
+            "claim-revision:uat:singler-query:v1",
+            "claim-revision:uat:singler-reference-expression:v1",
+            "claim-revision:uat:singler-reference-labels:v1"
+          ],
+          "evidence_gap_id": "",
+          "evidence_span_ids": [
+            "uat-authoritative-span:singler.feature_intersection",
+            "uat-authoritative-span:singler.interface",
+            "uat-authoritative-span:singler.raw_query",
+            "uat-authoritative-span:singler.reference_labels",
+            "uat-authoritative-span:singler.reference_state"
+          ],
+          "fallback_reason": "",
+          "mode": "kg_bm25",
+          "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+          "query": "SingleR classic mode input requirements: does it require gene symbols or can it use Ensembl IDs? What are the input scale requirements (log-normalized vs raw counts) for reference and test? What conditions should be verified before running SingleR classic mode?",
+          "scientific_kg_used": true,
+          "scope_status": "explicit",
+          "source_revision_ids": [
+            "source-revision:bioconductor:SingleR:2.14.1"
+          ],
+          "version_status": "unspecified_scoped_evidence_only"
+        },
+        "result_count": 5,
+        "source_bound_count": 5,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode",
+            "caveat"
+          ],
+          "query": "SingleR classic mode input requirements: does it require gene symbols or can it use Ensembl IDs? What are the input scale requirements (log-normalized vs raw counts) for reference and test? What conditions should be verified before running SingleR classic mode?",
+          "reason": "User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode, and what conditions to verify first. Need evidence on input requirements and potential failure modes.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 5
+        }
+      ],
+      "rationale": "LLM proposed bounded read-only tools; local policy normalized the plan.",
+      "source": "semantic_parser"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:environment",
+          "field": "environment",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "environment=Bioconductor 3.21 / version must be checked against book session",
+          "value": "Bioconductor 3.21"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:mapping_table_provided",
+          "field": "mapping_table_provided",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "mapping_table_provided=false",
+          "value": "false"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:marker_mode",
+          "field": "marker_mode",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "marker_mode=classic",
+          "value": "classic"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:reference_assay",
+          "field": "reference_assay",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "reference_assay=log-normalized expression",
+          "value": "log-normalized expression"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:reference_gene_namespace",
+          "field": "reference_gene_namespace",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "reference_gene_namespace=HGNC symbols",
+          "value": "HGNC symbols"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:species",
+          "field": "species",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "species=human for both test and reference",
+          "value": "human for both test and reference"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:test_assay",
+          "field": "test_assay",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "test_assay=UMI counts",
+          "value": "UMI counts"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:test_gene_namespace",
+          "field": "test_gene_namespace",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "test_gene_namespace=Ensembl stable IDs",
+          "value": "Ensembl stable IDs"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "cell_type_annotation",
+      "current_user_reported_context": {
+        "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+        "mapping_table_provided": "false (user: mapping_table_provided=false)",
+        "marker_mode": "classic (user: marker_mode=classic)",
+        "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+        "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+        "species": "human for both test and reference (user: species=human for both test and reference)",
+        "test_assay": "UMI counts (user: test_assay=UMI counts)",
+        "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+      },
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "claim_type": "input_requirement",
+          "index": 1,
+          "knowledge_source": "KG_GROUNDED",
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L1-L14",
+          "source_span_id": "uat-authoritative-span:singler.interface",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+          "tool_name": "SingleR"
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "SingleR classic mode input requirements: gene identifier mapping (HGNC symbols vs Ensembl IDs), assay scale (log-normalized vs raw counts), and pre-run verification conditions for human test and reference data.",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": false,
+        "approved_kg_sha256": null,
+        "assessments": [],
+        "caution_context": [],
+        "coverage": "source_bound_candidate",
+        "facts": [
+          {
+            "assessment_ids": [
+              "evidence-assessment:uat:singler-query"
+            ],
+            "binding_verified": true,
+            "constraints": [
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-query-log",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [
+                  "integrated"
+                ],
+                "observation_alignment": "same_observations",
+                "representation_type_id": "representation-type:gene_by_cell_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_observation_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-query-raw",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [
+                  "integrated"
+                ],
+                "observation_alignment": "same_observations",
+                "representation_type_id": "representation-type:gene_by_cell_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_observation_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "raw_counts"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-expression",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace",
+                  "biological_applicability_confirmed",
+                  "organism_taxon"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-labels",
+                "feature_alignment": "not_applicable",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_labels",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "label_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              }
+            ],
+            "evidence_span_id": "uat-authoritative-span:singler.interface",
+            "execution_authorized": false,
+            "knowledge_status": "candidate",
+            "locator": "SingleR/R/SingleR.R#L1-L14",
+            "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+            "predicate": "accepts_representation",
+            "recommendation_eligible": false,
+            "requirements": [
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-query-raw"
+                ],
+                "requirement_id": "requirement:uat:singler:query-raw",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-query-log"
+                ],
+                "requirement_id": "requirement:uat:singler:query-log",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-expression"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-expression",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-labels"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-labels",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              }
+            ],
+            "scope": {
+              "condition_status": "not_required",
+              "data_compatibility_assessed": false,
+              "registered_scope": {
+                "assay_technology_ids": [],
+                "biological_context_ids": [],
+                "combination": "all_of",
+                "evaluation_context_ids": [],
+                "modalities": [
+                  "rna"
+                ],
+                "observation_units": [
+                  "cell"
+                ],
+                "organism_taxa": [],
+                "parameter_conditions": [],
+                "representation_constraint_ids": [],
+                "resource_constraints": [],
+                "schema_version": "sckg-applicability-scope-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "scope_status": "explicit",
+                "study_design_constraints": [
+                  "reference_labels_must_cover_biological_target_space"
+                ],
+                "task_ids": [
+                  "task:cell_type_annotation"
+                ],
+                "valid_from": null,
+                "valid_to": null,
+                "version_constraints": [
+                  {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:singler:2.14.1"
+                  }
+                ]
+              },
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "version_status": "unspecified_scoped_evidence_only"
+            },
+            "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+            "statement": "SingleR accepts a gene-by-cell query matrix, including raw UMI counts or transcript counts without normalization and log transformation.",
+            "statement_id": "claim-revision:uat:singler-query:v1"
+          }
+        ],
+        "gaps": [],
+        "identity": "Legacy / candidate evidence",
+        "legacy_kg_consulted": null,
+        "output_ports": [],
+        "reference_links": {
+          "1": {
+            "caution_ids": [],
+            "statement_ids": [
+              "claim-revision:uat:singler-query:v1"
+            ]
+          }
+        },
+        "snapshot_id": null
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:legacy_kg",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": {
+        "candidate_only": true,
+        "claim_ids": [
+          "claim-revision:uat:singler-features:v1",
+          "claim-revision:uat:singler-query:v1",
+          "claim-revision:uat:singler-reference-expression:v1",
+          "claim-revision:uat:singler-reference-labels:v1"
+        ],
+        "direct_evidence_chunk_ids": [
+          "uat-authoritative-span:singler.raw_query",
+          "uat-authoritative-span:singler.interface",
+          "uat-authoritative-span:singler.feature_intersection",
+          "uat-authoritative-span:singler.reference_state",
+          "uat-authoritative-span:singler.reference_labels"
+        ],
+        "evidence_gap_id": "",
+        "evidence_span_ids": [
+          "uat-authoritative-span:singler.feature_intersection",
+          "uat-authoritative-span:singler.interface",
+          "uat-authoritative-span:singler.raw_query",
+          "uat-authoritative-span:singler.reference_labels",
+          "uat-authoritative-span:singler.reference_state"
+        ],
+        "fallback_reason": "",
+        "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+        "reason": "direct_source_bound_graph_evidence_resolved",
+        "scientific_kg_used": true,
+        "scope_status": "explicit",
+        "source_revision_ids": [
+          "source-revision:bioconductor:SingleR:2.14.1"
+        ],
+        "status": "SUPPORTED",
+        "version_status": "unspecified_scoped_evidence_only"
+      },
+      "governance_leakage_count": 0,
+      "latency_ms": 1265.904,
+      "mode": "kg_bm25",
+      "pipeline": [
+        "query_classification",
+        "canonical_task_normalization",
+        "kg_hard_filter",
+        "sqlite_fts5_bm25",
+        "local_dense_skipped",
+        "scientific_kg_evidence_lookup",
+        "rrf_fusion",
+        "governance_rerank_skipped",
+        "tool_contract_gate_skipped",
+        "retrieval_context_only"
+      ],
+      "scientific_evidence": {
+        "baseline_identity": "Legacy KG (frozen 1651-node scientific inventory)",
+        "budget_omitted_chunk_ids": [],
+        "eligible_chunk_ids": [
+          "uat-authoritative-span:singler.feature_intersection",
+          "uat-authoritative-span:singler.interface",
+          "uat-authoritative-span:singler.raw_query",
+          "uat-authoritative-span:singler.reference_labels",
+          "uat-authoritative-span:singler.reference_state"
+        ],
+        "execution_authorized": false,
+        "fallback_reason": "",
+        "final_graph_chunk_ids": [
+          "uat-authoritative-span:singler.raw_query",
+          "uat-authoritative-span:singler.interface",
+          "uat-authoritative-span:singler.feature_intersection",
+          "uat-authoritative-span:singler.reference_state",
+          "uat-authoritative-span:singler.reference_labels"
+        ],
+        "gaps": [],
+        "graph_identity": {
+          "bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "path": "data/evidence_candidates/scientific_kg_v1_uat_decision_rules",
+          "schema": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+          "snapshot": "scientific_kg_v1_uat_decision_rules",
+          "source_manifest_sha256": "6e9833933b5f0be991c67a0466d6af79fb970419a806608067d1b8654c62740b"
+        },
+        "knowledge_status": "candidate",
+        "mapped_chunk_ids": [
+          "uat-authoritative-span:singler.feature_intersection",
+          "uat-authoritative-span:singler.interface",
+          "uat-authoritative-span:singler.raw_query",
+          "uat-authoritative-span:singler.reference_labels",
+          "uat-authoritative-span:singler.reference_state"
+        ],
+        "merge_policy": "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification",
+        "parsed": {
+          "ecosystem": "singler",
+          "explicit_modality": [],
+          "explicit_species": [],
+          "fallback_reason": "",
+          "flavor": null,
+          "information_needs": [
+            "compatibility",
+            "input_requirement"
+          ],
+          "operator": "SingleR::SingleR",
+          "operator_id": "operator:SingleR::SingleR",
+          "resolution": "bounded_scanpy_alias",
+          "version": null
+        },
+        "paths": [
+          {
+            "claim_content_hash": "7ec13dc229ed7b7686f3a1f90f44040e533762ffb9e8689073c643216dbda13f",
+            "claim_revision_id": "claim-revision:uat:singler-query:v1",
+            "constraint_ids": [
+              "representation-constraint:uat:singler-query-log",
+              "representation-constraint:uat:singler-query-raw",
+              "representation-constraint:uat:singler-reference-expression",
+              "representation-constraint:uat:singler-reference-labels"
+            ],
+            "constraints": [
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-query-log",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [
+                  "integrated"
+                ],
+                "observation_alignment": "same_observations",
+                "representation_type_id": "representation-type:gene_by_cell_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_observation_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-query-raw",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [
+                  "integrated"
+                ],
+                "observation_alignment": "same_observations",
+                "representation_type_id": "representation-type:gene_by_cell_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_observation_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "raw_counts"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-expression",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace",
+                  "biological_applicability_confirmed",
+                  "organism_taxon"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-labels",
+                "feature_alignment": "not_applicable",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_labels",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "label_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              }
+            ],
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "uat-authoritative-span:singler.interface"
+                ],
+                "content_hash": "a9d45612de1f1a42c6b4c4da6ab928fa5a22d6adcec959c44ba7df002cf90a56",
+                "evidence_span_id": "uat-authoritative-span:singler.interface",
+                "knowledge_status": "candidate",
+                "locator": "SingleR/R/SingleR.R#L1-L14",
+                "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+                "source_file_sha256": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+                "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1"
+              },
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "uat-authoritative-span:singler.raw_query"
+                ],
+                "content_hash": "93c1f82b716f044250c4462190241a5d5b4d4174bf69800ae2dccf408b9c3bcf",
+                "evidence_span_id": "uat-authoritative-span:singler.raw_query",
+                "knowledge_status": "candidate",
+                "locator": "SingleR/R/classifySingleR.R#L63-L65",
+                "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+                "source_file_sha256": "afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8",
+                "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1"
+              }
+            ],
+            "knowledge_status": "candidate",
+            "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+            "output_port_ids": [],
+            "predicate": "accepts_representation",
+            "requirement_ids": [
+              "requirement:uat:singler:query-raw",
+              "requirement:uat:singler:query-log",
+              "requirement:uat:singler:reference-expression",
+              "requirement:uat:singler:reference-labels"
+            ],
+            "requirements": [
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-query-raw"
+                ],
+                "requirement_id": "requirement:uat:singler:query-raw",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-query-log"
+                ],
+                "requirement_id": "requirement:uat:singler:query-log",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-expression"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-expression",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-labels"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-labels",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              }
+            ],
+            "scope": {
+              "condition_status": "not_required",
+              "data_compatibility_assessed": false,
+              "registered_scope": {
+                "assay_technology_ids": [],
+                "biological_context_ids": [],
+                "combination": "all_of",
+                "evaluation_context_ids": [],
+                "modalities": [
+                  "rna"
+                ],
+                "observation_units": [
+                  "cell"
+                ],
+                "organism_taxa": [],
+                "parameter_conditions": [],
+                "representation_constraint_ids": [],
+                "resource_constraints": [],
+                "schema_version": "sckg-applicability-scope-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "scope_status": "explicit",
+                "study_design_constraints": [
+                  "reference_labels_must_cover_biological_target_space"
+                ],
+                "task_ids": [
+                  "task:cell_type_annotation"
+                ],
+                "valid_from": null,
+                "valid_to": null,
+                "version_constraints": [
+                  {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:singler:2.14.1"
+                  }
+                ]
+              },
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "version_status": "unspecified_scoped_evidence_only"
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_content_hash": "e6539aa5cdb2b0f93459e75307764ea780a66009c3dcd3dff6705b54735cb8d6",
+            "claim_revision_id": "claim-revision:uat:singler-reference-expression:v1",
+            "constraint_ids": [
+              "representation-constraint:uat:singler-reference-expression"
+            ],
+            "constraints": [
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-expression",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace",
+                  "biological_applicability_confirmed",
+                  "organism_taxon"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              }
+            ],
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "uat-authoritative-span:singler.reference_labels"
+                ],
+                "content_hash": "e8ab7c92b2f7c83768f8fd8dccd072b978c3a000a40b929563e272a359e7a729",
+                "evidence_span_id": "uat-authoritative-span:singler.reference_labels",
+                "knowledge_status": "candidate",
+                "locator": "SingleR/R/trainSingleR.R#L3-L12",
+                "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+                "source_file_sha256": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+                "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1"
+              },
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "uat-authoritative-span:singler.reference_state"
+                ],
+                "content_hash": "9ee9ea0346819ee0a08b8e528775d935f02104af2bf06678a5d9d0e1720d469c",
+                "evidence_span_id": "uat-authoritative-span:singler.reference_state",
+                "knowledge_status": "candidate",
+                "locator": "SingleR/R/trainSingleR.R#L74-L99",
+                "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+                "source_file_sha256": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+                "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1"
+              }
+            ],
+            "knowledge_status": "candidate",
+            "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+            "output_port_ids": [],
+            "predicate": "requires_representation",
+            "requirement_ids": [
+              "requirement:uat:singler:reference-expression"
+            ],
+            "requirements": [
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-expression"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-expression",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              }
+            ],
+            "scope": {
+              "condition_status": "not_required",
+              "data_compatibility_assessed": false,
+              "registered_scope": {
+                "assay_technology_ids": [],
+                "biological_context_ids": [],
+                "combination": "all_of",
+                "evaluation_context_ids": [],
+                "modalities": [
+                  "rna"
+                ],
+                "observation_units": [
+                  "cell"
+                ],
+                "organism_taxa": [],
+                "parameter_conditions": [],
+                "representation_constraint_ids": [],
+                "resource_constraints": [],
+                "schema_version": "sckg-applicability-scope-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "scope_status": "explicit",
+                "study_design_constraints": [
+                  "reference_labels_must_cover_biological_target_space"
+                ],
+                "task_ids": [
+                  "task:cell_type_annotation"
+                ],
+                "valid_from": null,
+                "valid_to": null,
+                "version_constraints": [
+                  {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:singler:2.14.1"
+                  }
+                ]
+              },
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "version_status": "unspecified_scoped_evidence_only"
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_content_hash": "1283067ade26091f46aaa1aa6aee5242cb9649b060fb851233c7ce700f1f1f25",
+            "claim_revision_id": "claim-revision:uat:singler-reference-labels:v1",
+            "constraint_ids": [
+              "representation-constraint:uat:singler-reference-labels"
+            ],
+            "constraints": [
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-labels",
+                "feature_alignment": "not_applicable",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_labels",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "label_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              }
+            ],
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "uat-authoritative-span:singler.reference_labels"
+                ],
+                "content_hash": "e8ab7c92b2f7c83768f8fd8dccd072b978c3a000a40b929563e272a359e7a729",
+                "evidence_span_id": "uat-authoritative-span:singler.reference_labels",
+                "knowledge_status": "candidate",
+                "locator": "SingleR/R/trainSingleR.R#L3-L12",
+                "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+                "source_file_sha256": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+                "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1"
+              }
+            ],
+            "knowledge_status": "candidate",
+            "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+            "output_port_ids": [],
+            "predicate": "requires_representation",
+            "requirement_ids": [
+              "requirement:uat:singler:reference-labels"
+            ],
+            "requirements": [
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-labels"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-labels",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              }
+            ],
+            "scope": {
+              "condition_status": "not_required",
+              "data_compatibility_assessed": false,
+              "registered_scope": {
+                "assay_technology_ids": [],
+                "biological_context_ids": [],
+                "combination": "all_of",
+                "evaluation_context_ids": [],
+                "modalities": [
+                  "rna"
+                ],
+                "observation_units": [
+                  "cell"
+                ],
+                "organism_taxa": [],
+                "parameter_conditions": [],
+                "representation_constraint_ids": [],
+                "resource_constraints": [],
+                "schema_version": "sckg-applicability-scope-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "scope_status": "explicit",
+                "study_design_constraints": [
+                  "reference_labels_must_cover_biological_target_space"
+                ],
+                "task_ids": [
+                  "task:cell_type_annotation"
+                ],
+                "valid_from": null,
+                "valid_to": null,
+                "version_constraints": [
+                  {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:singler:2.14.1"
+                  }
+                ]
+              },
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "version_status": "unspecified_scoped_evidence_only"
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_content_hash": "e85327cd934813dab76b9568e489250a912062d52909e7b2e5bfaf90cfcabdfe",
+            "claim_revision_id": "claim-revision:uat:singler-features:v1",
+            "constraint_ids": [
+              "representation-constraint:uat:singler-query-log",
+              "representation-constraint:uat:singler-query-raw",
+              "representation-constraint:uat:singler-reference-expression",
+              "representation-constraint:uat:singler-reference-labels"
+            ],
+            "constraints": [
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-query-log",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [
+                  "integrated"
+                ],
+                "observation_alignment": "same_observations",
+                "representation_type_id": "representation-type:gene_by_cell_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_observation_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-query-raw",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [
+                  "integrated"
+                ],
+                "observation_alignment": "same_observations",
+                "representation_type_id": "representation-type:gene_by_cell_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_observation_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "raw_counts"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-expression",
+                "feature_alignment": "intersection",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_expression",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "ordered_feature_ids",
+                  "feature_namespace",
+                  "biological_applicability_confirmed",
+                  "organism_taxon"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated",
+                  "log_expression"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              },
+              {
+                "allow_missing_modalities": false,
+                "constraint_id": "representation-constraint:uat:singler-reference-labels",
+                "feature_alignment": "not_applicable",
+                "forbidden_transformations": [],
+                "observation_alignment": "not_applicable",
+                "representation_type_id": "representation-type:reference_labels",
+                "required_component_roles": [],
+                "required_metadata": [
+                  "ordered_reference_ids",
+                  "label_namespace"
+                ],
+                "required_modalities": [
+                  "rna"
+                ],
+                "required_provenance_method_ids": [],
+                "required_transformations": [],
+                "required_value_states": [
+                  "fresh",
+                  "reference_annotated"
+                ],
+                "schema_version": "sckg-representation-constraint-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1"
+              }
+            ],
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "uat-authoritative-span:singler.feature_intersection"
+                ],
+                "content_hash": "74a2db41f81f0647b16410203a2422560012e1687382a387b55efe8bff81aef4",
+                "evidence_span_id": "uat-authoritative-span:singler.feature_intersection",
+                "knowledge_status": "candidate",
+                "locator": "SingleR/R/SingleR.R#L35-L38",
+                "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+                "source_file_sha256": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+                "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1"
+              }
+            ],
+            "knowledge_status": "candidate",
+            "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+            "output_port_ids": [],
+            "predicate": "requires_compatibility",
+            "requirement_ids": [
+              "requirement:uat:singler:query-raw",
+              "requirement:uat:singler:query-log",
+              "requirement:uat:singler:reference-expression",
+              "requirement:uat:singler:reference-labels"
+            ],
+            "requirements": [
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-query-raw"
+                ],
+                "requirement_id": "requirement:uat:singler:query-raw",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-query-log"
+                ],
+                "requirement_id": "requirement:uat:singler:query-log",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-expression"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-expression",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              },
+              {
+                "level": "mandatory",
+                "reference_artifact_revision_ids": [],
+                "representation_constraint_ids": [
+                  "representation-constraint:uat:singler-reference-labels"
+                ],
+                "requirement_id": "requirement:uat:singler:reference-labels",
+                "schema_version": "sckg-requirement-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "when": []
+              }
+            ],
+            "scope": {
+              "condition_status": "not_required",
+              "data_compatibility_assessed": false,
+              "registered_scope": {
+                "assay_technology_ids": [],
+                "biological_context_ids": [],
+                "combination": "all_of",
+                "evaluation_context_ids": [],
+                "modalities": [
+                  "rna"
+                ],
+                "observation_units": [
+                  "cell"
+                ],
+                "organism_taxa": [],
+                "parameter_conditions": [],
+                "representation_constraint_ids": [],
+                "resource_constraints": [],
+                "schema_version": "sckg-applicability-scope-v1.1",
+                "scope_id": "scope:uat:singler:2.14.1",
+                "scope_status": "explicit",
+                "study_design_constraints": [
+                  "reference_labels_must_cover_biological_target_space"
+                ],
+                "task_ids": [
+                  "task:cell_type_annotation"
+                ],
+                "valid_from": null,
+                "valid_to": null,
+                "version_constraints": [
+                  {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:singler:2.14.1"
+                  }
+                ]
+              },
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "version_status": "unspecified_scoped_evidence_only"
+            },
+            "status": "mapped"
+          }
+        ],
+        "public_filter_identity_basis": "bound_scientific_claim_ownership_for_exact_graph_chunks;chunk_metadata_for_other_retrieval_channels",
+        "public_filter_rejected_chunk_ids": [],
+        "recommendation_eligible": false,
+        "resolved_operator_revision": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+        "subject_resolution": {
+          "ambiguity_reason": "",
+          "candidate_operator_ids": [
+            "operator:SingleR::SingleR"
+          ],
+          "candidate_operator_revision_ids": [
+            "operator-revision:SingleR::SingleR:2.14.1:uat-corrected"
+          ],
+          "coverage_status": "CURRENT_DIRECT_EVIDENCE_SCOPE",
+          "provenance": [
+            "governed_existing_alias"
+          ],
+          "resolved_method": "method:singler_annotation",
+          "resolved_package": "package:singler",
+          "resolved_project": "software-project:singler",
+          "resolved_subject_type": "operator_revision",
+          "selected_operator_id": "operator:SingleR::SingleR",
+          "selected_operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+          "status": "RESOLVED",
+          "subject_text": "SingleR classic mode input requirements: does it require gene symbols or can it use Ensembl IDs? What are the input scale requirements (log-normalized vs raw counts) for reference and test? What conditions should be verified before running SingleR classic mode?"
+        }
+      },
+      "snippets": [
+        {
+          "chunk_id": "uat-authoritative-span:singler.raw_query",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation. Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.03226646,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/classifySingleR.R#L63-L65",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.raw_query",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.interface",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.03151365,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L1-L14",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.feature_intersection",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "This function is just a convenient wrapper around trainSingleR and classifySingleR. The function will automatically restrict the analysis to the intersection of the genes in both ref and test. If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.03131882,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/SingleR.R#L35-L38",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.feature_intersection",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.reference_state",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.03100962,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+          "tool_name": "SingleR"
+        },
+        {
+          "chunk_id": "uat-authoritative-span:singler.reference_labels",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Train the SingleR classifier on one or more reference datasets with known labels. ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples). labels A character vector or factor of known labels for all samples in ref.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "relevance_score": 0.02991071,
+          "source_bound": true,
+          "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "source_span": "SingleR/R/trainSingleR.R#L3-L12",
+          "task": "cell_type_annotation",
+          "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_labels",
+          "tool_name": "SingleR"
+        }
+      ],
+      "stage_timings": [
+        {
+          "detail": "deterministic task/claim normalization",
+          "elapsed_ms": 6.341,
+          "stage": "intent",
+          "status": "completed"
+        },
+        {
+          "detail": "candidate_tools=200",
+          "elapsed_ms": 1075.24,
+          "stage": "kg_filter",
+          "status": "completed"
+        },
+        {
+          "detail": "hits=25",
+          "elapsed_ms": 62.293,
+          "stage": "bm25",
+          "status": "completed"
+        },
+        {
+          "detail": "status=not_requested;hits=0",
+          "elapsed_ms": 0.004,
+          "stage": "dense_encode",
+          "status": "skipped"
+        },
+        {
+          "detail": "fused=25;reranked=25",
+          "elapsed_ms": 121.651,
+          "stage": "fusion",
+          "status": "completed"
+        }
+      ]
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+      "process_id": 33149,
+      "process_started_at": "2026-09-20T20:13:26.874469Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "a244f1102ec550689c7965aa15b8f4f36fe5f4a5475d4220ad51ce75cbebc08c"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "cell_type_annotation",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.95,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "SINGLE_CELL",
+      "error_type": "",
+      "input_tokens": 2064,
+      "intent": "evidence_qa",
+      "latency_ms": 4575.573374997475,
+      "model_name": "deepseek-v4-pro",
+      "needs_clarification": false,
+      "output_tokens": 570,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "requested_tools": [],
+      "retrieval_query": "SingleR classic mode input requirements: gene identifier mapping (HGNC symbols vs Ensembl IDs), assay scale (log-normalized vs raw counts), and pre-run verification conditions for human test and reference data.",
+      "status": "ready",
+      "task_switch": false,
+      "tool_calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode",
+            "caveat"
+          ],
+          "query": "SingleR classic mode input requirements: does it require gene symbols or can it use Ensembl IDs? What are the input scale requirements (log-normalized vs raw counts) for reference and test? What conditions should be verified before running SingleR classic mode?",
+          "reason": "User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode, and what conditions to verify first. Need evidence on input requirements and potential failure modes.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 5
+        }
+      ],
+      "user_reported_context": {
+        "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+        "mapping_table_provided": "false (user: mapping_table_provided=false)",
+        "marker_mode": "classic (user: marker_mode=classic)",
+        "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+        "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+        "species": "human for both test and reference (user: species=human for both test and reference)",
+        "test_assay": "UMI counts (user: test_assay=UMI counts)",
+        "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+      }
+    },
+    "semantic_route": {
+      "confidence": 0.95,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "semantic_primary",
+      "source": "semantic_parser"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 11972.891,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "dev-K03-reference-annotation-b--legacy_kg--targeted-r0",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "cell_type_annotation",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [
+      "claim-001"
+    ],
+    "last_plan_id": null,
+    "referenced_tools": [
+      "SingleR"
+    ],
+    "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "state_epoch": 0,
+    "user_reported_context": {
+      "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+      "mapping_table_provided": "false (user: mapping_table_provided=false)",
+      "marker_mode": "classic (user: marker_mode=classic)",
+      "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+      "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+      "species": "human for both test and reference (user: species=human for both test and reference)",
+      "test_assay": "UMI counts (user: test_assay=UMI counts)",
+      "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+    }
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "EVIDENCE_QA",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "EVIDENCE_QA",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "cell_type_annotation",
+    "modality": "scRNA-seq",
+    "task": "cell_type_annotation"
+  },
+  "final_report": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。[1]\n\n请提供测试与参考之间基因标识符的映射方式或映射表，以便确认特征对齐条件？",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [
+    {
+      "authority": "source_bound",
+      "claim_text": "ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "claim_type": "input_requirement",
+      "exact_excerpt": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "index": 1,
+      "kg_statements": [
+        {
+          "assessment_ids": [
+            "evidence-assessment:uat:singler-query"
+          ],
+          "binding_verified": true,
+          "constraints": [
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-query-log",
+              "feature_alignment": "intersection",
+              "forbidden_transformations": [
+                "integrated"
+              ],
+              "observation_alignment": "same_observations",
+              "representation_type_id": "representation-type:gene_by_cell_expression",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_observation_ids",
+                "ordered_feature_ids",
+                "feature_namespace"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "log_expression"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            },
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-query-raw",
+              "feature_alignment": "intersection",
+              "forbidden_transformations": [
+                "integrated"
+              ],
+              "observation_alignment": "same_observations",
+              "representation_type_id": "representation-type:gene_by_cell_expression",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_observation_ids",
+                "ordered_feature_ids",
+                "feature_namespace"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "raw_counts"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            },
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-reference-expression",
+              "feature_alignment": "intersection",
+              "forbidden_transformations": [],
+              "observation_alignment": "not_applicable",
+              "representation_type_id": "representation-type:reference_expression",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_reference_ids",
+                "ordered_feature_ids",
+                "feature_namespace",
+                "biological_applicability_confirmed",
+                "organism_taxon"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "reference_annotated",
+                "log_expression"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            },
+            {
+              "allow_missing_modalities": false,
+              "constraint_id": "representation-constraint:uat:singler-reference-labels",
+              "feature_alignment": "not_applicable",
+              "forbidden_transformations": [],
+              "observation_alignment": "not_applicable",
+              "representation_type_id": "representation-type:reference_labels",
+              "required_component_roles": [],
+              "required_metadata": [
+                "ordered_reference_ids",
+                "label_namespace"
+              ],
+              "required_modalities": [
+                "rna"
+              ],
+              "required_provenance_method_ids": [],
+              "required_transformations": [],
+              "required_value_states": [
+                "fresh",
+                "reference_annotated"
+              ],
+              "schema_version": "sckg-representation-constraint-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1"
+            }
+          ],
+          "evidence_span_id": "uat-authoritative-span:singler.interface",
+          "execution_authorized": false,
+          "knowledge_status": "candidate",
+          "locator": "SingleR/R/SingleR.R#L1-L14",
+          "operator_revision_id": "operator-revision:SingleR::SingleR:2.14.1:uat-corrected",
+          "predicate": "accepts_representation",
+          "recommendation_eligible": false,
+          "requirements": [
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-query-raw"
+              ],
+              "requirement_id": "requirement:uat:singler:query-raw",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-query-log"
+              ],
+              "requirement_id": "requirement:uat:singler:query-log",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-reference-expression"
+              ],
+              "requirement_id": "requirement:uat:singler:reference-expression",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            },
+            {
+              "level": "mandatory",
+              "reference_artifact_revision_ids": [],
+              "representation_constraint_ids": [
+                "representation-constraint:uat:singler-reference-labels"
+              ],
+              "requirement_id": "requirement:uat:singler:reference-labels",
+              "schema_version": "sckg-requirement-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "when": []
+            }
+          ],
+          "scope": {
+            "condition_status": "not_required",
+            "data_compatibility_assessed": false,
+            "registered_scope": {
+              "assay_technology_ids": [],
+              "biological_context_ids": [],
+              "combination": "all_of",
+              "evaluation_context_ids": [],
+              "modalities": [
+                "rna"
+              ],
+              "observation_units": [
+                "cell"
+              ],
+              "organism_taxa": [],
+              "parameter_conditions": [],
+              "representation_constraint_ids": [],
+              "resource_constraints": [],
+              "schema_version": "sckg-applicability-scope-v1.1",
+              "scope_id": "scope:uat:singler:2.14.1",
+              "scope_status": "explicit",
+              "study_design_constraints": [
+                "reference_labels_must_cover_biological_target_space"
+              ],
+              "task_ids": [
+                "task:cell_type_annotation"
+              ],
+              "valid_from": null,
+              "valid_to": null,
+              "version_constraints": [
+                {
+                  "expression": "2.14.1",
+                  "status": "exact",
+                  "subject_id": "package-release:singler:2.14.1"
+                }
+              ]
+            },
+            "scope_id": "scope:uat:singler:2.14.1",
+            "scope_status": "explicit",
+            "version_status": "unspecified_scoped_evidence_only"
+          },
+          "source_revision_id": "source-revision:bioconductor:SingleR:2.14.1",
+          "statement": "SingleR accepts a gene-by-cell query matrix, including raw UMI counts or transcript counts without normalization and log transformation.",
+          "statement_id": "claim-revision:uat:singler-query:v1"
+        }
+      ],
+      "knowledge_source": "KG_GROUNDED",
+      "selected_for_claim_types": [
+        "input_requirement"
+      ],
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L1-L14",
+      "source_span_id": "uat-authoritative-span:singler.interface",
+      "source_type": "source_document",
+      "source_url": "https://bioconductor.org/packages/release/bioc/src/contrib/SingleR_2.14.1.tar.gz",
+      "support_claim_types": [
+        "input_requirement"
+      ],
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+      "tool_name": "SingleR"
+    }
+  ],
+  "request_id": "dev-K03-reference-annotation-b--legacy_kg--targeted-r0",
+  "response_intent": "evidence_qa",
+  "retrieval_results": [
+    {
+      "chunk_id": "uat-authoritative-span:singler.raw_query",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation. Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.03226646,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/classifySingleR.R#L63-L65",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.raw_query",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.interface",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.03151365,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L1-L14",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.feature_intersection",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "This function is just a convenient wrapper around trainSingleR and classifySingleR. The function will automatically restrict the analysis to the intersection of the genes in both ref and test. If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.03131882,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L35-L38",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.feature_intersection",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.reference_state",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.03100962,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+      "tool_name": "SingleR"
+    },
+    {
+      "chunk_id": "uat-authoritative-span:singler.reference_labels",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Train the SingleR classifier on one or more reference datasets with known labels. ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples). labels A character vector or factor of known labels for all samples in ref.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "relevance_score": 0.02991071,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L3-L12",
+      "task": "cell_type_annotation",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_labels",
+      "tool_name": "SingleR"
+    }
+  ],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+    "process_id": 33149,
+    "process_started_at": "2026-09-20T20:13:26.874469Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "version": "2.7.2-rc",
+    "worktree_digest": "a244f1102ec550689c7965aa15b8f4f36fe5f4a5475d4220ad51ce75cbebc08c"
+  },
+  "runtime_mode": "external_reasoning_with_deterministic_governance",
+  "scored_tools": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.03226646,
+      "source_chunk_count": 1,
+      "tool_name": "SingleR"
+    }
+  ],
+  "semantic_route": {
+    "confidence": 0.95,
+    "domain": "SINGLE_CELL",
+    "intent": "evidence_qa",
+    "needs_clarification": false,
+    "source": "semantic_parser",
+    "task": "cell_type_annotation"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.03226646,
+      "source_chunk_count": 1,
+      "tool_name": "SingleR"
+    }
+  ],
+  "unverified_model_knowledge_claims": [],
+  "user_id": "local-research-user",
+  "user_query": "我想用 SingleR classic mode 给测试细胞做参考注释。输入尺度与基因对应关系是否足以直接开始？哪些条件应先验证？\n\n已提供的条件（未提供的值不作推断）：\nenvironment=Bioconductor 3.21 / version must be checked against book session\nmapping_table_provided=false\nmarker_mode=classic\nreference_assay=log-normalized expression\nreference_gene_namespace=HGNC symbols\nspecies=human for both test and reference\ntest_assay=UMI counts\ntest_gene_namespace=Ensembl stable IDs",
+  "verified_claims": [
+    {
+      "authority": "source_bound",
+      "citation_mapping": "valid",
+      "claim_id": "claim-001",
+      "claim_text": "参考表达矩阵通常应为归一化并 log 变换后的数值矩阵。",
+      "claim_type": "scientific",
+      "governance_action": "qualify",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "lexical_support_is_weak_semantic_review_not_run"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": [
+        "uat-authoritative-span:singler.interface"
+      ]
+    }
+  ],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "cell_type_annotation",
+    "tool_name": null
+  }
+}

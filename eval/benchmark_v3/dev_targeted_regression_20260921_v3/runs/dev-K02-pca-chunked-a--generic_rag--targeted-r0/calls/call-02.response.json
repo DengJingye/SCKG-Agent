@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，sc.pp.pca 的 zero_center 和 svd_solver 参数会传递给底层实现，但具体生效路径取决于 chunked 和 zero_center 的组合。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"当 chunked=false 且 zero_center=false 时，Scanpy 会走截断 SVD 分支，此时 svd_solver=arpack 会被用于求解截断 SVD。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"你提供的条件中 chunked=false 且 zero_center=false，因此 svd_solver=arpack 会按设定生效。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:chunked\", \"user:zero_center\", \"user:svd_solver\"]\n    },\n    {\n      \"text\": \"如果 zero_center=true 且 chunked=false，则走 PCA 分支，svd_solver 同样会传递给底层求解器。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"如果 chunked=true，则使用增量 PCA，此时 svd_solver 参数可能被忽略或行为不同。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935221,
+  "id": "7b50996f-10fb-4a6f-9795-312810f2f66b",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 362,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1673,
+    "prompt_tokens": 2825,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3187
+  }
+}

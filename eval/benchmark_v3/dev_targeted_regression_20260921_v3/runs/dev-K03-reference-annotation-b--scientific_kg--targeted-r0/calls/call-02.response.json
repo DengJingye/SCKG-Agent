@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SingleR 会自动把分析限制在 ref 与 test 的基因交集上；如果交集为空（例如两者使用不同基因注释），会直接报错。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"The function will automatically restrict the analysis to the intersection of the genes in both \\\\code{ref} and \\\\code{test}.\\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"参考矩阵要求行名为基因名，且表达值通常应为归一化并 log 转换后的值。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\\n#' Each row should be named with the gene name.\\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的测试数据是 UMI counts、参考是 log-normalized expression，两者尺度不同；但来源提示原始 UMI counts 可不做归一化和 log 转换直接使用，因为相关性计算对单调变换不敏感。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 7,\n          \"quote\": \"In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的测试基因命名空间是 Ensembl stable IDs，参考是 HGNC symbols，且未提供映射表；这可能导致基因交集为空，因此不能直接开始。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:test_gene_namespace\",\n        \"user:reference_gene_namespace\",\n        \"user:mapping_table_provided\"\n      ]\n    },\n    {\n      \"text\": \"在开始前应先验证测试与参考基因标识能否映射到同一命名空间，并确认映射后存在非空基因交集。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"测试数据的 Ensembl stable IDs 与参考的 HGNC symbols 之间是否已有可用的基因映射表，或是否已确认两者存在非空基因交集？\",\n    \"missing_field\": \"gene_intersection_or_mapping\",\n    \"why_needed\": \"SingleR 要求 ref 与 test 有非空基因交集；当前命名空间不同且未提供映射表，无法判断是否会因交集为空而报错，因此需要先确认映射或交集情况。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935219,
+  "id": "c6a0afdc-c0e5-4541-9f26-caacba551ded",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 721,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2560,
+    "prompt_cache_miss_tokens": 8878,
+    "prompt_tokens": 11438,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2560
+    },
+    "total_tokens": 12159
+  }
+}

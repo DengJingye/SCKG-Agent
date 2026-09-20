@@ -1,0 +1,103 @@
+{
+  "answer_hash": "c779634ab2ef33ba5517c3a2a02424cca650044ef8a105b81b4aaa662ec4134f",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_ec4a03d1d45249e4955e2cc23fe2f795",
+  "case_id": "dev-W02",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "dev-targeted-regression-20260921-v3",
+  "input_tokens": 291,
+  "latency_ms": 3442.1045839990256,
+  "observed": {
+    "answer": "根据你提供的信息，判断如下：\n\n- 退出码为 0，说明进程本身没有报错。\n- 但 `genes.tsv` 的内容只有表头 `gene\\tvalue`，没有 `gene_a`、`gene_b`、`gene_c` 对应的数据行。\n- 任务要求是“为输入的每个基因输出一行”，输入有 3 个基因，因此预期至少应有 3 行数据。\n- 当前产物不满足任务要求，**未完成**。\n\n需要批准的后续动作建议：\n\n1. 检查生成 `genes.tsv` 的上游逻辑或脚本，确认为什么在退出码为 0 的情况下没有写出数据行。\n2. 修复后重新运行任务，生成包含 3 个输入基因对应数据行的 `genes.tsv`。\n3. 重新校验产物：确认表头正确，且包含 `gene_a`、`gene_b`、`gene_c` 三行数据。\n\n在你批准修复并重新运行之前，我不会声称问题已修复。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "artifact_validation_read_only"
+  },
+  "output_tokens": 219,
+  "repetition": 0,
+  "run_id": "dev-W02--legacy_kg--targeted-r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "dev-W02--legacy_kg--targeted-r0",
+      "created_at": "2026-09-20T20:12:58.156780+00:00",
+      "finished_at": "2026-09-20T20:13:01.597343+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:9e110c2a770f0efb",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "dev-W02--legacy_kg--targeted-r0",
+      "root_span_id": "span_f80b9f65a3be4fb9ac060d7e408ace9e",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 3440.478,
+          "ended_at": "2026-09-20T20:13:01.597343+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_f80b9f65a3be4fb9ac060d7e408ace9e",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T20:12:58.156801+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_ec4a03d1d45249e4955e2cc23fe2f795"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "artifact_validation",
+              "reason_code": "user_supplied_artifact_state_read_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 46.285,
+          "ended_at": "2026-09-20T20:12:58.223401+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "dev-W02--legacy_kg--targeted-r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_f80b9f65a3be4fb9ac060d7e408ace9e",
+          "sequence": 2,
+          "span_id": "span_e5c75292f8d24839b63b61017cfa7cc1",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T20:12:58.177089+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_ec4a03d1d45249e4955e2cc23fe2f795"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_ec4a03d1d45249e4955e2cc23fe2f795",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

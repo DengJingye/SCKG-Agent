@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前环境未绑定任何输入数据，也没有可用的测量结果，因此无法基于文档直接给出针对当前环境的可执行参数建议。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的条件显示 execution_requested=false，即本轮不请求执行，所以回答应限于文档层面的说明，而不是生成可执行调用。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:execution_requested\"]\n    },\n    {\n      \"text\": \"当前没有检索到关于 mask_var 参数的直接科学知识图谱陈述，因此无法引用经批准的 KG 断言来限定该参数的行为或要求。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"要判断 mask_var 是否适用于当前环境，还需要核实实际安装的 Scanpy 版本，因为文档版本 1.11.2 与 installed_version=null 并不等同。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:installed_version\"]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"当前环境中实际安装的 Scanpy 版本是多少？\",\n    \"missing_field\": \"installed_version\",\n    \"why_needed\": \"文档版本 1.11.2 与当前环境实际安装版本可能不同，只有确认安装版本后才能判断 mask_var 参数是否可用及其行为是否与文档一致。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935161,
+  "id": "27d4b23d-4a98-473f-ac80-f589d337241f",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 386,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1514,
+    "prompt_tokens": 2666,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3052
+  }
+}

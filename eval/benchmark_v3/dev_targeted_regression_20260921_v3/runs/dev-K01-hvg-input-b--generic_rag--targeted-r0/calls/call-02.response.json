@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的矩阵状态是 library_normalized_log1p，即已经过文库归一化和 log1p 变换。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"Scanpy 的 highly_variable_genes 函数在 flavor='seurat_v3' 时，期望输入是原始计数矩阵（raw counts），而不是已经 log1p 变换后的数据。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"如果直接使用 log1p 变换后的矩阵，seurat_v3 方法内部的均值-方差关系假设会被破坏，可能导致高变基因选择结果不可靠。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"当前没有提供 counts 层或原始计数矩阵，因此无法直接满足 seurat_v3 的输入要求。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"下一步需要获取原始计数矩阵（例如从原始数据文件或未变换的 AnnData 层中提取），然后将其作为输入运行 highly_variable_genes。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935198,
+  "id": "ce936a7d-2389-4aed-a1bd-08f675bbb0be",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 347,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1547,
+    "prompt_tokens": 2699,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3046
+  }
+}

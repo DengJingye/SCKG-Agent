@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，sc.pp.pca 确实暴露了 zero_center 参数，因此你传入 zero_center=false 会被函数接收。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"zero_center\\n        If `True`, compute (or approximate) PCA from covariance matrix.\\n        If `False`, performa a truncated SVD instead of PCA.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，sc.pp.pca 也暴露了 chunked 参数，因此你传入 chunked=false 会被函数接收。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"chunked\\n        If `True`, perform an incremental PCA on segments of `chunk_size`.\\n        Automatically zero centers and ignores settings of `zero_center`, `random_seed` and `svd_solver`.\\n        If `False`, perform a full PCA/truncated SVD (see `svd_solver` and `zero_center`).\\n        See table above for which solver class is used.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"当 chunked=false 时，文档说明会执行完整 PCA 或截断 SVD，具体取决于 svd_solver 和 zero_center。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"If `False`, perform a full PCA/truncated SVD (see `svd_solver` and `zero_center`).\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"zero_center=false 的文档语义是执行截断 SVD 而不是 PCA。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"If `False`, performa a truncated SVD instead of PCA.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"提醒：仅凭 zero_center=false 不能单独确定完整分支；截断 SVD 分支需要同时满足 chunked=false 且 zero_center=false，这是可检测性局限，不代表你的参数不会生效。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"zero_center\\n        If `True`, compute (or approximate) PCA from covariance matrix.\\n        If `False`, performa a truncated SVD instead of PCA.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的输入是 500 个细胞 × 100 个基因的观测×变量矩阵，符合 data 参数的行列对应关系。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:matrix\"\n      ]\n    },\n    {\n      \"text\": \"你提供的 chunked=false 与 zero_center=false 组合，在文档语义上指向截断 SVD 分支。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:chunked\",\n        \"user:zero_center\"\n      ]\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935222,
+  "id": "a87bbef7-561a-4e03-a032-f7f373144f09",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 809,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 11909,
+    "prompt_tokens": 13061,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 13870
+  }
+}

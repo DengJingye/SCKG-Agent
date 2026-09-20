@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，当 flavor='seurat_v3' 时，高变基因选择期望输入为计数数据，而不是对数化数据。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态为 raw_integer_counts，属于原始整数计数，符合 seurat_v3 对计数数据的要求。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"该要求还禁止输入已经过归一化、log1p、缩放或整合变换的数据；当前原始整数计数不落入这些禁止变换。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"因此，在未提供 counts 层且矩阵本身为原始整数计数的情况下，该矩阵可以直接作为 seurat_v3 高变基因选择的输入。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"必要的下一步是确认矩阵中的值确实为原始 UMI 计数，且未经过任何归一化或对数变换；若存在其他预处理，则需先恢复为计数数据。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789935189,
+  "id": "29fff0e5-8759-44b3-8dd6-39d1583379b7",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 472,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2176,
+    "prompt_cache_miss_tokens": 1626,
+    "prompt_tokens": 3802,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2176
+    },
+    "total_tokens": 4274
+  }
+}

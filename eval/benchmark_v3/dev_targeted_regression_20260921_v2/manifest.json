@@ -1,0 +1,1019 @@
+{
+  "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+  "benchmark_commit_before_run": "0813500468d7931005b2b87feef4dcbca77fd0a2",
+  "budgets": {
+    "maximum_concurrent_units": 4,
+    "no_automatic_reruns": true,
+    "provider_parameters": "unchanged accepted 07 runtime parameters/timeouts",
+    "unit_watchdog_seconds": 360
+  },
+  "coverage_status": "unchanged/unknown; targeted runtime regression is not a coverage audit",
+  "deterministic_provider_claimed": false,
+  "experiment_id": "dev-targeted-regression-20260921-v2",
+  "fixture_file_sha256": "cd5f68646fbd575484cbec62df4b4300550440b45e69a047c25df1588680d8d2",
+  "forbidden_changes": [
+    "questions",
+    "scoring criteria",
+    "KG",
+    "RAG corpus",
+    "product prompt",
+    "taxonomy",
+    "seed expansion",
+    "W01 execution",
+    "performance-driven tuning"
+  ],
+  "formal_gold_created": false,
+  "generator": {
+    "configuration_source": "SCKG_ENV_FILE",
+    "credentials_present": true,
+    "disabled": false,
+    "model": "deepseek-v4-pro",
+    "network_verified": false,
+    "provider": "api.deepseek.com"
+  },
+  "harness_sha256_at_freeze": "77c1b0b721468f788629299959113f76cb5c6da2d167614a88faf5e9a8b0775d",
+  "implementation_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+  "lane_manifest": {
+    "actual_request_receipts_required": true,
+    "approved_consumer_invariants": {
+      "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statement_count": 121,
+      "caution_context_count": 166,
+      "direct_assessment_binding_count": 134,
+      "held_statement_id": "statement-revision:d0d887b96b7a1cf45e2c47bf:1",
+      "held_statement_visible": false,
+      "source_artifact_count": 61,
+      "source_revision_count": 48
+    },
+    "baseline_truth": {
+      "integration_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+      "prior_lane_manifest_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+      "rule": "07 accepted hardened runtime; lane knowledge sources remain those in the frozen manifest"
+    },
+    "comparison_estimand": "product bundle, not graph structure alone",
+    "configuration_observation": "static immutable-code inspection; no runtime observations",
+    "coverage_exclusion_rule": "Planner, ToolContracts, execution guards, validation contracts, and approval system are common infrastructure. Their records and behavior cannot establish any V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.",
+    "formal_agent_gain_run": false,
+    "frozen_at": "2026-09-21",
+    "lane_order": [
+      "llm_only",
+      "generic_rag",
+      "legacy_kg",
+      "scientific_kg"
+    ],
+    "lanes": [
+      {
+        "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval (no-retrieval branch)",
+        "caution_policy": "no local caution channel",
+        "corpus_digests": {},
+        "corpus_snapshot_id": "none",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled",
+        "implementation_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+        "lane_name": "llm_only",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": false,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "maximum_returned_hits": 0,
+          "sparse_candidate_limit": 0,
+          "top_k": "incoming request may vary; no-retrieval backend returns zero hits",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService",
+        "caution_policy": "no Scientific KG caution context",
+        "corpus_digests": {
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+          "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
+          "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
+          "manifest_sha256": "0afc019e7c4cb5b52ea89dbccdb70b2d1e40cf3100efbd4562e0966d2a78d92a"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled (use_kg=false; scientific evidence adapter disabled)",
+        "implementation_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+        "lane_name": "generic_rag",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService + engine.scientific_kg_evidence.ScientificKGEvidence + engine.evidence_graph_query.EvidenceGraphQuery",
+        "caution_policy": "candidate-only evidence-gap diagnostics may abstain; no approved-v2 caution context",
+        "corpus_digests": {
+          "candidate_bindings_sha256": "b9b77442968a705787b77c2b1a74c094d9a7223bd7d3eeebc7e028954c66c76f",
+          "candidate_bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "candidate_manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "legacy_inventory_sha256": "9a6da2e3981bbeddd5654d3f59b766bdc55d805ba52dec9beaead90294cdb138",
+          "legacy_tool_graph_edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
+          "legacy_tool_graph_nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3",
+          "retrieval_corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4 + scientific_kg_v1_uat_decision_rules + kg-v2.3.0-canonical:6b20b21847be",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "candidate ScientificKGEvidence direct-evidence channel enabled; 7,537-node legacy tool/catalog graph enabled only for candidate-tool filtering",
+        "implementation_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+        "lane_name": "legacy_kg",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": true,
+          "use_scientific_evidence": true
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.approved_scientific_kg.ApprovedScientificKG",
+        "caution_policy": {
+          "count": 166,
+          "execution_authorized": false,
+          "execution_gate": false,
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "trusted": false
+        },
+        "corpus_digests": {
+          "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+          "caution_context_index_sha256": "5e782d1a21ceb0789afc2392c901556f24ba763ca6a39a55052c0e3be5805062",
+          "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda"
+        },
+        "corpus_snapshot_id": "approved-scientific-kg-v2-01",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "approved allowlist, evidence-chain joins, exact scope policy, and separate caution context; generic RAG and both legacy graphs are not consulted",
+        "implementation_commit": "0cfc390ab398ff5d48e5e68440d8dee36227b4b0",
+        "lane_name": "scientific_kg",
+        "retrieval_budget": {
+          "algorithm": "approved exact-evidence in-memory ranking",
+          "generic_dense_consumer_used": false,
+          "generic_sparse_consumer_used": false,
+          "legacy_kg_used": false,
+          "maximum_approved_facts": 12,
+          "maximum_caution_contexts": 4,
+          "top_k": "per request; approved facts capped at min(request.top_k, 12)"
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      }
+    ],
+    "run_id": "lane-alignment-20260921-v2-withdrawal",
+    "schema_version": "sckg-evaluation-lane-manifest-v2",
+    "shared_runtime": [
+      {
+        "component": "Planner",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "agent.research_chat_service.ResearchChatService tool-plan path"
+      },
+      {
+        "component": "ToolContracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "contracts/tools plus shared research/execution services"
+      },
+      {
+        "component": "execution guards",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared execution policy, authorization, and runtime guards"
+      },
+      {
+        "component": "validation contracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared artifact and result validation contracts"
+      },
+      {
+        "component": "approval system",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared plan-specific approval and approval-consumption path"
+      }
+    ]
+  },
+  "lane_manifest_file_sha256": "dd86366807d97002ce9a82e7d90719248eb45e82bf03be1aeff08e395b89d418",
+  "phase": "DEV-TARGETED-REGRESSION",
+  "provider_seed": null,
+  "repetitions": 1,
+  "scenario_file_sha256": "5a3b4c48d8fe9660215c8830eb4e9287df63a14b9c3b9cf25cfaef1cdd255fbb",
+  "schedule": [
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--llm_only--targeted-r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-O02--llm_only--targeted-r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-O02--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-O02--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-O02",
+      "input_sha256": "16e632efb9db5c99ae170de91b016cdffa9e2f6de1c4be55d0ea48b446dce366",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-O02--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-W02--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-W02--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-W02--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-W02",
+      "input_sha256": "b2126df6ba91fcc56aada0e0e8637b27481eb62869d3fce2d551e6884b8f5813",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-W02--llm_only--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--llm_only--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--llm_only--targeted-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-b",
+      "input_sha256": "185930ce248932090f12d4ba87fd6b70133cfa8c8d693e0e9ce5568522cdc85a",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-b--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--llm_only--targeted-r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--generic_rag--targeted-r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--scientific_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--legacy_kg--targeted-r0"
+    },
+    {
+      "case_id": "dev-K02-pca-chunked-a",
+      "input_sha256": "cb9a0a5caf4016d1559bbcd02f9bf29f27c1b84b0ab1700dc50c31dcb9b3c6c7",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K02-pca-chunked-a--llm_only--targeted-r0"
+    }
+  ],
+  "schedule_seed": 2026092102,
+  "selection": {
+    "W01_excluded": true,
+    "affected_scenarios": [
+      "dev-K01-hvg-input-a",
+      "dev-K02-pca-chunked-a",
+      "dev-K03-reference-annotation-b",
+      "dev-K04-evidence-version-b",
+      "dev-W02"
+    ],
+    "control_scenarios": [
+      "dev-K01-hvg-input-b",
+      "dev-O02"
+    ],
+    "fix_mapping": {
+      "dev-K01-hvg-input-a": "user_fact_preservation",
+      "dev-K02-pca-chunked-a": "user_fact_preservation",
+      "dev-K03-reference-annotation-b": "user_fact_preservation",
+      "dev-K04-evidence-version-b": "targeted_clarification",
+      "dev-W02": "artifact_validation_routing"
+    },
+    "provenance": {
+      "amendments_sha256": "a631d32c3202974416c7914c46a210159e33cdd4d1348d2e21161b14d26b52a5",
+      "attribution_sha256": "f95a80fc8a3748dac774f1cb42787a7484632a6b2136cfe2376773606a180349",
+      "canonical_attribution": "dev_pilot_20260921/failure_attribution.final.json",
+      "result_index_sha256": "fce42cfbefa7a255390658804165843d8126fb4c62210e720a27b3c05fba5049"
+    },
+    "rule": "unique scenario IDs with canonical final stage validation-governance or routing, then direct fix mapping",
+    "source_rows": [
+      {
+        "attribution": {
+          "error_type": "critical_fact_omission",
+          "evidence_bindings": [
+            {
+              "file_sha256": "c63d78a3ecb19ccf777096dcea3abf6e891f0a99de60f057f23ee236eab85081",
+              "ref": "calls/call-02.request.json"
+            },
+            {
+              "file_sha256": "99aa3332c7445e0c9e758d4fd223d0cd9941b5e5f863712bfbbacf052241bfe4",
+              "ref": "calls/call-02.response.json"
+            },
+            {
+              "file_sha256": "9b6b8206b65394c2ccc425e8c0a358ad1e5f601292ee0b3bcb70a113ed385d95",
+              "ref": "calls/call-03.request.json"
+            },
+            {
+              "file_sha256": "4d0fa7f284e20dc251390300341fc10560f852f00311e57a9fc748a811ead5f3",
+              "ref": "calls/call-03.response.json"
+            },
+            {
+              "file_sha256": "ec955f1e8497fb1852e5dfa6cfab8306644bd874489dc59b7011615338c2274c",
+              "ref": "output.json#context_pack.external_reasoning.support_check"
+            },
+            {
+              "file_sha256": "38503e15da7d738feb10c10c83f6ed2db9dc9e7effd532477a25a9cd61285f99",
+              "ref": "final_context.json"
+            },
+            {
+              "file_sha256": "fa290257bc135044698c1c94f095e8b45c00976745255a89fc47c0e8b7283327",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "calls/call-03.request.json",
+            "calls/call-03.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "final_context.json",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "rationale": "原始synthesis包含评分所需的关键条件说明；same-provider support_check返回空supported_indexes，相关说明从终答消失。由实际前后输出定位到治理链，不将知识覆盖标签据此改为absent，也不声称最初回答每个细节均正确。",
+          "stage": "validation-governance"
+        },
+        "native": {
+          "case_id": "dev-K01-hvg-input-a",
+          "downstream_symptoms": [],
+          "evidence": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "calls/call-03.request.json",
+            "calls/call-03.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "final_context.json",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "critical_fact_omission",
+          "root_stage": "validation-governance",
+          "run_id": "dev-K01-hvg-input-a--generic_rag--r0"
+        },
+        "run_id": "dev-K01-hvg-input-a--generic_rag--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "missing_conditional_algorithm_answer",
+          "evidence_bindings": [
+            {
+              "file_sha256": "36b2a5bf3fecb9c93c805e43a10ca3052ccf0d2dea6423d8a60f6335a3dbf4c4",
+              "ref": "calls/call-02.request.json"
+            },
+            {
+              "file_sha256": "3e032625b26b857a65128efe573c5ddcb4024da0cd4b79f21a08d7250c627537",
+              "ref": "calls/call-02.response.json"
+            },
+            {
+              "file_sha256": "e6e1466c44dbd09f179952e877cc1ea4a260300c80b3c48001322a2d1d19f36b",
+              "ref": "calls/call-03.request.json"
+            },
+            {
+              "file_sha256": "6fc565389dc14c78399fc483435f65b5806f5dd7c4016952bc8bfc824a562bfb",
+              "ref": "calls/call-03.response.json"
+            },
+            {
+              "file_sha256": "aeadb9365f4d969e2e88ed5fe1739c5686a13271913505ce087a28e4209ff84e",
+              "ref": "output.json#context_pack.external_reasoning.support_check"
+            },
+            {
+              "file_sha256": "b84860bf7f8be6bd53a53323719d7dfb498a93948d8658c46493b2116405084a",
+              "ref": "final_context.json"
+            },
+            {
+              "file_sha256": "cfe10865ec2b77a7bbc2686d7d29d970809b7bc126df49908c3b11285a858ecc",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "calls/call-03.request.json",
+            "calls/call-03.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "final_context.json",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "rationale": "原始synthesis包含评分所需的关键条件说明；same-provider support_check返回空supported_indexes，相关说明从终答消失。由实际前后输出定位到治理链，不将知识覆盖标签据此改为absent，也不声称最初回答每个细节均正确。",
+          "stage": "validation-governance"
+        },
+        "native": {
+          "case_id": "dev-K02-pca-chunked-a",
+          "downstream_symptoms": [],
+          "evidence": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "calls/call-03.request.json",
+            "calls/call-03.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "final_context.json",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "missing_conditional_algorithm_answer",
+          "root_stage": "validation-governance",
+          "run_id": "dev-K02-pca-chunked-a--scientific_kg--r0"
+        },
+        "run_id": "dev-K02-pca-chunked-a--scientific_kg--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "critical_input_facts_omitted",
+          "evidence_bindings": [
+            {
+              "file_sha256": "329b556e95cf3319d09d0ff11ed66d6a51c0c365a488948f45ae1dab333385dd",
+              "ref": "calls/call-02.request.json"
+            },
+            {
+              "file_sha256": "f22ccd37fe741114510e4c84587918d5632dce426b2a14490a4ab047142eb410",
+              "ref": "calls/call-02.response.json"
+            },
+            {
+              "file_sha256": "5bf352b459f70b3eec4831336e24b5b032bb567d9e6399babeaddb378aebee35",
+              "ref": "calls/call-03.request.json"
+            },
+            {
+              "file_sha256": "9172afb81633cc9f4ec87f77825538bbbb2e978770ec2093b7b924de27cea4bb",
+              "ref": "calls/call-03.response.json"
+            },
+            {
+              "file_sha256": "99f47e681ad70d2fc5b420fd7a8d33b6a5a7db736c4fd23b8ab6beb3eb703538",
+              "ref": "output.json#context_pack.external_reasoning.support_check"
+            },
+            {
+              "file_sha256": "faaad4bd72d2b5f4e11b26a723e9988ea4b4b0f013152b1e107bffeacc9c64ca",
+              "ref": "final_context.json"
+            },
+            {
+              "file_sha256": "60517db13b9397f7398014a64ec60c8bcbc8b1b850a3d4a8054363df9e99d141",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "calls/call-03.request.json",
+            "calls/call-03.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "final_context.json",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "rationale": "原始synthesis包含评分所需的关键条件说明；same-provider support_check返回空supported_indexes，相关说明从终答消失。由实际前后输出定位到治理链，不将知识覆盖标签据此改为absent，也不声称最初回答每个细节均正确。",
+          "stage": "validation-governance"
+        },
+        "native": {
+          "case_id": "dev-K03-reference-annotation-b",
+          "downstream_symptoms": [],
+          "evidence": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "calls/call-03.request.json",
+            "calls/call-03.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "final_context.json",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "critical_input_facts_omitted",
+          "root_stage": "validation-governance",
+          "run_id": "dev-K03-reference-annotation-b--legacy_kg--r0"
+        },
+        "run_id": "dev-K03-reference-annotation-b--legacy_kg--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "off_target_answer",
+          "evidence_bindings": [
+            {
+              "file_sha256": "2e78d5dda8914f03f74323da3cb324d20add70ac8374635db064dda9674fa1e6",
+              "ref": "calls/call-02.request.json"
+            },
+            {
+              "file_sha256": "97c29816b20d9e7bffa1684ef836b0919ee21aae12a3115699f357850ffde205",
+              "ref": "calls/call-02.response.json"
+            },
+            {
+              "file_sha256": "52a907be82b54eccec519317f7a7fdb9ce952a250a54522747487d4518674b38",
+              "ref": "output.json#context_pack.external_reasoning.support_check"
+            },
+            {
+              "file_sha256": "52a907be82b54eccec519317f7a7fdb9ce952a250a54522747487d4518674b38",
+              "ref": "output.json#final_report"
+            },
+            {
+              "file_sha256": "75ddb54be20c6e5b79947fe829a4b0a2b884b2311b0f01bedd08550b897ee46d",
+              "ref": "final_context.json"
+            }
+          ],
+          "evidence_refs": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "output.json#final_report",
+            "final_context.json"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "rationale": "provider原始回答含需要核实installed version的针对性澄清；产品记录AnswerContractViolation / invalid_clarification后替换成泛化或HVG fallback，终答丢失版本澄清。定位的是下游丢失，不代表原始回答已完全通过K04。",
+          "stage": "validation-governance"
+        },
+        "native": {
+          "case_id": "dev-K04-evidence-version-b",
+          "downstream_symptoms": [],
+          "evidence": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "output.json#final_report",
+            "final_context.json"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "off_target_answer",
+          "root_stage": "validation-governance",
+          "run_id": "dev-K04-evidence-version-b--generic_rag--r0"
+        },
+        "run_id": "dev-K04-evidence-version-b--generic_rag--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "off_target_answer",
+          "evidence_bindings": [
+            {
+              "file_sha256": "1a70126315ebe7ca343d7bc84c16f85c7a0511417b3945df15565f33dc4e14be",
+              "ref": "calls/call-02.request.json"
+            },
+            {
+              "file_sha256": "d2e329780a013288ab02220677652a7cee63db80fbf702f9e36ebffb9f45560b",
+              "ref": "calls/call-02.response.json"
+            },
+            {
+              "file_sha256": "56f0b72eb74f92ba5bdc74de8a773f8f2577cc72028155c59e1b89197e6a6af8",
+              "ref": "output.json#context_pack.external_reasoning.support_check"
+            },
+            {
+              "file_sha256": "56f0b72eb74f92ba5bdc74de8a773f8f2577cc72028155c59e1b89197e6a6af8",
+              "ref": "output.json#final_report"
+            },
+            {
+              "file_sha256": "192828221dfaef31ea618a598a764439b495cc4ac25fab94fa1b21f6c003bcd5",
+              "ref": "final_context.json"
+            }
+          ],
+          "evidence_refs": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "output.json#final_report",
+            "final_context.json"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "rationale": "provider原始回答含需要核实installed version的针对性澄清；产品记录AnswerContractViolation / invalid_clarification后替换成泛化或HVG fallback，终答丢失版本澄清。定位的是下游丢失，不代表原始回答已完全通过K04。",
+          "stage": "validation-governance"
+        },
+        "native": {
+          "case_id": "dev-K04-evidence-version-b",
+          "downstream_symptoms": [],
+          "evidence": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "output.json#final_report",
+            "final_context.json"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "off_target_answer",
+          "root_stage": "validation-governance",
+          "run_id": "dev-K04-evidence-version-b--legacy_kg--r0"
+        },
+        "run_id": "dev-K04-evidence-version-b--legacy_kg--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "generic_fallback_does_not_answer_task",
+          "evidence_bindings": [
+            {
+              "file_sha256": "7a48172cd80da00e6ee57f564b085b11eb33e75e433102c00ba92b74013606dd",
+              "ref": "calls/call-02.request.json"
+            },
+            {
+              "file_sha256": "6f8a1ff8b3529059d18ef848895590bababf7908174fe3f1c39fdcaf6d047b99",
+              "ref": "calls/call-02.response.json"
+            },
+            {
+              "file_sha256": "862c4fe24cbca100dc5b4fe54f075c4233a56d16bd18dc83f860307ee02ec7f5",
+              "ref": "output.json#context_pack.external_reasoning.support_check"
+            },
+            {
+              "file_sha256": "862c4fe24cbca100dc5b4fe54f075c4233a56d16bd18dc83f860307ee02ec7f5",
+              "ref": "output.json#final_report"
+            },
+            {
+              "file_sha256": "e46a9359d82e96d9a6e6e69039afc7e0e25f9573cfd9c82d8047c30d246111d1",
+              "ref": "final_context.json"
+            }
+          ],
+          "evidence_refs": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "output.json#final_report",
+            "final_context.json"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "rationale": "provider原始回答含需要核实installed version的针对性澄清；产品记录AnswerContractViolation / invalid_clarification后替换成泛化或HVG fallback，终答丢失版本澄清。定位的是下游丢失，不代表原始回答已完全通过K04。",
+          "stage": "validation-governance"
+        },
+        "native": {
+          "case_id": "dev-K04-evidence-version-b",
+          "downstream_symptoms": [],
+          "evidence": [
+            "calls/call-02.request.json",
+            "calls/call-02.response.json",
+            "output.json#context_pack.external_reasoning.support_check",
+            "output.json#final_report",
+            "final_context.json"
+          ],
+          "owner_module": "agent.research_chat_reasoner",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "generic_fallback_does_not_answer_task",
+          "root_stage": "validation-governance",
+          "run_id": "dev-K04-evidence-version-b--llm_only--r0"
+        },
+        "run_id": "dev-K04-evidence-version-b--llm_only--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "artifact_validation_routed_as_execution_request",
+          "evidence_bindings": [
+            {
+              "file_sha256": "cdc23b044c9c8261e5512a11b34bad115993138476ed11be54cafc0ac0e119fc",
+              "ref": "input.json"
+            },
+            {
+              "file_sha256": "beed87df7a7f8a7f884142621e8adab44d18b737a49d431c93956911ac5f409e",
+              "ref": "output.json#semantic_route"
+            },
+            {
+              "file_sha256": "beed87df7a7f8a7f884142621e8adab44d18b737a49d431c93956911ac5f409e",
+              "ref": "output.json#action_safety"
+            },
+            {
+              "file_sha256": "605ceb72e8a277acb6f016516cbb3062f78ef620029bb6c680bb292798a70623",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "rationale": "输入是对给定header-only产物的审查，未授权修复。实际路由走workflow/RUN或unsupported_action，并在canonical_task_unresolved/域门禁停止，未进入内容验证。安全禁止未授权执行是正确的；错误是没有回答可独立回答的产物审查。无执行器运行，因此不归execution。",
+          "stage": "routing"
+        },
+        "native": {
+          "case_id": "dev-W02",
+          "downstream_symptoms": [],
+          "evidence": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "artifact_validation_routed_as_execution_request",
+          "root_stage": "routing",
+          "run_id": "dev-W02--generic_rag--r0"
+        },
+        "run_id": "dev-W02--generic_rag--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "artifact_validation_routed_as_execution_request",
+          "evidence_bindings": [
+            {
+              "file_sha256": "cdc23b044c9c8261e5512a11b34bad115993138476ed11be54cafc0ac0e119fc",
+              "ref": "input.json"
+            },
+            {
+              "file_sha256": "8bf43a4bf0dd797f1451a9fde170b272d6557dbbc497844ea5cd5e78cdaa725a",
+              "ref": "output.json#semantic_route"
+            },
+            {
+              "file_sha256": "8bf43a4bf0dd797f1451a9fde170b272d6557dbbc497844ea5cd5e78cdaa725a",
+              "ref": "output.json#action_safety"
+            },
+            {
+              "file_sha256": "eed8e285e36c401fab8d6883a6fca97ce66d44d606f34d3bcc77f1e58d242296",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "rationale": "输入是对给定header-only产物的审查，未授权修复。实际路由走workflow/RUN或unsupported_action，并在canonical_task_unresolved/域门禁停止，未进入内容验证。安全禁止未授权执行是正确的；错误是没有回答可独立回答的产物审查。无执行器运行，因此不归execution。",
+          "stage": "routing"
+        },
+        "native": {
+          "case_id": "dev-W02",
+          "downstream_symptoms": [],
+          "evidence": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "artifact_validation_routed_as_execution_request",
+          "root_stage": "routing",
+          "run_id": "dev-W02--legacy_kg--r0"
+        },
+        "run_id": "dev-W02--legacy_kg--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "artifact_validation_routed_as_execution_request",
+          "evidence_bindings": [
+            {
+              "file_sha256": "cdc23b044c9c8261e5512a11b34bad115993138476ed11be54cafc0ac0e119fc",
+              "ref": "input.json"
+            },
+            {
+              "file_sha256": "7fc69c20b11c052a888a5e04bd6a1b1fb2969894c01660a4a059cc1a5827a1fb",
+              "ref": "output.json#semantic_route"
+            },
+            {
+              "file_sha256": "7fc69c20b11c052a888a5e04bd6a1b1fb2969894c01660a4a059cc1a5827a1fb",
+              "ref": "output.json#action_safety"
+            },
+            {
+              "file_sha256": "47e6e084cc64051a5e9812044812e60e98beebfa1e8b4c10f63b4cc4a18b0222",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "rationale": "输入是对给定header-only产物的审查，未授权修复。实际路由走workflow/RUN或unsupported_action，并在canonical_task_unresolved/域门禁停止，未进入内容验证。安全禁止未授权执行是正确的；错误是没有回答可独立回答的产物审查。无执行器运行，因此不归execution。",
+          "stage": "routing"
+        },
+        "native": {
+          "case_id": "dev-W02",
+          "downstream_symptoms": [],
+          "evidence": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "artifact_validation_routed_as_execution_request",
+          "root_stage": "routing",
+          "run_id": "dev-W02--llm_only--r0"
+        },
+        "run_id": "dev-W02--llm_only--r0"
+      },
+      {
+        "attribution": {
+          "error_type": "artifact_validation_routed_as_execution_request",
+          "evidence_bindings": [
+            {
+              "file_sha256": "cdc23b044c9c8261e5512a11b34bad115993138476ed11be54cafc0ac0e119fc",
+              "ref": "input.json"
+            },
+            {
+              "file_sha256": "2a9b9c98868936f870271a8de19126499cf9d501295508e887699993ecb069d6",
+              "ref": "output.json#semantic_route"
+            },
+            {
+              "file_sha256": "2a9b9c98868936f870271a8de19126499cf9d501295508e887699993ecb069d6",
+              "ref": "output.json#action_safety"
+            },
+            {
+              "file_sha256": "338d7d3b6ef74eba17af452202e36f9c01788ee76aed99b4420fc66da35750c1",
+              "ref": "trace.jsonl"
+            }
+          ],
+          "evidence_refs": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "rationale": "输入是对给定header-only产物的审查，未授权修复。实际路由走workflow/RUN或unsupported_action，并在canonical_task_unresolved/域门禁停止，未进入内容验证。安全禁止未授权执行是正确的；错误是没有回答可独立回答的产物审查。无执行器运行，因此不归execution。",
+          "stage": "routing"
+        },
+        "native": {
+          "case_id": "dev-W02",
+          "downstream_symptoms": [],
+          "evidence": [
+            "input.json",
+            "output.json#semantic_route",
+            "output.json#action_safety",
+            "trace.jsonl"
+          ],
+          "owner_module": "agent.research_chat_service",
+          "recommended_action": "00 review the recorded failure; no question/corpus/prompt changes in this DEV run",
+          "root_error_type": "artifact_validation_routed_as_execution_request",
+          "root_stage": "routing",
+          "run_id": "dev-W02--scientific_kg--r0"
+        },
+        "run_id": "dev-W02--scientific_kg--r0"
+      }
+    ]
+  }
+}
