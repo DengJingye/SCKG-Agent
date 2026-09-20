@@ -315,6 +315,35 @@ class ScientificKGAdminSnapshotService:
             self.get_neighborhood(graph_node_id, hops=hops, max_nodes=max_nodes)
         )
 
+    def global_graph(self, *, max_nodes: int = 2000) -> KnowledgeGraphView:
+        """Return a deterministic read-only projection of the frozen instance graph."""
+
+        cap = max(1, min(int(max_nodes), 2000))
+        ordered = sorted(
+            self._nodes.values(),
+            key=lambda row: (
+                _LAYER_PRIORITY.get(row["layer_id"], 99),
+                row["record_type"],
+                str(row.get("label", "")).casefold(),
+                row["graph_node_id"],
+            ),
+        )
+        selected = ordered[:cap]
+        selected_ids = {row["graph_node_id"] for row in selected}
+        edges = [
+            row
+            for row in self._edges
+            if row["source_graph_node_id"] in selected_ids
+            and row["target_graph_node_id"] in selected_ids
+        ]
+        return self._knowledge_graph_view(
+            {
+                "nodes": [self._node_projection(row) for row in selected],
+                "edges": [self._edge_projection(row) for row in edges],
+                "truncated": len(selected) < len(self._nodes),
+            }
+        )
+
     def get_claim_evidence_chain(self, claim_graph_node_id: str) -> dict[str, Any]:
         claim_node = self._nodes.get(claim_graph_node_id)
         if not claim_node or claim_node["record_type"] != "AtomicClaimRevision":
@@ -484,6 +513,7 @@ class ScientificKGAdminSnapshotService:
                 kind=row["node_type"],
                 metadata={
                     "canonical_id": row["canonical_id"],
+                    "ontology_type": row["node_type"],
                     "layer": row["layer"],
                     "status": row["status"],
                     "knowledge_status": row["knowledge_status"],
@@ -497,7 +527,13 @@ class ScientificKGAdminSnapshotService:
                 source=row["source"],
                 target=row["target"],
                 relation=row["relation"],
-                metadata={"layer": row["layer"], "status": row["status"]},
+                metadata={
+                    "edge_id": row.get("graph_edge_id"),
+                    "layer": row["layer"],
+                    "status": row["status"],
+                    "provenance": row.get("provenance", {}),
+                    "reason": "real frozen Scientific KG relation",
+                },
             )
             for row in payload["edges"]
         ]

@@ -1033,6 +1033,10 @@ from engine.knowledge_graph_view import (
     build_knowledge_graph_html,
     build_knowledge_graph_view,
 )
+from engine.scientific_graph_viewer import (
+    ScientificGraphViewerConfig,
+    build_scientific_graph_viewer_html,
+)
 from engine.scientific_kg_admin import ScientificKGAdminSnapshotService
 from engine.ontology_manager import (
     OntologyIntegrityError,
@@ -4286,7 +4290,22 @@ def _render_candidate_studio(
         "yellow = EvidenceSpan · amber = SourceRevision · green = existing KG identity."
     )
     graph = proposal_graph_view(run["proposal_graph"])
-    components.html(build_knowledge_graph_html(graph), height=560, scrolling=False)
+    components.html(
+        build_scientific_graph_viewer_html(
+            graph,
+            config=ScientificGraphViewerConfig(
+                mode="candidate_kg",
+                default_layout="force",
+                default_density="standard",
+                show_evidence_by_default=False,
+                standard_node_cap=80,
+                global_node_cap=120,
+                canvas_height=700,
+            ),
+        ),
+        height=710,
+        scrolling=False,
+    )
 
     diff = run["candidate_diff"]
     st.markdown("#### Current Scientific KG vs Proposed Delta")
@@ -4658,9 +4677,15 @@ def _render_scientific_kg_admin_page() -> None:
         )
 
     with graph_tab:
-        st.markdown("#### Small, evidence-linked subgraph")
+        st.markdown("#### Scientific graph workbench")
         st.caption(
-            "The workspace opens a bounded real subgraph. SourceRevision display nodes come from frozen source manifests and are excluded from physical graph totals."
+            "Explore a focused real subgraph or the complete frozen Scientific KG. SourceRevision display nodes in focused examples come from frozen source manifests and are excluded from physical graph totals."
+        )
+        graph_scope = st.radio(
+            "Graph scope",
+            ["Focused subgraph", "Full Scientific KG"],
+            horizontal=True,
+            key="scientific_kg_graph_scope",
         )
         controls = st.columns([1.0, 1.6, 1.4, 0.8, 0.8])
         with controls[0]:
@@ -4709,7 +4734,9 @@ def _render_scientific_kg_admin_page() -> None:
             else:
                 st.warning("No Scientific KG nodes match the current search and type filter.")
 
-        if selected_seed:
+        if graph_scope == "Full Scientific KG":
+            graph = service.global_graph()
+        elif selected_seed:
             graph = service.neighborhood_graph(
                 selected_seed, hops=int(hops), max_nodes=int(max_nodes)
             )
@@ -4717,12 +4744,29 @@ def _render_scientific_kg_admin_page() -> None:
             graph = service.example_graph(example, max_nodes=int(max_nodes))
         if graph.truncated:
             st.caption("Node cap reached; the canvas is a deterministic local projection.")
-        components.html(build_knowledge_graph_html(graph), height=760, scrolling=False)
+        components.html(
+            build_scientific_graph_viewer_html(
+                graph,
+                config=ScientificGraphViewerConfig(
+                    mode="scientific_kg",
+                    default_layout="force",
+                    default_density=(
+                        "global" if graph_scope == "Full Scientific KG" else "standard"
+                    ),
+                    show_evidence_by_default=False,
+                    standard_node_cap=260,
+                    global_node_cap=2000,
+                    canvas_height=700,
+                ),
+            ),
+            height=710,
+            scrolling=False,
+        )
 
         node_options = {
             f"{graph.nodes[node_id].label} · {graph.nodes[node_id].kind}": node_id
             for node_id in graph.visible_node_ids
-        }
+        } if graph_scope == "Focused subgraph" else {}
         if node_options:
             detail_label = st.selectbox(
                 "Inspect node", list(node_options), key="scientific_kg_inspect_node"

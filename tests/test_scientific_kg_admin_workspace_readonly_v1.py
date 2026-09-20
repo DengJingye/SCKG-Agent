@@ -6,6 +6,10 @@ from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
+from engine.scientific_graph_viewer import (
+    ScientificGraphViewerConfig,
+    build_scientific_graph_viewer_html,
+)
 from engine.scientific_kg_admin import ScientificKGAdminSnapshotService
 
 
@@ -118,6 +122,23 @@ def test_pca_neighbors_and_leiden_examples_are_small_real_subgraphs() -> None:
             if graph.nodes[node_id].kind == "SourceRevision"
         )
         assert service.get_node(source_id)["record"]
+
+
+def test_full_scientific_kg_can_use_the_shared_read_only_viewer() -> None:
+    graph = _service().global_graph()
+    html = build_scientific_graph_viewer_html(
+        graph,
+        config=ScientificGraphViewerConfig(
+            mode="scientific_kg", default_density="global", global_node_cap=2000
+        ),
+    )
+
+    assert len(graph.nodes) == 1651
+    assert len(graph.edges) == 2429
+    assert '"mode":"scientific_kg"' in html
+    assert '"fullNodes":1651' in html
+    assert '"fullEdges":2429' in html
+    assert "Show Evidence" in html
 
 
 def test_materialized_claim_evidence_source_drilldown_resolves() -> None:

@@ -9,6 +9,10 @@ from streamlit.testing.v1 import AppTest
 
 import app as app_module
 from engine.knowledge_graph_view import build_knowledge_graph_html
+from engine.scientific_graph_viewer import (
+    ScientificGraphViewerConfig,
+    build_scientific_graph_viewer_html,
+)
 from engine.scientific_knowledge_studio import (
     ScientificKnowledgeStudioService,
     candidate_demo_view,
@@ -221,3 +225,81 @@ def test_candidate_graph_renderer_exposes_node_and_edge_details() -> None:
     assert "单击节点或关系查看详情" in html
     assert '"NEW_PROPOSAL": "#3978E8"' in html
     assert '"INVALID_PROPOSAL": "#C44747"' in html
+
+
+def _viewer_payload(html: str) -> dict:
+    marker = '<script id="payload" type="application/json">'
+    return json.loads(html.split(marker, 1)[1].split("</script>", 1)[0])
+
+
+def test_scientific_graph_viewer_preserves_soupx_graph_and_has_no_nested_shell() -> None:
+    run = load_studio_evaluation_snapshot(SNAPSHOT)
+    html = build_scientific_graph_viewer_html(
+        proposal_graph_view(run["proposal_graph"]),
+        config=ScientificGraphViewerConfig(
+            mode="candidate_kg", standard_node_cap=80, global_node_cap=120
+        ),
+    )
+    payload = _viewer_payload(html)
+
+    assert payload["summary"]["fullNodes"] == 35
+    assert payload["summary"]["fullEdges"] == 42
+    assert {edge["relation"] for edge in payload["edges"]} == {
+        edge["relation"] for edge in run["proposal_graph"]["edges"]
+    }
+    assert not {"RELATED_TO", "SIMILAR", "CONNECTED"} & {
+        edge["relation"] for edge in payload["edges"]
+    }
+    assert 'data-viewer="ScientificGraphViewer"' in html
+    assert "scKG Decision Network" not in html
+    assert 'src="http' not in html and 'href="http' not in html
+
+
+def test_scientific_graph_viewer_supports_all_layouts_density_and_interactions() -> None:
+    run = load_studio_evaluation_snapshot(SNAPSHOT)
+    html = build_scientific_graph_viewer_html(proposal_graph_view(run["proposal_graph"]))
+
+    for value in ("force", "hierarchical", "circular"):
+        assert f'data-layout="{value}"' in html
+    for value in ("focus", "standard", "global"):
+        assert f'data-scope="{value}"' in html
+    for interaction in (
+        "selectNode(n.id)",
+        "selectEdge(e.id)",
+        "zoomIn",
+        "zoomOut",
+        "fit",
+        "clearSearch",
+        "largeForceLayout",
+        "parallelIndex",
+        "marker-end",
+    ):
+        assert interaction in html
+    assert "Full graph:" in html
+    assert "Visible:" in html
+    assert "Show Evidence" in html
+
+
+def test_shared_viewer_contract_accepts_all_three_semantic_modes() -> None:
+    assert {
+        ScientificGraphViewerConfig(mode=mode).mode
+        for mode in ("ontology_schema", "candidate_kg", "scientific_kg")
+    } == {"ontology_schema", "candidate_kg", "scientific_kg"}
+
+
+def test_candidate_view_uses_short_labels_but_retains_full_evidence_detail() -> None:
+    run = load_studio_evaluation_snapshot(SNAPSHOT)
+    payload = _viewer_payload(
+        build_scientific_graph_viewer_html(proposal_graph_view(run["proposal_graph"]))
+    )
+    evidence = [node for node in payload["nodes"] if node["group"] == "evidence"]
+    statements = [node for node in payload["nodes"] if node["group"] == "statement"]
+    sources = [node for node in payload["nodes"] if node["group"] == "source"]
+
+    assert evidence and all(node["displayLabel"].startswith("E") for node in evidence)
+    assert all(" · p." in node["displayLabel"] for node in evidence)
+    assert all(node["properties"]["exact_text"] not in node["displayLabel"] for node in evidence)
+    assert all(node["properties"]["exact_text"] for node in evidence)
+    assert statements and all(node["displayLabel"].startswith("S") for node in statements)
+    assert sources and all(node["displayLabel"].endswith(" source") for node in sources)
+    assert payload["config"]["showEvidence"] is False

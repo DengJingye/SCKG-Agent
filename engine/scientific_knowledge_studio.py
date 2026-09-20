@@ -1280,24 +1280,158 @@ def candidate_demo_view(run: dict[str, Any]) -> dict[str, Any]:
 
 
 def proposal_graph_view(payload: dict[str, Any]) -> KnowledgeGraphView:
+    """Adapt persisted proposal artifacts to the reusable graph viewer.
+
+    The adapter changes display labels only. Full artifact labels, excerpts,
+    identifiers, hashes, validation results, and provenance stay in metadata.
+    """
+
+    rows = list(payload.get("nodes", []))
+    by_id = {row["node_id"]: row for row in rows}
+    entity_labels = {
+        row["node_id"]: str((row.get("detail") or {}).get("raw_label") or row.get("label") or "Entity")
+        for row in rows
+        if row.get("node_type")
+        not in {"SourceRevisionProposal", "EvidenceSpanProposal", "AtomicClaimProposal", "ApplicabilityScope"}
+        and row.get("visual_class") != "EXISTING_KG"
+    }
+    subject_by_claim: dict[str, str] = {}
+    existing_labels: dict[str, str] = {}
+    for edge in payload.get("edges", []):
+        if edge.get("relation") == "SUBJECT_OF_PROPOSAL":
+            subject_by_claim[str(edge["target"])] = entity_labels.get(
+                str(edge["source"]), str(edge["source"])
+            )
+        elif edge.get("relation") == "IDENTITY_CANDIDATE":
+            existing_labels[str(edge["target"])] = entity_labels.get(
+                str(edge["source"]), str(edge["target"])
+            )
+
+    evidence_ids = [
+        row["node_id"]
+        for row in sorted(
+            (item for item in rows if item.get("node_type") == "EvidenceSpanProposal"),
+            key=lambda item: (
+                int((item.get("detail") or {}).get("page_number") or 0),
+                item["node_id"],
+            ),
+        )
+    ]
+    claim_ids = [row["node_id"] for row in rows if row.get("node_type") == "AtomicClaimProposal"]
+    scope_ids = [row["node_id"] for row in rows if row.get("node_type") == "ApplicabilityScope"]
+    evidence_number = {node_id: index for index, node_id in enumerate(evidence_ids, 1)}
+    claim_number = {node_id: index for index, node_id in enumerate(claim_ids, 1)}
+    scope_number = {node_id: index for index, node_id in enumerate(scope_ids, 1)}
+
+    def compact_text(value: Any, *, limit: int = 46) -> str:
+        text = re.sub(r"\s+", " ", str(value or "")).strip()
+        text = re.sub(r"^(?:\d+\s+Index\s+\d+\s+|Description\s+|Value\s+|Examples\s+)", "", text, flags=re.I)
+        return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+    def projection(row: dict[str, Any]) -> tuple[str, str, str]:
+        node_id = row["node_id"]
+        node_type = str(row.get("node_type") or "Unknown")
+        detail = dict(row.get("detail") or {})
+        if node_type == "EvidenceSpanProposal":
+            return (
+                f"E{evidence_number[node_id]} · p.{detail.get('page_number', '?')}",
+                "evidence",
+                "EvidenceSpan",
+            )
+        if node_type == "AtomicClaimProposal":
+            subject = subject_by_claim.get(node_id, "Candidate")
+            predicate = str(detail.get("claim_type") or "statement")
+            obj = compact_text(
+                detail.get("object_or_requirement") or row.get("label"), limit=24
+            )
+            return (
+                f"S{claim_number[node_id]} · {compact_text(subject, limit=12)} → "
+                f"{compact_text(predicate, limit=14)} → {obj}",
+                "statement",
+                "StatementRevision-compatible proposal",
+            )
+        if node_type == "ApplicabilityScope":
+            dimensions = detail.get("dimensions") or {}
+            explicit = [
+                str(value.get("value"))
+                for value in dimensions.values()
+                if isinstance(value, dict)
+                and value.get("status") == "EXPLICIT"
+                and value.get("value")
+            ]
+            scope_text = " · ".join(explicit) if explicit else "unspecified"
+            return (f"Scope {scope_number[node_id]} · {scope_text}", "scope", "ApplicabilityScope")
+        if node_type == "SourceRevisionProposal":
+            title = str(detail.get("title") or row.get("label") or "Source")
+            return (f"{compact_text(title.split(':', 1)[0], limit=32)} source", "source", "SourceRevision")
+        if row.get("visual_class") == "EXISTING_KG":
+            return (existing_labels.get(node_id, compact_text(row.get("label"), limit=32)), "existing", node_type)
+        return (
+            compact_text(detail.get("raw_label") or row.get("label"), limit=36),
+            "entity",
+            node_type,
+        )
+
+    node_metadata: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        display_label, viewer_group, ontology_type = projection(row)
+        detail = dict(row.get("detail") or {})
+        validation_status = str(detail.get("validation_status") or "CANDIDATE")
+        node_metadata[row["node_id"]] = {
+            "proposal_node_type": row["node_type"],
+            "ontology_type": ontology_type,
+            "viewer_group": viewer_group,
+            "display_label": display_label,
+            "full_label": row["label"],
+            "candidate_state": (
+                "INVALID"
+                if validation_status == "INVALID"
+                else "VALIDATED"
+                if validation_status == "VALID"
+                else "CANDIDATE"
+            ),
+            **detail,
+        }
     nodes = {
         row["node_id"]: GraphNode(
             node_id=row["node_id"],
             label=row["label"],
             kind=row["visual_class"],
-            metadata={"proposal_node_type": row["node_type"], **dict(row.get("detail") or {})},
+            metadata=node_metadata[row["node_id"]],
         )
-        for row in payload.get("nodes", [])
+        for row in rows
     }
-    edges = [
-        GraphEdge(
-            source=row["source"],
-            target=row["target"],
-            relation=row["relation"],
-            metadata={"origin": row["origin"]},
+    edges = []
+    for row in payload.get("edges", []):
+        source_state = node_metadata.get(row["source"], {}).get("candidate_state", "CANDIDATE")
+        target_state = node_metadata.get(row["target"], {}).get("candidate_state", "CANDIDATE")
+        validation_status = (
+            "INVALID"
+            if "INVALID" in {source_state, target_state}
+            else "VALID"
+            if source_state == target_state == "VALIDATED"
+            else "CANDIDATE"
         )
-        for row in payload.get("edges", [])
-    ]
+        edges.append(
+            GraphEdge(
+                source=row["source"],
+                target=row["target"],
+                relation=row["relation"],
+                metadata={
+                    "origin": row["origin"],
+                    "validation_status": validation_status,
+                    "candidate_state": (
+                        "INVALID"
+                        if validation_status == "INVALID"
+                        else "VALIDATED"
+                        if validation_status == "VALID"
+                        else "CANDIDATE"
+                    ),
+                    "provenance": ["proposal_graph.json", row["origin"]],
+                    "reason": "real persisted proposal binding",
+                },
+            )
+        )
     ids = list(nodes)
     return KnowledgeGraphView(
         nodes=nodes,
