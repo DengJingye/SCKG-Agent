@@ -1044,12 +1044,11 @@ from engine.ontology_manager import (
     build_ontology_schema_graph_html,
 )
 from engine.scientific_knowledge_studio import (
-    ScientificKnowledgeStudioService,
     candidate_demo_view,
     load_studio_evaluation_snapshot,
-    load_studio_run,
     proposal_graph_view,
 )
+from ingestion.scientific_documents import ScientificDocumentIngestionService
 from engine.decision_graph_query import DecisionGraphQuery
 from engine.action_bundle_retriever import ActionBundleRetriever
 from engine.evidence_graph_query import EvidenceGraphQuery
@@ -4061,6 +4060,92 @@ def _render_evaluation_admin_panel() -> None:
         st.info("No real group trial feedback has been recorded.")
 
 
+def _render_hardened_document_ingestion_payload(
+    summary: Dict[str, Any], packets: List[Dict[str, Any]]
+) -> None:
+    source = summary["source"]
+    st.info(
+        "Quality-hardened candidate ingestion · structural conformance only · "
+        "not scientific validity, trust, approval, promotion, or execution authorization"
+    )
+    source_cols = st.columns(4)
+    source_cols[0].metric("Document", source["filename"])
+    source_cols[1].metric("Pages", source["page_count"])
+    source_cols[2].metric("Ontology", summary["ontology_version"] if "ontology_version" in summary else "frozen")
+    source_cols[3].metric("Hash", f"{source['sha256'][:12]}…")
+
+    st.markdown("### Ingestion dispositions")
+    st.caption(
+        "These are processing/review states, not judgments that a scientific proposition is true or false."
+    )
+    disposition_order = [
+        "RAW_PROPOSAL", "EVIDENCE_ONLY", "ABSTAINED", "DROPPED", "NEEDS_REVIEW", "CANDIDATE_READY"
+    ]
+    disposition_cols = st.columns(6)
+    for index, status in enumerate(disposition_order):
+        disposition_cols[index].metric(status, summary["counts"].get(status, 0))
+    st.caption(
+        f"CANDIDATE_READY whole-segment evidence: {summary['unbounded_ready_candidates']} · "
+        f"hallucinated scope values: {summary['hallucinated_scope_count']}"
+    )
+    if not packets:
+        st.warning("No review packets were produced from the text-extractable content.")
+        return
+
+    labels = {
+        f"{index + 1}. {packet['block_type']} → {packet['final_disposition']}": packet
+        for index, packet in enumerate(packets)
+    }
+    selected_label = st.selectbox("HumanReviewPacket", list(labels), key="hardened_ingestion_packet")
+    packet = labels[selected_label]
+    st.markdown("### Block → proposition → candidate")
+    raw_col, normalized_col = st.columns(2)
+    raw_col.markdown("#### Raw block")
+    raw_col.code(packet["raw_block"], language=None)
+    normalized_col.markdown("#### Normalized block")
+    normalized_col.code(packet["normalized_block"], language=None)
+    st.table(
+        [
+            {"Field": "Block type", "Value": packet["block_type"]},
+            {"Field": "Final disposition", "Value": packet["final_disposition"]},
+            {"Field": "Raw proposition", "Value": json.dumps(packet.get("raw_proposition"), ensure_ascii=False)},
+            {"Field": "Canonical candidate", "Value": json.dumps(packet.get("canonical_statement"), ensure_ascii=False)},
+        ]
+    )
+
+    st.markdown("#### Stage status")
+    stage_order = [
+        "TEXT_QUALITY", "BLOCK_CLASSIFICATION", "CLAIM_LIKENESS", "ENTITY_LINKING",
+        "CANONICALIZATION", "SCOPE_RESOLUTION", "EVIDENCE_BINDING", "SEMANTIC_VALIDATION",
+    ]
+    stage_status = packet["validation_report"]["stage_status"]
+    stage_cols = st.columns(4)
+    for index, stage in enumerate(stage_order):
+        stage_cols[index % 4].metric(stage, stage_status[stage])
+    st.caption("SEMANTIC_VALIDATION means frozen-registry structural conformance; scientific validity is not assessed.")
+
+    detail_tabs = st.tabs(["Evidence", "Entities", "Scope + provenance", "Governance"])
+    with detail_tabs[0]:
+        st.json(packet.get("evidence_span"))
+    with detail_tabs[1]:
+        st.json(packet.get("linked_entities") or [])
+    with detail_tabs[2]:
+        st.json(packet.get("scope"))
+    with detail_tabs[3]:
+        st.json(packet["governance"])
+
+
+def _render_hardened_document_ingestion(snapshot_dir: Path) -> None:
+    summary_path = snapshot_dir / "summary.json"
+    packet_path = snapshot_dir / "human_review_packets.jsonl"
+    if not summary_path.is_file() or not packet_path.is_file():
+        st.warning("The hardened scientific-document ingestion snapshot is unavailable.")
+        return
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    packets = [json.loads(line) for line in packet_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    _render_hardened_document_ingestion_payload(summary, packets)
+
+
 def _render_candidate_studio(
     scientific_summary: Dict[str, Any],
 ) -> None:
@@ -4081,14 +4166,23 @@ def _render_candidate_studio(
     frozen = repository_root / "data/evaluation/scientific_knowledge_studio_v1"
     mode = st.radio(
         "Document source",
-        ["Replay verified SoupX run", "Upload a PDF for local preview"],
+        [
+            "Replay verified SoupX run",
+            "Upload a PDF for local preview",
+            "Replay hardened SoupX ingestion",
+        ],
         horizontal=True,
         key="scientific_knowledge_studio_mode",
-        help="Replay reads previously generated real pipeline artifacts. Upload runs the existing local deterministic preview pipeline.",
+        help="Replay reads candidate-only artifacts. Upload runs the quality-hardened local ingestion pipeline for one PDF.",
     )
 
     run: Dict[str, Any] | None = None
     run_origin = ""
+    if mode == "Replay hardened SoupX ingestion":
+        _render_hardened_document_ingestion(
+            repository_root / "data/evaluation/scientific_document_ingestion_v1"
+        )
+        return
     if mode == "Replay verified SoupX run":
         if (frozen / "manifest.json").is_file():
             run = load_studio_evaluation_snapshot(frozen)
@@ -4097,7 +4191,7 @@ def _render_candidate_studio(
                 "Replay of previously generated real pipeline artifacts · SoupX 1.6.2 manual · no current re-inference"
             )
     else:
-        studio = ScientificKnowledgeStudioService(repository_root)
+        studio = ScientificDocumentIngestionService(repository_root)
         upload_col, action_col = st.columns([3, 1])
         with upload_col:
             uploaded = st.file_uploader(
@@ -4118,16 +4212,27 @@ def _render_candidate_studio(
         if run_clicked and uploaded is not None:
             try:
                 result = studio.run_pdf_bytes(uploaded.name, uploaded.getvalue())
-                st.session_state.scientific_knowledge_studio_run_dir = str(result["run_dir"])
-                st.success("Candidate Proposal preview built. Scientific KG remains unchanged.")
+                source = result["source"]
+                run_summary = result["summary"]
+                st.session_state.scientific_document_ingestion_run = {
+                    "summary": {
+                        "source": source.model_dump(mode="json"),
+                        "ontology_version": run_summary["ontology_version"],
+                        "counts": run_summary["counts"],
+                        "unbounded_ready_candidates": run_summary["unbounded_ready_candidates"],
+                        "hallucinated_scope_count": run_summary["hallucinated_scope_count"],
+                    },
+                    "packets": [packet.model_dump(mode="json") for packet in result["packets"]],
+                }
+                st.success("Hardened candidate review packets built. Scientific KG remains unchanged.")
             except Exception as exc:
                 st.error(f"Studio preview blocked: {type(exc).__name__}: {exc}")
-        runtime_value = st.session_state.get("scientific_knowledge_studio_run_dir")
+        runtime_value = st.session_state.get("scientific_document_ingestion_run")
         if runtime_value:
-            runtime_path = Path(runtime_value)
-            if (runtime_path / "manifest.json").is_file():
-                run = load_studio_run(runtime_path)
-                run_origin = "CURRENT LOCAL RUN"
+            _render_hardened_document_ingestion_payload(
+                runtime_value["summary"], runtime_value["packets"]
+            )
+            return
 
     if run is None:
         st.info("Select the verified replay or upload one PDF. No Scientific KG mutation will occur.")
@@ -4155,7 +4260,10 @@ def _render_candidate_studio(
     pipeline_cols = st.columns(len(demo["pipeline"]))
     for index, item in enumerate(demo["pipeline"]):
         pipeline_cols[index].metric(f"{index + 1} {item['stage']}", item["value"], item["status"])
-    st.caption("Validate value order: VALID / NEEDS_REVIEW / INVALID. Counts are read from this run's artifacts.")
+    st.caption(
+        "Legacy replay structural statuses: VALID / NEEDS_REVIEW / INVALID. "
+        "They do not assert scientific truth. Counts are read from this run's artifacts."
+    )
 
     with st.expander("Technical eight-stage run trace"):
         stage_labels = {
@@ -4174,7 +4282,7 @@ def _render_candidate_studio(
     statements = demo["statements"]
     if statements:
         statement_labels = {
-            f"{index + 1}. [{row['validation_status']}] {row['claim_text'][:110]}": row
+            f"{index + 1}. [STRUCTURAL {row['validation_status']}] {row['claim_text'][:110]}": row
             for index, row in enumerate(statements)
         }
         selected_statement_label = st.selectbox(
@@ -4255,10 +4363,13 @@ def _render_candidate_studio(
     st.markdown("### Scope + Ontology Validation")
     counts = demo["validation_counts"]
     validation_cols = st.columns(3)
-    validation_cols[0].metric("VALID", counts["VALID"])
+    validation_cols[0].metric("STRUCTURAL VALID", counts["VALID"])
     validation_cols[1].metric("NEEDS_REVIEW", counts["NEEDS_REVIEW"])
-    validation_cols[2].metric("INVALID", counts["INVALID"])
-    st.caption("Schema · Evidence · Identity · Governance validators. INVALID items are retained and never auto-repaired.")
+    validation_cols[2].metric("STRUCTURAL INVALID", counts["INVALID"])
+    st.caption(
+        "Schema · Evidence · Identity · Governance conformance only; no scientific-validity judgment. "
+        "Structurally invalid items are retained and never auto-repaired."
+    )
     validation_filter = st.multiselect(
         "Validation status",
         ["VALID", "NEEDS_REVIEW", "INVALID"],
