@@ -4329,8 +4329,8 @@ def _render_ontology_manager() -> None:
             )
         with controls[3]:
             object_layers = st.multiselect(
-                "Scientific / runtime bridge",
-                ["scientific", "runtime bridge"],
+                "Display layer",
+                service.layers(),
                 key="ontology_object_layers",
             )
         object_rows = service.object_types(

@@ -13,6 +13,7 @@ from engine.ontology_manager import (
     OntologyIntegrityError,
     OntologyManagerReadOnlyService,
     build_ontology_schema_graph_html,
+    build_ontology_schema_graph_payload,
 )
 
 
@@ -37,6 +38,19 @@ def _sandbox(tmp_path: Path) -> tuple[Path, Path]:
     target.parent.mkdir(parents=True)
     shutil.copytree(FROZEN, target)
     return tmp_path, target
+
+
+def _rewrite_artifact_and_manifest(
+    frozen: Path, name: str, update: dict[str, object]
+) -> None:
+    artifact_path = frozen / name
+    artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    artifact.update(update)
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    manifest_path = frozen / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["artifacts"][name] = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
 
 def _text(app: AppTest) -> str:
@@ -70,6 +84,7 @@ def test_overview_counts_match_frozen_manifest() -> None:
     }
     assert service.integrity()["status"] == "VERIFIED"
     assert service.integrity()["artifact_count"] == 12
+    assert service.integrity()["version_boundary_artifact_count"] == 11
 
 
 def test_object_types_search_filters_and_detail_use_frozen_rows() -> None:
@@ -143,6 +158,8 @@ def test_schema_graph_is_bounded_schema_only_and_filters_derived() -> None:
     rendered = build_ontology_schema_graph_html(full)
     assert "dataset.nodeId" in rendered
     assert "dataset.edgeId" in rendered
+    assert "createElementNS(ns,'path')" in rendered
+    assert "e.geometry.path" in rendered
     assert "0 instance nodes" in rendered
     assert "Derived Projection" in rendered
 
@@ -179,6 +196,123 @@ def test_invalid_registry_fails_closed_after_hash_verification(tmp_path: Path) -
 
     with pytest.raises(OntologyIntegrityError, match="duplicate item_id"):
         _service(root)
+
+
+@pytest.mark.parametrize(
+    ("name", "update"),
+    [
+        ("evidence_model.json", {"schema_version": "wrong-design-version"}),
+        ("scope_policy.json", {"ontology_version": "9.9.9-incompatible"}),
+        ("statement_model.json", {"design_only": False}),
+    ],
+)
+def test_all_json_design_boundaries_fail_closed_even_with_updated_hash(
+    tmp_path: Path, name: str, update: dict[str, object]
+) -> None:
+    root, frozen = _sandbox(tmp_path)
+    _rewrite_artifact_and_manifest(frozen, name, update)
+
+    with pytest.raises(OntologyIntegrityError, match=name):
+        _service(root)
+
+
+def test_all_public_nested_projections_are_detached() -> None:
+    service = _service()
+
+    object_before = service.object_detail("OperatorRevision")
+    object_mutated = service.object_detail("OperatorRevision")
+    object_mutated["required_properties"].append("caller_injected")
+    object_mutated["frozen_record"]["source_mapping"]["identity_field"] = "caller_changed"
+    object_mutated["v1_compatibility"]["reason"] = "caller_changed"
+    assert service.object_detail("OperatorRevision") == object_before
+
+    link_before = service.link_detail("consumes")
+    link_mutated = service.link_detail("consumes")
+    link_mutated["qualifier_policy"]["allowed"].append("caller_injected")
+    link_mutated["frozen_record"]["evidence_policy"]["rule"] = "caller_changed"
+    assert service.link_detail("consumes") == link_before
+
+    property_before = service.property_detail("effect_description")
+    property_mutated = service.property_detail("effect_description")
+    property_mutated["owners"].append("caller_injected")
+    property_mutated["forbidden_uses"].append("caller_injected")
+    assert service.property_detail("effect_description") == property_before
+
+    qualifier_before = service.qualifier_detail("modality")
+    qualifier_mutated = service.qualifier_detail("modality")
+    qualifier_mutated["owner"] = "caller_changed"
+    assert service.qualifier_detail("modality") == qualifier_before
+
+    graph_before = service.schema_graph()
+    graph_mutated = service.schema_graph()
+    graph_mutated["nodes"][0]["definition"] = "caller_changed"
+    graph_mutated["edges"][0]["definition"] = "caller_changed"
+    assert service.schema_graph() == graph_before
+
+    payload_before = build_ontology_schema_graph_payload(service.schema_graph())
+    payload_mutated = build_ontology_schema_graph_payload(service.schema_graph())
+    payload_mutated["edges"][0]["geometry"]["path"] = "caller_changed"
+    payload_mutated["edges"][0]["selection"]["predicate"] = "caller_changed"
+    assert build_ontology_schema_graph_payload(service.schema_graph()) == payload_before
+
+    integrity_before = service.integrity()
+    integrity_mutated = service.integrity()
+    integrity_mutated["verified_hashes"]["scope_policy.json"] = "caller_changed"
+    assert service.integrity() == integrity_before
+
+
+def test_extension_and_deferred_display_layers_come_from_frozen_modules() -> None:
+    service = _service()
+    expected = {
+        "TraceSpan": "runtime / observability",
+        "GovernedAction": "action / governance",
+        "ActionPolicy": "action / governance",
+        "MetricDefinition": "evaluation",
+        "BenchmarkStudy": "evaluation",
+        "IdentityAssertion": "identity / governance",
+        "ReferenceArtifact": "scientific",
+    }
+
+    for object_type, layer in expected.items():
+        assert service.object_detail(object_type)["layer"] == layer
+        filtered = service.object_types(layers={layer})
+        assert object_type in {row["Object Type"] for row in filtered}
+    assert "UNDECLARED" not in {
+        service.object_detail(object_type)["layer"] for object_type in expected
+    }
+
+
+def test_parallel_schema_edges_have_deterministic_independent_geometry() -> None:
+    service = _service()
+    first = build_ontology_schema_graph_payload(service.schema_graph())
+    repeated = build_ontology_schema_graph_payload(service.schema_graph())
+    assert first == repeated
+
+    parallel = [
+        edge
+        for edge in first["edges"]
+        if edge["source"] == "OperatorRevision"
+        and edge["target"] == "RepresentationType"
+        and edge["predicate"] in {"consumes", "produces"}
+    ]
+    assert {edge["predicate"] for edge in parallel} == {"consumes", "produces"}
+    assert len({edge["edge_id"] for edge in parallel}) == 2
+    assert len({edge["geometry"]["path"] for edge in parallel}) == 2
+    assert len({edge["geometry"]["offset"] for edge in parallel}) == 2
+    assert {edge["parallel_count"] for edge in parallel} == {2}
+    assert {edge["selection"]["predicate"] for edge in parallel} == {
+        "consumes",
+        "produces",
+    }
+    assert service.link_detail("consumes")["predicate"] == "consumes"
+    assert service.link_detail("produces")["predicate"] == "produces"
+
+    hidden = service.schema_graph(show_derived=False)
+    authoritative = service.schema_graph(authoritative_only=True)
+    assert not {"consumes", "produces"} & {edge["predicate"] for edge in hidden["edges"]}
+    assert not {"consumes", "produces"} & {
+        edge["predicate"] for edge in authoritative["edges"]
+    }
 
 
 def test_service_reads_do_not_write_frozen_or_protected_assets() -> None:

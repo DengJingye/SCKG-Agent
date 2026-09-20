@@ -22,16 +22,33 @@ claim or perform production KG migration.
 - Properties & Qualifiers: separate searchable tables. `effect_description` is
   visibly marked `DISPLAY ONLY / NO MACHINE AUTHORITY`.
 - Schema Graph: bounded to 41 active design object types and core link endpoint
-  edges; module and authority filters; clickable node/edge inspection; zero
-  Scientific KG instance nodes loaded.
+  edges; module and authority filters; deterministic parallel curves for
+  same-endpoint predicates; clickable node/edge inspection; zero Scientific KG
+  instance nodes loaded.
+
+## 5D.1 targeted safety and UX patch
+
+- M01: all 11 manifest-listed JSON artifacts now enforce the same schema,
+  ontology version, and design-only boundary after SHA-256 verification. The
+  manifest additionally enforces the exact frozen 5C checkpoint boundary.
+- M02: every public service projection is defensively deep-copied. Mutating
+  returned object, link, property, qualifier, graph, overview, or integrity data
+  cannot alter later reads or internal state.
+- M03: extension/deferred display layers use explicit frozen layer information
+  first, then a deterministic module category. Unknown modules display
+  `UNDECLARED`; they never default to `scientific`.
+- M04: same-endpoint links receive stable symmetric curve offsets and distinct
+  DOM/selection identities. `consumes` and `produces` remain separately visible
+  and inspectable.
 
 ## Integrity boundary
 
 `OntologyManagerReadOnlyService` verifies the exact 12 manifest-listed artifact
-hashes before loading registries. Missing artifacts, hash mismatches, invalid
+hashes before loading registries, then validates all 11 JSON artifacts against
+the frozen version/design boundary. Missing artifacts, hash mismatches, invalid
 registry structures, version drift, and count inconsistencies fail closed. The
-service exposes read projections only and has no edit, review, promotion, or KG
-mutation API.
+service exposes detached read projections only and has no edit, review,
+promotion, or KG mutation API.
 
 Frozen overview counts:
 
@@ -51,20 +68,21 @@ deferred/disposition items, and four compatibility concepts whose disposition is
 
 ## Verification
 
-- 5D service/UI plus existing Scientific KG Admin and Candidate Studio:
-  `37 passed`.
+- 5D.1 service/UI plus existing Scientific KG Admin and Candidate Studio:
+  `43 passed`.
 - Frozen ontology functional contracts compatible with an approved Admin
   extension: `131 passed, 12 deselected`.
 - Research Chat ask/run and UI rerun smoke tests: `3 passed`.
 - Python compilation and `git diff --check`: passed.
 
-An exploratory run of the entire legacy 5C/hash and Research entrypoint set
-reported `141 passed, 8 failed`. Six failures are legacy tree-hash assumptions:
-five expect files absent from the base commit, while the protected-source case
-rejects any intentional `app.py`/service addition. Two Research entrypoint
-failures reproduce from unchanged code or a string already absent in base
-`app.py`. No frozen manifest or protected subsystem was edited to mask these
-baseline/incompatible checks.
+The earlier expanded legacy probe reported `141 passed, 8 failed`. Independent
+QA classified seven as `PRE_EXISTING_BASELINE_FAILURE`, one as
+`EXPECTED_AUTHORIZED_DIFF`, and zero as a real 5D regression. The authorized
+diff is the old protected-source test rejecting the required `app.py` change and
+new `ontology_manager.py`. The seven baseline failures cover already-missing
+`.DS_Store`/legacy index files, the old protected-tree assumption, the existing
+Research PLAN result, and the legacy AUTO-routing string already absent from the
+base `app.py`. Old tests and frozen manifests were not edited to mask them.
 
 ## Current limitation
 
@@ -73,4 +91,4 @@ viewer. Extension and deferred types have no core edges unless the frozen core
 registry defines one. No Review Queue, ReviewDecision control, promotion,
 candidate staging, migration, or mutation action exists in this checkpoint.
 
-Next recommended action: `STOP_FOR_QA`.
+Next recommended action: `STOP_FOR_QA_RECHECK`.

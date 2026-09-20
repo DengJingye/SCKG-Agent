@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import math
@@ -17,6 +18,26 @@ def _sha256(path: Path) -> str:
 
 def _as_set(values: Iterable[str] | None) -> set[str]:
     return {str(value) for value in (values or ())}
+
+
+def _detached(value: Any) -> Any:
+    """Return a defensive deep copy for every public read projection."""
+
+    return copy.deepcopy(value)
+
+
+_MODULE_DISPLAY_LAYERS = {
+    "runtime-bridge": "runtime bridge",
+    "runtime-observability": "runtime / observability",
+    "governance": "governance",
+    "identity-governance": "identity / governance",
+    "evaluation": "evaluation",
+    "provenance": "provenance",
+    "reference-resources": "reference resources",
+    "evidence-evolution": "evidence evolution",
+    "ontology-evolution": "ontology evolution",
+    "action": "action / governance",
+}
 
 
 class OntologyManagerReadOnlyService:
@@ -41,6 +62,7 @@ class OntologyManagerReadOnlyService:
         "statement_model.json",
         "v1_v2_mapping_draft.json",
     }
+    JSON_ARTIFACTS = REQUIRED_ARTIFACTS - {"ontology_v2_core_human_review.csv"}
 
     def __init__(self, repository_root: Path | None = None) -> None:
         self._root = Path(repository_root or Path(__file__).resolve().parents[1])
@@ -49,14 +71,17 @@ class OntologyManagerReadOnlyService:
         )
         self._manifest = self._load_manifest()
         self._verified_hashes = self._verify_manifest_artifacts()
-        self._objects_registry = self._load_json("object_type_registry.json")
-        self._links_registry = self._load_json("link_type_registry.json")
-        self._properties_registry = self._load_json("property_registry.json")
-        self._qualifiers_registry = self._load_json("qualifier_registry.json")
-        self._extensions_registry = self._load_json("extension_registry.json")
-        self._deferred_registry = self._load_json("deferred_registry.json")
-        self._cq_registry = self._load_json("competency_question_coverage.json")
-        self._mapping_registry = self._load_json("v1_v2_mapping_draft.json")
+        self._json_artifacts = {
+            name: self._load_json(name) for name in sorted(self.JSON_ARTIFACTS)
+        }
+        self._objects_registry = self._json_artifacts["object_type_registry.json"]
+        self._links_registry = self._json_artifacts["link_type_registry.json"]
+        self._properties_registry = self._json_artifacts["property_registry.json"]
+        self._qualifiers_registry = self._json_artifacts["qualifier_registry.json"]
+        self._extensions_registry = self._json_artifacts["extension_registry.json"]
+        self._deferred_registry = self._json_artifacts["deferred_registry.json"]
+        self._cq_registry = self._json_artifacts["competency_question_coverage.json"]
+        self._mapping_registry = self._json_artifacts["v1_v2_mapping_draft.json"]
         self._validate_registries()
         self._objects = self._build_object_rows()
         self._links = self._build_link_rows()
@@ -124,26 +149,26 @@ class OntologyManagerReadOnlyService:
             or not isinstance(ontology_version, str)
             or self._manifest.get("design_only") is not True
             or self._manifest.get("production_migration") is not False
+            or self._manifest.get("checkpoint") != "5C.1-Targeted-Core-Corrections"
+            or self._manifest.get("checkpoint_5d_started") is not False
+            or self._manifest.get("status") != "PASS"
+            or self._manifest.get("stopped") is not True
         ):
             raise OntologyIntegrityError("frozen ontology design boundary is invalid")
 
-        registries = (
-            self._objects_registry,
-            self._links_registry,
-            self._properties_registry,
-            self._qualifiers_registry,
-            self._extensions_registry,
-            self._deferred_registry,
-            self._cq_registry,
-            self._mapping_registry,
-        )
-        for registry in registries:
+        for name, artifact in self._json_artifacts.items():
             if (
-                registry.get("schema_version") != schema_version
-                or registry.get("ontology_version") != ontology_version
-                or registry.get("design_only") is not True
+                artifact.get("schema_version") != schema_version
+                or artifact.get("ontology_version") != ontology_version
+                or artifact.get("design_only") is not True
             ):
-                raise OntologyIntegrityError("frozen ontology registry version mismatch")
+                raise OntologyIntegrityError(
+                    f"frozen ontology artifact version/design boundary mismatch: {name}"
+                )
+        if self._mapping_registry.get("status") != "NON_EXECUTABLE_DRAFT":
+            raise OntologyIntegrityError(
+                "frozen ontology artifact design boundary mismatch: v1_v2_mapping_draft.json"
+            )
 
         objects = self._require_rows(self._objects_registry, "objects", "object registry")
         links = self._require_rows(self._links_registry, "links", "link registry")
@@ -275,9 +300,7 @@ class OntologyManagerReadOnlyService:
                 continue
             row = dict(source)
             row["display_status"] = "Core"
-            row["display_layer"] = (
-                "runtime bridge" if source.get("runtime_bridge_only") else "scientific"
-            )
+            row["display_layer"] = self._display_layer(source)
             row["compatibility"] = dict(compatibility[source["item_id"]])
             rows.append(row)
         for registry, status in (
@@ -291,7 +314,7 @@ class OntologyManagerReadOnlyService:
                     continue
                 row = dict(source)
                 row["display_status"] = status
-                row["display_layer"] = "scientific"
+                row["display_layer"] = self._display_layer(source)
                 row["required_properties"] = []
                 row["optional_properties"] = []
                 row["required_links"] = []
@@ -299,6 +322,18 @@ class OntologyManagerReadOnlyService:
                 row["compatibility"] = dict(compatibility[source["item_id"]])
                 rows.append(row)
         return sorted(rows, key=lambda row: (row["display_status"], row["item_id"].casefold()))
+
+    @staticmethod
+    def _display_layer(source: dict[str, Any]) -> str:
+        if source.get("runtime_bridge_only") is True:
+            return "runtime bridge"
+        declared = source.get("layer")
+        if isinstance(declared, str) and declared.strip():
+            return declared.strip()
+        module = source.get("module")
+        if isinstance(module, str):
+            return _MODULE_DISPLAY_LAYERS.get(module, "UNDECLARED")
+        return "UNDECLARED"
 
     def _build_link_rows(self) -> list[dict[str, Any]]:
         compatibility = {
@@ -318,17 +353,18 @@ class OntologyManagerReadOnlyService:
         return sorted(rows, key=lambda row: row["predicate_id"].casefold())
 
     def integrity(self) -> dict[str, Any]:
-        return {
+        return _detached({
             "status": "VERIFIED",
             "artifact_count": len(self._verified_hashes),
+            "version_boundary_artifact_count": len(self._json_artifacts),
             "verified_hashes": dict(self._verified_hashes),
             "source_directory": str(self._ontology_dir.relative_to(self._root)),
             "read_only": True,
-        }
+        })
 
     def overview(self) -> dict[str, Any]:
         counts = self._manifest["counts"]
-        return {
+        return _detached({
             "ontology_version": self._manifest["ontology_version"],
             "schema_version": self._manifest["schema_version"],
             "freeze_commit": self._manifest["current_head"],
@@ -346,10 +382,13 @@ class OntologyManagerReadOnlyService:
             ],
             "design_frozen": True,
             "production_migration": self._manifest["production_migration"],
-        }
+        })
 
     def modules(self) -> list[str]:
-        return sorted({row["module"] for row in self._objects})
+        return _detached(sorted({row["module"] for row in self._objects}))
+
+    def layers(self) -> list[str]:
+        return _detached(sorted({row["display_layer"] for row in self._objects}))
 
     def object_types(
         self,
@@ -383,14 +422,14 @@ class OntologyManagerReadOnlyService:
                     "Module": row["module"],
                     "Definition": row["definition"],
                     "Status": row["display_status"],
-                    "Scientific/runtime layer": row["display_layer"],
+                    "Display layer": row["display_layer"],
                     "Key properties": ", ".join(
                         [*row.get("required_properties", []), *row.get("optional_properties", [])]
                     ),
                     "Relevant CQ IDs": ", ".join(row.get("supporting_cq_ids", [])),
                 }
             )
-        return rows
+        return _detached(rows)
 
     def object_detail(self, item_id: str) -> dict[str, Any]:
         row = next((item for item in self._objects if item["item_id"] == item_id), None)
@@ -403,7 +442,7 @@ class OntologyManagerReadOnlyService:
                 outgoing.append(link["predicate_id"])
             if item_id in link["range"]:
                 incoming.append(link["predicate_id"])
-        return {
+        return _detached({
             "object_type": row["item_id"],
             "module": row["module"],
             "definition": row["definition"],
@@ -422,7 +461,7 @@ class OntologyManagerReadOnlyService:
                 for key, value in row.items()
                 if key not in {"display_status", "display_layer", "compatibility"}
             },
-        }
+        })
 
     def link_types(
         self,
@@ -463,13 +502,13 @@ class OntologyManagerReadOnlyService:
                     "Status / module": f"{row['disposition']} · {row['module']}",
                 }
             )
-        return rows
+        return _detached(rows)
 
     def link_detail(self, predicate_id: str) -> dict[str, Any]:
         row = next((item for item in self._links if item["predicate_id"] == predicate_id), None)
         if row is None:
             raise KeyError(f"unknown ontology link type: {predicate_id}")
-        return {
+        return _detached({
             "predicate": predicate_id,
             "definition": row["definition"],
             "domain": list(row["domain"]),
@@ -484,7 +523,7 @@ class OntologyManagerReadOnlyService:
             "frozen_record": {
                 key: value for key, value in row.items() if key != "compatibility"
             },
-        }
+        })
 
     def properties(self, query: str = "") -> list[dict[str, Any]]:
         needle = query.strip().casefold()
@@ -519,7 +558,20 @@ class OntologyManagerReadOnlyService:
                     "Machine authority?": machine_authority,
                 }
             )
-        return rows
+        return _detached(rows)
+
+    def property_detail(self, property_id: str) -> dict[str, Any]:
+        row = next(
+            (
+                item
+                for item in self._properties_registry["properties"]
+                if item["property_id"] == property_id
+            ),
+            None,
+        )
+        if row is None:
+            raise KeyError(f"unknown ontology property: {property_id}")
+        return _detached(row)
 
     def qualifiers(self, query: str = "") -> list[dict[str, Any]]:
         needle = query.strip().casefold()
@@ -538,12 +590,25 @@ class OntologyManagerReadOnlyService:
                     "Storage policy": row["storage_rule"],
                 }
             )
-        return rows
+        return _detached(rows)
+
+    def qualifier_detail(self, qualifier_id: str) -> dict[str, Any]:
+        row = next(
+            (
+                item
+                for item in self._qualifiers_registry["qualifiers"]
+                if item["qualifier_id"] == qualifier_id
+            ),
+            None,
+        )
+        if row is None:
+            raise KeyError(f"unknown ontology qualifier: {qualifier_id}")
+        return _detached(row)
 
     def schema_modules(self) -> list[str]:
-        return sorted(
+        return _detached(sorted(
             {row["module"] for row in self._objects} | {row["module"] for row in self._links}
-        )
+        ))
 
     def schema_graph(
         self,
@@ -599,7 +664,7 @@ class OntologyManagerReadOnlyService:
             }
             for row in nodes
         ]
-        return {
+        return _detached({
             "nodes": graph_nodes,
             "edges": edges,
             "node_count": len(graph_nodes),
@@ -607,14 +672,14 @@ class OntologyManagerReadOnlyService:
             "schema_only": True,
             "instance_nodes_loaded": 0,
             "bounded": len(graph_nodes) <= 45,
-        }
+        })
 
 
-def build_ontology_schema_graph_html(graph: dict[str, Any]) -> str:
-    """Build a bounded schema-only SVG with clickable node and edge details."""
+def build_ontology_schema_graph_payload(graph: dict[str, Any]) -> dict[str, Any]:
+    """Create deterministic node positions and independently selectable edge paths."""
 
-    nodes = [dict(row) for row in graph["nodes"]]
-    edges = [dict(row) for row in graph["edges"]]
+    nodes = _detached(graph["nodes"])
+    edges = _detached(graph["edges"])
     groups: dict[str, list[dict[str, Any]]] = {
         "Core": [],
         "Runtime Bridge": [],
@@ -641,11 +706,78 @@ def build_ontology_schema_graph_html(graph: dict[str, Any]) -> str:
             row["y"] = round(center_y + radius * math.sin(angle), 2)
             row["visual_group"] = group_name
 
-    payload = {"nodes": nodes, "edges": edges, "summary": {
-        "node_count": graph["node_count"],
-        "edge_count": graph["edge_count"],
-        "instance_nodes_loaded": graph["instance_nodes_loaded"],
-    }}
+    node_by_id = {row["id"]: row for row in nodes}
+    parallel_groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for edge in edges:
+        key = tuple(sorted((edge["source"], edge["target"])))
+        parallel_groups.setdefault(key, []).append(edge)
+    for key, grouped_edges in sorted(parallel_groups.items()):
+        ordered = sorted(
+            grouped_edges,
+            key=lambda row: (
+                row["source"],
+                row["target"],
+                row["predicate"],
+                row["edge_id"],
+            ),
+        )
+        count = len(ordered)
+        for index, edge in enumerate(ordered):
+            offset = (index - (count - 1) / 2) * 28.0
+            source = node_by_id[edge["source"]]
+            target = node_by_id[edge["target"]]
+            dx = target["x"] - source["x"]
+            dy = target["y"] - source["y"]
+            distance = math.hypot(dx, dy)
+            if distance:
+                control_x = (source["x"] + target["x"]) / 2 - dy / distance * offset
+                control_y = (source["y"] + target["y"]) / 2 + dx / distance * offset
+                path = (
+                    f"M {source['x']:.2f} {source['y']:.2f} "
+                    f"Q {control_x:.2f} {control_y:.2f} {target['x']:.2f} {target['y']:.2f}"
+                )
+            else:
+                loop = 34.0 + abs(offset)
+                control_x = source["x"] + loop
+                control_y = source["y"] - loop
+                path = (
+                    f"M {source['x']:.2f} {source['y']:.2f} "
+                    f"C {source['x'] + loop:.2f} {source['y'] - loop:.2f} "
+                    f"{source['x'] - loop:.2f} {source['y'] - loop:.2f} "
+                    f"{source['x']:.2f} {source['y']:.2f}"
+                )
+            edge["parallel_group"] = "::".join(key)
+            edge["parallel_index"] = index
+            edge["parallel_count"] = count
+            edge["geometry"] = {
+                "offset": round(offset, 2),
+                "control_x": round(control_x, 2),
+                "control_y": round(control_y, 2),
+                "path": path,
+            }
+            edge["selection"] = {
+                "kind": "edge",
+                "id": edge["edge_id"],
+                "predicate": edge["predicate"],
+            }
+
+    return _detached(
+        {
+            "nodes": nodes,
+            "edges": edges,
+            "summary": {
+                "node_count": graph["node_count"],
+                "edge_count": graph["edge_count"],
+                "instance_nodes_loaded": graph["instance_nodes_loaded"],
+            },
+        }
+    )
+
+
+def build_ontology_schema_graph_html(graph: dict[str, Any]) -> str:
+    """Build a bounded schema-only SVG with clickable node and edge details."""
+
+    payload = build_ontology_schema_graph_payload(graph)
     payload_json = json.dumps(payload, ensure_ascii=False).replace("</", "<\\/")
     return f"""<!doctype html>
 <html><head><meta charset="utf-8"><style>
@@ -667,7 +799,7 @@ const data=JSON.parse(document.getElementById('payload').textContent),ns='http:/
 const colors={{'Core':'#3978E8','Runtime Bridge':'#8B63C7','Extension':'#D18B24','Deferred':'#7C8798'}},edgeLayer=document.getElementById('edges'),nodeLayer=document.getElementById('nodes'),inspector=document.getElementById('inspector');let selected=null;
 const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({{'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}}[c]));
 function show(kind,row){{selected={{kind,id:kind==='node'?row.id:row.edge_id}};document.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));const el=document.querySelector(`[data-${{kind}}-id="${{CSS.escape(selected.id)}}"]`);if(el)el.classList.add('selected');const title=kind==='node'?row.label:row.predicate,tag=kind==='node'?row.visual_group:row.classification;const details=kind==='node'?{{Module:row.module,Layer:row.layer,Definition:row.definition}}:{{From:row.source,To:row.target,Module:row.module,Definition:row.definition,'Evidence policy':row.evidence_policy,'Qualifier policy':row.qualifier_policy}};inspector.innerHTML=`<div class="head"><small>${{esc(tag)}}</small><h3>${{esc(title)}}</h3><p>${{esc(kind==='node'?row.id:row.edge_id)}}</p></div><div class="body">${{Object.entries(details).map(([k,v])=>`<div class="card"><b>${{esc(k)}}</b><span>${{esc(v)}}</span></div>`).join('')}}</div>`}}
-data.edges.forEach(e=>{{const a=nodeById.get(e.source),b=nodeById.get(e.target);if(!a||!b)return;const line=document.createElementNS(ns,'line');line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);line.setAttribute('marker-end','url(#arrow)');line.classList.add('edge');if(e.classification==='DERIVED_PROJECTION')line.classList.add('derived');line.dataset.edgeId=e.edge_id;line.addEventListener('click',ev=>{{ev.stopPropagation();show('edge',e)}});const tip=document.createElementNS(ns,'title');tip.textContent=`${{e.predicate}} · ${{e.classification}}`;line.appendChild(tip);edgeLayer.appendChild(line)}});
+data.edges.forEach(e=>{{const a=nodeById.get(e.source),b=nodeById.get(e.target);if(!a||!b)return;const path=document.createElementNS(ns,'path');path.setAttribute('d',e.geometry.path);path.setAttribute('fill','none');path.setAttribute('marker-end','url(#arrow)');path.classList.add('edge');if(e.classification==='DERIVED_PROJECTION')path.classList.add('derived');path.dataset.edgeId=e.edge_id;path.addEventListener('click',ev=>{{ev.stopPropagation();show('edge',e)}});const tip=document.createElementNS(ns,'title');tip.textContent=`${{e.predicate}} · ${{e.classification}}`;path.appendChild(tip);edgeLayer.appendChild(path)}});
 data.nodes.forEach(n=>{{const g=document.createElementNS(ns,'g');g.classList.add('node');g.dataset.nodeId=n.id;g.setAttribute('transform',`translate(${{n.x}} ${{n.y}})`);const c=document.createElementNS(ns,'circle');c.setAttribute('r',n.visual_group==='Runtime Bridge'?11:9);c.setAttribute('fill',colors[n.visual_group]||'#7C8798');const t=document.createElementNS(ns,'text');t.setAttribute('y','-14');t.textContent=n.label.length>24?n.label.slice(0,23)+'…':n.label;const tip=document.createElementNS(ns,'title');tip.textContent=`${{n.label}} · ${{n.visual_group}}`;g.append(c,t,tip);g.addEventListener('click',ev=>{{ev.stopPropagation();show('node',n)}});nodeLayer.appendChild(g)}});
 inspector.innerHTML=`<div class="head"><small>Schema graph</small><h3>Choose a node or edge</h3><p>Click the canvas to inspect the exact frozen definition.</p></div><div class="body"><div class="card"><b>Boundary</b><span>Schema-only view. No Scientific KG instance nodes are loaded.</span></div><div class="card"><b>Authority</b><span>Dashed orange edges are derived projections and are not authoritative statements.</span></div></div>`;
 </script></body></html>"""
