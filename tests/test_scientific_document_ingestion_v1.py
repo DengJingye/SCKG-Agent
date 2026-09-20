@@ -23,6 +23,7 @@ def _run():
         filename=fixture["filename"],
         pdf_sha256=fixture["pdf_sha256"],
         pages=fixture["pages"],
+        created_at="2026-09-21T00:00:00Z",
     )
 
 
@@ -80,6 +81,13 @@ def test_return_value_is_structural_output_binding_not_scientific_statement() ->
     assert row.canonical_statement.subject_id == "output-port:v1-core:soupx:soupx__adjustcounts:output"
     assert row.canonical_statement.object_id == "representation-type:corrected_counts"
     assert row.canonical_statement.is_scientific_statement is False
+    assert row.candidate_subgraph.relation_kind == "STRUCTURAL_RELATION"
+    assert row.candidate_subgraph.statement_revision_id is None
+    assert row.candidate_subgraph.evidence_assessment_id is None
+    assert not (
+        {node.record_type for node in row.candidate_subgraph.nodes}
+        & {"ScientificStatement", "StatementRevision", "EvidenceAssessment"}
+    )
     assert row.final_disposition == FinalDisposition.CANDIDATE_READY
 
 
@@ -126,12 +134,58 @@ def test_demo_recovery_has_four_distinct_registry_conformant_ready_candidates() 
     } <= spo
     assert len(spo) >= 5
     for packet in ready:
+        assert packet.candidate_subgraph is not None
+        assert packet.candidate_subgraph.schema_conformance.valid is True
+        assert packet.validation_report.structurally_conformant is True
         if packet.canonical_statement.predicate in {"implements_method", "supports_task", "has_requirement"}:
             assert packet.canonical_statement.qualifiers["software_version"] == {
                 "subject_id": "operator-revision:soupx.soupx__adjustcounts:1.6.2",
                 "status": "exact",
                 "expression": "1.6.2",
             }
+
+
+def test_scientific_candidates_materialize_the_frozen_statement_and_evidence_chain() -> None:
+    scientific = [
+        packet
+        for packet in _run()["packets"]
+        if packet.candidate_subgraph is not None
+        and packet.candidate_subgraph.relation_kind == "SCIENTIFIC_STATEMENT"
+    ]
+    assert scientific
+    expected_nodes = {
+        "ScientificStatement",
+        "StatementRevision",
+        "EvidenceAssessment",
+        "EvidenceSpan",
+        "SourceWork",
+        "SourceRevision",
+        "SourceArtifact",
+    }
+    expected_links = {
+        "revision_of",
+        "assesses_statement",
+        "uses_evidence",
+        "span_in_revision",
+        "span_in_artifact",
+        "artifact_of",
+    }
+    for packet in scientific:
+        graph = packet.candidate_subgraph
+        assert graph.schema_conformance.valid is True
+        assert {node.record_type for node in graph.nodes} >= expected_nodes
+        assert {link.predicate for link in graph.links} >= expected_links
+        revision = next(node.record for node in graph.nodes if node.record_type == "StatementRevision")
+        assessment = next(node.record for node in graph.nodes if node.record_type == "EvidenceAssessment")
+        assert revision["statement_revision_id"] == graph.statement_revision_id
+        assert revision["subject_id"] == graph.primary_subject_id
+        assert revision["predicate"] == graph.primary_predicate
+        assert revision["object_id"] == graph.primary_object_id
+        assert revision["scope_status"] == packet.scope.core_scope_status
+        assert assessment["statement_revision_id"] == graph.statement_revision_id
+        assert assessment["evidence_span_id"] == packet.evidence_span.evidence_span_id
+        assert assessment["status"] == "draft"
+        assert assessment["support_type"] == "PARTIAL_SUPPORT"
 
 
 def test_parameter_preserves_operator_parameter_and_version_context_without_fuzzy_merge() -> None:
@@ -155,6 +209,12 @@ def test_parameter_preserves_operator_parameter_and_version_context_without_fuzz
     assert version.status == ScopeValueStatus.SOURCE_CONTEXT
     assert version.provenance_ref == row.source.source_revision_id
     assert row.final_disposition == FinalDisposition.NEEDS_REVIEW
+    assert row.candidate_subgraph.schema_conformance.valid is True
+    assert any(
+        node.record_type == "ParameterDefinition"
+        and node.record_id == row.canonical_statement.object_id
+        for node in row.candidate_subgraph.nodes
+    )
 
 
 def test_unexpressible_estimated_or_specified_condition_becomes_evidence_gap() -> None:
@@ -175,6 +235,10 @@ def test_unexpressible_estimated_or_specified_condition_becomes_evidence_gap() -
     assert gap.source_revision_id == row.source.source_revision_id
     assert "when=[]" in gap.missing_contract
     assert "specified alternative" in gap.missing_contract
+    assert gap.id == gap.evidence_gap_id
+    assert gap.schema_version == "sckg-ontology-core-5c-design-v1"
+    assert gap.ontology_version == "2.0.0-core-review.1"
+    assert "cannot be emitted" in gap.impact
 
 
 def test_unknown_scope_is_not_hallucinated_and_has_explicit_no_provenance_state() -> None:
@@ -227,6 +291,47 @@ def test_frozen_registry_is_read_only_and_adapter_has_no_mutation_api() -> None:
     valid, reasons = adapter.validate_link("has_parameter", "OperatorRevision", "ParameterDefinition", as_statement=True)
     assert valid is True
     assert reasons == []
+
+
+def test_full_schema_gate_rejects_an_incomplete_evidence_assessment() -> None:
+    result = _run()
+    packet = next(
+        item
+        for item in result["packets"]
+        if item.candidate_subgraph is not None
+        and item.candidate_subgraph.relation_kind == "SCIENTIFIC_STATEMENT"
+    )
+    payload = packet.candidate_subgraph.model_dump(mode="python")
+    assessment = next(
+        node
+        for node in payload["nodes"]
+        if node["record_type"] == "EvidenceAssessment"
+    )
+    del assessment["record"]["assessment_method"]
+    valid, errors, _, _, _ = ScientificDocumentIngestionService(ROOT).ontology.validate_candidate_subgraph(payload)
+    assert valid is False
+    assert any("assessment_method" in error for error in errors)
+
+
+def test_statement_revision_identity_is_stable_while_assessment_identity_is_run_specific() -> None:
+    fixture = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    service = ScientificDocumentIngestionService(ROOT)
+    first = service.run_pages(**fixture, created_at="2026-09-21T00:00:00Z")
+    second = service.run_pages(**fixture, created_at="2026-09-21T00:01:00Z")
+
+    def capability(result):
+        return next(
+            packet
+            for packet in result["packets"]
+            if packet.canonical_statement is not None
+            and packet.canonical_statement.predicate == "implements_method"
+        )
+
+    first_graph = capability(first).candidate_subgraph
+    second_graph = capability(second).candidate_subgraph
+    assert first_graph.statement_revision_id == second_graph.statement_revision_id
+    assert first_graph.evidence_assessment_id != second_graph.evidence_assessment_id
+    assert first_graph.subgraph_id != second_graph.subgraph_id
 
 
 def test_committed_soupx_demo_snapshot_has_five_distinct_ready_candidates() -> None:

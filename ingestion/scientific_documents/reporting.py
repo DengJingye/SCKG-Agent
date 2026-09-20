@@ -47,6 +47,19 @@ def regression_checks(result: dict[str, object]) -> dict[str, bool]:
         if packet.raw_proposition is not None
         and packet.raw_proposition.proposition_type == PropositionType.CONDITION
     ]
+    candidate_subgraphs = [
+        packet.candidate_subgraph
+        for packet in packets
+        if packet.candidate_subgraph is not None
+    ]
+    ready_subgraphs = [
+        packet.candidate_subgraph
+        for packet in ready
+        if packet.candidate_subgraph is not None
+    ]
+    scientific_subgraphs = [
+        graph for graph in candidate_subgraphs if graph.relation_kind == "SCIENTIFIC_STATEMENT"
+    ]
 
     checks = {
         "layout_blocks": int(result["summary"]["layout_block_count"]) > 0,  # type: ignore[index]
@@ -174,6 +187,47 @@ def regression_checks(result: dict[str, object]) -> dict[str, bool]:
         ),
         "no_hallucinated_scope": sum(packet.scope.hallucinated_value_count for packet in scoped) == 0,
         "canonicalization": any(packet.canonical_statement is not None for packet in packets),
+        "full_schema_conformance": bool(ready_subgraphs)
+        and len(ready_subgraphs) == len(ready)
+        and all(graph.schema_conformance.valid for graph in ready_subgraphs),
+        "scientific_statement_chain": bool(scientific_subgraphs)
+        and all(
+            {node.record_type for node in graph.nodes}
+            >= {
+                "ScientificStatement",
+                "StatementRevision",
+                "EvidenceAssessment",
+                "EvidenceSpan",
+                "SourceWork",
+                "SourceRevision",
+                "SourceArtifact",
+            }
+            and {link.predicate for link in graph.links}
+            >= {
+                "revision_of",
+                "assesses_statement",
+                "uses_evidence",
+                "span_in_revision",
+                "span_in_artifact",
+                "artifact_of",
+            }
+            for graph in scientific_subgraphs
+        ),
+        "structural_relation_separation": all(
+            graph.relation_kind != "STRUCTURAL_RELATION"
+            or not (
+                {node.record_type for node in graph.nodes}
+                & {"ScientificStatement", "StatementRevision", "EvidenceAssessment"}
+            )
+            for graph in candidate_subgraphs
+        ),
+        "evidence_gap_schema": all(
+            gap.id == gap.evidence_gap_id
+            and gap.schema_version == "sckg-ontology-core-5c-design-v1"
+            and bool(gap.impact)
+            for packet in packets
+            for gap in packet.evidence_gaps
+        ),
         "ready_has_no_whole_segment_evidence": all(
             packet.evidence_span is not None
             and packet.evidence_span.bounded
@@ -208,10 +262,16 @@ def summary_payload(result: dict[str, object]) -> dict[str, object]:
             "canonical_kind": packet.canonical_statement.canonical_kind,
             "evidence_span_id": packet.evidence_span.evidence_span_id if packet.evidence_span else None,
             "source_revision_id": packet.source.source_revision_id,
+            "candidate_subgraph_id": packet.candidate_subgraph.subgraph_id,
+            "relation_kind": packet.candidate_subgraph.relation_kind,
+            "statement_revision_id": packet.candidate_subgraph.statement_revision_id,
+            "evidence_assessment_id": packet.candidate_subgraph.evidence_assessment_id,
+            "schema_conformant": packet.candidate_subgraph.schema_conformance.valid,
         }
         for packet in packets
         if packet.final_disposition == FinalDisposition.CANDIDATE_READY
         and packet.canonical_statement is not None
+        and packet.candidate_subgraph is not None
     ]
     ontology_gaps = [
         gap.model_dump(mode="json")
@@ -219,7 +279,7 @@ def summary_payload(result: dict[str, object]) -> dict[str, object]:
         for gap in packet.evidence_gaps
     ]
     return {
-        "schema_version": "scientific-document-ingestion-regression-v1",
+        "schema_version": "scientific-document-ingestion-regression-v2",
         "window": "09-Scientific-Document-Ingestion",
         "phase": "INGESTION-QUALITY-HARDENING",
         "source": source.model_dump(mode="json"),  # type: ignore[union-attr]
@@ -228,6 +288,13 @@ def summary_payload(result: dict[str, object]) -> dict[str, object]:
         "checks": checks,
         "counts": {status.value: counts.get(status.value, 0) for status in FinalDisposition},
         "ready_candidates": ready_candidates,
+        "schema_complete_ready_count": sum(
+            1
+            for packet in packets
+            if packet.final_disposition == FinalDisposition.CANDIDATE_READY
+            and packet.candidate_subgraph is not None
+            and packet.candidate_subgraph.schema_conformance.valid
+        ),
         "ontology_gaps": ontology_gaps,
         "unbounded_ready_candidates": result["summary"]["unbounded_ready_candidates"],  # type: ignore[index]
         "hallucinated_scope_count": result["summary"]["hallucinated_scope_count"],  # type: ignore[index]
@@ -280,6 +347,7 @@ def render_before_after(result: dict[str, object]) -> str:
         proposition = packet.raw_proposition.model_dump(mode="json") if packet.raw_proposition else None
         entities = [item.model_dump(mode="json") for item in packet.linked_entities]
         canonical = packet.canonical_statement.model_dump(mode="json") if packet.canonical_statement else None
+        candidate_subgraph = packet.candidate_subgraph.model_dump(mode="json") if packet.candidate_subgraph else None
         scope = packet.scope.model_dump(mode="json") if packet.scope else None
         evidence = packet.evidence_span.model_dump(mode="json") if packet.evidence_span else None
         gaps = [item.model_dump(mode="json") for item in packet.evidence_gaps]
@@ -302,6 +370,8 @@ def render_before_after(result: dict[str, object]) -> str:
                 f"**→ linked entities:** `{_json(entities)}`",
                 "",
                 f"**→ canonical statement / abstain:** `{_json(canonical)}`",
+                "",
+                f"**→ frozen-schema candidate subgraph:** `{_json(candidate_subgraph)}`",
                 "",
                 f"**→ scope + provenance:** `{_json(scope)}`",
                 "",

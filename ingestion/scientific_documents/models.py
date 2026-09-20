@@ -78,6 +78,7 @@ class ScopeValueStatus(StrEnum):
 
 
 class SourceDocument(StrictModel):
+    source_work_id: str
     source_artifact_id: str
     source_revision_id: str
     filename: str
@@ -223,14 +224,24 @@ class CanonicalStatementCandidate(StrictModel):
 
 
 class EvidenceGapCandidate(StrictModel):
+    id: str
     evidence_gap_id: str
+    schema_version: str
+    ontology_version: str
     subject_ref: str
     gap_type: Literal["ONTOLOGY_EXPRESSIVITY"] = "ONTOLOGY_EXPRESSIVITY"
     description: str
+    impact: str
     missing_contract: str
     evidence_span_id: str
     source_revision_id: str
     status: Literal["OPEN_PENDING_REVIEW"] = "OPEN_PENDING_REVIEW"
+
+    @model_validator(mode="after")
+    def identity_matches_schema_record(self) -> "EvidenceGapCandidate":
+        if self.id != self.evidence_gap_id:
+            raise ValueError("EvidenceGap id must match evidence_gap_id")
+        return self
 
 
 class ScopeValue(StrictModel):
@@ -257,6 +268,64 @@ class ResolvedScope(StrictModel):
     values: list[ScopeValue]
     conflicts: list[str] = Field(default_factory=list)
     hallucinated_value_count: int = Field(default=0, ge=0)
+
+
+class CandidateKGEntityReference(StrictModel):
+    record_id: str
+    record_type: str
+    resolution_status: Literal["EXACT_EXISTING_IDENTITY", "NEW_CANDIDATE"]
+
+
+class CandidateKGNode(StrictModel):
+    record_id: str
+    record_type: str
+    record: dict[str, Any]
+    origin: Literal["SOURCE_DERIVED", "INGESTION_DERIVED", "NEW_ENTITY_CANDIDATE"]
+
+
+class CandidateKGLink(StrictModel):
+    link_id: str
+    predicate: str
+    subject_id: str
+    subject_type: str
+    object_id: str
+    object_type: str
+    classification: Literal["AUTHORITATIVE"] = "AUTHORITATIVE"
+
+
+class SchemaConformanceResult(StrictModel):
+    valid: bool
+    ontology_version: str
+    schema_version: str
+    validated_node_ids: list[str] = Field(default_factory=list)
+    validated_link_ids: list[str] = Field(default_factory=list)
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class CandidateKGSubgraph(StrictModel):
+    subgraph_id: str
+    relation_kind: Literal["SCIENTIFIC_STATEMENT", "STRUCTURAL_RELATION"]
+    primary_subject_id: str
+    primary_subject_type: str
+    primary_predicate: str
+    primary_object_id: str
+    primary_object_type: str
+    statement_revision_id: str | None = None
+    evidence_assessment_id: str | None = None
+    nodes: list[CandidateKGNode]
+    links: list[CandidateKGLink]
+    referenced_entities: list[CandidateKGEntityReference]
+    schema_conformance: SchemaConformanceResult
+
+    @model_validator(mode="after")
+    def relation_kind_has_expected_schema_chain(self) -> "CandidateKGSubgraph":
+        if self.relation_kind == "SCIENTIFIC_STATEMENT":
+            if not self.statement_revision_id or not self.evidence_assessment_id:
+                raise ValueError("scientific candidate subgraph requires statement and assessment IDs")
+        elif self.statement_revision_id is not None or self.evidence_assessment_id is not None:
+            raise ValueError("structural candidate relation cannot carry statement/assessment IDs")
+        return self
 
 
 class ValidationReport(StrictModel):
@@ -292,6 +361,7 @@ class HumanReviewPacket(StrictModel):
     raw_proposition: RawProposition | None = None
     linked_entities: list[LinkedEntityCandidate] = Field(default_factory=list)
     canonical_statement: CanonicalStatementCandidate | None = None
+    candidate_subgraph: CandidateKGSubgraph | None = None
     evidence_gaps: list[EvidenceGapCandidate] = Field(default_factory=list)
     scope: ResolvedScope | None = None
     evidence_span: BoundedEvidenceSpanCandidate | None = None
@@ -308,4 +378,6 @@ class HumanReviewPacket(StrictModel):
                 raise ValueError("CANDIDATE_READY requires bounded non-whole-segment evidence")
             if self.canonical_statement is None or not self.canonical_statement.complete:
                 raise ValueError("CANDIDATE_READY requires complete canonicalization")
+            if self.candidate_subgraph is None or not self.candidate_subgraph.schema_conformance.valid:
+                raise ValueError("CANDIDATE_READY requires a frozen-schema-conformant candidate subgraph")
         return self

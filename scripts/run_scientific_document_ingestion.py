@@ -19,11 +19,16 @@ def main() -> int:
     parser.add_argument("--pdf", required=True, type=Path)
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument(
+        "--created-at",
+        help="Deterministic ISO-8601 timestamp for EvidenceAssessment candidate records.",
+    )
     args = parser.parse_args()
 
     result = ScientificDocumentIngestionService(REPOSITORY_ROOT).run_pdf(
         args.pdf,
         expected_sha256=args.expected_sha256,
+        created_at=args.created_at,
     )
     write_regression_artifacts(result, args.output_dir)
     summary = summary_payload(result)

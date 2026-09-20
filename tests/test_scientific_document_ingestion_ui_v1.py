@@ -40,6 +40,14 @@ def test_hardened_ingestion_ui_uses_dispositions_and_stage_states() -> None:
         if "Relation class" in dataframe.value.columns
     )
     assert len(relations) == 5
+    assert set(relations["Schema contract"]) == {"PASS"}
+    scientific_rows = relations[relations["Relation class"] == "Scientific statement candidate"]
+    structural_rows = relations[relations["Relation class"].str.startswith("Structural")]
+    assert len(scientific_rows) == 3
+    assert scientific_rows["StatementRevision"].ne("—").all()
+    assert scientific_rows["EvidenceAssessment"].ne("—").all()
+    assert len(structural_rows) == 2
+    assert structural_rows["StatementRevision"].eq("—").all()
     assert relations[["Subject", "Relation", "Object"]].to_dict("records") == [
         {
             "Subject": "SoupX::adjustCounts@1.6.2",
@@ -77,6 +85,8 @@ def test_hardened_ingestion_ui_uses_dispositions_and_stage_states() -> None:
     assert '"Subject canonical ID"' in source
     assert '"Predicate canonical ID"' in source
     assert '"Object canonical ID"' in source
+    assert '"Schema contract"' in source
+    assert '"Candidate subgraph"' in source
 
 
 def test_legacy_replay_labels_validation_as_structural_not_scientific_truth() -> None:

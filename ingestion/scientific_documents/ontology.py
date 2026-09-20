@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from collections import defaultdict
@@ -27,6 +28,7 @@ class FrozenOntologyConformanceAdapter:
         if not self.manifest.get("design_only") or self.manifest.get("production_migration"):
             raise ValueError("frozen ontology must remain design-only and non-production")
         self.ontology_version = str(self.manifest["ontology_version"])
+        self.schema_version = str(self.manifest["schema_version"])
         links = _load(self.root / "link_type_registry.json")["links"]
         self.links = {str(item["predicate_id"]): item for item in links}
         self.qualifiers = {
@@ -40,6 +42,10 @@ class FrozenOntologyConformanceAdapter:
         self.object_types = {str(item["item_id"]): item for item in object_registry["objects"]}
         property_registry = _load(self.root / "property_registry.json")
         self.embedded_value_shapes = property_registry["embedded_value_shapes"]
+        self.property_enums = {
+            str(item["property_id"]): set(item.get("enum") or [])
+            for item in property_registry["properties"]
+        }
 
     def validate_link(
         self,
@@ -94,6 +100,310 @@ class FrozenOntologyConformanceAdapter:
             return False, ["SOFTWARE_VERSION_QUALIFIER_EXPRESSION_INVALID"]
         return True, []
 
+    def validate_candidate_subgraph(
+        self,
+        subgraph: dict[str, Any],
+    ) -> tuple[bool, list[str], list[str], list[str], list[str]]:
+        """Validate a candidate subgraph against the frozen registries.
+
+        This is intentionally a read-only conformance gate. It does not build,
+        promote, partition, or write any ontology or KG state.
+        """
+
+        errors: list[str] = []
+        warnings: list[str] = []
+        validated_node_ids: list[str] = []
+        validated_link_ids: list[str] = []
+        nodes = list(subgraph.get("nodes") or [])
+        links = list(subgraph.get("links") or [])
+        references = list(subgraph.get("referenced_entities") or [])
+        records_by_id: dict[str, tuple[str, dict[str, Any]]] = {}
+        endpoint_types: dict[str, str] = {}
+
+        for reference in references:
+            record_id = str(reference.get("record_id") or "")
+            record_type = str(reference.get("record_type") or "")
+            if not record_id or not record_type:
+                errors.append("ENTITY_REFERENCE_MISSING_ID_OR_TYPE")
+                continue
+            if record_id in endpoint_types and endpoint_types[record_id] != record_type:
+                errors.append(f"ENTITY_REFERENCE_TYPE_CONFLICT:{record_id}")
+            endpoint_types[record_id] = record_type
+
+        for node in nodes:
+            record_id = str(node.get("record_id") or "")
+            record_type = str(node.get("record_type") or "")
+            record = node.get("record")
+            prefix = record_id or "<missing-node-id>"
+            if not record_id or not record_type or not isinstance(record, dict):
+                errors.append(f"NODE_SHAPE_INVALID:{prefix}")
+                continue
+            if record_id in records_by_id:
+                errors.append(f"DUPLICATE_NODE_ID:{record_id}")
+                continue
+            records_by_id[record_id] = (record_type, record)
+            endpoint_types[record_id] = record_type
+            schema = self.object_types.get(record_type)
+            if schema is None:
+                errors.append(f"OBJECT_TYPE_NOT_IN_FROZEN_REGISTRY:{record_type}")
+                continue
+            if record.get("id") != record_id:
+                errors.append(f"NODE_ID_MISMATCH:{record_id}")
+            if record.get("ontology_version") != self.ontology_version:
+                errors.append(f"ONTOLOGY_VERSION_MISMATCH:{record_id}")
+            if record.get("schema_version") != self.schema_version:
+                errors.append(f"SCHEMA_VERSION_MISMATCH:{record_id}")
+            missing = [
+                name
+                for name in schema.get("required_properties", [])
+                if record.get(name) in (None, "", [])
+            ]
+            if missing:
+                errors.append(f"REQUIRED_PROPERTIES_MISSING:{record_id}:{','.join(sorted(missing))}")
+            validated_node_ids.append(record_id)
+
+        link_keys: set[tuple[str, str, str]] = set()
+        outgoing: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+        for link in links:
+            link_id = str(link.get("link_id") or "")
+            predicate = str(link.get("predicate") or "")
+            subject_id = str(link.get("subject_id") or "")
+            object_id = str(link.get("object_id") or "")
+            subject_type = str(link.get("subject_type") or "")
+            object_type = str(link.get("object_type") or "")
+            if not all((link_id, predicate, subject_id, object_id, subject_type, object_type)):
+                errors.append(f"LINK_SHAPE_INVALID:{link_id or '<missing-link-id>'}")
+                continue
+            key = (subject_id, predicate, object_id)
+            if key in link_keys:
+                errors.append(f"DUPLICATE_LINK:{subject_id}:{predicate}:{object_id}")
+            link_keys.add(key)
+            if endpoint_types.get(subject_id) != subject_type:
+                errors.append(f"LINK_SUBJECT_TYPE_MISMATCH:{link_id}")
+            if endpoint_types.get(object_id) != object_type:
+                errors.append(f"LINK_OBJECT_TYPE_MISMATCH:{link_id}")
+            valid, reasons = self.validate_link(predicate, subject_type, object_type, as_statement=False)
+            if not valid:
+                errors.extend(f"{reason}:{link_id}" for reason in reasons)
+            registry_link = self.links.get(predicate)
+            if registry_link and link.get("classification") != registry_link.get("classification"):
+                errors.append(f"LINK_CLASSIFICATION_MISMATCH:{link_id}")
+            outgoing[(subject_id, predicate)].append(link)
+            validated_link_ids.append(link_id)
+
+        for record_id, (record_type, _) in records_by_id.items():
+            for predicate in self.object_types[record_type].get("required_links", []):
+                required = outgoing.get((record_id, predicate), [])
+                if not required:
+                    errors.append(f"REQUIRED_LINK_MISSING:{record_id}:{predicate}")
+                elif self.links[predicate].get("cardinality") == "1" and len(required) != 1:
+                    errors.append(f"REQUIRED_LINK_CARDINALITY:{record_id}:{predicate}")
+
+        for record_id, (record_type, record) in records_by_id.items():
+            if record_type == "ScientificStatement" and record.get("statement_id") != record_id:
+                errors.append(f"SCIENTIFIC_STATEMENT_ID_MISMATCH:{record_id}")
+            if record_type == "SourceWork" and record.get("source_work_id") != record_id:
+                errors.append(f"SOURCE_WORK_ID_MISMATCH:{record_id}")
+            if record_type == "SourceRevision" and record.get("source_revision_id") != record_id:
+                errors.append(f"SOURCE_REVISION_ID_MISMATCH:{record_id}")
+            if record_type == "SourceArtifact":
+                if record.get("source_artifact_id") != record_id:
+                    errors.append(f"SOURCE_ARTIFACT_ID_MISMATCH:{record_id}")
+                if not re.fullmatch(r"[a-f0-9]{64}", str(record.get("content_hash") or "")):
+                    errors.append(f"SOURCE_ARTIFACT_HASH_INVALID:{record_id}")
+
+        primary_subject_id = str(subgraph.get("primary_subject_id") or "")
+        primary_subject_type = str(subgraph.get("primary_subject_type") or "")
+        primary_predicate = str(subgraph.get("primary_predicate") or "")
+        primary_object_id = str(subgraph.get("primary_object_id") or "")
+        primary_object_type = str(subgraph.get("primary_object_type") or "")
+        relation_kind = str(subgraph.get("relation_kind") or "")
+        primary_valid, primary_reasons = self.validate_link(
+            primary_predicate,
+            primary_subject_type,
+            primary_object_type,
+            as_statement=relation_kind == "SCIENTIFIC_STATEMENT",
+        )
+        if not primary_valid:
+            errors.extend(f"PRIMARY_{reason}" for reason in primary_reasons)
+        for record_id, record_type, role in (
+            (primary_subject_id, primary_subject_type, "SUBJECT"),
+            (primary_object_id, primary_object_type, "OBJECT"),
+        ):
+            if endpoint_types.get(record_id) != record_type:
+                errors.append(f"PRIMARY_{role}_REFERENCE_MISSING_OR_MISMATCH")
+
+        if relation_kind == "SCIENTIFIC_STATEMENT":
+            self._validate_scientific_candidate_chain(
+                subgraph,
+                records_by_id,
+                outgoing,
+                errors,
+                warnings,
+            )
+        elif relation_kind == "STRUCTURAL_RELATION":
+            if not outgoing.get((primary_subject_id, primary_predicate)) or not any(
+                item.get("object_id") == primary_object_id
+                for item in outgoing.get((primary_subject_id, primary_predicate), [])
+            ):
+                errors.append("PRIMARY_STRUCTURAL_LINK_MISSING")
+            if any(record_type in {"ScientificStatement", "StatementRevision", "EvidenceAssessment"} for record_type, _ in records_by_id.values()):
+                errors.append("STRUCTURAL_RELATION_CONTAINS_STATEMENT_CHAIN")
+        else:
+            errors.append("RELATION_KIND_INVALID")
+
+        return not errors, sorted(set(errors)), sorted(set(warnings)), validated_node_ids, validated_link_ids
+
+    def _validate_scientific_candidate_chain(
+        self,
+        subgraph: dict[str, Any],
+        records_by_id: dict[str, tuple[str, dict[str, Any]]],
+        outgoing: dict[tuple[str, str], list[dict[str, Any]]],
+        errors: list[str],
+        warnings: list[str],
+    ) -> None:
+        statement_revision_id = str(subgraph.get("statement_revision_id") or "")
+        assessment_id = str(subgraph.get("evidence_assessment_id") or "")
+        revision_entry = records_by_id.get(statement_revision_id)
+        assessment_entry = records_by_id.get(assessment_id)
+        if revision_entry is None or revision_entry[0] != "StatementRevision":
+            errors.append("STATEMENT_REVISION_NODE_MISSING")
+            return
+        if assessment_entry is None or assessment_entry[0] != "EvidenceAssessment":
+            errors.append("EVIDENCE_ASSESSMENT_NODE_MISSING")
+            return
+
+        revision = revision_entry[1]
+        missing_revision = [
+            field
+            for field in self.statement_model["required_fields"]
+            if revision.get(field) in (None, "", [])
+        ]
+        if missing_revision:
+            errors.append("STATEMENT_REVISION_FIELDS_MISSING:" + ",".join(sorted(missing_revision)))
+        if revision.get("id") != revision.get("statement_revision_id"):
+            errors.append("STATEMENT_REVISION_ID_MISMATCH")
+        targets = [field for field in self.statement_model["exactly_one"] if revision.get(field) is not None]
+        if len(targets) != 1:
+            errors.append("STATEMENT_REVISION_TARGET_CARDINALITY")
+        if revision.get("subject_id") != subgraph.get("primary_subject_id"):
+            errors.append("STATEMENT_REVISION_SUBJECT_MISMATCH")
+        if revision.get("predicate") != subgraph.get("primary_predicate"):
+            errors.append("STATEMENT_REVISION_PREDICATE_MISMATCH")
+        if revision.get("object_id") != subgraph.get("primary_object_id"):
+            errors.append("STATEMENT_REVISION_OBJECT_MISMATCH")
+        if revision.get("polarity") not in self.statement_model["polarity"]:
+            errors.append("STATEMENT_REVISION_POLARITY_INVALID")
+        if revision.get("epistemic_status") not in self.statement_model["epistemic_status"]:
+            errors.append("STATEMENT_REVISION_EPISTEMIC_STATUS_INVALID")
+        if revision.get("assertion_kind") not in self.statement_model["assertion_kind"]:
+            errors.append("STATEMENT_REVISION_ASSERTION_KIND_INVALID")
+        if revision.get("scope_status") not in self.scope_statuses:
+            errors.append("STATEMENT_REVISION_SCOPE_STATUS_INVALID")
+        qualifiers = revision.get("qualifiers")
+        predicate_record = self.links.get(str(revision.get("predicate") or "")) or {}
+        if not isinstance(qualifiers, dict):
+            errors.append("STATEMENT_REVISION_QUALIFIERS_INVALID")
+        else:
+            disallowed = sorted(set(qualifiers) - set(predicate_record.get("qualifier_policy", {}).get("allowed", [])))
+            if disallowed:
+                errors.append("STATEMENT_REVISION_QUALIFIERS_NOT_ALLOWED:" + ",".join(disallowed))
+            if "software_version" in qualifiers:
+                valid, reasons = self.validate_software_version_qualifier(
+                    qualifiers["software_version"],
+                    subject_id=str(revision.get("subject_id") or ""),
+                )
+                if not valid:
+                    errors.extend(reasons)
+
+        statement_links = outgoing.get((statement_revision_id, self.statement_model["identity_link"]), [])
+        if not any(item.get("object_id") == revision.get("statement_id") for item in statement_links):
+            errors.append("STATEMENT_REVISION_IDENTITY_LINK_MISMATCH")
+
+        assessment = assessment_entry[1]
+        assessment_model = self.evidence_model["assessment"]
+        missing_assessment = [
+            field
+            for field in assessment_model["required_fields"]
+            if assessment.get(field) in (None, "", [])
+        ]
+        if missing_assessment:
+            errors.append("EVIDENCE_ASSESSMENT_FIELDS_MISSING:" + ",".join(sorted(missing_assessment)))
+        if assessment.get("id") != assessment.get("assessment_id"):
+            errors.append("EVIDENCE_ASSESSMENT_ID_MISMATCH")
+        if assessment.get("statement_revision_id") != statement_revision_id:
+            errors.append("EVIDENCE_ASSESSMENT_STATEMENT_MISMATCH")
+        if assessment.get("status") not in assessment_model["status"]:
+            errors.append("EVIDENCE_ASSESSMENT_STATUS_INVALID")
+        support_types = {item["value"] for item in self.evidence_model["support_types"]}
+        if assessment.get("support_type") not in support_types:
+            errors.append("EVIDENCE_ASSESSMENT_SUPPORT_TYPE_INVALID")
+        if assessment.get("scope_alignment") not in self.property_enums.get("scope_alignment", set()):
+            errors.append("EVIDENCE_ASSESSMENT_SCOPE_ALIGNMENT_INVALID")
+        for field in ("subject_aligned", "predicate_aligned", "object_aligned"):
+            if not isinstance(assessment.get(field), bool):
+                errors.append(f"EVIDENCE_ASSESSMENT_ALIGNMENT_FLAG_INVALID:{field}")
+        if assessment.get("support_type") == "DIRECT_SUPPORT" and not (
+            assessment.get("subject_aligned") is True
+            and assessment.get("predicate_aligned") is True
+            and assessment.get("object_aligned") is True
+            and assessment.get("scope_alignment") == "aligned"
+        ):
+            errors.append("DIRECT_SUPPORT_ALIGNMENT_RULE_FAILED")
+        evidence_span_id = str(assessment.get("evidence_span_id") or "")
+        evidence_entry = records_by_id.get(evidence_span_id)
+        if evidence_entry is None or evidence_entry[0] != "EvidenceSpan":
+            errors.append("EVIDENCE_SPAN_NODE_MISSING")
+        else:
+            span = evidence_entry[1]
+            missing_span = [
+                field
+                for field in self.evidence_model["EVIDENCE_SPAN_CORE_FIELDS"]
+                if span.get(field) in (None, "", [])
+            ]
+            if missing_span:
+                errors.append("EVIDENCE_SPAN_FIELDS_MISSING:" + ",".join(sorted(missing_span)))
+            if span.get("id") != span.get("evidence_span_id"):
+                errors.append("EVIDENCE_SPAN_ID_MISMATCH")
+            exact_text = span.get("exact_text")
+            if isinstance(exact_text, str):
+                expected_hash = hashlib.sha256(exact_text.encode("utf-8")).hexdigest()
+                if span.get("content_hash") != expected_hash:
+                    errors.append("EVIDENCE_SPAN_CONTENT_HASH_MISMATCH")
+            if span.get("start_offset") is None or span.get("end_offset") is None:
+                errors.append("EVIDENCE_SPAN_OFFSETS_MISSING")
+            elif not (isinstance(span["start_offset"], int) and isinstance(span["end_offset"], int) and span["end_offset"] > span["start_offset"]):
+                errors.append("EVIDENCE_SPAN_OFFSETS_INVALID")
+            elif isinstance(exact_text, str) and span["end_offset"] - span["start_offset"] != len(exact_text):
+                errors.append("EVIDENCE_SPAN_OFFSET_LENGTH_MISMATCH")
+            if not outgoing.get((evidence_span_id, "span_in_revision")):
+                errors.append("EVIDENCE_SPAN_REVISION_LINK_MISSING")
+            elif not any(
+                item.get("object_id") == span.get("source_revision_id")
+                for item in outgoing[(evidence_span_id, "span_in_revision")]
+            ):
+                errors.append("EVIDENCE_SPAN_REVISION_LINK_MISMATCH")
+            if not outgoing.get((evidence_span_id, "span_in_artifact")):
+                errors.append("EVIDENCE_SPAN_ARTIFACT_LINK_MISSING")
+            elif not any(
+                item.get("object_id") == span.get("source_artifact_id")
+                for item in outgoing[(evidence_span_id, "span_in_artifact")]
+            ):
+                errors.append("EVIDENCE_SPAN_ARTIFACT_LINK_MISMATCH")
+            artifact_id = str(span.get("source_artifact_id") or "")
+            if not any(
+                item.get("object_id") == span.get("source_revision_id")
+                for item in outgoing.get((artifact_id, "artifact_of"), [])
+            ):
+                errors.append("EVIDENCE_SPAN_ARTIFACT_REVISION_INCONSISTENT")
+
+        if not any(item.get("object_id") == statement_revision_id for item in outgoing.get((assessment_id, "assesses_statement"), [])):
+            errors.append("EVIDENCE_ASSESSMENT_STATEMENT_LINK_MISMATCH")
+        if not any(item.get("object_id") == evidence_span_id for item in outgoing.get((assessment_id, "uses_evidence"), [])):
+            errors.append("EVIDENCE_ASSESSMENT_EVIDENCE_LINK_MISMATCH")
+        if assessment.get("status") == "draft":
+            warnings.append("EVIDENCE_ASSESSMENT_DRAFT_PENDING_HUMAN_REVIEW")
+
 
 class ExactIdentityIndex:
     """Exact-only lookup of candidate inventory identities; never fuzzy-merges."""
@@ -109,7 +419,7 @@ class ExactIdentityIndex:
         for node in graph["nodes"]:
             record_id = str(node["record_id"])
             record = dict(node.get("record") or {})
-            item = {
+            item: dict[str, Any] = {
                 "record_id": record_id,
                 "record_type": str(node["record_type"]),
                 "label": str(node.get("label") or record_id),

@@ -3,15 +3,21 @@ from __future__ import annotations
 import hashlib
 import importlib.metadata
 import io
+import json
 import re
 from collections import Counter
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Literal, Sequence
 
 from .models import (
     BlockType,
     BoundedEvidenceSpanCandidate,
+    CandidateKGEntityReference,
+    CandidateKGLink,
+    CandidateKGNode,
+    CandidateKGSubgraph,
     CanonicalStatementCandidate,
     EvidenceGapCandidate,
     FinalDisposition,
@@ -26,6 +32,7 @@ from .models import (
     ResolvedScope,
     ScopeValue,
     ScopeValueStatus,
+    SchemaConformanceResult,
     SemanticBlock,
     SourceDocument,
     StageName,
@@ -227,12 +234,14 @@ class ScientificDocumentIngestionService:
         pdf_path: Path,
         *,
         expected_sha256: str | None = None,
+        created_at: str | None = None,
     ) -> dict[str, object]:
         pdf_bytes = pdf_path.read_bytes()
         return self.run_pdf_bytes(
             pdf_path.name,
             pdf_bytes,
             expected_sha256=expected_sha256,
+            created_at=created_at,
         )
 
     def run_pdf_bytes(
@@ -241,6 +250,7 @@ class ScientificDocumentIngestionService:
         pdf_bytes: bytes,
         *,
         expected_sha256: str | None = None,
+        created_at: str | None = None,
     ) -> dict[str, object]:
         digest = hashlib.sha256(pdf_bytes).hexdigest()
         if expected_sha256 is not None and digest != expected_sha256:
@@ -258,6 +268,7 @@ class ScientificDocumentIngestionService:
             pages=pages,
             metadata=metadata,
             parser_version=self.parser_version(),
+            created_at=created_at,
         )
 
     def run_pages(
@@ -268,10 +279,12 @@ class ScientificDocumentIngestionService:
         pages: Sequence[str],
         metadata: dict[str, str] | None = None,
         parser_version: str = "synthetic-fixture",
+        created_at: str | None = None,
     ) -> dict[str, object]:
         if not pages or any(not isinstance(page, str) for page in pages):
             raise ValueError("one or more page text streams are required")
         source = self._source(filename, pdf_sha256, pages, metadata or {}, parser_version)
+        run_created_at = created_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         layout_blocks = self._layout_blocks(pages, source)
         reconstructed = [self._reconstructed(block) for block in layout_blocks]
         semantic_blocks = self._semantic_blocks(layout_blocks, reconstructed)
@@ -298,6 +311,7 @@ class ScientificDocumentIngestionService:
                         layout_by_id[semantic.layout_block_id],
                         reconstructed_by_id[semantic.layout_block_id],
                         proposition,
+                        run_created_at,
                     )
                 )
         counts = Counter(packet.final_disposition.value for packet in packets)
@@ -323,6 +337,7 @@ class ScientificDocumentIngestionService:
                     "BoundedEvidenceSpanCandidate",
                     "LinkedEntityCandidate",
                     "CanonicalStatementCandidate",
+                    "CandidateKGSubgraph",
                     "ResolvedScope",
                     "ValidationReport",
                     "HumanReviewPacket",
@@ -332,6 +347,25 @@ class ScientificDocumentIngestionService:
                 "semantic_block_count": len(semantic_blocks),
                 "dehyphenation_count": sum(block.dehyphenation_count for block in reconstructed),
                 "unbounded_ready_candidates": unbounded_ready,
+                "schema_complete_ready_candidates": sum(
+                    1
+                    for packet in packets
+                    if packet.final_disposition == FinalDisposition.CANDIDATE_READY
+                    and packet.candidate_subgraph is not None
+                    and packet.candidate_subgraph.schema_conformance.valid
+                ),
+                "scientific_statement_candidate_subgraphs": sum(
+                    1
+                    for packet in packets
+                    if packet.candidate_subgraph is not None
+                    and packet.candidate_subgraph.relation_kind == "SCIENTIFIC_STATEMENT"
+                ),
+                "structural_relation_candidate_subgraphs": sum(
+                    1
+                    for packet in packets
+                    if packet.candidate_subgraph is not None
+                    and packet.candidate_subgraph.relation_kind == "STRUCTURAL_RELATION"
+                ),
                 "hallucinated_scope_count": sum(
                     packet.scope.hallucinated_value_count for packet in packets if packet.scope is not None
                 ),
@@ -356,6 +390,11 @@ class ScientificDocumentIngestionService:
         software = package_match.group(1).strip() if package_match else None
         version = version_match.group(1).strip() if version_match else None
         return SourceDocument(
+            source_work_id=_stable_id(
+                "source-work:",
+                software or "",
+                title or filename,
+            ),
             source_artifact_id=f"source-artifact:sha256:{pdf_sha256}",
             source_revision_id=f"source-revision:sha256:{pdf_sha256}",
             filename=filename,
@@ -876,7 +915,7 @@ class ScientificDocumentIngestionService:
                 "id": parameter_id,
                 "entity_id": parameter_id,
                 "record_type": "ParameterDefinition",
-                "schema_version": "sckg-parameter-definition-candidate-v2",
+                "schema_version": self.ontology.schema_version,
                 "ontology_version": self.ontology.ontology_version,
                 "label": proposition.parameter_name,
                 "owner_operator_ref": stable_operator["record_id"] if stable_operator else "",
@@ -1125,6 +1164,326 @@ class ScientificDocumentIngestionService:
             )
         return None
 
+    @staticmethod
+    def _candidate_link(
+        predicate: str,
+        subject_id: str,
+        subject_type: str,
+        object_id: str,
+        object_type: str,
+    ) -> CandidateKGLink:
+        return CandidateKGLink(
+            link_id=_stable_id(
+                "candidate-link:",
+                subject_id,
+                predicate,
+                object_id,
+            ),
+            predicate=predicate,
+            subject_id=subject_id,
+            subject_type=subject_type,
+            object_id=object_id,
+            object_type=object_type,
+        )
+
+    def _candidate_subgraph(
+        self,
+        source: SourceDocument,
+        canonical: CanonicalStatementCandidate,
+        entities: Sequence[LinkedEntityCandidate],
+        evidence: BoundedEvidenceSpanCandidate,
+        scope: ResolvedScope,
+        created_at: str,
+    ) -> CandidateKGSubgraph:
+        schema_version = self.ontology.schema_version
+        ontology_version = self.ontology.ontology_version
+        activity_ref = _stable_id("extraction-run:", source.sha256, created_at)
+        work_identifier = source.title or (
+            f"{source.software_name} documentation"
+            if source.software_name
+            else source.filename
+        )
+        nodes = [
+            CandidateKGNode(
+                record_id=source.source_work_id,
+                record_type="SourceWork",
+                record={
+                    "id": source.source_work_id,
+                    "source_work_id": source.source_work_id,
+                    "schema_version": schema_version,
+                    "ontology_version": ontology_version,
+                    "work_identifier": work_identifier,
+                },
+                origin="SOURCE_DERIVED",
+            ),
+            CandidateKGNode(
+                record_id=source.source_revision_id,
+                record_type="SourceRevision",
+                record={
+                    "id": source.source_revision_id,
+                    "source_revision_id": source.source_revision_id,
+                    "schema_version": schema_version,
+                    "ontology_version": ontology_version,
+                    "version": source.software_version or f"sha256:{source.sha256}",
+                },
+                origin="SOURCE_DERIVED",
+            ),
+            CandidateKGNode(
+                record_id=source.source_artifact_id,
+                record_type="SourceArtifact",
+                record={
+                    "id": source.source_artifact_id,
+                    "source_artifact_id": source.source_artifact_id,
+                    "schema_version": schema_version,
+                    "ontology_version": ontology_version,
+                    "content_hash": source.sha256,
+                    "media_type": "application/pdf",
+                },
+                origin="SOURCE_DERIVED",
+            ),
+            CandidateKGNode(
+                record_id=evidence.evidence_span_id,
+                record_type="EvidenceSpan",
+                record={
+                    "id": evidence.evidence_span_id,
+                    "evidence_span_id": evidence.evidence_span_id,
+                    "source_revision_id": evidence.source_revision_id,
+                    "source_artifact_id": evidence.source_artifact_id,
+                    "exact_text": evidence.exact_text,
+                    "content_hash": evidence.content_hash,
+                    "locator": evidence.locator,
+                    "schema_version": schema_version,
+                    "ontology_version": ontology_version,
+                    "page": evidence.page,
+                    "section": evidence.section,
+                    "start_offset": evidence.page_start_offset,
+                    "end_offset": evidence.page_end_offset,
+                },
+                origin="SOURCE_DERIVED",
+            ),
+        ]
+        links = [
+            self._candidate_link(
+                "revision_of",
+                source.source_revision_id,
+                "SourceRevision",
+                source.source_work_id,
+                "SourceWork",
+            ),
+            self._candidate_link(
+                "artifact_of",
+                source.source_artifact_id,
+                "SourceArtifact",
+                source.source_revision_id,
+                "SourceRevision",
+            ),
+            self._candidate_link(
+                "span_in_revision",
+                evidence.evidence_span_id,
+                "EvidenceSpan",
+                source.source_revision_id,
+                "SourceRevision",
+            ),
+            self._candidate_link(
+                "span_in_artifact",
+                evidence.evidence_span_id,
+                "EvidenceSpan",
+                source.source_artifact_id,
+                "SourceArtifact",
+            ),
+        ]
+        references = [
+            CandidateKGEntityReference(
+                record_id=entity.candidate_id,
+                record_type=entity.entity_type,
+                resolution_status=(
+                    "EXACT_EXISTING_IDENTITY"
+                    if entity.resolution_status == "EXACT_EXISTING_IDENTITY"
+                    else "NEW_CANDIDATE"
+                ),
+            )
+            for entity in entities
+            if entity.resolution_status != "UNRESOLVED"
+        ]
+        for entity in entities:
+            if entity.resolution_status == "NEW_CANDIDATE" and entity.candidate_record:
+                nodes.append(
+                    CandidateKGNode(
+                        record_id=entity.candidate_id,
+                        record_type=entity.entity_type,
+                        record=dict(entity.candidate_record),
+                        origin="NEW_ENTITY_CANDIDATE",
+                    )
+                )
+
+        relation_kind: Literal["SCIENTIFIC_STATEMENT", "STRUCTURAL_RELATION"] = (
+            "SCIENTIFIC_STATEMENT"
+            if canonical.is_scientific_statement
+            else "STRUCTURAL_RELATION"
+        )
+        statement_revision_id: str | None = None
+        evidence_assessment_id: str | None = None
+        if relation_kind == "SCIENTIFIC_STATEMENT":
+            statement_id = _stable_id(
+                "scientific-statement:",
+                canonical.subject_id,
+                canonical.predicate,
+                canonical.object_id,
+                "POSITIVE",
+            )
+            qualifier_payload = json.dumps(canonical.qualifiers, sort_keys=True, separators=(",", ":"))
+            statement_revision_id = _stable_id(
+                "statement-revision:",
+                statement_id,
+                qualifier_payload,
+                scope.core_scope_status,
+                canonical.assertion_kind,
+            )
+            evidence_assessment_id = _stable_id(
+                "evidence-assessment:",
+                statement_revision_id,
+                evidence.evidence_span_id,
+                created_at,
+            )
+            nodes.extend(
+                [
+                    CandidateKGNode(
+                        record_id=statement_id,
+                        record_type="ScientificStatement",
+                        record={
+                            "id": statement_id,
+                            "statement_id": statement_id,
+                            "schema_version": schema_version,
+                            "ontology_version": ontology_version,
+                        },
+                        origin="INGESTION_DERIVED",
+                    ),
+                    CandidateKGNode(
+                        record_id=statement_revision_id,
+                        record_type="StatementRevision",
+                        record={
+                            "id": statement_revision_id,
+                            "statement_revision_id": statement_revision_id,
+                            "statement_id": statement_id,
+                            "subject_id": canonical.subject_id,
+                            "predicate": canonical.predicate,
+                            "polarity": "POSITIVE",
+                            "qualifiers": canonical.qualifiers,
+                            "scope_status": scope.core_scope_status,
+                            "epistemic_status": "asserted",
+                            "schema_version": schema_version,
+                            "ontology_version": ontology_version,
+                            "assertion_kind": canonical.assertion_kind,
+                            "object_id": canonical.object_id,
+                        },
+                        origin="INGESTION_DERIVED",
+                    ),
+                    CandidateKGNode(
+                        record_id=evidence_assessment_id,
+                        record_type="EvidenceAssessment",
+                        record={
+                            "id": evidence_assessment_id,
+                            "assessment_id": evidence_assessment_id,
+                            "statement_revision_id": statement_revision_id,
+                            "evidence_span_id": evidence.evidence_span_id,
+                            "schema_version": schema_version,
+                            "ontology_version": ontology_version,
+                            "support_type": "PARTIAL_SUPPORT",
+                            "assessment_method": "deterministic_bounded_evidence_mapping_v1",
+                            "assessor_ref": "software:09-scientific-document-ingestion",
+                            "created_at": created_at,
+                            "status": "draft",
+                            "subject_aligned": True,
+                            "predicate_aligned": True,
+                            "object_aligned": True,
+                            "scope_alignment": (
+                                "aligned"
+                                if scope.core_scope_status in {"explicit", "not_applicable"}
+                                else "partial"
+                            ),
+                            "rationale": (
+                                "Deterministic ontology mapping from one bounded exact excerpt; "
+                                "support remains draft and pending human review."
+                            ),
+                        },
+                        origin="INGESTION_DERIVED",
+                    ),
+                ]
+            )
+            links.extend(
+                [
+                    self._candidate_link(
+                        "revision_of",
+                        statement_revision_id,
+                        "StatementRevision",
+                        statement_id,
+                        "ScientificStatement",
+                    ),
+                    self._candidate_link(
+                        "assesses_statement",
+                        evidence_assessment_id,
+                        "EvidenceAssessment",
+                        statement_revision_id,
+                        "StatementRevision",
+                    ),
+                    self._candidate_link(
+                        "uses_evidence",
+                        evidence_assessment_id,
+                        "EvidenceAssessment",
+                        evidence.evidence_span_id,
+                        "EvidenceSpan",
+                    ),
+                ]
+            )
+        else:
+            links.append(
+                self._candidate_link(
+                    canonical.predicate,
+                    canonical.subject_id,
+                    canonical.subject_type,
+                    canonical.object_id,
+                    canonical.object_type,
+                )
+            )
+
+        draft = CandidateKGSubgraph(
+            subgraph_id=_stable_id(
+                "candidate-subgraph:",
+                canonical.canonical_candidate_id,
+                evidence.evidence_span_id,
+                activity_ref,
+            ),
+            relation_kind=relation_kind,
+            primary_subject_id=canonical.subject_id,
+            primary_subject_type=canonical.subject_type,
+            primary_predicate=canonical.predicate,
+            primary_object_id=canonical.object_id,
+            primary_object_type=canonical.object_type,
+            statement_revision_id=statement_revision_id,
+            evidence_assessment_id=evidence_assessment_id,
+            nodes=nodes,
+            links=links,
+            referenced_entities=references,
+            schema_conformance=SchemaConformanceResult(
+                valid=False,
+                ontology_version=ontology_version,
+                schema_version=schema_version,
+            ),
+        )
+        valid, errors, warnings, node_ids, link_ids = self.ontology.validate_candidate_subgraph(
+            draft.model_dump(mode="python")
+        )
+        conformance = SchemaConformanceResult(
+            valid=valid,
+            ontology_version=ontology_version,
+            schema_version=schema_version,
+            validated_node_ids=node_ids,
+            validated_link_ids=link_ids,
+            errors=errors,
+            warnings=warnings,
+        )
+        return draft.model_copy(update={"schema_conformance": conformance})
+
     def _evidence_gaps(
         self,
         proposition: RawProposition,
@@ -1136,18 +1495,26 @@ class ScientificDocumentIngestionService:
         operator = next((entity for entity in entities if entity.context_role == "operator"), None)
         if operator is None:
             return []
+        gap_id = _stable_id(
+            "evidence-gap-candidate:",
+            operator.candidate_id,
+            "estimated-or-specified-contamination-condition",
+            evidence.evidence_span_id,
+        )
         return [
             EvidenceGapCandidate(
-                evidence_gap_id=_stable_id(
-                    "evidence-gap-candidate:",
-                    operator.candidate_id,
-                    "estimated-or-specified-contamination-condition",
-                    evidence.evidence_span_id,
-                ),
+                id=gap_id,
+                evidence_gap_id=gap_id,
+                schema_version=self.ontology.schema_version,
+                ontology_version=self.ontology.ontology_version,
                 subject_ref=operator.candidate_id,
                 description=(
                     "The existing contamination-model Requirement represents the estimated state, "
                     "but the source also permits a separately specified contamination level."
+                ),
+                impact=(
+                    "The correction precondition cannot be emitted as a formal candidate relation "
+                    "without inventing or widening frozen ontology semantics."
                 ),
                 missing_contract=(
                     "The reused Requirement has when=[] and its RepresentationConstraint declares "
@@ -1218,7 +1585,9 @@ class ScientificDocumentIngestionService:
             )
         known = [value for value in values if value.status not in {ScopeValueStatus.UNKNOWN, ScopeValueStatus.NOT_APPLICABLE}]
         unknown = [value for value in values if value.status == ScopeValueStatus.UNKNOWN]
-        core_status = "partially_known" if known and unknown else ("explicit" if known else "unknown")
+        core_status: Literal["explicit", "partially_known", "unknown", "not_applicable"] = (
+            "partially_known" if known and unknown else ("explicit" if known else "unknown")
+        )
         return ResolvedScope(
             scope_id=_stable_id("resolved-scope:", proposition.proposition_id, *(f"{item.dimension}:{item.value}:{item.status}" for item in values)),
             core_scope_status=core_status,
@@ -1262,7 +1631,7 @@ class ScientificDocumentIngestionService:
             stage_status=stage_status,
             warnings=[warning],
             ontology_registry_version=self.ontology.ontology_version,
-            structurally_conformant=True,
+            structurally_conformant=False,
             final_disposition=disposition,
         )
         return HumanReviewPacket(
@@ -1282,12 +1651,25 @@ class ScientificDocumentIngestionService:
         layout: LayoutBlock,
         reconstructed: ReconstructedBlock,
         proposition: RawProposition,
+        created_at: str,
     ) -> HumanReviewPacket:
         evidence = self._evidence(source, layout, proposition)
         entities = self._link_entities(source, proposition)
         canonical = self._canonicalize(source, proposition, entities) if proposition.is_complete else None
         evidence_gaps = self._evidence_gaps(proposition, entities, evidence)
         scope = self._scope(source, semantic, proposition, evidence)
+        candidate_subgraph = (
+            self._candidate_subgraph(
+                source,
+                canonical,
+                entities,
+                evidence,
+                scope,
+                created_at,
+            )
+            if canonical is not None
+            else None
+        )
         errors: list[str] = []
         warnings: list[str] = []
         stage_status = {stage: StageOutcome.PASS for stage in StageName}
@@ -1319,6 +1701,15 @@ class ScientificDocumentIngestionService:
             stage_status[StageName.CANONICALIZATION] = StageOutcome.FAIL
             stage_status[StageName.SEMANTIC_VALIDATION] = StageOutcome.FAIL
             errors.extend(canonical.conformance_reasons)
+        elif candidate_subgraph is None or not candidate_subgraph.schema_conformance.valid:
+            disposition = FinalDisposition.ABSTAINED
+            stage_status[StageName.CANONICALIZATION] = StageOutcome.FAIL
+            stage_status[StageName.SEMANTIC_VALIDATION] = StageOutcome.FAIL
+            errors.extend(
+                candidate_subgraph.schema_conformance.errors
+                if candidate_subgraph is not None
+                else ["CANDIDATE_SUBGRAPH_MISSING"]
+            )
         elif evidence.whole_segment:
             disposition = FinalDisposition.NEEDS_REVIEW
             stage_status[StageName.EVIDENCE_BINDING] = StageOutcome.NEEDS_REVIEW
@@ -1337,7 +1728,10 @@ class ScientificDocumentIngestionService:
             errors=errors,
             warnings=warnings,
             ontology_registry_version=self.ontology.ontology_version,
-            structurally_conformant=not errors,
+            structurally_conformant=bool(
+                candidate_subgraph is not None
+                and candidate_subgraph.schema_conformance.valid
+            ),
             final_disposition=disposition,
         )
         return HumanReviewPacket(
@@ -1349,6 +1743,7 @@ class ScientificDocumentIngestionService:
             raw_proposition=proposition,
             linked_entities=list(entities),
             canonical_statement=canonical,
+            candidate_subgraph=candidate_subgraph,
             evidence_gaps=evidence_gaps,
             scope=scope,
             evidence_span=evidence,

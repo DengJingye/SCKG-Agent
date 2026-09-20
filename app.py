@@ -4082,14 +4082,15 @@ def _candidate_entity_display_label(packet: Dict[str, Any], canonical_id: str | 
 
 def _candidate_relation_display(packet: Dict[str, Any]) -> Dict[str, str]:
     canonical = packet.get("canonical_statement") or {}
+    candidate_subgraph = packet.get("candidate_subgraph") or {}
     predicate_id = canonical.get("predicate")
     relation_label = _CANDIDATE_RELATION_LABELS.get(
         predicate_id,
         str(predicate_id).replace("_", " ") if predicate_id else "—",
     )
-    if canonical.get("is_scientific_statement"):
+    if candidate_subgraph.get("relation_kind") == "SCIENTIFIC_STATEMENT":
         relation_class = "Scientific statement candidate"
-    elif canonical.get("canonical_kind") == "STRUCTURAL_IDENTITY_BINDING":
+    elif candidate_subgraph.get("relation_kind") == "STRUCTURAL_RELATION" and canonical.get("canonical_kind") == "STRUCTURAL_IDENTITY_BINDING":
         relation_class = "Structural identity relation"
     elif canonical.get("canonical_kind") == "STRUCTURAL_OUTPUT_BINDING":
         relation_class = "Structural output relation"
@@ -4111,7 +4112,7 @@ def _render_hardened_document_ingestion_payload(
 ) -> None:
     source = summary["source"]
     st.info(
-        "Quality-hardened candidate ingestion · structural conformance only · "
+        "Quality-hardened candidate ingestion · full frozen-schema conformance only · "
         "not scientific validity, trust, approval, promotion, or execution authorization"
     )
     source_cols = st.columns(4)
@@ -4142,18 +4143,25 @@ def _render_hardened_document_ingestion_payload(
     st.markdown("### Candidate KG Relations")
     st.caption(
         "Human-readable ontology labels are primary; canonical IDs are shown as secondary audit fields. "
-        "This set includes structural/provenance relations as well as scientific statement candidates."
+        "Every ready row has a schema-conformant candidate subgraph; structural/provenance relations "
+        "remain distinct from ScientificStatement candidates."
     )
     if ready_packets:
         ready_rows = []
         for packet in ready_packets:
             display = _candidate_relation_display(packet)
+            candidate_subgraph = packet["candidate_subgraph"]
             ready_rows.append(
                 {
                     "Subject": display["subject_label"],
                     "Relation": display["relation_label"],
                     "Object": display["object_label"],
                     "Relation class": display["relation_class"],
+                    "Schema contract": (
+                        "PASS" if candidate_subgraph["schema_conformance"]["valid"] else "FAIL"
+                    ),
+                    "StatementRevision": candidate_subgraph.get("statement_revision_id") or "—",
+                    "EvidenceAssessment": candidate_subgraph.get("evidence_assessment_id") or "—",
                     "Scope": packet["scope"]["core_scope_status"],
                     "EvidenceSpan": packet["evidence_span"]["locator"],
                     "SourceRevision": packet["source"]["source_revision_id"],
@@ -4196,6 +4204,7 @@ def _render_hardened_document_ingestion_payload(
     evidence = packet.get("evidence_span") or {}
     scope = packet.get("scope") or {}
     governance = packet["governance"]
+    candidate_subgraph = packet.get("candidate_subgraph") or {}
     st.table(
         [
             {"Field": "Block type", "Value": packet["block_type"]},
@@ -4213,6 +4222,22 @@ def _render_hardened_document_ingestion_payload(
             {
                 "Field": "Validation",
                 "Value": packet["validation_report"]["stage_status"]["SEMANTIC_VALIDATION"],
+            },
+            {
+                "Field": "Frozen schema contract",
+                "Value": (
+                    "PASS"
+                    if candidate_subgraph.get("schema_conformance", {}).get("valid")
+                    else "—"
+                ),
+            },
+            {
+                "Field": "StatementRevision",
+                "Value": candidate_subgraph.get("statement_revision_id") or "—",
+            },
+            {
+                "Field": "EvidenceAssessment",
+                "Value": candidate_subgraph.get("evidence_assessment_id") or "—",
             },
             {
                 "Field": "Governance status",
@@ -4237,18 +4262,20 @@ def _render_hardened_document_ingestion_payload(
     stage_cols = st.columns(4)
     for index, stage in enumerate(stage_order):
         stage_cols[index % 4].metric(stage, stage_status[stage])
-    st.caption("SEMANTIC_VALIDATION means frozen-registry structural conformance; scientific validity is not assessed.")
+    st.caption("SEMANTIC_VALIDATION means full frozen-schema candidate conformance; scientific validity is not assessed.")
 
-    detail_tabs = st.tabs(["Evidence", "Entities", "Scope + provenance", "Ontology gaps", "Governance"])
+    detail_tabs = st.tabs(["Candidate subgraph", "Evidence", "Entities", "Scope + provenance", "Ontology gaps", "Governance"])
     with detail_tabs[0]:
-        st.json(packet.get("evidence_span"))
+        st.json(packet.get("candidate_subgraph"))
     with detail_tabs[1]:
-        st.json(packet.get("linked_entities") or [])
+        st.json(packet.get("evidence_span"))
     with detail_tabs[2]:
-        st.json(packet.get("scope"))
+        st.json(packet.get("linked_entities") or [])
     with detail_tabs[3]:
-        st.json(packet.get("evidence_gaps") or [])
+        st.json(packet.get("scope"))
     with detail_tabs[4]:
+        st.json(packet.get("evidence_gaps") or [])
+    with detail_tabs[5]:
         st.json(packet["governance"])
 
 
