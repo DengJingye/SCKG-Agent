@@ -1,5 +1,12 @@
 # Phase 2.1 Candidate Quality & Coverage Audit Report
 
+> Superseded coverage notice: Phase 2.2 re-audited all 20 identity drafts against
+> the exact consumers at 07 integration commit
+> `5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee`. The Phase 2.1 `100` result used a
+> ToolContract from shared runtime infrastructure and is not a Scientific KG v2
+> coverage result. Use `coverage_audit_report.md` and
+> `evaluation_lane_manifest.md` for the current candidate coverage audit.
+
 Run: `candidate-audit-20260921-v1`
 Status: complete bounded audit; no DEV/Gold, Agent Gain, or 05/06/07 changes
 

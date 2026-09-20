@@ -151,6 +151,12 @@ ambiguities and missing facts
 transformation_history
 coverage_vector + snapshot digests (only after coverage audit)
 exact_coverage_signature (V2/Legacy/RAG; only after coverage audit)
+benchmark_track_proposal (K/O/W; proposal only, not Gold)
+standalone_answerable
+needs_version
+needs_reproducer
+needs_data_state
+suitable_for_candidate
 public_exposure
 verbatim_overlap
 transformation_distance
@@ -178,10 +184,17 @@ Generation rules:
 - do not assign an expected tool solely because a tool name appears in the
   source;
 - do not derive `v2-only`/`legacy-only`/`rag-only` from one retrieval run;
+- bind coverage audits to the exact consumers frozen in the evaluation lane
+  manifest; do not substitute a broader or narrower corpus;
+- exclude Planner, ToolContracts, execution guards, validation contracts, and
+  approval state from every knowledge-coverage bit because they are shared
+  runtime infrastructure;
 - do not collapse formal coverage analysis to `shared`; retain the exact
   `V2/Legacy/RAG` signature (`111` through `000`);
 - keep one source question as multiple candidates only when the distinct
   contexts are documented and reviewers approve the separation.
+- keep an unsuitable or non-standalone title as a raw seed rather than forcing
+  it into the candidate pool.
 
 ## 7. Future adjudication and split gate
 

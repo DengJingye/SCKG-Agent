@@ -1,6 +1,6 @@
 # scKG-Agent V3 Benchmark Taxonomy
 
-Status: Phase 1.1 candidate taxonomy. It describes raw and candidate metadata, not
+Status: Phase 2.2 candidate taxonomy. It describes raw and candidate metadata, not
 DEV/Gold labels and not an Agent Gain result.
 
 The taxonomy has three independent dimensions. They must be stored and reported
@@ -79,7 +79,25 @@ Formal analyses must stratify or report by exact signature and must not rely onl
 on the coarse `shared` roll-up, which intentionally merges `111`, `110`, `101`,
 and `011`.
 
-For the Phase 2.1 audit, `present` means the frozen source contains enough
+For the Phase 2.2 re-audit, the frozen sources are the exact consumers configured
+by 07 integration commit `5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee`:
+
+- V2 is only `approved-scientific-kg-v2-01`
+  (`SHA256=06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4`)
+  with its 121 approved statements, approved evidence chains, explicit scope,
+  and 166 separate non-assertive caution contexts. The held scVelo revision is
+  excluded.
+- Legacy is the paired legacy backend: frozen retrieval foundation, candidate
+  `ScientificKGEvidence` adapter, and the legacy tool/catalog graph used for
+  candidate filtering. It must not be widened to the approved snapshot.
+- RAG is the paired `generic_rag` BM25 consumer over the frozen 800-chunk
+  retrieval foundation, with graph and scientific-evidence channels disabled.
+
+Planner, ToolContracts, execution guards, validation contracts, and the approval
+system are shared infrastructure across all four lanes. They cannot establish a
+V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.
+
+In this re-audit, `present` means the frozen consumer source contains enough
 records to establish every critical fact/condition declared for the candidate,
 not merely a related tool, method name, or partial lexical hit. Each `present`
 entry therefore has stable supporting IDs. Each `absent` entry records an
@@ -133,6 +151,22 @@ Task family, request type, data modality, language, risk, answerability, and
 expected artifact may be recorded as candidate metadata. They are useful for
 sampling and stratified reports, but they are not substitutes for the three
 dimensions above.
+
+Phase 2.2 adds a fourth, explicitly provisional sampling facet named
+`benchmark_track_proposal`. It is not a Gold label:
+
+| Value | Candidate use |
+| --- | --- |
+| `K` | Scientific Knowledge Utility: method, input, condition, version, scope, or evidence questions. |
+| `O` | Open-world Real-user Robustness: bug, API, regression, insufficient-context, or open-world issues. |
+| `W` | Workflow / Execution: dataset, notebook, state, planning, execution, or artifact tasks. |
+
+Track counts need not be balanced. Track assignment must not use 07 success or
+failure. Candidate admission is evaluated separately using
+`standalone_answerable`, `needs_version`, `needs_reproducer`,
+`needs_data_state`, and `suitable_for_candidate`. An unsuitable issue remains a
+raw seed and is not forced into the active candidate pool merely because it was
+collected.
 
 In particular:
 

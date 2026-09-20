@@ -1,51 +1,45 @@
 {
-  "assignment_rule": "present requires manual sufficiency review plus supporting IDs in the frozen source; absent requires an exhaustive recorded negative search and means no record or record combination was found that establishes all critical facts/conditions.",
+  "assignment_rule": "present requires sufficient consumer-visible facts/conditions plus supporting IDs; absent requires a recorded exhaustive search. Shared runtime components never count.",
   "bit_order": [
     "scientific_kg_v2",
     "legacy_kg",
     "ordinary_rag"
   ],
-  "frozen_at": "2026-09-20T16:43:37Z",
-  "run_id": "candidate-audit-20260921-v1",
-  "schema_version": "sckg-coverage-snapshot-manifest-v1",
+  "frozen_at": "2026-09-21",
+  "integration_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+  "run_id": "lane-alignment-20260921-v1",
+  "schema_version": "sckg-coverage-snapshot-manifest-v2",
+  "shared_runtime_excluded": [
+    "Planner",
+    "ToolContracts",
+    "execution guards",
+    "validation contracts",
+    "approval system"
+  ],
   "sources": {
     "legacy_kg": {
-      "definition": "Repository-defined legacy recall baseline: compatibility tool catalog plus legacy LLM-derived embedding/profile records. It is not recommendation-grade evidence.",
-      "digests": {
-        "catalog_sha256": "626779448b769a87a385b4453ebdfaecc88e4c90535bcc8fcf0e979e3b02e77b",
-        "embeddings_sha256": "edcf30096c9bb5bd52d7647983971172b633a2c60ff9e6b2b0be32cc6ac22773"
-      },
-      "paths": {
-        "catalog": "data/scrna_tools.tsv",
-        "embeddings": "data/scKG_embeddings_backup.jsonl"
-      },
-      "snapshot_id": "legacy-recall-baseline-20260921"
+      "coverage_records": "800 retrieval-foundation evidence chunks plus consumer-visible candidate ScientificKGEvidence claims/bindings; the legacy tool graph is recorded as a filtering channel, not promoted to answer evidence",
+      "digest": "ba48b12d6ad81681c0332081a400ef72a05c90788b4cc16a8e756f25fab49044",
+      "lane_name": "legacy_kg",
+      "snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4 + scientific_kg_v1_uat_decision_rules + kg-v2.3.0-canonical:6b20b21847be"
     },
     "ordinary_rag": {
-      "definition": "Frozen evidence_chunks corpus only; catalog chunks, KG traversal, ToolContracts, and generated model knowledge are excluded.",
-      "digests": {
-        "chunks_sha256": "a648df3aacfc072a6eb6e8fcca3aa50503c21041b09af6492ed2bd45142e7a3e",
-        "manifest_sha256": "c1520ac9eabf5b30dbe313c54e482c89c2d386000d79310678c43a48ecab8364"
-      },
-      "paths": {
-        "chunks": "data/indexes/evidence_chunks.jsonl",
-        "manifest": "data/indexes/evidence_index_manifest.json"
-      },
-      "snapshot_id": "evidence-v2-bb3aec4cf1266a2e"
+      "coverage_records": "800 evidence chunks available to the paired BM25 consumer",
+      "digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+      "lane_name": "generic_rag",
+      "snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4"
     },
     "scientific_kg_v2": {
-      "definition": "Frozen KG v2 node and edge records; governance fields are respected.",
-      "digests": {
-        "edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
-        "manifest_sha256": "db25060fd4c160a0e3da285d7310ebf3e6776541264449b56e2f0fce0033dcc4",
-        "nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3"
-      },
-      "paths": {
-        "edges": "data/knowledge_graph_v2/edges.jsonl",
-        "manifest": "data/knowledge_graph_v2/manifest.json",
-        "nodes": "data/knowledge_graph_v2/nodes.jsonl"
-      },
-      "snapshot_id": "kg-v2.3.0-canonical:6b20b21847be"
+      "cautions": "166 separate non-assertion contexts; searchable for negative evidence but never support",
+      "coverage_records": "121 approved statements with approved evidence-chain and scope records",
+      "digest": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "held_statement_excluded": "statement-revision:d0d887b96b7a1cf45e2c47bf:1",
+      "lane_name": "scientific_kg",
+      "snapshot_id": "approved-scientific-kg-v2-01"
     }
+  },
+  "supersedes": {
+    "reason": "Phase 2.1 used the canonical tool graph as V2 and counted a ToolContract. Neither is the approved-v2 consumer used by the 07 scientific_kg lane.",
+    "run_id": "candidate-audit-20260921-v1"
   }
 }
