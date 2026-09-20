@@ -1,7 +1,8 @@
 # scKG-Agent V3 Real-world Question Mining Plan
 
-Status: Phase 1 infrastructure design. No batch collection, DEV/Gold creation,
-or Agent Gain run is authorized by this plan.
+Status: Phase 1.1 design plus Phase 2 mining-pilot protocol. Only the bounded
+pilot described below is authorized; no bulk collection, DEV/Gold creation, or
+Agent Gain run is authorized by this plan.
 
 ## 1. Objective and boundaries
 
@@ -9,17 +10,19 @@ The pipeline turns provenance-preserving raw material into reviewable candidate
 scenarios. It does not turn public answers into scientific truth and it does
 not use 07 Research Chat behavior to decide which questions to include.
 
-Phase 1 outputs are limited to:
+The current outputs are limited to:
 
 - the benchmark and source survey;
 - a source registry and access gate;
 - the raw seed JSON Schema;
 - the three-axis taxonomy;
-- this deterministic downstream design.
+- this deterministic downstream design;
+- a 40--60 record policy-gated pilot used to test provenance, redaction, dedup,
+  clustering, and candidate-transformation plumbing.
 
 Explicitly out of scope:
 
-- bulk scraping or crawling;
+- bulk scraping or crawling beyond the explicit pilot endpoints and quotas;
 - copying long third-party threads without a reviewed policy;
 - assigning development/evaluation/hidden splits;
 - constructing routing, answer, or safety Gold;
@@ -53,8 +56,15 @@ source registry
 ## 3. Collection gate and pilot
 
 Before any source is collected, its registry row must pass the acceptance gate
-in `benchmark_sources.md`. Collection should then begin with a small, manually
-reviewed pilot per source rather than a multi-page crawl.
+in `benchmark_sources.md`. Phase 2 starts with a 40--60 item pilot, uses only
+reviewed P0 sources, and records prohibited/pending sources without contacting
+their content endpoints. The approved pilot calls the official GitHub REST
+Issues endpoint once for each allowlisted repository, stores title-level issue
+metadata only, excludes pull requests and bot-authored records, and adds a small
+project-owned controlled-probe stratum. It never reads issue comments for
+answers. scverse Discourse is excluded because its reviewed Terms of Service
+prohibit this automated access; Biostars and Bioconductor Support remain
+unreviewed and untouched.
 
 For every retrieved item:
 
@@ -140,9 +150,22 @@ task-family candidate
 ambiguities and missing facts
 transformation_history
 coverage_vector + snapshot digests (only after coverage audit)
+exact_coverage_signature (V2/Legacy/RAG; only after coverage audit)
+public_exposure
+verbatim_overlap
+transformation_distance
+memorization_risk
 review_status = needs_adjudication
 gold_status = none
 ```
+
+`public_exposure` records whether the source text was publicly available before
+evaluation. `verbatim_overlap` is a normalized `[0,1]` overlap with source text,
+and `transformation_distance` is a normalized `[0,1]` distance with its method
+and version retained in the candidate manifest. `memorization_risk` is
+`low|medium|high|unknown` and is adjudicated from public exposure, overlap,
+release timing, and task distinctiveness; it is not inferred from downstream
+system performance. Public exposure never makes a raw seed or candidate Gold.
 
 Generation rules:
 
@@ -155,12 +178,14 @@ Generation rules:
 - do not assign an expected tool solely because a tool name appears in the
   source;
 - do not derive `v2-only`/`legacy-only`/`rag-only` from one retrieval run;
+- do not collapse formal coverage analysis to `shared`; retain the exact
+  `V2/Legacy/RAG` signature (`111` through `000`);
 - keep one source question as multiple candidates only when the distinct
   contexts are documented and reviewers approve the separation.
 
 ## 7. Future adjudication and split gate
 
-This gate is intentionally not executed in Phase 1. Before a candidate becomes
+This gate is intentionally not executed in the current pilot. Before a candidate becomes
 an evaluation case, reviewers must:
 
 1. decide applicable routing, answer, safety, trajectory, and execution metrics;
@@ -177,11 +202,11 @@ an evaluation case, reviewers must:
    evaluated system.
 
 The existing `development`, `evaluation`, and `hidden` values remain the only
-split vocabulary. Phase 1 creates none of them.
+split vocabulary. The current pilot creates none of them.
 
 ## 8. Mapping to existing evaluation models
 
-No existing model is modified in Phase 1.
+No existing evaluation model is modified in this work.
 
 ### 8.1 Raw seed to `NaturalQueryCase` after review
 
@@ -225,9 +250,9 @@ Scope/evidence/synthesis failures that are emitted by answer evaluators should
 enter `EvaluationRunRecord.evaluation_failures`; they must not be inferred from
 the final answer alone when stronger trace evidence exists.
 
-## 9. Reproducibility manifest for a future pilot
+## 9. Reproducibility manifest
 
-Every mining run should eventually record:
+Every mining run records:
 
 ```text
 run_id and UTC timestamps
@@ -248,7 +273,7 @@ review queue paths
 Collector failures, access denials, deletions, and unknown policy states are
 first-class outcomes. Counts must not be backfilled or guessed.
 
-## 10. Phase 1 validation
+## 10. Phase 1 infrastructure validation
 
 Phase 1 is complete when:
 
@@ -260,3 +285,22 @@ Phase 1 is complete when:
 - the existing model mapping is documented without changing runtime code;
 - `git diff --check` passes;
 - no question corpus, DEV/Gold set, or Agent Gain output has been created.
+
+## 11. Phase 2 pilot validation
+
+The bounded pilot additionally requires:
+
+- 40--60 raw seeds, with real-user and controlled-probe counts reported
+  separately;
+- all raw records validated against `raw_seed_schema.json`, plus a negative
+  test proving `gold_eligible=true` is rejected;
+- source calls, response headers, selection method, hashes, and policy blocks
+  frozen in `collection_manifest.json`;
+- exact-duplicate groups and near-duplicate candidates reported without deleting
+  source records;
+- provisional clusters reported with method/version and
+  `needs_adjudication` status;
+- any candidate draft carrying `public_exposure`, `verbatim_overlap`,
+  `transformation_distance`, and `memorization_risk`, while retaining
+  `review_status=needs_adjudication` and `gold_status=none`;
+- no DEV/Gold creation, coverage assignment, Agent Gain run, or 05/06/07 change.

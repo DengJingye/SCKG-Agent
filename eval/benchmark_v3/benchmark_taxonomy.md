@@ -1,6 +1,6 @@
 # scKG-Agent V3 Benchmark Taxonomy
 
-Status: Phase 1 candidate taxonomy. It describes raw and candidate metadata, not
+Status: Phase 1.1 candidate taxonomy. It describes raw and candidate metadata, not
 DEV/Gold labels and not an Agent Gain result.
 
 The taxonomy has three independent dimensions. They must be stored and reported
@@ -12,7 +12,7 @@ neither determines the stage at which an evaluated system fails.
 Question origin records how a question entered the benchmark engineering
 pipeline.
 
-| Value | Definition | Allowed use in Phase 1 |
+| Value | Definition | Current allowed use |
 | --- | --- | --- |
 | `real-user` | A question or issue authored in a real support, forum, issue, or explicitly authorized local-history context. | Raw seed only. Preserve URL/external ID, access policy, thread references, and redaction status. Never inherit an answer as Gold. |
 | `paper-notebook` | A task reconstructed from a published paper, notebook, benchmark capsule, or supplementary computational artifact. | Candidate scenario source. Preserve release/version and artifact digest. Do not report it as a real-user distribution. |
@@ -32,7 +32,8 @@ Knowledge coverage describes where the information needed to answer a candidate
 scenario exists. It is measured against frozen corpus snapshots; it is not a
 property inferred from the question wording and it is not assigned to raw seeds.
 
-For each candidate scenario, first record a coverage vector:
+For each candidate scenario, first record a coverage vector and its exact
+three-bit signature in the fixed order `V2 / Legacy / RAG`:
 
 ```text
 scientific_kg_v2: present | absent | unknown
@@ -40,7 +41,21 @@ legacy_kg:        present | absent | unknown
 ordinary_rag:     present | absent | unknown
 ```
 
-The primary coverage label is derived only when all three values are known:
+When all three values are known, encode `present=1` and `absent=0`. The exact
+signature is the analysis key; the coarse label is a convenience roll-up only.
+
+| Exact signature (`V2/Legacy/RAG`) | Scientific KG v2 | Legacy KG | ordinary RAG | Coarse coverage label |
+| --- | --- | --- | --- | --- |
+| `111` | present | present | present | `shared` |
+| `110` | present | present | absent | `shared` |
+| `101` | present | absent | present | `shared` |
+| `011` | absent | present | present | `shared` |
+| `100` | present | absent | absent | `v2-only` |
+| `010` | absent | present | absent | `legacy-only` |
+| `001` | absent | absent | present | `rag-only` |
+| `000` | absent | absent | absent | `out-of-knowledge` |
+
+The retained coarse labels are therefore derived as follows:
 
 | Value | Derivation from the frozen coverage vector |
 | --- | --- |
@@ -50,15 +65,19 @@ The primary coverage label is derived only when all three values are known:
 | `rag-only` | Present only in the frozen ordinary RAG corpus. |
 | `out-of-knowledge` | Absent from all three frozen knowledge sources. |
 
-If any vector entry is `unknown`, the derived label remains unassigned. LLM-only
+If any vector entry is `unknown`, both exact signature and derived label remain
+unassigned; do not invent a wildcard signature. LLM-only
 is not included in this coverage vector because model-parametric knowledge is
 not a frozen, inspectable evidence corpus. A model may answer from unverified
 knowledge, but that does not change the scenario's coverage label or grant
 evidence authority.
 
-Coverage assessment must record snapshot IDs/digests and the supporting source
+Coverage assessment must record the exact signature, snapshot IDs/digests, and the supporting source
 IDs or a documented negative-search result. A scenario cannot be called
 `v2-only` merely because Scientific KG v2 retrieved it successfully in one run.
+Formal analyses must stratify or report by exact signature and must not rely only
+on the coarse `shared` roll-up, which intentionally merges `111`, `110`, `101`,
+and `011`.
 
 ## 3. Failure stage
 
