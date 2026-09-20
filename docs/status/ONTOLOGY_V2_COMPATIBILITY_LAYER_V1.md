@@ -1,14 +1,14 @@
-# Ontology v2 final read-only compatibility closure
+# Ontology v2 final testcase-outcome evidence closure
 
 WINDOW=02-Core-Implementation
 
-CHECKPOINT=5E.2-Final-Compatibility-Closure
+CHECKPOINT=5E.3-Final-Test-Evidence-Closure
 
 STATUS=PASS
 
-BASE_COMMIT=392c5d9c0b2140abdaf5b952f7fce1cee29f4554
+BASE_COMMIT=389d0d5b6cfbf7e34b3a4c82f52e54308debb031
 
-EVALUATED_REVISION=7fb9f2f08cb123d1828dd77b26f0e266fb09acd3
+EVALUATED_REVISION=2e58bb17555938c345e7bed701ecb01ead83c628
 
 ACCEPTED_ONTOLOGY_COMMIT=46910b46b41fe83cc4b11316028db5bfd77647f9
 
@@ -56,6 +56,10 @@ It does not start 5F and does not change any production ontology or schema.
   `PASS` requires repository-local result JSON and JUnit artifacts whose suite ID,
   tested revision, counts, required node IDs and SHA-256 values all verify. Recorded
   commands are provenance only and are never executed by the evaluation builder.
+- Every JUnit testcase is independently classified as `PASSED`, `FAILED`, `ERROR`
+  or `SKIPPED`. Counts are recomputed from testcase elements and checked against
+  suite/root headers. Only individually passed nodes enter `verified_node_ids`, so a
+  failed, errored, skipped or missing Chat node cannot satisfy Chat coverage.
 
 ## Full physical-inventory qualification
 
@@ -108,13 +112,15 @@ generated together. No generated scientific content is written to the KG.
 
 Run-specific, machine-verifiable evidence is retained under `test_evidence/`:
 
-- `focused_5e2.junit.xml` and `focused_5e2.json`: 54 passed.
+- `focused_5e2.junit.xml` and `focused_5e2.json`: 58 passed under suite ID
+  `ontology-v2-compatibility-focused-5e3`.
 - `regression_5e2.junit.xml` and `regression_5e2.json`: 88 passed.
 
 Both result records identify evaluated revision
-`7fb9f2f08cb123d1828dd77b26f0e266fb09acd3`, bind the raw JUnit SHA-256 and list
-every executed pytest node. The builder independently verifies the result JSON hash,
-nested JUnit hash and required node coverage before emitting `PASS`.
+`2e58bb17555938c345e7bed701ecb01ead83c628`, bind the raw JUnit SHA-256, record
+every testcase outcome, and list only passed nodes as verified. The builder
+independently verifies the result JSON hash, nested JUnit hash, recomputed counts and
+required passed-node coverage before emitting `PASS`.
 
 Focused compatibility tests cover every H01-H03 and M01-M05 requirement, inventory
 root-cause counts, deterministic output and protected production wiring. Bounded
@@ -137,10 +143,18 @@ involved.
 
 ```text
 WINDOW=02-Core-Implementation
-CHECKPOINT=5E.2-Final-Compatibility-Closure
+CHECKPOINT=5E.3-Final-Test-Evidence-Closure
 STATUS=PASS
-BASE_COMMIT=392c5d9c0b2140abdaf5b952f7fce1cee29f4554
-EVALUATED_REVISION=7fb9f2f08cb123d1828dd77b26f0e266fb09acd3
+BASE_COMMIT=389d0d5b6cfbf7e34b3a4c82f52e54308debb031
+EVALUATED_REVISION=2e58bb17555938c345e7bed701ecb01ead83c628
+TESTCASE_OUTCOME_PARSING=PASS
+RECOMPUTED_COUNTS=PASS
+VERIFIED_NODE_FILTERING=PASS
+CHAT_NODE_COVERAGE=PASS
+FAILURE_NODE_NEGATIVE=PASS
+ERROR_NODE_NEGATIVE=PASS
+SKIPPED_NODE_NEGATIVE=PASS
+HEADER_MISMATCH_NEGATIVE=PASS
 H01_SCOPE_IDENTITY=PASS
 H02_INLINE_CONTEXT_END_TO_END=PASS
 H03_AUTHORITY_SEPARATION=PASS
@@ -166,7 +180,7 @@ ASSESSMENT_AMBIGUOUS=0
 ASSESSMENT_NOT_MAPPABLE=380
 FOCUSED_TEST_EVIDENCE=VERIFIED
 REGRESSION_TEST_EVIDENCE=VERIFIED
-FOCUSED_TESTS=54 passed
+FOCUSED_TESTS=58 passed
 REGRESSION_TESTS=88 passed
 CHAT_IMPORT=PASS
 CHAT_RUNTIME=PASS
@@ -179,6 +193,6 @@ PLANNER_CHANGED=false
 FROZEN_ONTOLOGY_CHANGED=false
 PRIMARY_LIMITATION=Current v1 records do not satisfy all frozen v2 qualifier and provenance requirements.
 EARLIEST_DIVERGENCE=Predicate qualifier policy for claims; EvidenceSpan artifact/revision identity for evidence.
-NEXT_RECOMMENDED_ACTION=STOP_FOR_FINAL_QA
+NEXT_RECOMMENDED_ACTION=STOP_FOR_MICRO_CONFIRMATION
 STOPPED=true
 ```
