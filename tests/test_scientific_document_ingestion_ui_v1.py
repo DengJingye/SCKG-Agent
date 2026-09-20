@@ -30,6 +30,9 @@ def test_hardened_ingestion_ui_uses_dispositions_and_stage_states() -> None:
     assert "Human-readable ontology labels are primary" in captions
     markdown = "\n".join(str(item.value) for item in app.markdown)
     assert "Candidate KG Relations" in markdown
+    assert "Candidate KG Graph" in markdown
+    assert "same 5 CANDIDATE_READY relations" in captions
+    assert "does not add claims or mutate the Scientific KG" in captions
     assert "structural/provenance relations" in captions
     selectbox = next(item for item in app.selectbox if item.label == "HumanReviewPacket")
     assert "SoupX::adjustCounts@1.6.2" in selectbox.options[0]

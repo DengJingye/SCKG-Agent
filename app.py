@@ -1027,6 +1027,9 @@ from core.user_store import (
     set_session_pinned,
 )
 from engine.knowledge_graph_view import (
+    GraphEdge,
+    GraphNode,
+    KnowledgeGraphView,
     build_catalog_landscape_html,
     build_decision_graph_neighborhood_view,
     build_decision_graph_workspace_view,
@@ -4107,6 +4110,202 @@ def _candidate_relation_display(packet: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
+def _hardened_candidate_graph_view(
+    packets: List[Dict[str, Any]],
+) -> KnowledgeGraphView:
+    """Project persisted frozen-schema candidate subgraphs into the read-only viewer."""
+
+    nodes: Dict[str, GraphNode] = {}
+    edges_by_id: Dict[str, GraphEdge] = {}
+    evidence_number = 0
+
+    def compact(value: Any, limit: int = 48) -> str:
+        text = re.sub(r"\s+", " ", str(value or "")).strip()
+        return text if len(text) <= limit else f"{text[: limit - 1].rstrip()}…"
+
+    def add_node(
+        node_id: str,
+        label: str,
+        ontology_type: str,
+        *,
+        viewer_group: str,
+        metadata: Dict[str, Any],
+        existing_identity: bool = False,
+    ) -> None:
+        if node_id in nodes:
+            return
+        nodes[node_id] = GraphNode(
+            node_id=node_id,
+            label=label,
+            kind=ontology_type,
+            metadata={
+                "display_label": compact(label),
+                "full_label": label,
+                "ontology_type": ontology_type,
+                "viewer_group": viewer_group,
+                "validation_status": "VALID",
+                "candidate_state": "VALIDATED",
+                "existing_identity": existing_identity,
+                **metadata,
+            },
+        )
+
+    def record_label(
+        record_type: str,
+        record: Dict[str, Any],
+        packet: Dict[str, Any],
+    ) -> tuple[str, str]:
+        nonlocal evidence_number
+        if record_type == "SourceWork":
+            return str(record.get("work_identifier") or "SoupX source work"), "source"
+        if record_type == "SourceRevision":
+            return f"SoupX source · v{record.get('version') or '?'}", "source"
+        if record_type == "SourceArtifact":
+            return packet.get("source", {}).get("filename") or "SoupX PDF", "source"
+        if record_type == "EvidenceSpan":
+            evidence_number += 1
+            return (
+                f"Evidence {evidence_number} · p.{record.get('page', '?')} · "
+                f"{compact(record.get('exact_text'), 34)}",
+                "evidence",
+            )
+        if record_type == "ScientificStatement":
+            relation = _candidate_relation_display(packet)["relation_label"]
+            return f"Scientific statement · {relation}", "statement"
+        if record_type == "StatementRevision":
+            display = _candidate_relation_display(packet)
+            return (
+                f"{display['subject_label']} → {display['relation_label']} → "
+                f"{display['object_label']}",
+                "statement",
+            )
+        if record_type == "EvidenceAssessment":
+            return "Evidence assessment · pending human review", "evidence"
+        return record_type, "other"
+
+    for packet_index, packet in enumerate(packets, 1):
+        subgraph = packet.get("candidate_subgraph") or {}
+        if not subgraph.get("schema_conformance", {}).get("valid"):
+            continue
+        display = _candidate_relation_display(packet)
+        referenced = {
+            item.get("record_id"): item
+            for item in subgraph.get("referenced_entities") or []
+            if item.get("record_id")
+        }
+        primary_nodes = [
+            (
+                subgraph.get("primary_subject_id"),
+                display["subject_label"],
+                subgraph.get("primary_subject_type"),
+            ),
+            (
+                subgraph.get("primary_object_id"),
+                display["object_label"],
+                subgraph.get("primary_object_type"),
+            ),
+        ]
+        for node_id, label, ontology_type in primary_nodes:
+            if not node_id or not ontology_type:
+                continue
+            resolution = referenced.get(node_id, {})
+            add_node(
+                node_id,
+                label,
+                ontology_type,
+                viewer_group="existing" if resolution else "entity",
+                existing_identity=bool(resolution),
+                metadata={
+                    "origin": "FROZEN_REGISTRY_REFERENCE" if resolution else "CANDIDATE_SUBGRAPH",
+                    "resolution_status": resolution.get("resolution_status"),
+                    "canonical_id": node_id,
+                },
+            )
+
+        for node in subgraph.get("nodes") or []:
+            record_id = node.get("record_id")
+            record_type = node.get("record_type") or "Unknown"
+            if not record_id:
+                continue
+            record = node.get("record") or {}
+            label, viewer_group = record_label(record_type, record, packet)
+            add_node(
+                record_id,
+                label,
+                record_type,
+                viewer_group=viewer_group,
+                metadata={
+                    "origin": node.get("origin"),
+                    "record": record,
+                    "subgraph_id": subgraph.get("subgraph_id"),
+                },
+            )
+
+        for link in subgraph.get("links") or []:
+            link_id = link.get("link_id") or (
+                f"candidate-link:{packet_index}:{link.get('subject_id')}:"
+                f"{link.get('predicate')}:{link.get('object_id')}"
+            )
+            if link_id in edges_by_id:
+                continue
+            predicate = str(link.get("predicate") or "relation")
+            edges_by_id[link_id] = GraphEdge(
+                source=str(link["subject_id"]),
+                target=str(link["object_id"]),
+                relation=_CANDIDATE_RELATION_LABELS.get(predicate, predicate.replace("_", " ")),
+                metadata={
+                    "edge_id": link_id,
+                    "canonical_predicate": predicate,
+                    "classification": link.get("classification"),
+                    "candidate_state": "VALIDATED",
+                    "validation_status": "VALID",
+                    "origin": "FROZEN_SCHEMA_CANDIDATE_SUBGRAPH",
+                    "subgraph_id": subgraph.get("subgraph_id"),
+                },
+            )
+
+        primary_edge_id = f"primary-relation:{subgraph.get('subgraph_id')}"
+        primary_subject = subgraph.get("primary_subject_id")
+        primary_object = subgraph.get("primary_object_id")
+        primary_predicate = subgraph.get("primary_predicate")
+        has_primary_link = any(
+            edge.source == primary_subject
+            and edge.target == primary_object
+            and edge.metadata.get("canonical_predicate") == primary_predicate
+            for edge in edges_by_id.values()
+        )
+        if primary_subject and primary_object and primary_predicate and not has_primary_link:
+            edges_by_id[primary_edge_id] = GraphEdge(
+                source=primary_subject,
+                target=primary_object,
+                relation=display["relation_label"],
+                metadata={
+                    "edge_id": primary_edge_id,
+                    "canonical_predicate": primary_predicate,
+                    "candidate_state": "VALIDATED",
+                    "validation_status": "VALID",
+                    "origin": "STATEMENT_REVISION_PRIMARY_RELATION_PROJECTION",
+                    "subgraph_id": subgraph.get("subgraph_id"),
+                    "statement_revision_id": subgraph.get("statement_revision_id"),
+                },
+            )
+
+    edges = [
+        edge
+        for edge in edges_by_id.values()
+        if edge.source in nodes and edge.target in nodes
+    ]
+    node_ids = list(nodes)
+    return KnowledgeGraphView(
+        nodes=nodes,
+        edges=edges,
+        visible_node_ids=node_ids,
+        visible_edges=edges,
+        inventory={"nodes": len(nodes), "edges": len(edges)},
+        truncated=False,
+    )
+
+
 def _render_hardened_document_ingestion_payload(
     summary: Dict[str, Any], packets: List[Dict[str, Any]]
 ) -> None:
@@ -4176,6 +4375,34 @@ def _render_hardened_document_ingestion_payload(
             ready_rows,
             use_container_width=True,
             hide_index=True,
+        )
+
+        candidate_graph = _hardened_candidate_graph_view(ready_packets)
+        st.markdown("### Candidate KG Graph")
+        st.caption(
+            f"Read-only projection of the same {len(ready_packets)} CANDIDATE_READY relations · "
+            f"{len(candidate_graph.nodes)} nodes · {len(candidate_graph.edges)} edges. "
+            "It does not add claims or mutate the Scientific KG."
+        )
+        st.caption(
+            "Green = exact frozen-registry identity · blue = ScientificStatement / StatementRevision · "
+            "yellow = bounded EvidenceSpan / EvidenceAssessment · amber = source provenance."
+        )
+        components.html(
+            build_scientific_graph_viewer_html(
+                candidate_graph,
+                config=ScientificGraphViewerConfig(
+                    mode="candidate_kg",
+                    default_layout="force",
+                    default_density="standard",
+                    show_evidence_by_default=False,
+                    standard_node_cap=80,
+                    global_node_cap=120,
+                    canvas_height=640,
+                ),
+            ),
+            height=650,
+            scrolling=False,
         )
     else:
         st.warning("No CANDIDATE_READY packet was produced.")
