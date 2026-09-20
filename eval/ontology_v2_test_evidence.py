@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA_VERSION = "sckg-local-test-result-v1"
+SCHEMA_VERSION = "sckg-local-test-result-v2"
 
 
 def sha256_file(path: Path) -> str:
@@ -30,28 +30,69 @@ def parse_junit(path: Path) -> dict[str, Any]:
     if not suites:
         raise ValueError("junit_has_no_test_suites")
 
-    counts = {
-        key: sum(int(suite.attrib.get(key, "0")) for suite in suites)
-        for key in ("tests", "failures", "errors", "skipped")
+    outcomes: list[dict[str, str]] = []
+    computed = {key: 0 for key in ("tests", "passed", "failed", "errors", "skipped")}
+    header_keys = {
+        "tests": "tests",
+        "failures": "failed",
+        "errors": "errors",
+        "skipped": "skipped",
     }
-    node_ids = sorted(
-        {
-            _pytest_node_id(case.attrib["classname"], case.attrib["name"])
-            for suite in suites
-            for case in suite.findall("testcase")
-        }
+    for suite in suites:
+        suite_counts = {key: 0 for key in computed}
+        cases = list(suite.findall("testcase"))
+        for case in cases:
+            node_id = _pytest_node_id(case.attrib["classname"], case.attrib["name"])
+            outcome_elements = [
+                outcome
+                for outcome in ("failure", "error", "skipped")
+                if case.find(outcome) is not None
+            ]
+            if len(outcome_elements) > 1:
+                raise ValueError("junit_testcase_has_multiple_outcomes")
+            outcome = {
+                "failure": "FAILED",
+                "error": "ERROR",
+                "skipped": "SKIPPED",
+            }.get(outcome_elements[0] if outcome_elements else "", "PASSED")
+            outcomes.append({"node_id": node_id, "outcome": outcome})
+            suite_counts["tests"] += 1
+            suite_counts[
+                {
+                    "PASSED": "passed",
+                    "FAILED": "failed",
+                    "ERROR": "errors",
+                    "SKIPPED": "skipped",
+                }[outcome]
+            ] += 1
+        for header_key, computed_key in header_keys.items():
+            if header_key in suite.attrib and int(suite.attrib[header_key]) != suite_counts[computed_key]:
+                raise ValueError(f"junit_{header_key}_header_mismatch")
+        for key, value in suite_counts.items():
+            computed[key] += value
+
+    node_ids = sorted(item["node_id"] for item in outcomes)
+    if len(set(node_ids)) != len(node_ids):
+        raise ValueError("junit_duplicate_test_identity")
+    if root.tag == "testsuites":
+        for header_key, computed_key in header_keys.items():
+            if header_key in root.attrib and int(root.attrib[header_key]) != computed[computed_key]:
+                raise ValueError(f"junit_root_{header_key}_header_mismatch")
+    verified_node_ids = sorted(
+        item["node_id"] for item in outcomes if item["outcome"] == "PASSED"
     )
-    if len(node_ids) != counts["tests"]:
-        raise ValueError("junit_test_identity_count_mismatch")
-    passed = counts["tests"] - counts["failures"] - counts["errors"] - counts["skipped"]
-    status = "PASS" if passed > 0 and not counts["failures"] and not counts["errors"] else "FAIL"
+    outcomes.sort(key=lambda item: item["node_id"])
+    status = (
+        "PASS"
+        if computed["passed"] > 0 and not computed["failed"] and not computed["errors"]
+        else "FAIL"
+    )
     return {
         "status": status,
-        "passed": passed,
-        "failed": counts["failures"],
-        "errors": counts["errors"],
-        "skipped": counts["skipped"],
+        **computed,
         "test_node_ids": node_ids,
+        "verified_node_ids": verified_node_ids,
+        "testcase_outcomes": outcomes,
     }
 
 
@@ -73,12 +114,15 @@ def record_junit_result(
         "suite_id": suite_id,
         "tested_revision": tested_revision,
         "status": parsed["status"],
+        "tests": parsed["tests"],
         "passed": parsed["passed"],
         "failed": parsed["failed"],
         "errors": parsed["errors"],
         "skipped": parsed["skipped"],
         "command": command,
         "test_node_ids": parsed["test_node_ids"],
+        "verified_node_ids": parsed["verified_node_ids"],
+        "testcase_outcomes": parsed["testcase_outcomes"],
         "junit_artifact": _repository_relative(junit_path, repository_root),
         "junit_artifact_sha256": sha256_file(junit_path),
     }

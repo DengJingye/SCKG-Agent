@@ -1082,26 +1082,31 @@ def _test_evidence_declaration(
     revision: str,
     node_ids: set[str],
     command: list[str] | None = None,
+    outcomes: dict[str, str] | None = None,
 ) -> dict:
     evidence_dir = root / "evidence"
     junit_path = evidence_dir / f"{name}.junit.xml"
     result_path = evidence_dir / f"{name}.json"
+    testcase_outcomes = {node_id: (outcomes or {}).get(node_id, "PASSED") for node_id in node_ids}
     suite = ET.Element(
         "testsuite",
         name="pytest",
         tests=str(len(node_ids)),
-        failures="0",
-        errors="0",
-        skipped="0",
+        failures=str(sum(outcome == "FAILED" for outcome in testcase_outcomes.values())),
+        errors=str(sum(outcome == "ERROR" for outcome in testcase_outcomes.values())),
+        skipped=str(sum(outcome == "SKIPPED" for outcome in testcase_outcomes.values())),
     )
     for node_id in sorted(node_ids):
         module, test_name = node_id.split("::", 1)
-        ET.SubElement(
+        case = ET.SubElement(
             suite,
             "testcase",
             classname=module.removesuffix(".py").replace("/", "."),
             name=test_name,
         )
+        outcome = testcase_outcomes[node_id]
+        if outcome != "PASSED":
+            ET.SubElement(case, outcome.casefold() if outcome != "FAILED" else "failure")
     junit_path.parent.mkdir(parents=True, exist_ok=True)
     wrapper = ET.Element("testsuites")
     wrapper.append(suite)
@@ -1127,6 +1132,38 @@ def _test_evidence_declaration(
         "result_artifact": str(result_path.relative_to(root)),
         "result_artifact_sha256": sha256_file(result_path),
     }
+
+
+def _mutate_junit_and_reseal_result(
+    root: Path,
+    declaration: dict,
+    *,
+    node_id: str,
+    outcome_element: str | None,
+    header_updates: dict[str, str] | None = None,
+) -> dict:
+    result_path = root / declaration["result_artifact"]
+    result = _json(result_path)
+    junit_path = root / result["junit_artifact"]
+    tree = ET.parse(junit_path)
+    module, test_name = node_id.split("::", 1)
+    classname = module.removesuffix(".py").replace("/", ".")
+    testcase = next(
+        case
+        for case in tree.getroot().iter("testcase")
+        if case.attrib.get("classname") == classname and case.attrib.get("name") == test_name
+    )
+    if outcome_element is not None:
+        ET.SubElement(testcase, outcome_element)
+    suite = next(tree.getroot().iter("testsuite"))
+    suite.attrib.update(header_updates or {})
+    tree.write(junit_path, encoding="utf-8", xml_declaration=True)
+    result["junit_artifact_sha256"] = sha256_file(junit_path)
+    result_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {**declaration, "result_artifact_sha256": sha256_file(result_path)}
 
 
 def test_m05_failed_not_run_and_unverified_declarations_cannot_emit_pass(
@@ -1303,6 +1340,117 @@ def test_m05_verified_artifacts_gate_checkpoint_and_chat_surfaces(tmp_path: Path
     partial = _json(tmp_path / "partial-chat" / "test_summary.json")
     assert partial["chat_retrieval"] == "UNVERIFIED"
     assert partial["chat_runtime"] == "UNVERIFIED"
+
+
+def test_m05_failure_node_with_false_zero_header_is_rejected(tmp_path: Path) -> None:
+    revision = "e" * 40
+    runtime_node = next(iter(CHAT_SURFACE_NODES["chat_runtime"]))
+    declaration = _test_evidence_declaration(
+        tmp_path,
+        name="regression-hidden-failure",
+        suite_id=REGRESSION_SUITE_ID,
+        revision=revision,
+        node_ids=REGRESSION_REQUIRED_NODES,
+    )
+    declaration = _mutate_junit_and_reseal_result(
+        tmp_path,
+        declaration,
+        node_id=runtime_node,
+        outcome_element="failure",
+    )
+    build(
+        tmp_path / "hidden-failure",
+        regression_tests=declaration,
+        evaluated_revision=revision,
+        evidence_root=tmp_path,
+    )
+    summary = _json(tmp_path / "hidden-failure" / "test_summary.json")
+    assert summary["regression_tests"]["verification_status"] == "UNVERIFIED"
+    assert summary["chat_runtime"] == "UNVERIFIED"
+
+
+def test_m05_required_skipped_or_error_node_cannot_cover_chat(tmp_path: Path) -> None:
+    revision = "f" * 40
+    runtime_node = next(iter(CHAT_SURFACE_NODES["chat_runtime"]))
+    for outcome in ("SKIPPED", "ERROR"):
+        declaration = _test_evidence_declaration(
+            tmp_path,
+            name=f"regression-runtime-{outcome.casefold()}",
+            suite_id=REGRESSION_SUITE_ID,
+            revision=revision,
+            node_ids=REGRESSION_REQUIRED_NODES,
+            outcomes={runtime_node: outcome},
+        )
+        build(
+            tmp_path / outcome.casefold(),
+            regression_tests=declaration,
+            evaluated_revision=revision,
+            evidence_root=tmp_path,
+        )
+        summary = _json(tmp_path / outcome.casefold() / "test_summary.json")
+        result = _json(tmp_path / declaration["result_artifact"])
+        assert runtime_node not in result["verified_node_ids"]
+        assert result["testcase_outcomes"] == sorted(
+            result["testcase_outcomes"], key=lambda item: item["node_id"]
+        )
+        assert next(
+            item["outcome"]
+            for item in result["testcase_outcomes"]
+            if item["node_id"] == runtime_node
+        ) == outcome
+        assert summary["regression_tests"]["verification_status"] != "PASS"
+        assert summary["chat_runtime"] == "UNVERIFIED"
+
+
+def test_m05_nonrequired_skipped_node_is_not_verified_but_suite_can_pass(
+    tmp_path: Path,
+) -> None:
+    revision = "1" * 40
+    optional_node = "tests/test_optional_evidence.py::test_optional"
+    declaration = _test_evidence_declaration(
+        tmp_path,
+        name="focused-optional-skip",
+        suite_id=FOCUSED_SUITE_ID,
+        revision=revision,
+        node_ids=FOCUSED_REQUIRED_NODES | {optional_node},
+        outcomes={optional_node: "SKIPPED"},
+    )
+    build(
+        tmp_path / "optional-skip",
+        focused_tests=declaration,
+        evaluated_revision=revision,
+        evidence_root=tmp_path,
+    )
+    summary = _json(tmp_path / "optional-skip" / "test_summary.json")
+    assert summary["focused_tests"]["verification_status"] == "PASS"
+    assert optional_node not in summary["focused_tests"]["verified_node_ids"]
+
+
+def test_m05_junit_header_total_mismatch_is_rejected(tmp_path: Path) -> None:
+    revision = "2" * 40
+    node_id = next(iter(FOCUSED_REQUIRED_NODES))
+    declaration = _test_evidence_declaration(
+        tmp_path,
+        name="focused-header-mismatch",
+        suite_id=FOCUSED_SUITE_ID,
+        revision=revision,
+        node_ids=FOCUSED_REQUIRED_NODES,
+    )
+    declaration = _mutate_junit_and_reseal_result(
+        tmp_path,
+        declaration,
+        node_id=node_id,
+        outcome_element=None,
+        header_updates={"tests": str(len(FOCUSED_REQUIRED_NODES) + 1)},
+    )
+    build(
+        tmp_path / "header-mismatch",
+        focused_tests=declaration,
+        evaluated_revision=revision,
+        evidence_root=tmp_path,
+    )
+    summary = _json(tmp_path / "header-mismatch" / "test_summary.json")
+    assert summary["focused_tests"]["verification_status"] == "UNVERIFIED"
 
 
 def test_evaluation_build_is_deterministic_and_does_not_mutate_source_data(

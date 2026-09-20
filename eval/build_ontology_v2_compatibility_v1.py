@@ -50,9 +50,9 @@ OUTPUT_NAMES = (
     "integrity.json",
     "test_summary.json",
 )
-PATCH_BASE_COMMIT = "392c5d9c0b2140abdaf5b952f7fce1cee29f4554"
-FOCUSED_SUITE_ID = "ontology-v2-compatibility-focused-5e2"
-REGRESSION_SUITE_ID = "ontology-v2-compatibility-bounded-regression-5e2"
+PATCH_BASE_COMMIT = "389d0d5b6cfbf7e34b3a4c82f52e54308debb031"
+FOCUSED_SUITE_ID = "ontology-v2-compatibility-focused-5e3"
+REGRESSION_SUITE_ID = "ontology-v2-compatibility-bounded-regression-5e3"
 FOCUSED_REQUIRED_NODES = {
     "tests/test_scientific_ontology_v2_compatibility.py::test_h01_missing_expected_scope_is_ambiguous_and_exact_scope_succeeds",
     "tests/test_scientific_ontology_v2_compatibility.py::test_h02_atomic_claim_retains_distinct_inline_flavors_end_to_end",
@@ -72,6 +72,10 @@ FOCUSED_REQUIRED_NODES = {
     "tests/test_scientific_ontology_v2_compatibility.py::test_m05_false_command_failed_text_and_missing_artifact_are_unverified",
     "tests/test_scientific_ontology_v2_compatibility.py::test_m05_wrong_hash_revision_counts_suite_and_tamper_are_unverified",
     "tests/test_scientific_ontology_v2_compatibility.py::test_m05_verified_artifacts_gate_checkpoint_and_chat_surfaces",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_failure_node_with_false_zero_header_is_rejected",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_required_skipped_or_error_node_cannot_cover_chat",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_nonrequired_skipped_node_is_not_verified_but_suite_can_pass",
+    "tests/test_scientific_ontology_v2_compatibility.py::test_m05_junit_header_total_mismatch_is_rejected",
 }
 CHAT_SURFACE_NODES = {
     "chat_import": {
@@ -278,10 +282,22 @@ def verify_test_evidence(
             verification_status="UNVERIFIED",
             reasons=["JUNIT_ARTIFACT_INVALID"],
         )
-    for key in ("status", "passed", "failed", "errors", "skipped", "test_node_ids"):
+    for key in (
+        "status",
+        "tests",
+        "passed",
+        "failed",
+        "errors",
+        "skipped",
+        "test_node_ids",
+        "verified_node_ids",
+        "testcase_outcomes",
+    ):
         if result.get(key) != parsed_junit.get(key):
             reasons.append(f"JUNIT_{key.upper()}_MISMATCH")
-    missing_required_nodes = sorted(required_node_ids - set(parsed_junit["test_node_ids"]))
+    missing_required_nodes = sorted(
+        required_node_ids - set(parsed_junit["verified_node_ids"])
+    )
     if missing_required_nodes:
         reasons.append("REQUIRED_TEST_NODES_MISSING")
     if reasons:
@@ -292,7 +308,7 @@ def verify_test_evidence(
         declaration,
         verification_status="PASS",
         reasons=["RESULT_AND_JUNIT_ARTIFACTS_VERIFIED"],
-        verified_node_ids=parsed_junit["test_node_ids"],
+        verified_node_ids=parsed_junit["verified_node_ids"],
     )
 
 
@@ -695,7 +711,7 @@ def build(
         "automatic_production_wiring": False,
     }
     test_summary = {
-        "schema_version": "sckg-ontology-v2-compatibility-test-summary-v2",
+        "schema_version": "sckg-ontology-v2-compatibility-test-summary-v3",
         "evaluated_revision": evaluated_revision,
         "focused_tests": focused_result,
         "regression_tests": regression_result,
@@ -721,7 +737,7 @@ def build(
     artifacts = {name: _sha256(output_dir / name) for name in OUTPUT_NAMES}
     manifest = {
         "schema_version": "sckg-ontology-v2-compatibility-manifest-v1",
-        "checkpoint": "5E.2-Final-Compatibility-Closure",
+        "checkpoint": "5E.3-Final-Test-Evidence-Closure",
         "status": (
             "PASS"
             if focused_result["verification_status"] == "PASS"
@@ -738,7 +754,7 @@ def build(
         "deterministic": True,
         "non_destructive": True,
         "scientific_content_generated": False,
-        "next_recommended_action": "STOP_FOR_FINAL_QA",
+        "next_recommended_action": "STOP_FOR_MICRO_CONFIRMATION",
     }
     _write_json(output_dir / "manifest.json", manifest)
     return manifest
