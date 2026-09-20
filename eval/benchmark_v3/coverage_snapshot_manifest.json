@@ -1,0 +1,51 @@
+{
+  "assignment_rule": "present requires manual sufficiency review plus supporting IDs in the frozen source; absent requires an exhaustive recorded negative search and means no record or record combination was found that establishes all critical facts/conditions.",
+  "bit_order": [
+    "scientific_kg_v2",
+    "legacy_kg",
+    "ordinary_rag"
+  ],
+  "frozen_at": "2026-09-20T16:43:37Z",
+  "run_id": "candidate-audit-20260921-v1",
+  "schema_version": "sckg-coverage-snapshot-manifest-v1",
+  "sources": {
+    "legacy_kg": {
+      "definition": "Repository-defined legacy recall baseline: compatibility tool catalog plus legacy LLM-derived embedding/profile records. It is not recommendation-grade evidence.",
+      "digests": {
+        "catalog_sha256": "626779448b769a87a385b4453ebdfaecc88e4c90535bcc8fcf0e979e3b02e77b",
+        "embeddings_sha256": "edcf30096c9bb5bd52d7647983971172b633a2c60ff9e6b2b0be32cc6ac22773"
+      },
+      "paths": {
+        "catalog": "data/scrna_tools.tsv",
+        "embeddings": "data/scKG_embeddings_backup.jsonl"
+      },
+      "snapshot_id": "legacy-recall-baseline-20260921"
+    },
+    "ordinary_rag": {
+      "definition": "Frozen evidence_chunks corpus only; catalog chunks, KG traversal, ToolContracts, and generated model knowledge are excluded.",
+      "digests": {
+        "chunks_sha256": "a648df3aacfc072a6eb6e8fcca3aa50503c21041b09af6492ed2bd45142e7a3e",
+        "manifest_sha256": "c1520ac9eabf5b30dbe313c54e482c89c2d386000d79310678c43a48ecab8364"
+      },
+      "paths": {
+        "chunks": "data/indexes/evidence_chunks.jsonl",
+        "manifest": "data/indexes/evidence_index_manifest.json"
+      },
+      "snapshot_id": "evidence-v2-bb3aec4cf1266a2e"
+    },
+    "scientific_kg_v2": {
+      "definition": "Frozen KG v2 node and edge records; governance fields are respected.",
+      "digests": {
+        "edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
+        "manifest_sha256": "db25060fd4c160a0e3da285d7310ebf3e6776541264449b56e2f0fce0033dcc4",
+        "nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3"
+      },
+      "paths": {
+        "edges": "data/knowledge_graph_v2/edges.jsonl",
+        "manifest": "data/knowledge_graph_v2/manifest.json",
+        "nodes": "data/knowledge_graph_v2/nodes.jsonl"
+      },
+      "snapshot_id": "kg-v2.3.0-canonical:6b20b21847be"
+    }
+  }
+}

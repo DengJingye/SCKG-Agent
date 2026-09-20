@@ -79,6 +79,14 @@ Formal analyses must stratify or report by exact signature and must not rely onl
 on the coarse `shared` roll-up, which intentionally merges `111`, `110`, `101`,
 and `011`.
 
+For the Phase 2.1 audit, `present` means the frozen source contains enough
+records to establish every critical fact/condition declared for the candidate,
+not merely a related tool, method name, or partial lexical hit. Each `present`
+entry therefore has stable supporting IDs. Each `absent` entry records an
+exhaustive frozen-record scan, query variants, record count, partial-match IDs,
+and a manual sufficiency conclusion. These are candidate-audit decisions with
+`review_status=needs_adjudication`; they are not answer Gold.
+
 ## 3. Failure stage
 
 Failure stage is an outcome of a run. It is not attached to a raw seed and it

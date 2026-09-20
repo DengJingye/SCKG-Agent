@@ -1,6 +1,7 @@
 # scKG-Agent V3 Benchmark Sources
 
-Status: Phase 1.1 survey and Phase 2 pilot source registry, updated 2026-09-20.
+Status: Phase 1.1 survey, Phase 2 pilot source registry, and Phase 2.1 bounded
+paper/notebook source review, updated 2026-09-21.
 
 This document inventories benchmark construction patterns and potential question
 sources. It does not define a DEV, evaluation, hidden, or Gold set. Public forum
@@ -111,7 +112,9 @@ and obey robots rules, API terms, response headers, and removal requests.
 | [Biostars](https://www.biostars.org/) | `real-user` | Broad, naturally phrased bioinformatics troubleshooting, method choice, and ambiguous experimental questions. | Manual discovery first; automated endpoint only after terms/robots/license review. | Access-policy review pending. Store URL and metadata only until an explicit policy decision exists. | P1. Very broad domain and variable answer quality; high PII and stale-version risk. |
 | [Bioconductor Support](https://support.bioconductor.org/) | `real-user` | Package-specific R/Bioconductor questions, reproducibility, statistical scope, and versioned failures. The site exposes RSS/API links and a user agreement. | Official RSS/API if policy review permits; otherwise manual canonical URLs. | Access-policy and user-agreement review pending; no batch access in Phase 1. | P1. Strong expert replies, but accepted/high-vote replies still are not answer Gold. Spam and package-version drift require filtering. |
 | Approved method GitHub issue trackers | `real-user` | Long-tail method-specific failures and capability boundaries for methods represented in the governed tool registry. | GitHub REST Issues API from an explicit repository allowlist; exclude pull requests, security reports, and bot-only issues. | Same GitHub policy capture as above; no broad GitHub search scrape. | P1. Start only after method identity is matched to the canonical tool registry. Activity is not recommendation-grade scientific evidence. |
-| Published notebooks and paper supplements represented by BixBench, ScienceAgentBench, CORE-Bench, or a reviewed local source | `paper-notebook` | Reproducible analysis goals, expected artifacts, and long-horizon task structure. | Versioned benchmark release or paper repository, never an unfrozen web copy. | Import only under the upstream license and with release/digest capture. | P1 for scenario design. Not a real-user distribution and never automatically Gold. |
+| [BixBench official dataset](https://huggingface.co/datasets/futurehouse/BixBench) | `paper-notebook` | Hypothesis-driven computational-biology result questions grounded in published notebook capsules. | Pinned public Hugging Face dataset revision; retain only a bounded task-text excerpt and non-answer provenance. | `reviewed` for the bounded Phase 2.1 pilot: dataset card declares `Apache-2.0`; frozen revision `f8cc3bdcc6357c88b8c3648306522b9c422dc95a`. | Four raw seeds only. Do not retain `ideal`, `result`, `answer`, distractors, capsule data, or use upstream scoring as scKG Gold. |
+| [ScienceAgentBench official dataset](https://huggingface.co/datasets/osunlp/ScienceAgentBench) | `paper-notebook` | Data-driven scientific program tasks with explicit output-artifact requirements. | Pinned public verified annotation release through the official Hugging Face dataset viewer. | `reviewed` for the bounded Phase 2.1 pilot: dataset card declares `CC-BY-4.0`; frozen revision `9c6e96c9e74572e979b0930ee735041cef528cb7`. | Four raw seeds only. Store the public task instruction with attribution; do not download or redistribute protected benchmark artifacts, Gold programs, domain knowledge, results, or rubrics. |
+| Other published notebooks and paper supplements represented by CORE-Bench or a reviewed local source | `paper-notebook` | Reproducible analysis goals, expected artifacts, and long-horizon task structure. | Versioned benchmark release or paper repository, never an unfrozen web copy. | Registry only until source-specific license, artifact reuse, and storage review is complete. | P1 for scenario design. Not a real-user distribution and never automatically Gold. |
 | Local deterministic safety, state, and contract probes | `controlled-probe` | Coverage of authorization, malformed state, evidence leakage, out-of-scope execution, and hard negatives. | Reviewed local fixtures under version control. | Project-owned; record generator/version and reviewer. | P0 for coverage gaps, but must be reported separately from real-user questions. |
 
 ## 5. Source acceptance gate
@@ -132,3 +135,8 @@ the following are recorded:
 If any item is unresolved, the source remains `registry_only`. The current
 pilot performs only the two reviewed GitHub calls documented in its manifest;
 it creates no DEV or Gold labels.
+
+For Phase 2.1, the existing 48-seed pilot is not expanded by another issue
+collection. Eight paper/notebook records are a separate bounded source pilot in
+`paper_notebook_seeds_pilot.jsonl`. Its revisions, licenses, retained fields,
+and exclusions are frozen in `paper_notebook_collection_manifest.json`.

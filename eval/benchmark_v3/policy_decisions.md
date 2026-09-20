@@ -1,7 +1,7 @@
-# Phase 2 Pilot Source Policy Decisions
+# Phase 2 and Phase 2.1 Pilot Source Policy Decisions
 
-Decision date: 2026-09-20
-Scope: `pilot-20260920-v1` only
+Decision dates: 2026-09-20 and 2026-09-21
+Scope: `pilot-20260920-v1` and `candidate-audit-20260921-v1` only
 Status: operational research-data decisions, not legal advice
 
 These decisions authorize or block only the bounded mining pilot. They do not
@@ -18,6 +18,19 @@ profiles, or use of public replies as scientific Gold.
 | scverse Discourse | `prohibited` for automation | None. Do not call the category JSON/RSS endpoint in this pilot. | Registry decision only; zero topic records. | The forum [Terms of Service](https://discourse.scverse.org/tos) prohibit automated access except crawling by a public search engine for indexing. An official-looking JSON endpoint does not override that term. |
 | Biostars | `pending` / blocked | None. | Registry decision only. | No page, API, RSS, or search collection until terms, robots, storage, PII, and removal handling are reviewed. |
 | Bioconductor Support | `pending` / blocked | None. | Registry decision only. | No page, API, or RSS collection until its user agreement and reuse/storage terms are reviewed. |
+
+## Phase 2.1 paper/notebook addendum
+
+| Source | Decision | Permitted access | Durable fields | Explicit exclusions |
+| --- | --- | --- | --- | --- |
+| [BixBench dataset](https://huggingface.co/datasets/futurehouse/BixBench) | `reviewed` / allow bounded Phase 2.1 subset | Official public Hugging Face dataset endpoint at revision `f8cc3bdcc6357c88b8c3648306522b9c422dc95a`; dataset card license `Apache-2.0`. | Four task instructions, task ID/row, categories, linked paper, revision, URL, hashes, and access-policy record. | Ideal answers, result fields, answer labels, distractors, explanations, notebook/capsule data, and evaluation outputs. |
+| [ScienceAgentBench dataset](https://huggingface.co/datasets/osunlp/ScienceAgentBench) | `reviewed` / allow bounded Phase 2.1 subset | Official public verified annotation viewer at revision `9c6e96c9e74572e979b0930ee735041cef528cb7`; dataset card license `CC-BY-4.0`. | Four attributed task instructions, instance/row ID, category/repository, revision, URL, hashes, and access-policy record. | Downloadable benchmark data/artifacts, Gold programs, domain-knowledge field, expected results, scoring rubrics, and any protected unzipped release. |
+
+The paper/notebook addendum authorizes exactly eight raw seeds in
+`paper_notebook_seeds_pilot.jsonl`; it is not a bulk-import authorization.
+All eight retain `gold_eligible=false`. Their upstream answers and evaluators do
+not become scKG evidence or Gold, and only four are used as identity-draft
+candidate scenarios.
 
 ## GitHub basis and safeguards
 

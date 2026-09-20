@@ -304,3 +304,31 @@ The bounded pilot additionally requires:
   `transformation_distance`, and `memorization_risk`, while retaining
   `review_status=needs_adjudication` and `gold_status=none`;
 - no DEV/Gold creation, coverage assignment, Agent Gain run, or 05/06/07 change.
+
+## 12. Phase 2.1 candidate audit
+
+Phase 2.1 freezes quantity and tests the transition from source record to a
+reviewable candidate:
+
+1. Carry forward the six Phase 2 candidate IDs and render raw text, provenance,
+   raw/candidate transformations, additions/removals, contamination fields, and
+   ambiguities side by side.
+2. Add ten real-user candidates by predeclared scientific/problem strata,
+   independent of cluster membership and all 07 output. Keep identity drafts so
+   missing context remains visible; record added scientific context as empty.
+3. Add eight policy-reviewed paper/notebook raw seeds from pinned BixBench and
+   ScienceAgentBench releases; only four enter the candidate packet. Never copy
+   an upstream answer, result, Gold program, rubric, or protected artifact.
+4. Audit every candidate against frozen V2, Legacy, and ordinary-RAG boundaries.
+   `present` requires stable supporting IDs; `absent` requires an exhaustive
+   record scan and manual sufficiency conclusion. The exact three-bit signature
+   remains primary.
+5. Run a fixed local LSA semantic embedding plus KMeans smoke experiment over
+   question text and permitted source metadata. Use it only to organize review;
+   do not derive task, coverage, split, or Gold labels from a cluster.
+
+The deterministic implementation is `run_candidate_audit.py`. It writes a
+machine-readable validation result and fails if a raw seed violates the schema,
+a candidate gains scientific context, a coverage `present` lacks supporting
+IDs, an `absent` lacks a negative search, a signature is inconsistent, or any
+candidate loses `needs_adjudication` / `gold_status=none`.
