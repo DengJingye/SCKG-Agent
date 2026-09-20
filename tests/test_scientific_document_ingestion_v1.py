@@ -14,6 +14,7 @@ from ingestion.scientific_documents.reporting import regression_checks
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "tests/fixtures/scientific_document_ingestion/synthetic_manual_pages.json"
+SOUPX_SUMMARY = ROOT / "data/evaluation/scientific_document_ingestion_v1/summary.json"
 
 
 def _run():
@@ -82,6 +83,57 @@ def test_return_value_is_structural_output_binding_not_scientific_statement() ->
     assert row.final_disposition == FinalDisposition.CANDIDATE_READY
 
 
+def test_demo_recovery_has_four_distinct_registry_conformant_ready_candidates() -> None:
+    ready = [
+        packet
+        for packet in _run()["packets"]
+        if packet.final_disposition == FinalDisposition.CANDIDATE_READY
+    ]
+    spo = {
+        (
+            packet.canonical_statement.subject_id,
+            packet.canonical_statement.predicate,
+            packet.canonical_statement.object_id,
+        )
+        for packet in ready
+    }
+    assert {
+        (
+            "operator-revision:soupx.soupx__adjustcounts:1.6.2",
+            "revision_of",
+            "operator:soupx.soupx__adjustcounts",
+        ),
+        (
+            "operator-revision:soupx.soupx__adjustcounts:1.6.2",
+            "implements_method",
+            "method:ambient_count_correction",
+        ),
+        (
+            "operator-revision:soupx.soupx__adjustcounts:1.6.2",
+            "supports_task",
+            "task:ambient_rna_removal",
+        ),
+        (
+            "output-port:v1-core:soupx:soupx__adjustcounts:output",
+            "output_type",
+            "representation-type:corrected_counts",
+        ),
+        (
+            "operator-revision:soupx.soupx__adjustcounts:1.6.2",
+            "has_requirement",
+            "requirement:v1-core:soupx:soupx__adjustcounts:input2",
+        ),
+    } <= spo
+    assert len(spo) >= 5
+    for packet in ready:
+        if packet.canonical_statement.predicate in {"implements_method", "supports_task", "has_requirement"}:
+            assert packet.canonical_statement.qualifiers["software_version"] == {
+                "subject_id": "operator-revision:soupx.soupx__adjustcounts:1.6.2",
+                "status": "exact",
+                "expression": "1.6.2",
+            }
+
+
 def test_parameter_preserves_operator_parameter_and_version_context_without_fuzzy_merge() -> None:
     packets = _run()["packets"]
     row = next(
@@ -91,6 +143,11 @@ def test_parameter_preserves_operator_parameter_and_version_context_without_fuzz
     )
     assert row.raw_proposition.operator_name == "adjustCounts"
     assert row.canonical_statement.predicate == "has_parameter"
+    assert row.canonical_statement.object_record["owner_operator_ref"] == "operator:soupx.soupx__adjustcounts"
+    assert row.canonical_statement.object_record["value_domain"] == {
+        "datatype": "string",
+        "allowed_values": ["subtraction", "soupOnly"],
+    }
     assert {entity.context_role for entity in row.linked_entities} == {"operator", "parameter"}
     assert all(entity.fuzzy_merge_used is False for entity in row.linked_entities)
     version = next(value for value in row.scope.values if value.dimension == "method_operator_version")
@@ -98,6 +155,26 @@ def test_parameter_preserves_operator_parameter_and_version_context_without_fuzz
     assert version.status == ScopeValueStatus.SOURCE_CONTEXT
     assert version.provenance_ref == row.source.source_revision_id
     assert row.final_disposition == FinalDisposition.NEEDS_REVIEW
+
+
+def test_unexpressible_estimated_or_specified_condition_becomes_evidence_gap() -> None:
+    rows = [
+        packet
+        for packet in _run()["packets"]
+        if packet.raw_proposition
+        and packet.raw_proposition.proposition_type == PropositionType.CONDITION
+    ]
+    assert len(rows) == 1
+    row = rows[0]
+    assert row.final_disposition == FinalDisposition.EVIDENCE_ONLY
+    assert row.canonical_statement is None
+    assert len(row.evidence_gaps) == 1
+    gap = row.evidence_gaps[0]
+    assert gap.gap_type == "ONTOLOGY_EXPRESSIVITY"
+    assert gap.evidence_span_id == row.evidence_span.evidence_span_id
+    assert gap.source_revision_id == row.source.source_revision_id
+    assert "when=[]" in gap.missing_contract
+    assert "specified alternative" in gap.missing_contract
 
 
 def test_unknown_scope_is_not_hallucinated_and_has_explicit_no_provenance_state() -> None:
@@ -150,3 +227,19 @@ def test_frozen_registry_is_read_only_and_adapter_has_no_mutation_api() -> None:
     valid, reasons = adapter.validate_link("has_parameter", "OperatorRevision", "ParameterDefinition", as_statement=True)
     assert valid is True
     assert reasons == []
+
+
+def test_committed_soupx_demo_snapshot_has_five_distinct_ready_candidates() -> None:
+    summary = json.loads(SOUPX_SUMMARY.read_text(encoding="utf-8"))
+    assert summary["source"]["sha256"] == "dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19"
+    assert summary["counts"]["CANDIDATE_READY"] == 5
+    spo = {
+        (row["subject"], row["predicate"], row["object"])
+        for row in summary["ready_candidates"]
+    }
+    assert len(spo) == 5
+    assert {row[1] for row in spo} == {
+        "revision_of", "implements_method", "supports_task", "has_requirement", "output_type"
+    }
+    assert summary["unbounded_ready_candidates"] == 0
+    assert summary["hallucinated_scope_count"] == 0

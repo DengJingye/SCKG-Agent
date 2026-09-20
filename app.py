@@ -4092,9 +4092,33 @@ def _render_hardened_document_ingestion_payload(
         st.warning("No review packets were produced from the text-extractable content.")
         return
 
+    ready_packets = [packet for packet in packets if packet["final_disposition"] == "CANDIDATE_READY"]
+    st.markdown("### Candidate KG ready set")
+    if ready_packets:
+        st.dataframe(
+            [
+                {
+                    "Subject": packet["canonical_statement"]["subject_id"],
+                    "Predicate": packet["canonical_statement"]["predicate"],
+                    "Object": packet["canonical_statement"]["object_id"],
+                    "Scope": packet["scope"]["core_scope_status"],
+                    "EvidenceSpan": packet["evidence_span"]["locator"],
+                    "SourceRevision": packet["source"]["source_revision_id"],
+                    "Validation": packet["validation_report"]["stage_status"]["SEMANTIC_VALIDATION"],
+                    "Governance": packet["governance"]["human_review_status"],
+                }
+                for packet in ready_packets
+            ],
+            use_container_width=True,
+            hide_index=True,
+        )
+    else:
+        st.warning("No CANDIDATE_READY packet was produced.")
+
+    ordered_packets = ready_packets + [packet for packet in packets if packet["final_disposition"] != "CANDIDATE_READY"]
     labels = {
         f"{index + 1}. {packet['block_type']} → {packet['final_disposition']}": packet
-        for index, packet in enumerate(packets)
+        for index, packet in enumerate(ordered_packets)
     }
     selected_label = st.selectbox("HumanReviewPacket", list(labels), key="hardened_ingestion_packet")
     packet = labels[selected_label]
@@ -4104,10 +4128,33 @@ def _render_hardened_document_ingestion_payload(
     raw_col.code(packet["raw_block"], language=None)
     normalized_col.markdown("#### Normalized block")
     normalized_col.code(packet["normalized_block"], language=None)
+    canonical = packet.get("canonical_statement") or {}
+    evidence = packet.get("evidence_span") or {}
+    scope = packet.get("scope") or {}
+    governance = packet["governance"]
     st.table(
         [
             {"Field": "Block type", "Value": packet["block_type"]},
             {"Field": "Final disposition", "Value": packet["final_disposition"]},
+            {"Field": "Subject", "Value": canonical.get("subject_id", "—")},
+            {"Field": "Predicate", "Value": canonical.get("predicate", "—")},
+            {"Field": "Object", "Value": canonical.get("object_id", "—")},
+            {"Field": "Scope", "Value": json.dumps(scope, ensure_ascii=False)},
+            {"Field": "EvidenceSpan", "Value": evidence.get("locator", "—")},
+            {"Field": "SourceRevision", "Value": packet["source"]["source_revision_id"]},
+            {
+                "Field": "Validation",
+                "Value": packet["validation_report"]["stage_status"]["SEMANTIC_VALIDATION"],
+            },
+            {
+                "Field": "Governance status",
+                "Value": (
+                    f"human_review_status={governance['human_review_status']}; "
+                    f"trusted={governance['trusted']}; "
+                    f"production_retrieval_eligible={governance['production_retrieval_eligible']}; "
+                    f"execution_authorized={governance['execution_authorized']}"
+                ),
+            },
             {"Field": "Raw proposition", "Value": json.dumps(packet.get("raw_proposition"), ensure_ascii=False)},
             {"Field": "Canonical candidate", "Value": json.dumps(packet.get("canonical_statement"), ensure_ascii=False)},
         ]
@@ -4124,7 +4171,7 @@ def _render_hardened_document_ingestion_payload(
         stage_cols[index % 4].metric(stage, stage_status[stage])
     st.caption("SEMANTIC_VALIDATION means frozen-registry structural conformance; scientific validity is not assessed.")
 
-    detail_tabs = st.tabs(["Evidence", "Entities", "Scope + provenance", "Governance"])
+    detail_tabs = st.tabs(["Evidence", "Entities", "Scope + provenance", "Ontology gaps", "Governance"])
     with detail_tabs[0]:
         st.json(packet.get("evidence_span"))
     with detail_tabs[1]:
@@ -4132,6 +4179,8 @@ def _render_hardened_document_ingestion_payload(
     with detail_tabs[2]:
         st.json(packet.get("scope"))
     with detail_tabs[3]:
+        st.json(packet.get("evidence_gaps") or [])
+    with detail_tabs[4]:
         st.json(packet["governance"])
 
 

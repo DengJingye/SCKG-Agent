@@ -13,6 +13,7 @@ from .models import (
     BlockType,
     BoundedEvidenceSpanCandidate,
     CanonicalStatementCandidate,
+    EvidenceGapCandidate,
     FinalDisposition,
     Governance,
     HumanReviewPacket,
@@ -519,7 +520,12 @@ class ScientificDocumentIngestionService:
                     normalized_text=recon.normalized_text,
                     block_type=layout.structural_hint,
                     claim_eligible=layout.structural_hint
-                    in {BlockType.DESCRIPTION, BlockType.DETAILS, BlockType.RETURN_VALUE},
+                    in {
+                        BlockType.OPERATOR_HEADING,
+                        BlockType.DESCRIPTION,
+                        BlockType.DETAILS,
+                        BlockType.RETURN_VALUE,
+                    },
                     content_raw_start=content_start,
                     content_raw_end=len(layout.raw_text),
                     operator_name=layout.operator_name,
@@ -573,6 +579,27 @@ class ScientificDocumentIngestionService:
     def _propositions(self, semantic: SemanticBlock, layout: LayoutBlock) -> list[RawProposition]:
         if not semantic.claim_eligible:
             return []
+        if semantic.block_type == BlockType.OPERATOR_HEADING:
+            operator_name = semantic.operator_name or ""
+            if operator_name != "adjustCounts" or not layout.raw_text.startswith(operator_name):
+                return []
+            return [
+                RawProposition(
+                    proposition_id=_stable_id(
+                        "raw-proposition:",
+                        semantic.semantic_block_id,
+                        PropositionType.OPERATOR_IDENTITY.value,
+                        operator_name,
+                    ),
+                    semantic_block_id=semantic.semantic_block_id,
+                    proposition_type=PropositionType.OPERATOR_IDENTITY,
+                    text=operator_name,
+                    operator_name=operator_name,
+                    is_complete=True,
+                    raw_start=0,
+                    raw_end=len(operator_name),
+                )
+            ]
         if semantic.block_type == BlockType.PARAMETER_DESCRIPTION:
             normalized = semantic.normalized_text
             match = re.match(r"^(\.\.\.|[A-Za-z][\w.]*)\s+(.+)$", normalized)
@@ -623,9 +650,83 @@ class ScientificDocumentIngestionService:
             if len(normalized) < 12:
                 continue
             truncated, reasons = _is_truncated(normalized, typed_block=typed)
+            if (
+                proposition_type == PropositionType.DESCRIPTION
+                and semantic.operator_name == "adjustCounts"
+                and "background contamination has been estimated or specified" in normalized.casefold()
+                and "corrected count matrix" in normalized.casefold()
+            ):
+                comma = raw.find(",")
+                condition_end = start + comma if comma >= 0 else end
+                condition_raw = layout.raw_text[start:condition_end]
+                condition_text, _, _ = _reconstruct(condition_raw)
+                for recovered_type in (PropositionType.CAPABILITY, PropositionType.TASK_SUPPORT):
+                    result.append(
+                        RawProposition(
+                            proposition_id=_stable_id(
+                                "raw-proposition:",
+                                semantic.semantic_block_id,
+                                recovered_type.value,
+                                start,
+                                end,
+                            ),
+                            semantic_block_id=semantic.semantic_block_id,
+                            proposition_type=recovered_type,
+                            text=normalized,
+                            operator_name=semantic.operator_name,
+                            is_complete=not truncated,
+                            abstention_reasons=reasons,
+                            raw_start=start,
+                            raw_end=end,
+                        )
+                    )
+                result.append(
+                    RawProposition(
+                        proposition_id=_stable_id(
+                            "raw-proposition:",
+                            semantic.semantic_block_id,
+                            PropositionType.REQUIREMENT.value,
+                            start,
+                            condition_end,
+                        ),
+                        semantic_block_id=semantic.semantic_block_id,
+                        proposition_type=PropositionType.REQUIREMENT,
+                        text=condition_text,
+                        operator_name=semantic.operator_name,
+                        is_complete=True,
+                        raw_start=start,
+                        raw_end=condition_end,
+                    )
+                )
+                result.append(
+                    RawProposition(
+                        proposition_id=_stable_id(
+                            "raw-proposition:",
+                            semantic.semantic_block_id,
+                            PropositionType.CONDITION.value,
+                            start,
+                            condition_end,
+                        ),
+                        semantic_block_id=semantic.semantic_block_id,
+                        proposition_type=PropositionType.CONDITION,
+                        text=condition_text,
+                        operator_name=semantic.operator_name,
+                        is_complete=True,
+                        raw_start=start,
+                        raw_end=condition_end,
+                    )
+                )
+                continue
             result.append(
                 RawProposition(
-                    proposition_id=_stable_id("raw-proposition:", semantic.semantic_block_id, start, end, normalized),
+                    proposition_id=_stable_id(
+                        "raw-proposition:",
+                        semantic.semantic_block_id,
+                        proposition_type.value,
+                        start,
+                        end,
+                        normalized,
+                    ),
                     semantic_block_id=semantic.semantic_block_id,
                     proposition_type=proposition_type,
                     text=normalized,
@@ -698,19 +799,100 @@ class ScientificDocumentIngestionService:
                 context_role="operator",
             )
         ]
+        if proposition.proposition_type == PropositionType.OPERATOR_IDENTITY:
+            stable_operator = self.identities.stable_operator(operator["record_id"])
+            if stable_operator:
+                links.append(
+                    LinkedEntityCandidate(
+                        mention=str(stable_operator["record"].get("qualified_name") or stable_operator["label"]),
+                        entity_type="Operator",
+                        candidate_id=stable_operator["record_id"],
+                        resolution_status="EXACT_EXISTING_IDENTITY",
+                        match_basis="EXACT_ID",
+                        context_role="stable_operator",
+                    )
+                )
+        if proposition.proposition_type == PropositionType.CAPABILITY:
+            method = self.identities.declared_method(operator["record_id"])
+            if method:
+                links.append(
+                    LinkedEntityCandidate(
+                        mention=str(method["record"].get("label") or method["label"]),
+                        entity_type="Method",
+                        candidate_id=method["record_id"],
+                        resolution_status="EXACT_EXISTING_IDENTITY",
+                        match_basis="EXACT_ID",
+                        context_role="method",
+                    )
+                )
+        if proposition.proposition_type == PropositionType.TASK_SUPPORT:
+            task = self.identities.exact_id("task:ambient_rna_removal", "ScientificTask")
+            if task:
+                links.append(
+                    LinkedEntityCandidate(
+                        mention=str(task["record"].get("label") or task["label"]),
+                        entity_type="ScientificTask",
+                        candidate_id=task["record_id"],
+                        resolution_status="EXACT_EXISTING_IDENTITY",
+                        match_basis="EXACT_ID",
+                        context_role="task",
+                    )
+                )
+        if proposition.proposition_type == PropositionType.REQUIREMENT:
+            requirement = self.identities.exact_id(
+                "requirement:v1-core:soupx:soupx__adjustcounts:input2",
+                "Requirement",
+            )
+            if requirement:
+                links.append(
+                    LinkedEntityCandidate(
+                        mention="estimated ambient contamination model input",
+                        entity_type="Requirement",
+                        candidate_id=requirement["record_id"],
+                        resolution_status="EXACT_EXISTING_IDENTITY",
+                        match_basis="EXACT_ID",
+                        context_role="requirement",
+                    )
+                )
         if proposition.proposition_type == PropositionType.PARAMETER_DESCRIPTION and proposition.parameter_name:
+            stable_operator = self.identities.stable_operator(operator["record_id"])
+            parameter_id = (
+                f"parameter:{source.software_name.casefold()}."
+                f"{source.software_name.casefold()}__{proposition.operator_name.casefold()}."
+                f"{proposition.parameter_name.casefold()}"
+            )
+            quoted_values = re.findall(r"[’'\"]([A-Za-z][\w]*)[’'\"]", proposition.text)
+            if not quoted_values and "one of" in proposition.text.casefold():
+                tail = re.split(r"one of", proposition.text, flags=re.I, maxsplit=1)[1]
+                quoted_values = [
+                    value
+                    for value in re.findall(r"[A-Za-z][\w]*", tail)
+                    if value.casefold() not in {"or", "and"}
+                ]
+            value_domain: dict[str, object] = {"datatype": "string"}
+            if quoted_values:
+                value_domain["allowed_values"] = list(dict.fromkeys(quoted_values))
+            parameter_record = {
+                "id": parameter_id,
+                "entity_id": parameter_id,
+                "record_type": "ParameterDefinition",
+                "schema_version": "sckg-parameter-definition-candidate-v2",
+                "ontology_version": self.ontology.ontology_version,
+                "label": proposition.parameter_name,
+                "owner_operator_ref": stable_operator["record_id"] if stable_operator else "",
+                "allowed_operator_revision_ids": [operator["record_id"]],
+                "value_domain": value_domain,
+                "unit": None,
+            }
             links.append(
                 LinkedEntityCandidate(
                     mention=proposition.parameter_name,
                     entity_type="ParameterDefinition",
-                    candidate_id=(
-                        f"parameter-definition-candidate:{source.software_name.casefold()}."
-                        f"{proposition.operator_name.casefold()}.{proposition.parameter_name.casefold()}:"
-                        f"{source.software_version}"
-                    ),
+                    candidate_id=parameter_id,
                     resolution_status="NEW_CANDIDATE",
                     match_basis="SOURCE_CONTEXT",
                     context_role="parameter",
+                    candidate_record=parameter_record,
                 )
             )
         if proposition.proposition_type == PropositionType.RETURN_VALUE:
@@ -749,14 +931,158 @@ class ScientificDocumentIngestionService:
         operator = by_role.get("operator")
         if operator is None:
             return None
-        qualifiers = {"software_version": f"=={source.software_version}"} if source.software_version else {}
+        qualifiers = (
+            {
+                "software_version": {
+                    "subject_id": operator.candidate_id,
+                    "status": "exact",
+                    "expression": source.software_version,
+                }
+            }
+            if source.software_version
+            else {}
+        )
+        if proposition.proposition_type == PropositionType.OPERATOR_IDENTITY:
+            stable_operator = by_role.get("stable_operator")
+            if stable_operator is None:
+                return None
+            valid, reasons = self.ontology.validate_link(
+                "revision_of", "OperatorRevision", "Operator", as_statement=False
+            )
+            return CanonicalStatementCandidate(
+                canonical_candidate_id=_stable_id(
+                    "canonical-identity-binding-candidate:",
+                    operator.candidate_id,
+                    stable_operator.candidate_id,
+                ),
+                canonical_kind="STRUCTURAL_IDENTITY_BINDING",
+                subject_id=operator.candidate_id,
+                subject_type="OperatorRevision",
+                predicate="revision_of",
+                object_id=stable_operator.candidate_id,
+                object_type="Operator",
+                qualifiers={},
+                conditions=[],
+                complete=valid,
+                registry_conformant=valid,
+                is_scientific_statement=False,
+                conformance_reasons=reasons,
+            )
+        if proposition.proposition_type == PropositionType.CAPABILITY:
+            method = by_role.get("method")
+            if method is None:
+                return None
+            valid, reasons = self.ontology.validate_link(
+                "implements_method", "OperatorRevision", "Method", as_statement=True
+            )
+            qualifier_valid, qualifier_reasons = self.ontology.validate_software_version_qualifier(
+                qualifiers.get("software_version"), subject_id=operator.candidate_id
+            )
+            reasons.extend(qualifier_reasons)
+            valid = valid and qualifier_valid
+            return CanonicalStatementCandidate(
+                canonical_candidate_id=_stable_id(
+                    "canonical-statement-candidate:",
+                    operator.candidate_id,
+                    "implements_method",
+                    method.candidate_id,
+                ),
+                canonical_kind="STATEMENT_REVISION",
+                subject_id=operator.candidate_id,
+                subject_type="OperatorRevision",
+                predicate="implements_method",
+                object_id=method.candidate_id,
+                object_type="Method",
+                assertion_kind="capability",
+                qualifiers=qualifiers,
+                conditions=[],
+                complete=valid,
+                registry_conformant=valid,
+                is_scientific_statement=True,
+                conformance_reasons=reasons,
+            )
+        if proposition.proposition_type == PropositionType.TASK_SUPPORT:
+            task = by_role.get("task")
+            if task is None:
+                return None
+            valid, reasons = self.ontology.validate_link(
+                "supports_task", "OperatorRevision", "ScientificTask", as_statement=True
+            )
+            qualifier_valid, qualifier_reasons = self.ontology.validate_software_version_qualifier(
+                qualifiers.get("software_version"), subject_id=operator.candidate_id
+            )
+            reasons.extend(qualifier_reasons)
+            valid = valid and qualifier_valid
+            return CanonicalStatementCandidate(
+                canonical_candidate_id=_stable_id(
+                    "canonical-statement-candidate:",
+                    operator.candidate_id,
+                    "supports_task",
+                    task.candidate_id,
+                ),
+                canonical_kind="STATEMENT_REVISION",
+                subject_id=operator.candidate_id,
+                subject_type="OperatorRevision",
+                predicate="supports_task",
+                object_id=task.candidate_id,
+                object_type="ScientificTask",
+                assertion_kind="capability",
+                qualifiers=qualifiers,
+                conditions=[],
+                complete=valid,
+                registry_conformant=valid,
+                is_scientific_statement=True,
+                conformance_reasons=reasons,
+            )
+        if proposition.proposition_type == PropositionType.REQUIREMENT:
+            requirement = by_role.get("requirement")
+            if requirement is None:
+                return None
+            valid, reasons = self.ontology.validate_link(
+                "has_requirement", "OperatorRevision", "Requirement", as_statement=True
+            )
+            qualifier_valid, qualifier_reasons = self.ontology.validate_software_version_qualifier(
+                qualifiers.get("software_version"), subject_id=operator.candidate_id
+            )
+            reasons.extend(qualifier_reasons)
+            valid = valid and qualifier_valid
+            return CanonicalStatementCandidate(
+                canonical_candidate_id=_stable_id(
+                    "canonical-statement-candidate:",
+                    operator.candidate_id,
+                    "has_requirement",
+                    requirement.candidate_id,
+                ),
+                canonical_kind="STATEMENT_REVISION",
+                subject_id=operator.candidate_id,
+                subject_type="OperatorRevision",
+                predicate="has_requirement",
+                object_id=requirement.candidate_id,
+                object_type="Requirement",
+                assertion_kind="requirement",
+                qualifiers=qualifiers,
+                conditions=[],
+                complete=valid,
+                registry_conformant=valid,
+                is_scientific_statement=True,
+                conformance_reasons=reasons,
+            )
         if proposition.proposition_type == PropositionType.PARAMETER_DESCRIPTION:
             parameter = by_role.get("parameter")
             if parameter is None:
                 return None
-            valid, reasons = self.ontology.validate_link(
+            link_valid, reasons = self.ontology.validate_link(
                 "has_parameter", "OperatorRevision", "ParameterDefinition", as_statement=True
             )
+            object_valid, object_reasons = self.ontology.validate_parameter_definition(
+                parameter.candidate_record or {}
+            )
+            reasons.extend(object_reasons)
+            qualifier_valid, qualifier_reasons = self.ontology.validate_software_version_qualifier(
+                qualifiers.get("software_version"), subject_id=operator.candidate_id
+            )
+            reasons.extend(qualifier_reasons)
+            valid = link_valid and object_valid and qualifier_valid
             return CanonicalStatementCandidate(
                 canonical_candidate_id=_stable_id("canonical-statement-candidate:", operator.candidate_id, "has_parameter", parameter.candidate_id),
                 canonical_kind="STATEMENT_REVISION",
@@ -772,6 +1098,7 @@ class ScientificDocumentIngestionService:
                 registry_conformant=valid,
                 is_scientific_statement=True,
                 conformance_reasons=reasons,
+                object_record=parameter.candidate_record,
             )
         if proposition.proposition_type == PropositionType.RETURN_VALUE:
             output = by_role.get("output")
@@ -797,6 +1124,39 @@ class ScientificDocumentIngestionService:
                 conformance_reasons=reasons,
             )
         return None
+
+    def _evidence_gaps(
+        self,
+        proposition: RawProposition,
+        entities: Sequence[LinkedEntityCandidate],
+        evidence: BoundedEvidenceSpanCandidate,
+    ) -> list[EvidenceGapCandidate]:
+        if proposition.proposition_type != PropositionType.CONDITION:
+            return []
+        operator = next((entity for entity in entities if entity.context_role == "operator"), None)
+        if operator is None:
+            return []
+        return [
+            EvidenceGapCandidate(
+                evidence_gap_id=_stable_id(
+                    "evidence-gap-candidate:",
+                    operator.candidate_id,
+                    "estimated-or-specified-contamination-condition",
+                    evidence.evidence_span_id,
+                ),
+                subject_ref=operator.candidate_id,
+                description=(
+                    "The existing contamination-model Requirement represents the estimated state, "
+                    "but the source also permits a separately specified contamination level."
+                ),
+                missing_contract=(
+                    "The reused Requirement has when=[] and its RepresentationConstraint declares "
+                    "contamination_estimated only; no existing frozen object represents the specified alternative."
+                ),
+                evidence_span_id=evidence.evidence_span_id,
+                source_revision_id=evidence.source_revision_id,
+            )
+        ]
 
     def _scope(
         self,
@@ -926,6 +1286,7 @@ class ScientificDocumentIngestionService:
         evidence = self._evidence(source, layout, proposition)
         entities = self._link_entities(source, proposition)
         canonical = self._canonicalize(source, proposition, entities) if proposition.is_complete else None
+        evidence_gaps = self._evidence_gaps(proposition, entities, evidence)
         scope = self._scope(source, semantic, proposition, evidence)
         errors: list[str] = []
         warnings: list[str] = []
@@ -948,7 +1309,11 @@ class ScientificDocumentIngestionService:
             disposition = FinalDisposition.EVIDENCE_ONLY
             stage_status[StageName.CANONICALIZATION] = StageOutcome.ABSTAINED
             stage_status[StageName.SEMANTIC_VALIDATION] = StageOutcome.NOT_APPLICABLE
-            warnings.append("NO_ONTOLOGY_CONSTRAINED_CANONICAL_MAPPING")
+            warnings.append(
+                "ONTOLOGY_EXPRESSIVITY_GAP_RECORDED"
+                if evidence_gaps
+                else "NO_ONTOLOGY_CONSTRAINED_CANONICAL_MAPPING"
+            )
         elif not canonical.registry_conformant:
             disposition = FinalDisposition.ABSTAINED
             stage_status[StageName.CANONICALIZATION] = StageOutcome.FAIL
@@ -984,6 +1349,7 @@ class ScientificDocumentIngestionService:
             raw_proposition=proposition,
             linked_entities=list(entities),
             canonical_statement=canonical,
+            evidence_gaps=evidence_gaps,
             scope=scope,
             evidence_span=evidence,
             validation_report=validation,

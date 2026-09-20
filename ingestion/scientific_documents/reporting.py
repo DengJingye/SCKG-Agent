@@ -39,7 +39,14 @@ def regression_checks(result: dict[str, object]) -> dict[str, bool]:
         and packet.raw_proposition.parameter_name == "method"
     ]
     ready = [packet for packet in packets if packet.final_disposition == FinalDisposition.CANDIDATE_READY]
+    ready_canonical = [packet.canonical_statement for packet in ready if packet.canonical_statement is not None]
     scoped = [packet for packet in packets if packet.scope is not None]
+    condition_rows = [
+        packet
+        for packet in packets
+        if packet.raw_proposition is not None
+        and packet.raw_proposition.proposition_type == PropositionType.CONDITION
+    ]
 
     checks = {
         "layout_blocks": int(result["summary"]["layout_block_count"]) > 0,  # type: ignore[index]
@@ -96,6 +103,41 @@ def regression_checks(result: dict[str, object]) -> dict[str, bool]:
             and packet.raw_proposition.parameter_name == "method"
             for packet in method_rows
         ),
+        "parameter_semantics": bool(method_rows)
+        and all(
+            packet.canonical_statement is not None
+            and packet.canonical_statement.object_record is not None
+            and bool(packet.canonical_statement.object_record.get("value_domain", {}).get("allowed_values"))
+            for packet in method_rows
+        ),
+        "operator_identity_recovery": any(
+            item.predicate == "revision_of"
+            and item.subject_id == "operator-revision:soupx.soupx__adjustcounts:1.6.2"
+            and item.object_id == "operator:soupx.soupx__adjustcounts"
+            for item in ready_canonical
+        ),
+        "capability_mapping": any(
+            item.predicate == "implements_method"
+            and item.object_id == "method:ambient_count_correction"
+            for item in ready_canonical
+        )
+        and any(
+            item.predicate == "supports_task"
+            and item.object_id == "task:ambient_rna_removal"
+            for item in ready_canonical
+        ),
+        "condition_handling": bool(condition_rows)
+        and all(
+            packet.canonical_statement is None
+            and packet.final_disposition == FinalDisposition.EVIDENCE_ONLY
+            and len(packet.evidence_gaps) == 1
+            for packet in condition_rows
+        )
+        and any(
+            item.predicate == "has_requirement"
+            and item.object_id == "requirement:v1-core:soupx:soupx__adjustcounts:input2"
+            for item in ready_canonical
+        ),
         "bounded_evidence": all(
             packet.evidence_span is None
             or (
@@ -146,6 +188,8 @@ def regression_checks(result: dict[str, object]) -> dict[str, bool]:
             and packet.governance.execution_authorized is False
             for packet in packets
         ),
+        "candidate_recovery_minimum": len(ready_canonical) >= 4
+        and len({(item.subject_id, item.predicate, item.object_id) for item in ready_canonical}) >= 4,
     }
     checks["soupx_regression"] = all(checks.values())
     return checks
@@ -156,6 +200,24 @@ def summary_payload(result: dict[str, object]) -> dict[str, object]:
     checks = regression_checks(result)
     counts = Counter(packet.final_disposition.value for packet in packets)
     source = result["source"]
+    ready_candidates = [
+        {
+            "subject": packet.canonical_statement.subject_id,
+            "predicate": packet.canonical_statement.predicate,
+            "object": packet.canonical_statement.object_id,
+            "canonical_kind": packet.canonical_statement.canonical_kind,
+            "evidence_span_id": packet.evidence_span.evidence_span_id if packet.evidence_span else None,
+            "source_revision_id": packet.source.source_revision_id,
+        }
+        for packet in packets
+        if packet.final_disposition == FinalDisposition.CANDIDATE_READY
+        and packet.canonical_statement is not None
+    ]
+    ontology_gaps = [
+        gap.model_dump(mode="json")
+        for packet in packets
+        for gap in packet.evidence_gaps
+    ]
     return {
         "schema_version": "scientific-document-ingestion-regression-v1",
         "window": "09-Scientific-Document-Ingestion",
@@ -165,6 +227,8 @@ def summary_payload(result: dict[str, object]) -> dict[str, object]:
         "ontology_version": result["summary"]["ontology_version"],  # type: ignore[index]
         "checks": checks,
         "counts": {status.value: counts.get(status.value, 0) for status in FinalDisposition},
+        "ready_candidates": ready_candidates,
+        "ontology_gaps": ontology_gaps,
         "unbounded_ready_candidates": result["summary"]["unbounded_ready_candidates"],  # type: ignore[index]
         "hallucinated_scope_count": result["summary"]["hallucinated_scope_count"],  # type: ignore[index]
         "governance": result["summary"]["governance"],  # type: ignore[index]
@@ -218,6 +282,7 @@ def render_before_after(result: dict[str, object]) -> str:
         canonical = packet.canonical_statement.model_dump(mode="json") if packet.canonical_statement else None
         scope = packet.scope.model_dump(mode="json") if packet.scope else None
         evidence = packet.evidence_span.model_dump(mode="json") if packet.evidence_span else None
+        gaps = [item.model_dump(mode="json") for item in packet.evidence_gaps]
         lines.extend(
             [
                 f"### {index}. {packet.block_type.value} → {packet.final_disposition.value}",
@@ -241,6 +306,8 @@ def render_before_after(result: dict[str, object]) -> str:
                 f"**→ scope + provenance:** `{_json(scope)}`",
                 "",
                 f"**→ exact evidence:** `{_json(evidence)}`",
+                "",
+                f"**→ ontology gaps:** `{_json(gaps)}`",
                 "",
                 f"**→ stage status:** `{_json({key.value: value.value for key, value in packet.validation_report.stage_status.items()})}`",
                 "",

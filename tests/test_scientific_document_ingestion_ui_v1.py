@@ -27,6 +27,12 @@ def test_hardened_ingestion_ui_uses_dispositions_and_stage_states() -> None:
     captions = "\n".join(str(item.value) for item in app.caption)
     assert "not judgments that a scientific proposition is true or false" in captions
     assert "scientific validity is not assessed" in captions
+    source = (ROOT / "app.py").read_text(encoding="utf-8")
+    for label in [
+        '"Subject"', '"Predicate"', '"Object"', '"Scope"', '"EvidenceSpan"',
+        '"SourceRevision"', '"Validation"', '"Governance status"',
+    ]:
+        assert label in source
 
 
 def test_legacy_replay_labels_validation_as_structural_not_scientific_truth() -> None:

@@ -2,8 +2,11 @@
   "approved_kg_mutated": false,
   "checks": {
     "bounded_evidence": true,
+    "candidate_recovery_minimum": true,
     "canonicalization": true,
+    "capability_mapping": true,
     "code_example_filter": true,
+    "condition_handling": true,
     "dehyphenation": true,
     "entity_linking": true,
     "governance_defaults": true,
@@ -11,7 +14,9 @@
     "layout_blocks": true,
     "no_hallucinated_scope": true,
     "operator_context": true,
+    "operator_identity_recovery": true,
     "parameter_context": true,
+    "parameter_semantics": true,
     "raw_claim_separated": true,
     "ready_has_no_whole_segment_evidence": true,
     "return_value_mapping": true,
@@ -24,8 +29,8 @@
   },
   "counts": {
     "ABSTAINED": 26,
-    "CANDIDATE_READY": 1,
-    "DROPPED": 110,
+    "CANDIDATE_READY": 5,
+    "DROPPED": 109,
     "EVIDENCE_ONLY": 210,
     "NEEDS_REVIEW": 10,
     "RAW_PROPOSAL": 0
@@ -39,6 +44,18 @@
   },
   "hallucinated_scope_count": 0,
   "human_approval_performed": false,
+  "ontology_gaps": [
+    {
+      "description": "The existing contamination-model Requirement represents the estimated state, but the source also permits a separately specified contamination level.",
+      "evidence_gap_id": "evidence-gap-candidate:f448a7d2d4419e4cee5adada",
+      "evidence_span_id": "evidence-span-candidate:aebaa3142b7f4e20e30bc098",
+      "gap_type": "ONTOLOGY_EXPRESSIVITY",
+      "missing_contract": "The reused Requirement has when=[] and its RepresentationConstraint declares contamination_estimated only; no existing frozen object represents the specified alternative.",
+      "source_revision_id": "source-revision:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+      "status": "OPEN_PENDING_REVIEW",
+      "subject_ref": "operator-revision:soupx.soupx__adjustcounts:1.6.2"
+    }
+  ],
   "ontology_mutated": false,
   "ontology_version": "2.0.0-core-review.1",
   "phase": "INGESTION-QUALITY-HARDENING",
@@ -55,6 +72,48 @@
     "HumanReviewPacket"
   ],
   "promotion_performed": false,
+  "ready_candidates": [
+    {
+      "canonical_kind": "STRUCTURAL_IDENTITY_BINDING",
+      "evidence_span_id": "evidence-span-candidate:b7f0e2458d6ea79e8dc3303b",
+      "object": "operator:soupx.soupx__adjustcounts",
+      "predicate": "revision_of",
+      "source_revision_id": "source-revision:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+      "subject": "operator-revision:soupx.soupx__adjustcounts:1.6.2"
+    },
+    {
+      "canonical_kind": "STATEMENT_REVISION",
+      "evidence_span_id": "evidence-span-candidate:7469a5211b71e8342fc839c6",
+      "object": "method:ambient_count_correction",
+      "predicate": "implements_method",
+      "source_revision_id": "source-revision:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+      "subject": "operator-revision:soupx.soupx__adjustcounts:1.6.2"
+    },
+    {
+      "canonical_kind": "STATEMENT_REVISION",
+      "evidence_span_id": "evidence-span-candidate:7469a5211b71e8342fc839c6",
+      "object": "task:ambient_rna_removal",
+      "predicate": "supports_task",
+      "source_revision_id": "source-revision:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+      "subject": "operator-revision:soupx.soupx__adjustcounts:1.6.2"
+    },
+    {
+      "canonical_kind": "STATEMENT_REVISION",
+      "evidence_span_id": "evidence-span-candidate:aebaa3142b7f4e20e30bc098",
+      "object": "requirement:v1-core:soupx:soupx__adjustcounts:input2",
+      "predicate": "has_requirement",
+      "source_revision_id": "source-revision:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+      "subject": "operator-revision:soupx.soupx__adjustcounts:1.6.2"
+    },
+    {
+      "canonical_kind": "STRUCTURAL_OUTPUT_BINDING",
+      "evidence_span_id": "evidence-span-candidate:23f49e9e88b97bc3d2f85c1e",
+      "object": "representation-type:corrected_counts",
+      "predicate": "output_type",
+      "source_revision_id": "source-revision:sha256:dabbfdf10c0ab46efee927026f77494e1df096999742f86705b91dcd0b1dac19",
+      "subject": "output-port:v1-core:soupx:soupx__adjustcounts:output"
+    }
+  ],
   "schema_version": "scientific-document-ingestion-regression-v1",
   "scientific_validity_assessed": false,
   "source": {

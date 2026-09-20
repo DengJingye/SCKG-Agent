@@ -28,6 +28,11 @@ class BlockType(StrEnum):
 
 
 class PropositionType(StrEnum):
+    OPERATOR_IDENTITY = "OPERATOR_IDENTITY"
+    CAPABILITY = "CAPABILITY"
+    TASK_SUPPORT = "TASK_SUPPORT"
+    REQUIREMENT = "REQUIREMENT"
+    CONDITION = "CONDITION"
     DESCRIPTION = "DESCRIPTION"
     DETAIL = "DETAIL"
     PARAMETER_DESCRIPTION = "PARAMETER_DESCRIPTION"
@@ -192,11 +197,16 @@ class LinkedEntityCandidate(StrictModel):
     match_basis: Literal["EXACT_ID", "EXACT_QUALIFIED_NAME", "SOURCE_CONTEXT", "NONE"]
     context_role: str
     fuzzy_merge_used: Literal[False] = False
+    candidate_record: dict[str, Any] | None = None
 
 
 class CanonicalStatementCandidate(StrictModel):
     canonical_candidate_id: str
-    canonical_kind: Literal["STATEMENT_REVISION", "STRUCTURAL_OUTPUT_BINDING"]
+    canonical_kind: Literal[
+        "STATEMENT_REVISION",
+        "STRUCTURAL_IDENTITY_BINDING",
+        "STRUCTURAL_OUTPUT_BINDING",
+    ]
     subject_id: str
     subject_type: str
     predicate: str
@@ -209,6 +219,18 @@ class CanonicalStatementCandidate(StrictModel):
     registry_conformant: bool
     is_scientific_statement: bool
     conformance_reasons: list[str] = Field(default_factory=list)
+    object_record: dict[str, Any] | None = None
+
+
+class EvidenceGapCandidate(StrictModel):
+    evidence_gap_id: str
+    subject_ref: str
+    gap_type: Literal["ONTOLOGY_EXPRESSIVITY"] = "ONTOLOGY_EXPRESSIVITY"
+    description: str
+    missing_contract: str
+    evidence_span_id: str
+    source_revision_id: str
+    status: Literal["OPEN_PENDING_REVIEW"] = "OPEN_PENDING_REVIEW"
 
 
 class ScopeValue(StrictModel):
@@ -270,6 +292,7 @@ class HumanReviewPacket(StrictModel):
     raw_proposition: RawProposition | None = None
     linked_entities: list[LinkedEntityCandidate] = Field(default_factory=list)
     canonical_statement: CanonicalStatementCandidate | None = None
+    evidence_gaps: list[EvidenceGapCandidate] = Field(default_factory=list)
     scope: ResolvedScope | None = None
     evidence_span: BoundedEvidenceSpanCandidate | None = None
     validation_report: ValidationReport
