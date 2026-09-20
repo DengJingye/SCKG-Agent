@@ -1,0 +1,324 @@
+{
+  "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+  "benchmark_commit_before_run": "0d73c5d57486004e3f5b2cd4785d0a28720fb2b9",
+  "budgets": {
+    "maximum_concurrent_units": 4,
+    "no_automatic_reruns": true,
+    "provider_parameters": "unchanged accepted 07 runtime parameters/timeouts",
+    "unit_watchdog_seconds": 360
+  },
+  "coverage_status": "unchanged; this is a runtime propagation smoke",
+  "deterministic_provider_claimed": false,
+  "experiment_id": "dev-final-freeze-smoke-20260921-v1",
+  "fixture_file_sha256": "cd5f68646fbd575484cbec62df4b4300550440b45e69a047c25df1588680d8d2",
+  "forbidden_changes": [
+    "questions",
+    "scoring",
+    "KG",
+    "RAG corpus",
+    "product prompt",
+    "seed expansion",
+    "K01b/W01/W02 execution",
+    "performance-driven tuning"
+  ],
+  "formal_gold_created": false,
+  "formal_scoring_performed": false,
+  "generator": {
+    "configuration_source": "SCKG_ENV_FILE",
+    "credentials_present": true,
+    "disabled": false,
+    "model": "deepseek-v4-pro",
+    "network_verified": false,
+    "provider": "api.deepseek.com"
+  },
+  "harness_sha256_at_freeze": "864ef4a7bbce610f4fd1ae86bd28774268f855390720e21f9bbf08494ead3d0c",
+  "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+  "lane_manifest": {
+    "actual_request_receipts_required": true,
+    "approved_consumer_invariants": {
+      "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+      "approved_statement_count": 121,
+      "caution_context_count": 166,
+      "direct_assessment_binding_count": 134,
+      "held_statement_id": "statement-revision:d0d887b96b7a1cf45e2c47bf:1",
+      "held_statement_visible": false,
+      "source_artifact_count": 61,
+      "source_revision_count": 48
+    },
+    "baseline_truth": {
+      "integration_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "prior_lane_manifest_commit": "5aaaf78d1fff31b7ccdda5d8a91f2ce9b8ff89ee",
+      "rule": "07 accepted final hardened runtime; lane knowledge sources remain frozen"
+    },
+    "comparison_estimand": "product bundle, not graph structure alone",
+    "configuration_observation": "static immutable-code inspection; no runtime observations",
+    "coverage_exclusion_rule": "Planner, ToolContracts, execution guards, validation contracts, and approval system are common infrastructure. Their records and behavior cannot establish any V2, Legacy, or RAG coverage bit and cannot be reported as Scientific KG gain.",
+    "formal_agent_gain_run": false,
+    "frozen_at": "2026-09-21",
+    "lane_order": [
+      "llm_only",
+      "generic_rag",
+      "legacy_kg",
+      "scientific_kg"
+    ],
+    "lanes": [
+      {
+        "backend_class": "engine.approved_scientific_kg.GovernedChatRetrieval (no-retrieval branch)",
+        "caution_policy": "no local caution channel",
+        "corpus_digests": {},
+        "corpus_snapshot_id": "none",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "llm_only",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": false,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "maximum_returned_hits": 0,
+          "sparse_candidate_limit": 0,
+          "top_k": "incoming request may vary; no-retrieval backend returns zero hits",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService",
+        "caution_policy": "no Scientific KG caution context",
+        "corpus_digests": {
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436",
+          "evidence_chunks_sha256": "552df8b572e5db342a27fc7de5c69adce6806ca22a2194333b0e92c01a1c3ece",
+          "fts_sha256": "288241ab4072b5aaca31dab68cd8ffbb00c161a4d946ab5b341f0582e09c6808",
+          "manifest_sha256": "0afc019e7c4cb5b52ea89dbccdb70b2d1e40cf3100efbd4562e0966d2a78d92a"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "disabled (use_kg=false; scientific evidence adapter disabled)",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "generic_rag",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": false,
+          "use_scientific_evidence": false
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.hybrid_retrieval.HybridRetrievalService + engine.scientific_kg_evidence.ScientificKGEvidence + engine.evidence_graph_query.EvidenceGraphQuery",
+        "caution_policy": "candidate-only evidence-gap diagnostics may abstain; no approved-v2 caution context",
+        "corpus_digests": {
+          "candidate_bindings_sha256": "b9b77442968a705787b77c2b1a74c094d9a7223bd7d3eeebc7e028954c66c76f",
+          "candidate_bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "candidate_manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "catalog_chunks_sha256": "d6d9f077d5fe8d0cace35ecc91c709038b7944a42e36122a4d32d795b6b080bc",
+          "legacy_inventory_sha256": "9a6da2e3981bbeddd5654d3f59b766bdc55d805ba52dec9beaead90294cdb138",
+          "legacy_tool_graph_edges_sha256": "20298de3f0754723650045f2cc6697e24f9b956dc134bf178d267e424bf51213",
+          "legacy_tool_graph_nodes_sha256": "6b20b21847be6f472a537d7e79ac30d3df18a07f42616bfd7655603b31ee10c3",
+          "retrieval_corpus_digest": "8d8990ec75f25c598f467b0da0ca2ad81ce9f0931efadff7f70acec4b7a47436"
+        },
+        "corpus_snapshot_id": "retrieval-foundation-v1-ff5b4829bc5943f4 + scientific_kg_v1_uat_decision_rules + kg-v2.3.0-canonical:6b20b21847be",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "candidate ScientificKGEvidence direct-evidence channel enabled; 7,537-node legacy tool/catalog graph enabled only for candidate-tool filtering",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "legacy_kg",
+        "retrieval_budget": {
+          "enable_dense": false,
+          "enable_sparse": true,
+          "include_catalog": "call.tool_name == search_catalog; fallback/supplemental false",
+          "sparse_candidate_limit": "max(request.top_k * 12, 120)",
+          "top_k": "per request (tool call.top_k); fallback 12; supplemental 4",
+          "use_contract_gate": false,
+          "use_governance_rerank": false,
+          "use_kg": true,
+          "use_scientific_evidence": true
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      },
+      {
+        "backend_class": "engine.approved_scientific_kg.ApprovedScientificKG",
+        "caution_policy": {
+          "count": 166,
+          "execution_authorized": false,
+          "execution_gate": false,
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "trusted": false
+        },
+        "corpus_digests": {
+          "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+          "caution_context_index_sha256": "5e782d1a21ceb0789afc2392c901556f24ba763ca6a39a55052c0e3be5805062",
+          "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda"
+        },
+        "corpus_snapshot_id": "approved-scientific-kg-v2-01",
+        "entry_point": "agent.research_runtime.build_chat_retrieval -> engine.approved_scientific_kg.GovernedChatRetrieval.search",
+        "graph_channels": "approved allowlist, evidence-chain joins, exact scope policy, and separate caution context; generic RAG and both legacy graphs are not consulted",
+        "implementation_commit": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+        "lane_name": "scientific_kg",
+        "retrieval_budget": {
+          "algorithm": "approved exact-evidence in-memory ranking",
+          "generic_dense_consumer_used": false,
+          "generic_sparse_consumer_used": false,
+          "legacy_kg_used": false,
+          "maximum_approved_facts": 12,
+          "maximum_caution_contexts": 4,
+          "top_k": "per request; approved facts capped at min(request.top_k, 12)"
+        },
+        "shared_runtime_components": [
+          "Planner",
+          "ToolContracts",
+          "execution guards",
+          "validation contracts",
+          "approval system"
+        ]
+      }
+    ],
+    "run_id": "lane-alignment-20260921-v2-withdrawal",
+    "schema_version": "sckg-evaluation-lane-manifest-v2",
+    "shared_runtime": [
+      {
+        "component": "Planner",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "agent.research_chat_service.ResearchChatService tool-plan path"
+      },
+      {
+        "component": "ToolContracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "contracts/tools plus shared research/execution services"
+      },
+      {
+        "component": "execution guards",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared execution policy, authorization, and runtime guards"
+      },
+      {
+        "component": "validation contracts",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared artifact and result validation contracts"
+      },
+      {
+        "component": "approval system",
+        "coverage_rule": "shared infrastructure; excluded from V2/Legacy/RAG knowledge coverage",
+        "implementation": "shared plan-specific approval and approval-consumption path"
+      }
+    ]
+  },
+  "lane_manifest_file_sha256": "dd86366807d97002ce9a82e7d90719248eb45e82bf03be1aeff08e395b89d418",
+  "phase": "DEV-FINAL-FREEZE-SMOKE",
+  "provider_seed": null,
+  "repetitions": 1,
+  "runner_sha256_at_freeze": "e05729b943ddd671d223ffc3b3b73605b7fa4df0c6beac82456cbe31db5d8001",
+  "scenario_file_sha256": "5a3b4c48d8fe9660215c8830eb4e9287df63a14b9c3b9cf25cfaef1cdd255fbb",
+  "schedule": [
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--scientific_kg--freeze-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--scientific_kg--freeze-r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--generic_rag--freeze-r0"
+    },
+    {
+      "case_id": "dev-K01-hvg-input-a",
+      "input_sha256": "e8419a9e52af72a7828cce6d7d7385eee6daf25ffd6e207c7b009a8fb44a4eaa",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K01-hvg-input-a--generic_rag--freeze-r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "llm_only",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--llm_only--freeze-r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "legacy_kg",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--legacy_kg--freeze-r0"
+    },
+    {
+      "case_id": "dev-K04-evidence-version-b",
+      "input_sha256": "2ddcda04f08c71ffc9ca85e56cf183e4a61a64674caed434a9881837fd394daa",
+      "lane": "generic_rag",
+      "repetition": 0,
+      "run_id": "dev-K04-evidence-version-b--generic_rag--freeze-r0"
+    },
+    {
+      "case_id": "dev-K03-reference-annotation-b",
+      "input_sha256": "4a6f6200ae1055eeceaf7e39fa39bb292ffed655f77686e116a99ddce884778b",
+      "lane": "scientific_kg",
+      "repetition": 0,
+      "run_id": "dev-K03-reference-annotation-b--scientific_kg--freeze-r0"
+    }
+  ],
+  "schedule_seed": 2026092103,
+  "selection": {
+    "excluded": [
+      "dev-K01-hvg-input-b",
+      "dev-W01",
+      "dev-W02",
+      "all other DEV cases"
+    ],
+    "rule": "user-authorized final smoke matrix only",
+    "run_matrix": {
+      "dev-K01-hvg-input-a": [
+        "generic_rag",
+        "scientific_kg"
+      ],
+      "dev-K03-reference-annotation-b": [
+        "generic_rag",
+        "scientific_kg"
+      ],
+      "dev-K04-evidence-version-b": [
+        "llm_only",
+        "generic_rag",
+        "legacy_kg",
+        "scientific_kg"
+      ]
+    }
+  },
+  "shared_worker_sha256_at_freeze": "864ef4a7bbce610f4fd1ae86bd28774268f855390720e21f9bbf08494ead3d0c"
+}

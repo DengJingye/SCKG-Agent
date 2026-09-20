@@ -1,0 +1,153 @@
+{
+  "answerability": null,
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.raw_query",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/classifySingleR.R#L63-L65",
+      "sparse_rank": 1,
+      "text": "In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation. Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.raw_query",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "gold-span:singler:reference-choice:3.22",
+      "claim_type": "failure_mode",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01612903,
+      "source_bound": true,
+      "source_id": "source-revision:SingleRBook:3.22",
+      "source_span": "Chapter 2, section 2.5 Choice of reference",
+      "sparse_rank": 2,
+      "text": "Unsurprisingly, the choice of reference has a major impact on the annotation results. We need to pick a reference that contains a superset of the labels that we expect to be present in our test dataset. We would also prefer a reference that is generated from a similar technology or protocol as our test dataset.",
+      "title": "Authoritative bounded evidence: gold-span:singler:reference-choice:3.22",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "quality_control",
+      "chunk_id": "sourcev2:37a1f0a06b59383ca4d2",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01587302,
+      "source_bound": true,
+      "source_id": "SRCV2_9f4160badc0127d0",
+      "source_span": "section:Updates;paragraph:9-16",
+      "sparse_rank": 3,
+      "text": "**11.6.2018**: The Seurat team has roled out Seurat version 3.0 with many changes to the function names and variables. It is important to note that SingleR is independent of Seurat, and only requires xy representation of the single-cells, which can be obtained by any function. However, SingleR provides wrapper functions to streamline the analysis with Seuart which are affected by these changes. SingleR is now updated to run with Seurat 3.0, but it is still in beta mode. Best practice is to create the single-cell object first. Then, create the SingleR object with the same cells used in the single-cell object (after filtering low quality cells). Finally, copy to relevant fields to the SingleR object. The new t-SNE representations are in `sc@reductions$tsne@cell.embeddings`. singler = CreateSinglerSeuratObject(counts.file, annot, project.name, min.genes = 500, technology, species = \"Huma...",
+      "title": "SingleR official GitHub README",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.reference_state",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.015625,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+      "sparse_rank": 4,
+      "text": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.interface",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01538462,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/SingleR.R#L1-L14",
+      "sparse_rank": 5,
+      "text": "Returns the best annotation for each cell in a test dataset, given a labelled reference dataset in the same feature space. test A numeric matrix of single-cell expression values where rows are genes and columns are cells. ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.interface",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    }
+  ],
+  "index_build_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+  "latency_ms": 37.211,
+  "mode": "bm25",
+  "pipeline": [
+    "query_classification",
+    "canonical_task_normalization",
+    "kg_filter_skipped",
+    "sqlite_fts5_bm25",
+    "local_dense_skipped",
+    "rrf_fusion",
+    "governance_rerank_skipped",
+    "tool_contract_gate_skipped",
+    "retrieval_context_only"
+  ],
+  "query": "SingleR classic mode input requirements: does it require gene symbols or can it use Ensembl IDs? What are the input scale requirements (log-normalized vs raw counts) for reference and test? What conditions should be verified before running SingleR classic mode?",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": null,
+  "stage_timings": [
+    {
+      "detail": "deterministic task/claim normalization",
+      "elapsed_ms": 5.827,
+      "stage": "intent",
+      "status": "completed"
+    },
+    {
+      "detail": "candidate_tools=1",
+      "elapsed_ms": 0.015,
+      "stage": "kg_filter",
+      "status": "skipped"
+    },
+    {
+      "detail": "hits=25",
+      "elapsed_ms": 30.883,
+      "stage": "bm25",
+      "status": "completed"
+    },
+    {
+      "detail": "status=not_requested;hits=0",
+      "elapsed_ms": 0.007,
+      "stage": "dense_encode",
+      "status": "skipped"
+    },
+    {
+      "detail": "fused=25;reranked=25",
+      "elapsed_ms": 0.052,
+      "stage": "fusion",
+      "status": "completed"
+    }
+  ],
+  "warnings": []
+}

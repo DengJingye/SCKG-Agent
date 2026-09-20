@@ -1,0 +1,1000 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [
+    {
+      "best_for": "作为检索候选，需要结合数据与合同继续核对。",
+      "caveats": [],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "for neighbors settings",
+      "mechanism": "机制说明仍需从 source-bound corpus 补齐。",
+      "output": "PCA representation of data.",
+      "readiness": "catalog_only",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "Scanpy"
+    }
+  ],
+  "answerability": {
+    "reason_codes": [
+      "source_bound_context_with_optional_model_knowledge"
+    ],
+    "unverified_model_knowledge_allowed": true,
+    "verdict": "ANSWER_DUAL_LAYER",
+    "verified_context_available": true
+  },
+  "candidate_tools": [
+    "Scanpy"
+  ],
+  "canonical_trace_id": "trace_7cf763a365fb495c91361a805b577ac9",
+  "claim_audit": {
+    "caution_context": [],
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [],
+    "claims": [],
+    "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [],
+    "verified_claims": [],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "mask_var_documentation",
+          "text": "请提供 Scanpy 1.11.2 文档中 sc.pp.pca 的 mask_var 参数的具体描述或相关文档片段，以便判断其输入要求、行为及是否适用于当前环境？",
+          "why_needed": "当前证据仅包含 highly_variable_genes 的 flavor 参数，未包含 mask_var 的任何信息，无法据此给出可执行建议或核实其适用性。"
+        }
+      ],
+      "kg_facts_used": [],
+      "knowledge_sources": [
+        "USER_CLARIFICATION"
+      ],
+      "references": [],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": false,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "source_bound_context_with_optional_model_knowledge"
+      ],
+      "unverified_model_knowledge_allowed": true,
+      "verdict": "ANSWER_DUAL_LAYER",
+      "verified_context_available": true
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "plan_compile",
+        "deterministic_route",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=scanpy_core_workflow;task_source=semantic_parser;semantic=ready",
+        "elapsed_ms": 3333.176,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "deterministic task/claim normalization",
+        "elapsed_ms": 0.564,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "candidate_tools=1",
+        "elapsed_ms": 764.73,
+        "stage": "kg_filter",
+        "status": "completed"
+      },
+      {
+        "detail": "hits=42",
+        "elapsed_ms": 13.6,
+        "stage": "bm25",
+        "status": "completed"
+      },
+      {
+        "detail": "status=not_requested;hits=0",
+        "elapsed_ms": 0.002,
+        "stage": "dense_encode",
+        "status": "skipped"
+      },
+      {
+        "detail": "fused=42;reranked=42",
+        "elapsed_ms": 72.408,
+        "stage": "fusion",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.005,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=ready",
+        "elapsed_ms": 3808.709,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "scanpy_core_workflow",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "Scanpy"
+      ],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {
+        "documentation_version": "1.11.2 (user: documentation_version=1.11.2)",
+        "execution_requested": "false (user: execution_requested=false)",
+        "installed_version": "null (user: installed_version=null)",
+        "operation": "sc.pp.pca (user: operation=sc.pp.pca)",
+        "package": "Scanpy (user: package=Scanpy)",
+        "parameter_under_review": "mask_var (user: parameter_under_review=mask_var)"
+      }
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 3,
+    "external_reasoning": {
+      "answer_claims": [
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "mask_var_documentation",
+          "text": "请提供 Scanpy 1.11.2 文档中 sc.pp.pca 的 mask_var 参数的具体描述或相关文档片段，以便判断其输入要求、行为及是否适用于当前环境？",
+          "why_needed": "当前证据仅包含 highly_variable_genes 的 flavor 参数，未包含 mask_var 的任何信息，无法据此给出可执行建议或核实其适用性。"
+        }
+      ],
+      "error_type": "",
+      "input_tokens": 2950,
+      "latency_ms": 3803.7730420037406,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": 289,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 2,
+      "status": "ready",
+      "support_check": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 1,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    "grounded_answer_audit": {
+      "caution_context": [],
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [],
+      "claims": [],
+      "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [],
+      "verified_claims": [],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "llm-tool-1",
+        "latency_ms": 853.677,
+        "payload": {
+          "answerability": {
+            "candidate_only": true,
+            "claim_ids": [],
+            "direct_evidence_chunk_ids": [],
+            "evidence_gap_id": "",
+            "evidence_span_ids": [],
+            "fallback_reason": "information_need_not_expressed_in_graph",
+            "operator_revision_id": "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected",
+            "reason": "information_need_not_expressed_in_graph",
+            "scientific_kg_used": false,
+            "scope_status": "",
+            "source_revision_ids": [],
+            "status": "UNRESOLVED",
+            "version_status": ""
+          },
+          "answerability_reason": "information_need_not_expressed_in_graph",
+          "answerability_status": "UNRESOLVED",
+          "chunk_ids": [
+            "gold-span:scanpy:hvg-default-flavor:1.11.2",
+            "scanpy-authoritative-span:pca.output:1.11.2",
+            "scanpy-authoritative-span:umap.input:1.11.2",
+            "scanpy-authoritative-span:umap.output:1.11.2",
+            "scanpy-authoritative-span:hvg.output:1.11.2"
+          ],
+          "claim_ids": [],
+          "evidence_gap_id": "",
+          "evidence_span_ids": [],
+          "fallback_reason": "information_need_not_expressed_in_graph",
+          "mode": "kg_bm25",
+          "operator_revision_id": "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected",
+          "query": "Scanpy 1.11.2 sc.pp.pca mask_var parameter documentation",
+          "scientific_kg_used": false,
+          "scope_status": "",
+          "source_revision_ids": [],
+          "version_status": ""
+        },
+        "result_count": 5,
+        "source_bound_count": 5,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": [
+          "KG hard filter unavailable (KeyError); BM25 fallback remained local."
+        ]
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "scanpy_core_workflow",
+          "claim_types": [
+            "input_requirement",
+            "parameter",
+            "caveat"
+          ],
+          "query": "Scanpy 1.11.2 sc.pp.pca mask_var parameter documentation",
+          "reason": "Retrieve documentation evidence for mask_var parameter in Scanpy 1.11.2 to support executable parameter advice.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "Scanpy"
+          ],
+          "top_k": 5
+        }
+      ],
+      "rationale": "LLM proposed bounded read-only tools; local policy normalized the plan.",
+      "source": "semantic_parser"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:documentation_version",
+          "field": "documentation_version",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "documentation_version=1.11.2",
+          "value": "1.11.2"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:execution_requested",
+          "field": "execution_requested",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "execution_requested=false",
+          "value": "false"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "missing",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:installed_version",
+          "field": "installed_version",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "installed_version=null",
+          "value": "null"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:operation",
+          "field": "operation",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "operation=sc.pp.pca",
+          "value": "sc.pp.pca"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:package",
+          "field": "package",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "package=Scanpy",
+          "value": "Scanpy"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:parameter_under_review",
+          "field": "parameter_under_review",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "parameter_under_review=mask_var",
+          "value": "mask_var"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "scanpy_core_workflow",
+      "current_user_reported_context": {
+        "documentation_version": "1.11.2 (user: documentation_version=1.11.2)",
+        "execution_requested": "false (user: execution_requested=false)",
+        "installed_version": "null (user: installed_version=null)",
+        "operation": "sc.pp.pca (user: operation=sc.pp.pca)",
+        "package": "Scanpy (user: package=Scanpy)",
+        "parameter_under_review": "mask_var (user: parameter_under_review=mask_var)"
+      },
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "flavor: Literal[\"seurat\", \"cell_ranger\", \"seurat_v3\", \"seurat_v3_paper\"] = \"seurat\" Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+          "claim_type": "parameter",
+          "index": 1,
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "source-revision:scanpy:1.11.2:5400eb87",
+          "source_span": "src/scanpy/preprocessing/_highly_variable_genes.py#L523-L543",
+          "source_span_id": "gold-span:scanpy:hvg-default-flavor:1.11.2",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Authoritative bounded evidence: gold-span:scanpy:hvg-default-flavor:1.11.2",
+          "tool_name": "Scanpy"
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "What does the Scanpy 1.11.2 documentation state about the mask_var parameter in sc.pp.pca, including its input requirements, behavior, and caveats?",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": false,
+        "approved_kg_sha256": null,
+        "assessments": [],
+        "caution_context": [],
+        "coverage": "no_direct_statement",
+        "facts": [],
+        "gaps": [
+          "information_need_not_expressed_in_graph"
+        ],
+        "identity": "Legacy / candidate evidence",
+        "legacy_kg_consulted": null,
+        "output_ports": [],
+        "reference_links": {},
+        "snapshot_id": null
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:legacy_kg",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": {
+        "candidate_only": true,
+        "claim_ids": [],
+        "direct_evidence_chunk_ids": [],
+        "evidence_gap_id": "",
+        "evidence_span_ids": [],
+        "fallback_reason": "information_need_not_expressed_in_graph",
+        "operator_revision_id": "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected",
+        "reason": "information_need_not_expressed_in_graph",
+        "scientific_kg_used": false,
+        "scope_status": "",
+        "source_revision_ids": [],
+        "status": "UNRESOLVED",
+        "version_status": ""
+      },
+      "governance_leakage_count": 0,
+      "latency_ms": 851.51,
+      "mode": "kg_bm25",
+      "pipeline": [
+        "query_classification",
+        "canonical_task_normalization",
+        "kg_hard_filter",
+        "sqlite_fts5_bm25",
+        "local_dense_skipped",
+        "scientific_kg_evidence_lookup",
+        "rrf_fusion",
+        "governance_rerank_skipped",
+        "tool_contract_gate_skipped",
+        "retrieval_context_only"
+      ],
+      "scientific_evidence": {
+        "baseline_identity": "Legacy KG (frozen 1651-node scientific inventory)",
+        "budget_omitted_chunk_ids": [],
+        "eligible_chunk_ids": [],
+        "execution_authorized": false,
+        "fallback_reason": "information_need_not_expressed_in_graph",
+        "final_graph_chunk_ids": [],
+        "gaps": [],
+        "graph_identity": {
+          "bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "path": "data/evidence_candidates/scientific_kg_v1_uat_decision_rules",
+          "schema": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+          "snapshot": "scientific_kg_v1_uat_decision_rules",
+          "source_manifest_sha256": "6e9833933b5f0be991c67a0466d6af79fb970419a806608067d1b8654c62740b"
+        },
+        "knowledge_status": "candidate",
+        "mapped_chunk_ids": [],
+        "merge_policy": "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification",
+        "parsed": {
+          "ecosystem": "scanpy",
+          "explicit_modality": [],
+          "explicit_species": [],
+          "fallback_reason": "",
+          "flavor": null,
+          "information_needs": [
+            "parameter"
+          ],
+          "operator": "scanpy.pp.pca",
+          "operator_id": "operator:scanpy.pp.pca",
+          "resolution": "qualified_api",
+          "version": "1.11.2"
+        },
+        "paths": [],
+        "public_filter_identity_basis": "bound_scientific_claim_ownership_for_exact_graph_chunks;chunk_metadata_for_other_retrieval_channels",
+        "public_filter_rejected_chunk_ids": [],
+        "recommendation_eligible": false,
+        "resolved_operator_revision": "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected",
+        "subject_resolution": {
+          "ambiguity_reason": "",
+          "candidate_operator_ids": [
+            "operator:scanpy.pp.pca"
+          ],
+          "candidate_operator_revision_ids": [
+            "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected"
+          ],
+          "coverage_status": "CURRENT_DIRECT_EVIDENCE_SCOPE",
+          "provenance": [
+            "governed_existing_alias",
+            "explicit_version"
+          ],
+          "resolved_method": "method:pca",
+          "resolved_package": "package:scanpy",
+          "resolved_project": "software-project:scanpy",
+          "resolved_subject_type": "operator_revision",
+          "selected_operator_id": "operator:scanpy.pp.pca",
+          "selected_operator_revision_id": "operator-revision:scanpy.pp.pca:1.11.2:uat-corrected",
+          "status": "RESOLVED",
+          "subject_text": "Scanpy 1.11.2 sc.pp.pca mask_var parameter documentation"
+        }
+      },
+      "snippets": [
+        {
+          "chunk_id": "gold-span:scanpy:hvg-default-flavor:1.11.2",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "flavor: Literal[\"seurat\", \"cell_ranger\", \"seurat_v3\", \"seurat_v3_paper\"] = \"seurat\" Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+          "claim_type": "parameter",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:scanpy:1.11.2:5400eb87",
+          "relevance_score": 0.01639344,
+          "source_bound": true,
+          "source_id": "source-revision:scanpy:1.11.2:5400eb87",
+          "source_span": "src/scanpy/preprocessing/_highly_variable_genes.py#L523-L543",
+          "task": "feature_selection",
+          "title": "Authoritative bounded evidence: gold-span:scanpy:hvg-default-flavor:1.11.2",
+          "tool_name": "Scanpy"
+        },
+        {
+          "chunk_id": "scanpy-authoritative-span:pca.output:1.11.2",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "PCA representation of data.",
+          "claim_type": "output",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "relevance_score": 0.01612903,
+          "source_bound": true,
+          "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "source_span": "src/scanpy/preprocessing/_pca/__init__.py#L170-L198",
+          "task": "dimensionality_reduction",
+          "title": "Authoritative bounded evidence: scanpy-authoritative-span:pca.output:1.11.2",
+          "tool_name": "Scanpy"
+        },
+        {
+          "chunk_id": "scanpy-authoritative-span:umap.input:1.11.2",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "for neighbors settings",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "relevance_score": 0.01587302,
+          "source_bound": true,
+          "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "source_span": "src/scanpy/tools/_umap.py#L142-L145",
+          "task": "dimensionality_reduction",
+          "title": "Authoritative bounded evidence: scanpy-authoritative-span:umap.input:1.11.2",
+          "tool_name": "Scanpy"
+        },
+        {
+          "chunk_id": "scanpy-authoritative-span:umap.output:1.11.2",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "UMAP coordinates of data.",
+          "claim_type": "output",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "relevance_score": 0.015625,
+          "source_bound": true,
+          "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "source_span": "src/scanpy/tools/_umap.py#L149-L155",
+          "task": "dimensionality_reduction",
+          "title": "Authoritative bounded evidence: scanpy-authoritative-span:umap.output:1.11.2",
+          "tool_name": "Scanpy"
+        },
+        {
+          "chunk_id": "scanpy-authoritative-span:hvg.output:1.11.2",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "boolean indicator of highly-variable genes",
+          "claim_type": "output",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "relevance_score": 0.01538462,
+          "source_bound": true,
+          "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+          "source_span": "src/scanpy/preprocessing/_highly_variable_genes.py#L622-L627",
+          "task": "feature_selection",
+          "title": "Authoritative bounded evidence: scanpy-authoritative-span:hvg.output:1.11.2",
+          "tool_name": "Scanpy"
+        }
+      ],
+      "stage_timings": [
+        {
+          "detail": "deterministic task/claim normalization",
+          "elapsed_ms": 0.564,
+          "stage": "intent",
+          "status": "completed"
+        },
+        {
+          "detail": "candidate_tools=1",
+          "elapsed_ms": 764.73,
+          "stage": "kg_filter",
+          "status": "completed"
+        },
+        {
+          "detail": "hits=42",
+          "elapsed_ms": 13.6,
+          "stage": "bm25",
+          "status": "completed"
+        },
+        {
+          "detail": "status=not_requested;hits=0",
+          "elapsed_ms": 0.002,
+          "stage": "dense_encode",
+          "status": "skipped"
+        },
+        {
+          "detail": "fused=42;reranked=42",
+          "elapsed_ms": 72.408,
+          "stage": "fusion",
+          "status": "completed"
+        }
+      ]
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 43093,
+      "process_started_at": "2026-09-20T20:49:21.815591Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "scanpy_core_workflow",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.9,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "SINGLE_CELL",
+      "error_type": "",
+      "input_tokens": 2038,
+      "intent": "evidence_qa",
+      "latency_ms": 3264.863834003336,
+      "model_name": "deepseek-v4-pro",
+      "needs_clarification": false,
+      "output_tokens": 431,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "requested_tools": [],
+      "retrieval_query": "What does the Scanpy 1.11.2 documentation state about the mask_var parameter in sc.pp.pca, including its input requirements, behavior, and caveats?",
+      "status": "ready",
+      "task_switch": false,
+      "tool_calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "scanpy_core_workflow",
+          "claim_types": [
+            "input_requirement",
+            "parameter",
+            "caveat"
+          ],
+          "query": "Scanpy 1.11.2 sc.pp.pca mask_var parameter documentation",
+          "reason": "Retrieve documentation evidence for mask_var parameter in Scanpy 1.11.2 to support executable parameter advice.",
+          "tool_name": "search_evidence",
+          "tool_names": [],
+          "top_k": 5
+        }
+      ],
+      "user_reported_context": {
+        "documentation_version": "1.11.2 (user: documentation_version=1.11.2)",
+        "execution_requested": "false (user: execution_requested=false)",
+        "installed_version": "null (user: installed_version=null)",
+        "operation": "sc.pp.pca (user: operation=sc.pp.pca)",
+        "package": "Scanpy (user: package=Scanpy)",
+        "parameter_under_review": "mask_var (user: parameter_under_review=mask_var)"
+      }
+    },
+    "semantic_route": {
+      "confidence": 0.9,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "semantic_primary",
+      "source": "semantic_parser"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 7997.407,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "dev-K04-evidence-version-b--legacy_kg--freeze-r0",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "scanpy_core_workflow",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [],
+    "last_plan_id": null,
+    "referenced_tools": [
+      "Scanpy"
+    ],
+    "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "state_epoch": 0,
+    "user_reported_context": {
+      "documentation_version": "1.11.2 (user: documentation_version=1.11.2)",
+      "execution_requested": "false (user: execution_requested=false)",
+      "installed_version": "null (user: installed_version=null)",
+      "operation": "sc.pp.pca (user: operation=sc.pp.pca)",
+      "package": "Scanpy (user: package=Scanpy)",
+      "parameter_under_review": "mask_var (user: parameter_under_review=mask_var)"
+    }
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "EVIDENCE_QA",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "EVIDENCE_QA",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "scanpy_core_workflow",
+    "modality": "scRNA-seq",
+    "task": "scanpy_core_workflow"
+  },
+  "final_report": "请提供 Scanpy 1.11.2 文档中 sc.pp.pca 的 mask_var 参数的具体描述或相关文档片段，以便判断其输入要求、行为及是否适用于当前环境？",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [
+    {
+      "authority": "source_bound",
+      "claim_text": "flavor: Literal[\"seurat\", \"cell_ranger\", \"seurat_v3\", \"seurat_v3_paper\"] = \"seurat\" Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+      "claim_type": "parameter",
+      "exact_excerpt": "flavor: Literal[\"seurat\", \"cell_ranger\", \"seurat_v3\", \"seurat_v3_paper\"] = \"seurat\"\nExpects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+      "index": 1,
+      "kg_statements": [],
+      "knowledge_source": "RETRIEVAL_GROUNDED",
+      "selected_for_claim_types": [
+        "input_requirement"
+      ],
+      "source_bound": true,
+      "source_id": "source-revision:scanpy:1.11.2:5400eb87",
+      "source_span": "src/scanpy/preprocessing/_highly_variable_genes.py#L523-L543",
+      "source_span_id": "gold-span:scanpy:hvg-default-flavor:1.11.2",
+      "source_type": "source_document",
+      "support_claim_types": [
+        "input_requirement"
+      ],
+      "title": "Authoritative bounded evidence: gold-span:scanpy:hvg-default-flavor:1.11.2",
+      "tool_name": "Scanpy"
+    }
+  ],
+  "request_id": "dev-K04-evidence-version-b--legacy_kg--freeze-r0",
+  "response_intent": "evidence_qa",
+  "retrieval_results": [
+    {
+      "chunk_id": "gold-span:scanpy:hvg-default-flavor:1.11.2",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "flavor: Literal[\"seurat\", \"cell_ranger\", \"seurat_v3\", \"seurat_v3_paper\"] = \"seurat\" Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.",
+      "claim_type": "parameter",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:scanpy:1.11.2:5400eb87",
+      "relevance_score": 0.01639344,
+      "source_bound": true,
+      "source_id": "source-revision:scanpy:1.11.2:5400eb87",
+      "source_span": "src/scanpy/preprocessing/_highly_variable_genes.py#L523-L543",
+      "task": "feature_selection",
+      "title": "Authoritative bounded evidence: gold-span:scanpy:hvg-default-flavor:1.11.2",
+      "tool_name": "Scanpy"
+    },
+    {
+      "chunk_id": "scanpy-authoritative-span:pca.output:1.11.2",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "PCA representation of data.",
+      "claim_type": "output",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "relevance_score": 0.01612903,
+      "source_bound": true,
+      "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "source_span": "src/scanpy/preprocessing/_pca/__init__.py#L170-L198",
+      "task": "dimensionality_reduction",
+      "title": "Authoritative bounded evidence: scanpy-authoritative-span:pca.output:1.11.2",
+      "tool_name": "Scanpy"
+    },
+    {
+      "chunk_id": "scanpy-authoritative-span:umap.input:1.11.2",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "for neighbors settings",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "relevance_score": 0.01587302,
+      "source_bound": true,
+      "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "source_span": "src/scanpy/tools/_umap.py#L142-L145",
+      "task": "dimensionality_reduction",
+      "title": "Authoritative bounded evidence: scanpy-authoritative-span:umap.input:1.11.2",
+      "tool_name": "Scanpy"
+    },
+    {
+      "chunk_id": "scanpy-authoritative-span:umap.output:1.11.2",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "UMAP coordinates of data.",
+      "claim_type": "output",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "relevance_score": 0.015625,
+      "source_bound": true,
+      "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "source_span": "src/scanpy/tools/_umap.py#L149-L155",
+      "task": "dimensionality_reduction",
+      "title": "Authoritative bounded evidence: scanpy-authoritative-span:umap.output:1.11.2",
+      "tool_name": "Scanpy"
+    },
+    {
+      "chunk_id": "scanpy-authoritative-span:hvg.output:1.11.2",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "boolean indicator of highly-variable genes",
+      "claim_type": "output",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "relevance_score": 0.01538462,
+      "source_bound": true,
+      "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "source_span": "src/scanpy/preprocessing/_highly_variable_genes.py#L622-L627",
+      "task": "feature_selection",
+      "title": "Authoritative bounded evidence: scanpy-authoritative-span:hvg.output:1.11.2",
+      "tool_name": "Scanpy"
+    }
+  ],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+    "process_id": 43093,
+    "process_started_at": "2026-09-20T20:49:21.815591Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "version": "2.7.2-rc",
+    "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+  },
+  "runtime_mode": "external_reasoning_with_deterministic_governance",
+  "scored_tools": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "Scanpy"
+    }
+  ],
+  "semantic_route": {
+    "confidence": 0.9,
+    "domain": "SINGLE_CELL",
+    "intent": "evidence_qa",
+    "needs_clarification": false,
+    "source": "semantic_parser",
+    "task": "scanpy_core_workflow"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "Scanpy"
+    }
+  ],
+  "unverified_model_knowledge_claims": [],
+  "user_id": "local-research-user",
+  "user_query": "我查到 1.11.2 文档中的 PCA mask_var 参数。这能否支撑针对当前环境的可执行参数建议？请限定能由文档支持的结论，并指出还需核实什么。\n\n已提供的条件（未提供的值不作推断）：\ndocumentation_version=1.11.2\nexecution_requested=false\ninstalled_version=null\noperation=sc.pp.pca\npackage=Scanpy\nparameter_under_review=mask_var",
+  "verified_claims": [],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "scanpy_core_workflow",
+    "tool_name": null
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SingleR 的 ref 参数要求参考表达矩阵通常是已归一化并 log 转换的数值矩阵。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"ref A numeric matrix of (usually normalized and log-transformed) expression values from a reference dataset.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的参考数据为 log-normalized expression，符合上述通常要求。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:reference_assay\"\n      ]\n    },\n    {\n      \"text\": \"测试数据为 UMI counts，而 SingleR 的输入要求针对参考矩阵，未直接规定测试矩阵必须为 log 尺度。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"测试基因命名空间为 Ensembl stable IDs，参考为 HGNC symbols，且未提供映射表，因此基因对应关系尚未建立。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:test_gene_namespace\",\n        \"user:reference_gene_namespace\",\n        \"user:mapping_table_provided\"\n      ]\n    },\n    {\n      \"text\": \"在开始前应先验证测试与参考基因 ID 能否映射到同一命名空间，否则 SingleR 无法正确匹配基因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"还应确认 Bioconductor 3.21 与所用 SingleR 版本兼容，并检查测试矩阵是否已按 SingleR 要求预处理。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"测试数据的基因 ID 是否已提供或可生成 Ensembl 到 HGNC 的映射表？\",\n    \"missing_field\": \"gene_id_mapping_available\",\n    \"why_needed\": \"测试与参考基因命名空间不一致且未提供映射表，无法确定基因对应关系是否已建立，直接影响 SingleR 能否正确运行。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789937354,
+  "id": "4a498727-aaa9-4f5f-a0a8-120abf052a3a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 551,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 2070,
+    "prompt_tokens": 3222,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1152
+    },
+    "total_tokens": 3773
+  }
+}

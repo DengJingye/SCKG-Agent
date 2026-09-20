@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scanpy 1.11.2 中，flavor='seurat_v3' 时输入应为计数数据，而不是对数化数据。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Expects logarithmized data, except when `flavor='seurat_v3'`/`'seurat_v3_paper'`, in which count data is expected.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是 raw_integer_counts，符合 seurat_v3 对计数输入的期望。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:matrix_state\"\n      ]\n    },\n    {\n      \"text\": \"seurat_v3 会先对每个基因做带正则化标准差的标准化，再计算标准化后方差并按该方差排序。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"First, the data are standardized (i.e., z-score normalization per feature) with a regularized standard deviation. Next, the normalized variance is computed as the variance of each gene after the transformation. Genes are ranked by the normalized variance.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"该函数用于标注高变基因，因此当前计数矩阵可以直接作为输入。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"Annotate highly variable genes :cite:p:`Satija2015,Zheng2017,Stuart2019`.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"提醒：n_top_genes 在 flavor='seurat_v3' 下是必需参数；你已提供 n_top_genes=2000，因此该条件已满足。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"n_top_genes\\n        Number of highly-variable genes to keep. Mandatory if `flavor='seurat_v3'`.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供 batch_key=null，因此不需要按批次排序或处理批次间并列关系。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:batch_key\"\n      ]\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789937353,
+  "id": "c04f057d-a76f-4989-a496-999c841ef7e5",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 607,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 12383,
+    "prompt_tokens": 13663,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1280
+    },
+    "total_tokens": 14270
+  }
+}

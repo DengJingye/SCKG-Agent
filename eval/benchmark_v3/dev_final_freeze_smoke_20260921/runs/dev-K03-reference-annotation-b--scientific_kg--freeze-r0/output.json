@@ -1,0 +1,3695 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [
+    {
+      "best_for": "作为检索候选，需要结合数据与合同继续核对。",
+      "caveats": [],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}. #' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "mechanism": "机制说明仍需从 source-bound corpus 补齐。",
+      "output": "未确认",
+      "readiness": "catalog_only",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "singler"
+    }
+  ],
+  "answerability": {
+    "reason_codes": [
+      "conditional_knowledge_scope_unknown"
+    ],
+    "unverified_model_knowledge_allowed": false,
+    "verdict": "CLARIFY",
+    "verified_context_available": false
+  },
+  "candidate_tools": [
+    "singler"
+  ],
+  "canonical_trace_id": "trace_127f04bb145744ec93ea99b08fbdc670",
+  "claim_audit": {
+    "caution_context": [],
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [
+      1,
+      2
+    ],
+    "claims": [
+      {
+        "authority": "source_bound",
+        "citation_mapping": "valid",
+        "claim_id": "claim-001",
+        "claim_text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。",
+        "claim_type": "scientific",
+        "governance_action": "keep",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "match",
+        "semantic_review_status": "not_run",
+        "source_span_ids": [
+          "approved-v2:8c6e4d35063c19b8a67f5eab"
+        ]
+      },
+      {
+        "authority": "none",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "测试与参考必须有非空基因交集；若交集为空（例如基因注释命名空间不同），会报错。",
+        "claim_type": "non_scientific",
+        "governance_action": "keep",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      },
+      {
+        "authority": "none",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "因此不能直接开始，需先确认交集是否非空。",
+        "claim_type": "non_scientific",
+        "governance_action": "keep",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [],
+    "verified_claims": [
+      {
+        "authority": "source_bound",
+        "citation_mapping": "valid",
+        "claim_id": "claim-001",
+        "claim_text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。",
+        "claim_type": "scientific",
+        "governance_action": "keep",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "match",
+        "semantic_review_status": "not_run",
+        "source_span_ids": [
+          "approved-v2:8c6e4d35063c19b8a67f5eab"
+        ]
+      }
+    ],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [
+        {
+          "citations": [
+            {
+              "index": 1,
+              "quote": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples)."
+            }
+          ],
+          "claim_id": "answer-1",
+          "knowledge_source": "KG_GROUNDED",
+          "text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。[1]"
+        },
+        {
+          "citations": [
+            {
+              "index": 2,
+              "quote": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised."
+            }
+          ],
+          "claim_id": "answer-2",
+          "knowledge_source": "KG_GROUNDED",
+          "text": "测试与参考必须有非空基因交集；若交集为空（例如基因注释命名空间不同），会报错。[2]"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-3",
+          "context_authority": {
+            "user:reference_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:test_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:reference_gene_namespace",
+            "user:test_gene_namespace"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：reference_gene_namespace=HGNC symbols；test_gene_namespace=Ensembl stable IDs。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-4",
+          "context_authority": {
+            "user:reference_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:test_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:reference_gene_namespace",
+            "user:test_gene_namespace"
+          ],
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "reasoning_dependency": "context_facts",
+          "text": "因此不能直接开始，需先确认交集是否非空。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-5",
+          "context_authority": {
+            "user:reference_assay": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:test_assay": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:reference_assay",
+            "user:test_assay"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：reference_assay=log-normalized expression；test_assay=UMI counts。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "gene_intersection_status",
+          "text": "请提供测试与参考基因交集是否非空，或提供用于映射 HGNC symbols 与 Ensembl stable IDs 的映射表/已转换的基因名？",
+          "why_needed": "因为参考使用 HGNC symbols 而测试使用 Ensembl stable IDs，若交集为空会直接报错；只有确认交集非空或提供映射表后才能判断是否可以开始。"
+        }
+      ],
+      "kg_facts_used": [
+        {
+          "assessment_ids": [
+            "assessment:42b9e8ac4d9f37c40e5ad192"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:pinned_singler_train:57719f98471c",
+              "assessment_id": "assessment:42b9e8ac4d9f37c40e5ad192",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "citation_index": 1,
+          "constraints": [
+            {
+              "id": "constraint:3e31da7abffff3570d64",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "required_value_states": [
+                "rows named with gene names"
+              ],
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "requirement",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:e1fe7be463224e079f6c",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:5a063d137bee5f8da152209d",
+            "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+            "subject_id": "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+          },
+          "requirements": [
+            {
+              "activation_status": "unconditional",
+              "combination": "ALL_OF",
+              "id": "requirement:e1fe7be463224e079f6c",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "REQUIRED"
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "software_version": "unknown"
+            },
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+          "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "statement": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+          "statement_id": "statement-revision:5a063d137bee5f8da152209d:1",
+          "trusted": true
+        },
+        {
+          "assessment_ids": [
+            "assessment:eb8bc243dc1e7cf71e73189f"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:pinned_singler_single_r:830217a0805a",
+              "assessment_id": "assessment:eb8bc243dc1e7cf71e73189f",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "citation_index": 2,
+          "constraints": [
+            {
+              "id": "constraint:23ba49b839e10f728dd7",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "required_value_states": [
+                "nonempty intersection of reference and test genes"
+              ],
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "requirement",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:8396a770214001b5b4fb",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:d014850014fb8b55ccfc4e61",
+            "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+            "subject_id": "operator-revision:r:singler:SingleR::SingleR:2.14.1"
+          },
+          "requirements": [
+            {
+              "activation_status": "unconditional",
+              "combination": "ALL_OF",
+              "id": "requirement:8396a770214001b5b4fb",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "REQUIRED"
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "software_version": "unknown"
+            },
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+          "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "statement": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+          "statement_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+          "trusted": true
+        }
+      ],
+      "knowledge_sources": [
+        "KG_GROUNDED",
+        "MODEL_KNOWLEDGE",
+        "USER_CLARIFICATION",
+        "USER_PROVIDED_FACT"
+      ],
+      "references": [
+        {
+          "authority": "source_bound",
+          "claim_text": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).",
+          "claim_type": "input_requirement",
+          "evidence_span": {
+            "content_hash": "edcd88841d89c2b313145cd28c9e00f31972299e30f6dc8253b190fb2c85fba0",
+            "end_offset": 416,
+            "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+            "exact_text": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\n#' Each row should be named with the gene name.\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.",
+            "locator": {
+              "kind": "text_offsets",
+              "value": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "start_offset": 128
+          },
+          "exact_excerpt": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\n#' Each row should be named with the gene name.\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.",
+          "index": 1,
+          "kg_statements": [
+            {
+              "assessment_ids": [
+                "assessment:42b9e8ac4d9f37c40e5ad192"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:pinned_singler_train:57719f98471c",
+                  "assessment_id": "assessment:42b9e8ac4d9f37c40e5ad192",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [
+                {
+                  "id": "constraint:3e31da7abffff3570d64",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "RepresentationConstraint",
+                  "required_value_states": [
+                    "rows named with gene names"
+                  ],
+                  "schema_version": "sckg-ontology-core-5c-design-v1"
+                }
+              ],
+              "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "has_requirement",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "requirement",
+                "epistemic_status": "asserted",
+                "object_id": "requirement:e1fe7be463224e079f6c",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "has_requirement",
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:5a063d137bee5f8da152209d",
+                "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+                "subject_id": "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+              },
+              "requirements": [
+                {
+                  "activation_status": "unconditional",
+                  "combination": "ALL_OF",
+                  "id": "requirement:e1fe7be463224e079f6c",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "Requirement",
+                  "schema_version": "sckg-ontology-core-5c-design-v1",
+                  "strength": "REQUIRED"
+                }
+              ],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "software_version": "unknown"
+                },
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+              "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+              "statement": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+              "statement_id": "statement-revision:5a063d137bee5f8da152209d:1",
+              "trusted": true
+            }
+          ],
+          "knowledge_source": "KG_GROUNDED",
+          "selected_for_claim_types": [
+            "input_requirement"
+          ],
+          "source_bound": true,
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_revision": {
+            "artifact_hash": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+            "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "source_type": "official_release_source",
+            "source_url": "https://bioconductor.org/packages/SingleR",
+            "source_work_id": "source-work:aa96d9bc1901f8e4be7959d3",
+            "text_hash": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+            "title": "pinned_singler_train",
+            "version": "2.14.1"
+          },
+          "source_span": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+          "source_span_id": "approved-v2:8c6e4d35063c19b8a67f5eab",
+          "source_type": "official_release_source",
+          "source_url": "https://bioconductor.org/packages/SingleR",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "pinned_singler_train",
+          "tool_name": "singler"
+        },
+        {
+          "authority": "source_bound",
+          "claim_text": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+          "claim_type": "input_requirement",
+          "evidence_span": {
+            "content_hash": "89cb7a70e828834889396c29fcb769333d229484e2f42f68b165a6483db331ce",
+            "end_offset": 3224,
+            "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+            "exact_text": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+            "locator": {
+              "kind": "text_offsets",
+              "value": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "start_offset": 2979
+          },
+          "exact_excerpt": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+          "index": 2,
+          "kg_statements": [
+            {
+              "assessment_ids": [
+                "assessment:eb8bc243dc1e7cf71e73189f"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:pinned_singler_single_r:830217a0805a",
+                  "assessment_id": "assessment:eb8bc243dc1e7cf71e73189f",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [
+                {
+                  "id": "constraint:23ba49b839e10f728dd7",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "RepresentationConstraint",
+                  "required_value_states": [
+                    "nonempty intersection of reference and test genes"
+                  ],
+                  "schema_version": "sckg-ontology-core-5c-design-v1"
+                }
+              ],
+              "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "has_requirement",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "requirement",
+                "epistemic_status": "asserted",
+                "object_id": "requirement:8396a770214001b5b4fb",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "has_requirement",
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:d014850014fb8b55ccfc4e61",
+                "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+                "subject_id": "operator-revision:r:singler:SingleR::SingleR:2.14.1"
+              },
+              "requirements": [
+                {
+                  "activation_status": "unconditional",
+                  "combination": "ALL_OF",
+                  "id": "requirement:8396a770214001b5b4fb",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "Requirement",
+                  "schema_version": "sckg-ontology-core-5c-design-v1",
+                  "strength": "REQUIRED"
+                }
+              ],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "software_version": "unknown"
+                },
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+              "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+              "statement": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+              "statement_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+              "trusted": true
+            }
+          ],
+          "knowledge_source": "KG_GROUNDED",
+          "source_bound": true,
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_revision": {
+            "artifact_hash": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+            "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "source_type": "official_release_source",
+            "source_url": "https://bioconductor.org/packages/SingleR",
+            "source_work_id": "source-work:aa96d9bc1901f8e4be7959d3",
+            "text_hash": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+            "title": "pinned_singler_single_r",
+            "version": "2.14.1"
+          },
+          "source_span": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+          "source_span_id": "approved-v2:a90fcf086e1d71d73a6e9502",
+          "source_type": "official_release_source",
+          "source_url": "https://bioconductor.org/packages/SingleR",
+          "title": "pinned_singler_single_r",
+          "tool_name": "singler"
+        }
+      ],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": true,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "conditional_knowledge_scope_unknown"
+      ],
+      "unverified_model_knowledge_allowed": false,
+      "verdict": "CLARIFY",
+      "verified_context_available": false
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=cell_type_annotation;task_source=semantic_parser;semantic=ready",
+        "elapsed_ms": 3453.313,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.008,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=ready",
+        "elapsed_ms": 8157.728,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "cell_type_annotation",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "singler"
+      ],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {
+        "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+        "mapping_table_provided": "false (user: mapping_table_provided=false)",
+        "marker_mode": "classic (user: marker_mode=classic)",
+        "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+        "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+        "species": "human for both test and reference (user: species=human for both test and reference)",
+        "test_assay": "UMI counts (user: test_assay=UMI counts)",
+        "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+      }
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 3,
+    "external_reasoning": {
+      "answer_claims": [
+        {
+          "citations": [
+            {
+              "index": 1,
+              "quote": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples)."
+            }
+          ],
+          "claim_id": "answer-1",
+          "knowledge_source": "KG_GROUNDED",
+          "text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。[1]"
+        },
+        {
+          "citations": [
+            {
+              "index": 2,
+              "quote": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised."
+            }
+          ],
+          "claim_id": "answer-2",
+          "knowledge_source": "KG_GROUNDED",
+          "text": "测试与参考必须有非空基因交集；若交集为空（例如基因注释命名空间不同），会报错。[2]"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-3",
+          "context_authority": {
+            "user:reference_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:test_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:reference_gene_namespace",
+            "user:test_gene_namespace"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：reference_gene_namespace=HGNC symbols；test_gene_namespace=Ensembl stable IDs。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-4",
+          "context_authority": {
+            "user:reference_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:test_gene_namespace": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:reference_gene_namespace",
+            "user:test_gene_namespace"
+          ],
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "reasoning_dependency": "context_facts",
+          "text": "因此不能直接开始，需先确认交集是否非空。"
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-5",
+          "context_authority": {
+            "user:reference_assay": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:test_assay": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:reference_assay",
+            "user:test_assay"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：reference_assay=log-normalized expression；test_assay=UMI counts。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "gene_intersection_status",
+          "text": "请提供测试与参考基因交集是否非空，或提供用于映射 HGNC symbols 与 Ensembl stable IDs 的映射表/已转换的基因名？",
+          "why_needed": "因为参考使用 HGNC symbols 而测试使用 Ensembl stable IDs，若交集为空会直接报错；只有确认交集非空或提供映射表后才能判断是否可以开始。"
+        }
+      ],
+      "error_type": "",
+      "input_tokens": 10600,
+      "latency_ms": 8151.579542012769,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": 767,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 2,
+      "status": "ready",
+      "support_check": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 0,
+        "quotes_resolved_from_store": 1,
+        "removed_segment_count": 2,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    "grounded_answer_audit": {
+      "caution_context": [],
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [
+        1,
+        2
+      ],
+      "claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。",
+          "claim_type": "scientific",
+          "governance_action": "keep",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "match",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "approved-v2:8c6e4d35063c19b8a67f5eab"
+          ]
+        },
+        {
+          "authority": "none",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "测试与参考必须有非空基因交集；若交集为空（例如基因注释命名空间不同），会报错。",
+          "claim_type": "non_scientific",
+          "governance_action": "keep",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        },
+        {
+          "authority": "none",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "因此不能直接开始，需先确认交集是否非空。",
+          "claim_type": "non_scientific",
+          "governance_action": "keep",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [],
+      "verified_claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。",
+          "claim_type": "scientific",
+          "governance_action": "keep",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "match",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "approved-v2:8c6e4d35063c19b8a67f5eab"
+          ]
+        }
+      ],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "llm-tool-1",
+        "latency_ms": 5.919,
+        "payload": {
+          "answerability": {
+            "candidate_only": false,
+            "claim_ids": [
+              "statement-revision:5a063d137bee5f8da152209d:1",
+              "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "statement-revision:d014850014fb8b55ccfc4e61:1"
+            ],
+            "direct_evidence_chunk_ids": [
+              "approved-v2:a90fcf086e1d71d73a6e9502",
+              "approved-v2:3baaf9c26e5bfc94a0951e93",
+              "approved-v2:bf28f60dbfacce443e310e6f",
+              "approved-v2:da656b7a304bf427841ba866",
+              "approved-v2:8c6e4d35063c19b8a67f5eab"
+            ],
+            "evidence_gap_id": "",
+            "evidence_span_ids": [],
+            "fallback_reason": "",
+            "operator_revision_id": "",
+            "reason": "conditional_knowledge_scope_unknown",
+            "scientific_kg_used": true,
+            "scope_status": "unknown",
+            "source_revision_ids": [],
+            "status": "CLARIFICATION_REQUIRED",
+            "version_status": ""
+          },
+          "answerability_reason": "conditional_knowledge_scope_unknown",
+          "answerability_status": "CLARIFICATION_REQUIRED",
+          "chunk_ids": [
+            "approved-v2:a90fcf086e1d71d73a6e9502",
+            "approved-v2:3baaf9c26e5bfc94a0951e93",
+            "approved-v2:bf28f60dbfacce443e310e6f",
+            "approved-v2:da656b7a304bf427841ba866",
+            "approved-v2:8c6e4d35063c19b8a67f5eab"
+          ],
+          "claim_ids": [
+            "statement-revision:5a063d137bee5f8da152209d:1",
+            "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "statement-revision:d014850014fb8b55ccfc4e61:1"
+          ],
+          "evidence_gap_id": "",
+          "evidence_span_ids": [],
+          "fallback_reason": "",
+          "mode": "kg_bm25",
+          "operator_revision_id": "",
+          "query": "SingleR classic mode input scale and gene correspondence requirements for reference annotation",
+          "scientific_kg_used": true,
+          "scope_status": "unknown",
+          "source_revision_ids": [],
+          "version_status": ""
+        },
+        "result_count": 5,
+        "source_bound_count": 5,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode"
+          ],
+          "query": "SingleR classic mode input scale and gene correspondence requirements for reference annotation",
+          "reason": "User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode and what conditions to verify first.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 5
+        }
+      ],
+      "rationale": "LLM proposed bounded read-only tools; local policy normalized the plan.",
+      "source": "semantic_parser"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:environment",
+          "field": "environment",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "environment=Bioconductor 3.21 / version must be checked against book session",
+          "value": "Bioconductor 3.21"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:mapping_table_provided",
+          "field": "mapping_table_provided",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "mapping_table_provided=false",
+          "value": "false"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:marker_mode",
+          "field": "marker_mode",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "marker_mode=classic",
+          "value": "classic"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:reference_assay",
+          "field": "reference_assay",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "reference_assay=log-normalized expression",
+          "value": "log-normalized expression"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:reference_gene_namespace",
+          "field": "reference_gene_namespace",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "reference_gene_namespace=HGNC symbols",
+          "value": "HGNC symbols"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:species",
+          "field": "species",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "species=human for both test and reference",
+          "value": "human for both test and reference"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:test_assay",
+          "field": "test_assay",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "test_assay=UMI counts",
+          "value": "UMI counts"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:test_gene_namespace",
+          "field": "test_gene_namespace",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "test_gene_namespace=Ensembl stable IDs",
+          "value": "Ensembl stable IDs"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "cell_type_annotation",
+      "current_user_reported_context": {
+        "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+        "mapping_table_provided": "false (user: mapping_table_provided=false)",
+        "marker_mode": "classic (user: marker_mode=classic)",
+        "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+        "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+        "species": "human for both test and reference (user: species=human for both test and reference)",
+        "test_assay": "UMI counts (user: test_assay=UMI counts)",
+        "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+      },
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).",
+          "claim_type": "input_requirement",
+          "index": 1,
+          "knowledge_source": "KG_GROUNDED",
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+          "source_span_id": "approved-v2:8c6e4d35063c19b8a67f5eab",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "pinned_singler_train",
+          "tool_name": "singler"
+        },
+        {
+          "claim_text": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+          "claim_type": "input_requirement",
+          "index": 2,
+          "knowledge_source": "KG_GROUNDED",
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+          "source_span_id": "approved-v2:a90fcf086e1d71d73a6e9502",
+          "title": "pinned_singler_single_r",
+          "tool_name": "singler"
+        },
+        {
+          "claim_text": "`r Biocpkg(\"SingleR\")` is an automatic annotation method for single-cell RNA sequencing (scRNAseq) data [@aran2019reference].\nGiven a reference dataset of samples (single-cell or bulk) with known labels, \nit labels new cells from a test dataset based on similarity to the reference.",
+          "claim_type": "method",
+          "index": 3,
+          "knowledge_source": "KG_GROUNDED",
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+          "source_span_id": "approved-v2:3baaf9c26e5bfc94a0951e93",
+          "title": "pinned_singler_vignette",
+          "tool_name": "singler"
+        },
+        {
+          "claim_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+          "claim_type": "method",
+          "index": 4,
+          "knowledge_source": "KG_GROUNDED",
+          "source_id": "source-revision:d426b082f012b8be5a4f74cf",
+          "source_span": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+          "source_span_id": "approved-v2:bf28f60dbfacce443e310e6f",
+          "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+          "tool_name": "singler"
+        },
+        {
+          "claim_text": "Performs unbiased cell type recognition from single-cell RNA sequencing data, by leveraging reference transcriptomic datasets of pure cell types to infer the cell of origin of each single cell independently.",
+          "claim_type": "method",
+          "index": 5,
+          "knowledge_source": "KG_GROUNDED",
+          "source_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+          "source_span": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+          "source_span_id": "approved-v2:da656b7a304bf427841ba866",
+          "title": "recovered_c744746dfe8e1d26",
+          "tool_name": "singler"
+        },
+        {
+          "claim_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+          "claim_type": "failure_mode",
+          "index": 6,
+          "knowledge_source": "CAUTION_CONTEXT",
+          "source_id": "source-revision:d426b082f012b8be5a4f74cf",
+          "source_span": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+          "source_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+          "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+          "tool_name": ""
+        },
+        {
+          "claim_text": "The default \\code{assay.type} is set to \\code{\"logcounts\"} simply for consistency with \\code{\\link{trainSingleR}}.\n#' In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+          "claim_type": "failure_mode",
+          "index": 7,
+          "knowledge_source": "CAUTION_CONTEXT",
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:d54e90055021dc5981b762ff1e59e3c6/text-sha256:afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8:4815:5245",
+          "source_span_id": "evidence-span:478c711accf5562d599b9d84",
+          "title": "pinned_singler_classify",
+          "tool_name": ""
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "What are the input scale and gene correspondence requirements for SingleR classic mode reference annotation, and what conditions should be verified before starting?",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": true,
+        "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+        "assessments": [
+          {
+            "activity_ref": "full-06-v2-01:pinned_singler_train:57719f98471c",
+            "assessment_id": "assessment:42b9e8ac4d9f37c40e5ad192",
+            "assessment_method": "offline_source_semantic_review_v1",
+            "assessor_ref": "GPT-6 Astra",
+            "created_at": "2026-09-20T13:01:20.609018+00:00",
+            "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+            "object_aligned": true,
+            "predicate_aligned": true,
+            "rationale": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+            "scope_alignment": "aligned",
+            "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+            "status": "completed",
+            "subject_aligned": true,
+            "support_type": "DIRECT_SUPPORT"
+          },
+          {
+            "activity_ref": "full-06-v2-01:pinned_singler_single_r:830217a0805a",
+            "assessment_id": "assessment:eb8bc243dc1e7cf71e73189f",
+            "assessment_method": "offline_source_semantic_review_v1",
+            "assessor_ref": "GPT-6 Astra",
+            "created_at": "2026-09-20T13:01:20.609018+00:00",
+            "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+            "object_aligned": true,
+            "predicate_aligned": true,
+            "rationale": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+            "scope_alignment": "aligned",
+            "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+            "status": "completed",
+            "subject_aligned": true,
+            "support_type": "DIRECT_SUPPORT"
+          },
+          {
+            "activity_ref": "full-06-v2-01:pinned_singler_vignette:9c9cbfbf15b0",
+            "assessment_id": "assessment:de657b5fbf9bcefb2552b853",
+            "assessment_method": "offline_source_semantic_review_v1",
+            "assessor_ref": "GPT-6 Astra",
+            "created_at": "2026-09-20T13:01:20.609018+00:00",
+            "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+            "object_aligned": true,
+            "predicate_aligned": true,
+            "rationale": "SingleR propagates labels from reference samples to test cells based on expression similarity.",
+            "scope_alignment": "aligned",
+            "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "status": "completed",
+            "subject_aligned": true,
+            "support_type": "DIRECT_SUPPORT"
+          },
+          {
+            "activity_ref": "full-06-v2-01:paper_SingleR_CAND_PUB_SingleR_2019_Aran:0a57086c1dee",
+            "assessment_id": "assessment:ee813b4c3cbe6e143b679892",
+            "assessment_method": "offline_source_semantic_review_v1",
+            "assessor_ref": "GPT-6 Astra",
+            "created_at": "2026-09-20T13:01:20.609018+00:00",
+            "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+            "object_aligned": true,
+            "predicate_aligned": true,
+            "rationale": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources.",
+            "scope_alignment": "aligned",
+            "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "status": "completed",
+            "subject_aligned": true,
+            "support_type": "DIRECT_SUPPORT"
+          },
+          {
+            "activity_ref": "full-06-v2-01:recovered_c744746dfe8e1d26:bd365e107134",
+            "assessment_id": "assessment:e11e5e2eefb52b8b80432733",
+            "assessment_method": "offline_source_semantic_review_v1",
+            "assessor_ref": "GPT-6 Astra",
+            "created_at": "2026-09-20T13:01:20.609018+00:00",
+            "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+            "object_aligned": true,
+            "predicate_aligned": true,
+            "rationale": "SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+            "scope_alignment": "aligned",
+            "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "status": "completed",
+            "subject_aligned": true,
+            "support_type": "DIRECT_SUPPORT"
+          }
+        ],
+        "caution_context": [
+          {
+            "caution_id": "evidence-gap:9916be462431789ab740de29",
+            "description": "Version-pinned reference requirement: The method uses annotated reference expression data, but actual reference artifact bytes and immutable revisions have not been acquired. Do not mint ReferenceArtifactRevision from a paper citation or substitute a generic input matrix for a reference artifact.",
+            "evidence": [
+              {
+                "content_hash": "6d833ed42afbf2c51d3ec04290496791c3caae229672b6634cf8772a1f506e08",
+                "end_offset": 59475,
+                "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+                "exact_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+                "locator": {
+                  "kind": "pdf_page",
+                  "value": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "page": 11,
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+                "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+                "start_offset": 58538
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:singler"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:42a6d741144e00f4a8e62c04",
+            "description": "Raw test expression allowance: Raw UMI counts or transcript counts are explicitly allowed and log transformation is not required for rank correlations. Core lacks an admitted accepts_representation predicate; do not translate acceptance into a new required-counts constraint.",
+            "evidence": [
+              {
+                "content_hash": "8210ce118637965088d8469abb8bd619294c89d1c8ec7b1da4e9903b6724f8b0",
+                "end_offset": 5245,
+                "evidence_span_id": "evidence-span:478c711accf5562d599b9d84",
+                "exact_text": "The default \\code{assay.type} is set to \\code{\"logcounts\"} simply for consistency with \\code{\\link{trainSingleR}}.\n#' In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+                "locator": {
+                  "kind": "text_offsets",
+                  "value": "source-artifact:d54e90055021dc5981b762ff1e59e3c6/text-sha256:afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8:4815:5245"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "source_artifact_id": "source-artifact:d54e90055021dc5981b762ff1e59e3c6",
+                "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+                "start_offset": 4815
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "operator-revision:r:singler:SingleR::classifySingleR:2.14.1"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:70c83f97cf8bef8a57f9a67a",
+            "description": "FAQ broad normalized-count summary: Read in context of explicit preceding distinction between reference and test expression; do not globalize the FAQ sentence into every operator input prerequisite.",
+            "evidence": [],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": false,
+            "status": "unbound_evidence_gap",
+            "subject_ids": [
+              "method:singler",
+              "operator-revision:r:singler:SingleR::SingleR:2.14.1",
+              "operator-revision:r:singler:SingleR::classifySingleR:2.14.1",
+              "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:23433a4b65de74cbe6bfea43",
+            "description": "Fibrosis biology, deconvolution and clustering attribution: Macrophage biology is outside this method-decision batch. Ward clustering, Seurat differential expression and DeconRNA-seq are separate methods; their abilities are not assigned to SingleR.",
+            "evidence": [],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": false,
+            "status": "unbound_evidence_gap",
+            "subject_ids": [
+              "method:singler"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          }
+        ],
+        "coverage": "approved_scope_qualified",
+        "facts": [
+          {
+            "assessment_ids": [
+              "assessment:42b9e8ac4d9f37c40e5ad192"
+            ],
+            "binding_basis": "immutable_package_and_exact_excerpt_hash",
+            "binding_verified": true,
+            "constraints": [
+              {
+                "id": "constraint:3e31da7abffff3570d64",
+                "ontology_version": "2.0.0-core-review.1",
+                "record_type": "RepresentationConstraint",
+                "required_value_states": [
+                  "rows named with gene names"
+                ],
+                "schema_version": "sckg-ontology-core-5c-design-v1"
+              }
+            ],
+            "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+            "execution_authorized": false,
+            "execution_gate": false,
+            "knowledge_status": "approved",
+            "locator": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+            "original_source_file_reverified": false,
+            "predicate": "has_requirement",
+            "production_retrieval_eligible": true,
+            "recommendation_eligible": false,
+            "registered_statement": {
+              "assertion_kind": "requirement",
+              "epistemic_status": "asserted",
+              "object_id": "requirement:e1fe7be463224e079f6c",
+              "ontology_version": "2.0.0-core-review.1",
+              "polarity": "POSITIVE",
+              "predicate": "has_requirement",
+              "qualifiers": {
+                "software_version": {
+                  "expression": "2.14.1",
+                  "status": "exact",
+                  "subject_id": "package-release:r:singler:2.14.1"
+                }
+              },
+              "record_type": "StatementRevision",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "scope_status": "explicit",
+              "statement_id": "statement:5a063d137bee5f8da152209d",
+              "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+              "subject_id": "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+            },
+            "requirements": [
+              {
+                "activation_status": "unconditional",
+                "combination": "ALL_OF",
+                "id": "requirement:e1fe7be463224e079f6c",
+                "ontology_version": "2.0.0-core-review.1",
+                "record_type": "Requirement",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "strength": "REQUIRED"
+              }
+            ],
+            "scope": {
+              "approval_implies_applicability": false,
+              "dimensions": {
+                "software_version": "unknown"
+              },
+              "qualifiers": {
+                "software_version": {
+                  "expression": "2.14.1",
+                  "status": "exact",
+                  "subject_id": "package-release:r:singler:2.14.1"
+                }
+              },
+              "scope_status": "explicit",
+              "status": "unknown"
+            },
+            "snapshot_id": "approved-scientific-kg-v2-01",
+            "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "statement": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+            "statement_id": "statement-revision:5a063d137bee5f8da152209d:1",
+            "trusted": true
+          },
+          {
+            "assessment_ids": [
+              "assessment:eb8bc243dc1e7cf71e73189f"
+            ],
+            "binding_basis": "immutable_package_and_exact_excerpt_hash",
+            "binding_verified": true,
+            "constraints": [
+              {
+                "id": "constraint:23ba49b839e10f728dd7",
+                "ontology_version": "2.0.0-core-review.1",
+                "record_type": "RepresentationConstraint",
+                "required_value_states": [
+                  "nonempty intersection of reference and test genes"
+                ],
+                "schema_version": "sckg-ontology-core-5c-design-v1"
+              }
+            ],
+            "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+            "execution_authorized": false,
+            "execution_gate": false,
+            "knowledge_status": "approved",
+            "locator": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+            "original_source_file_reverified": false,
+            "predicate": "has_requirement",
+            "production_retrieval_eligible": true,
+            "recommendation_eligible": false,
+            "registered_statement": {
+              "assertion_kind": "requirement",
+              "epistemic_status": "asserted",
+              "object_id": "requirement:8396a770214001b5b4fb",
+              "ontology_version": "2.0.0-core-review.1",
+              "polarity": "POSITIVE",
+              "predicate": "has_requirement",
+              "qualifiers": {
+                "software_version": {
+                  "expression": "2.14.1",
+                  "status": "exact",
+                  "subject_id": "package-release:r:singler:2.14.1"
+                }
+              },
+              "record_type": "StatementRevision",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "scope_status": "explicit",
+              "statement_id": "statement:d014850014fb8b55ccfc4e61",
+              "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+              "subject_id": "operator-revision:r:singler:SingleR::SingleR:2.14.1"
+            },
+            "requirements": [
+              {
+                "activation_status": "unconditional",
+                "combination": "ALL_OF",
+                "id": "requirement:8396a770214001b5b4fb",
+                "ontology_version": "2.0.0-core-review.1",
+                "record_type": "Requirement",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "strength": "REQUIRED"
+              }
+            ],
+            "scope": {
+              "approval_implies_applicability": false,
+              "dimensions": {
+                "software_version": "unknown"
+              },
+              "qualifiers": {
+                "software_version": {
+                  "expression": "2.14.1",
+                  "status": "exact",
+                  "subject_id": "package-release:r:singler:2.14.1"
+                }
+              },
+              "scope_status": "explicit",
+              "status": "unknown"
+            },
+            "snapshot_id": "approved-scientific-kg-v2-01",
+            "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "statement": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+            "statement_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+            "trusted": true
+          },
+          {
+            "assessment_ids": [
+              "assessment:de657b5fbf9bcefb2552b853"
+            ],
+            "binding_basis": "immutable_package_and_exact_excerpt_hash",
+            "binding_verified": true,
+            "constraints": [],
+            "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+            "execution_authorized": false,
+            "execution_gate": false,
+            "knowledge_status": "approved",
+            "locator": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+            "original_source_file_reverified": false,
+            "predicate": "supports_task",
+            "production_retrieval_eligible": true,
+            "recommendation_eligible": false,
+            "registered_statement": {
+              "assertion_kind": "capability",
+              "epistemic_status": "asserted",
+              "object_id": "task:cell-type-annotation",
+              "ontology_version": "2.0.0-core-review.1",
+              "polarity": "POSITIVE",
+              "predicate": "supports_task",
+              "qualifiers": {
+                "modality": "scRNA-seq"
+              },
+              "record_type": "StatementRevision",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "scope_status": "explicit",
+              "statement_id": "statement:ced3e34b43c76c9407468fb2",
+              "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "subject_id": "method:singler"
+            },
+            "requirements": [],
+            "scope": {
+              "approval_implies_applicability": false,
+              "dimensions": {
+                "modality": "unknown"
+              },
+              "qualifiers": {
+                "modality": "scRNA-seq"
+              },
+              "scope_status": "explicit",
+              "status": "unknown"
+            },
+            "snapshot_id": "approved-scientific-kg-v2-01",
+            "source_artifact_id": "source-artifact:a4f7b38fb7e124d555400f8db485c390",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+            "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "trusted": true
+          }
+        ],
+        "gaps": [],
+        "identity": "Approved Scientific KG v2",
+        "legacy_kg_consulted": false,
+        "output_ports": [],
+        "reference_links": {
+          "1": {
+            "caution_ids": [],
+            "statement_ids": [
+              "statement-revision:5a063d137bee5f8da152209d:1"
+            ]
+          },
+          "2": {
+            "caution_ids": [],
+            "statement_ids": [
+              "statement-revision:d014850014fb8b55ccfc4e61:1"
+            ]
+          },
+          "3": {
+            "caution_ids": [],
+            "statement_ids": [
+              "statement-revision:ced3e34b43c76c9407468fb2:1"
+            ]
+          },
+          "4": {
+            "caution_ids": [],
+            "statement_ids": [
+              "statement-revision:ced3e34b43c76c9407468fb2:1"
+            ]
+          },
+          "5": {
+            "caution_ids": [],
+            "statement_ids": [
+              "statement-revision:ced3e34b43c76c9407468fb2:1"
+            ]
+          },
+          "6": {
+            "caution_ids": [
+              "evidence-gap:9916be462431789ab740de29"
+            ],
+            "statement_ids": []
+          },
+          "7": {
+            "caution_ids": [
+              "evidence-gap:42a6d741144e00f4a8e62c04"
+            ],
+            "statement_ids": []
+          }
+        },
+        "snapshot_id": "approved-scientific-kg-v2-01"
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:scientific_kg",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": {
+        "candidate_only": false,
+        "claim_ids": [
+          "statement-revision:5a063d137bee5f8da152209d:1",
+          "statement-revision:ced3e34b43c76c9407468fb2:1",
+          "statement-revision:d014850014fb8b55ccfc4e61:1"
+        ],
+        "direct_evidence_chunk_ids": [
+          "approved-v2:a90fcf086e1d71d73a6e9502",
+          "approved-v2:3baaf9c26e5bfc94a0951e93",
+          "approved-v2:bf28f60dbfacce443e310e6f",
+          "approved-v2:da656b7a304bf427841ba866",
+          "approved-v2:8c6e4d35063c19b8a67f5eab"
+        ],
+        "evidence_gap_id": "",
+        "evidence_span_ids": [],
+        "fallback_reason": "",
+        "operator_revision_id": "",
+        "reason": "conditional_knowledge_scope_unknown",
+        "scientific_kg_used": true,
+        "scope_status": "unknown",
+        "source_revision_ids": [],
+        "status": "CLARIFICATION_REQUIRED",
+        "version_status": ""
+      },
+      "governance_leakage_count": 0,
+      "latency_ms": 3.157750004902482,
+      "mode": "kg_bm25",
+      "pipeline": [
+        "approved_manifest_allowlist",
+        "scope_policy",
+        "approved_exact_evidence_index"
+      ],
+      "scientific_evidence": {
+        "adapter": "ApprovedScientificKG",
+        "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+        "approved_statements_visible": 121,
+        "caution_policy": {
+          "execution_authorized": false,
+          "execution_gate": false,
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "trusted": false
+        },
+        "cautions": [
+          {
+            "caution_id": "evidence-gap:9916be462431789ab740de29",
+            "description": "Version-pinned reference requirement: The method uses annotated reference expression data, but actual reference artifact bytes and immutable revisions have not been acquired. Do not mint ReferenceArtifactRevision from a paper citation or substitute a generic input matrix for a reference artifact.",
+            "evidence": [
+              {
+                "content_hash": "6d833ed42afbf2c51d3ec04290496791c3caae229672b6634cf8772a1f506e08",
+                "end_offset": 59475,
+                "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+                "exact_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+                "locator": {
+                  "kind": "pdf_page",
+                  "value": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "page": 11,
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+                "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+                "start_offset": 58538
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:singler"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:42a6d741144e00f4a8e62c04",
+            "description": "Raw test expression allowance: Raw UMI counts or transcript counts are explicitly allowed and log transformation is not required for rank correlations. Core lacks an admitted accepts_representation predicate; do not translate acceptance into a new required-counts constraint.",
+            "evidence": [
+              {
+                "content_hash": "8210ce118637965088d8469abb8bd619294c89d1c8ec7b1da4e9903b6724f8b0",
+                "end_offset": 5245,
+                "evidence_span_id": "evidence-span:478c711accf5562d599b9d84",
+                "exact_text": "The default \\code{assay.type} is set to \\code{\"logcounts\"} simply for consistency with \\code{\\link{trainSingleR}}.\n#' In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+                "locator": {
+                  "kind": "text_offsets",
+                  "value": "source-artifact:d54e90055021dc5981b762ff1e59e3c6/text-sha256:afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8:4815:5245"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "source_artifact_id": "source-artifact:d54e90055021dc5981b762ff1e59e3c6",
+                "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+                "start_offset": 4815
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "operator-revision:r:singler:SingleR::classifySingleR:2.14.1"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:70c83f97cf8bef8a57f9a67a",
+            "description": "FAQ broad normalized-count summary: Read in context of explicit preceding distinction between reference and test expression; do not globalize the FAQ sentence into every operator input prerequisite.",
+            "evidence": [],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": false,
+            "status": "unbound_evidence_gap",
+            "subject_ids": [
+              "method:singler",
+              "operator-revision:r:singler:SingleR::SingleR:2.14.1",
+              "operator-revision:r:singler:SingleR::classifySingleR:2.14.1",
+              "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:23433a4b65de74cbe6bfea43",
+            "description": "Fibrosis biology, deconvolution and clustering attribution: Macrophage biology is outside this method-decision batch. Ward clustering, Seurat differential expression and DeconRNA-seq are separate methods; their abilities are not assigned to SingleR.",
+            "evidence": [],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": false,
+            "status": "unbound_evidence_gap",
+            "subject_ids": [
+              "method:singler"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          }
+        ],
+        "eligible_chunk_ids": [
+          "approved-v2:a90fcf086e1d71d73a6e9502",
+          "approved-v2:3baaf9c26e5bfc94a0951e93",
+          "approved-v2:bf28f60dbfacce443e310e6f",
+          "approved-v2:da656b7a304bf427841ba866",
+          "approved-v2:8c6e4d35063c19b8a67f5eab"
+        ],
+        "excluded_statement_ids": [],
+        "execution_authorized": false,
+        "fallback_reason": "",
+        "final_graph_chunk_ids": [
+          "approved-v2:a90fcf086e1d71d73a6e9502",
+          "approved-v2:3baaf9c26e5bfc94a0951e93",
+          "approved-v2:bf28f60dbfacce443e310e6f",
+          "approved-v2:da656b7a304bf427841ba866",
+          "approved-v2:8c6e4d35063c19b8a67f5eab"
+        ],
+        "hash_verified": true,
+        "held_statements_visible": 0,
+        "legacy_kg_consulted": false,
+        "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda",
+        "paths": [
+          {
+            "claim_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "approved-v2:a90fcf086e1d71d73a6e9502"
+                ],
+                "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+                "locator": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+                "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb"
+              }
+            ],
+            "fact": {
+              "assessment_ids": [
+                "assessment:eb8bc243dc1e7cf71e73189f"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:pinned_singler_single_r:830217a0805a",
+                  "assessment_id": "assessment:eb8bc243dc1e7cf71e73189f",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [
+                {
+                  "id": "constraint:23ba49b839e10f728dd7",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "RepresentationConstraint",
+                  "required_value_states": [
+                    "nonempty intersection of reference and test genes"
+                  ],
+                  "schema_version": "sckg-ontology-core-5c-design-v1"
+                }
+              ],
+              "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "has_requirement",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "requirement",
+                "epistemic_status": "asserted",
+                "object_id": "requirement:8396a770214001b5b4fb",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "has_requirement",
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:d014850014fb8b55ccfc4e61",
+                "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+                "subject_id": "operator-revision:r:singler:SingleR::SingleR:2.14.1"
+              },
+              "requirements": [
+                {
+                  "activation_status": "unconditional",
+                  "combination": "ALL_OF",
+                  "id": "requirement:8396a770214001b5b4fb",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "Requirement",
+                  "schema_version": "sckg-ontology-core-5c-design-v1",
+                  "strength": "REQUIRED"
+                }
+              ],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "software_version": "unknown"
+                },
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+              "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+              "statement": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+              "statement_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+              "trusted": true
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "approved-v2:3baaf9c26e5bfc94a0951e93"
+                ],
+                "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+                "locator": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+                "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb"
+              }
+            ],
+            "fact": {
+              "assessment_ids": [
+                "assessment:de657b5fbf9bcefb2552b853"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:pinned_singler_vignette:9c9cbfbf15b0",
+                  "assessment_id": "assessment:de657b5fbf9bcefb2552b853",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "SingleR propagates labels from reference samples to test cells based on expression similarity.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [],
+              "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "supports_task",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "capability",
+                "epistemic_status": "asserted",
+                "object_id": "task:cell-type-annotation",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "supports_task",
+                "qualifiers": {
+                  "modality": "scRNA-seq"
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:ced3e34b43c76c9407468fb2",
+                "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+                "subject_id": "method:singler"
+              },
+              "requirements": [],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "modality": "unknown"
+                },
+                "qualifiers": {
+                  "modality": "scRNA-seq"
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:a4f7b38fb7e124d555400f8db485c390",
+              "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+              "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+              "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "trusted": true
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "approved-v2:bf28f60dbfacce443e310e6f"
+                ],
+                "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+                "locator": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+                "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf"
+              }
+            ],
+            "fact": {
+              "assessment_ids": [
+                "assessment:ee813b4c3cbe6e143b679892"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:paper_SingleR_CAND_PUB_SingleR_2019_Aran:0a57086c1dee",
+                  "assessment_id": "assessment:ee813b4c3cbe6e143b679892",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [],
+              "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "supports_task",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "capability",
+                "epistemic_status": "asserted",
+                "object_id": "task:cell-type-annotation",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "supports_task",
+                "qualifiers": {
+                  "modality": "scRNA-seq"
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:ced3e34b43c76c9407468fb2",
+                "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+                "subject_id": "method:singler"
+              },
+              "requirements": [],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "modality": "unknown"
+                },
+                "qualifiers": {
+                  "modality": "scRNA-seq"
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+              "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+              "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+              "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "trusted": true
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "approved-v2:da656b7a304bf427841ba866"
+                ],
+                "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+                "locator": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+                "source_revision_id": "source-revision:aac7d6351f74cbc7c4ab775d"
+              }
+            ],
+            "fact": {
+              "assessment_ids": [
+                "assessment:e11e5e2eefb52b8b80432733"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:recovered_c744746dfe8e1d26:bd365e107134",
+                  "assessment_id": "assessment:e11e5e2eefb52b8b80432733",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [],
+              "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "supports_task",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "capability",
+                "epistemic_status": "asserted",
+                "object_id": "task:cell-type-annotation",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "supports_task",
+                "qualifiers": {
+                  "modality": "scRNA-seq"
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:ced3e34b43c76c9407468fb2",
+                "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+                "subject_id": "method:singler"
+              },
+              "requirements": [],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "modality": "unknown"
+                },
+                "qualifiers": {
+                  "modality": "scRNA-seq"
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:5c01eb692907d03c08112688ef39f065",
+              "source_revision_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+              "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+              "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "trusted": true
+            },
+            "status": "mapped"
+          },
+          {
+            "claim_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+            "evidence": [
+              {
+                "binding_verified": true,
+                "chunk_ids": [
+                  "approved-v2:8c6e4d35063c19b8a67f5eab"
+                ],
+                "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+                "locator": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+                "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb"
+              }
+            ],
+            "fact": {
+              "assessment_ids": [
+                "assessment:42b9e8ac4d9f37c40e5ad192"
+              ],
+              "assessments": [
+                {
+                  "activity_ref": "full-06-v2-01:pinned_singler_train:57719f98471c",
+                  "assessment_id": "assessment:42b9e8ac4d9f37c40e5ad192",
+                  "assessment_method": "offline_source_semantic_review_v1",
+                  "assessor_ref": "GPT-6 Astra",
+                  "created_at": "2026-09-20T13:01:20.609018+00:00",
+                  "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+                  "object_aligned": true,
+                  "predicate_aligned": true,
+                  "rationale": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+                  "scope_alignment": "aligned",
+                  "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+                  "status": "completed",
+                  "subject_aligned": true,
+                  "support_type": "DIRECT_SUPPORT"
+                }
+              ],
+              "binding_basis": "immutable_package_and_exact_excerpt_hash",
+              "binding_verified": true,
+              "constraints": [
+                {
+                  "id": "constraint:3e31da7abffff3570d64",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "RepresentationConstraint",
+                  "required_value_states": [
+                    "rows named with gene names"
+                  ],
+                  "schema_version": "sckg-ontology-core-5c-design-v1"
+                }
+              ],
+              "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+              "execution_authorized": false,
+              "execution_gate": false,
+              "knowledge_status": "approved",
+              "locator": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+              "original_source_file_reverified": false,
+              "output_ports": [],
+              "predicate": "has_requirement",
+              "production_retrieval_eligible": true,
+              "recommendation_eligible": false,
+              "registered_statement": {
+                "assertion_kind": "requirement",
+                "epistemic_status": "asserted",
+                "object_id": "requirement:e1fe7be463224e079f6c",
+                "ontology_version": "2.0.0-core-review.1",
+                "polarity": "POSITIVE",
+                "predicate": "has_requirement",
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "record_type": "StatementRevision",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "scope_status": "explicit",
+                "statement_id": "statement:5a063d137bee5f8da152209d",
+                "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+                "subject_id": "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+              },
+              "requirements": [
+                {
+                  "activation_status": "unconditional",
+                  "combination": "ALL_OF",
+                  "id": "requirement:e1fe7be463224e079f6c",
+                  "ontology_version": "2.0.0-core-review.1",
+                  "record_type": "Requirement",
+                  "schema_version": "sckg-ontology-core-5c-design-v1",
+                  "strength": "REQUIRED"
+                }
+              ],
+              "scope": {
+                "approval_implies_applicability": false,
+                "dimensions": {
+                  "software_version": "unknown"
+                },
+                "qualifiers": {
+                  "software_version": {
+                    "expression": "2.14.1",
+                    "status": "exact",
+                    "subject_id": "package-release:r:singler:2.14.1"
+                  }
+                },
+                "scope_status": "explicit",
+                "status": "unknown"
+              },
+              "snapshot_id": "approved-scientific-kg-v2-01",
+              "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+              "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+              "statement": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+              "statement_id": "statement-revision:5a063d137bee5f8da152209d:1",
+              "trusted": true
+            },
+            "status": "mapped"
+          }
+        ],
+        "query_count": 1,
+        "scope_context": {},
+        "scope_policy_active": true,
+        "snapshot_id": "approved-scientific-kg-v2-01",
+        "subjects": [
+          "method:singler",
+          "operator-revision:r:singler:SingleR::SingleR:2.14.1",
+          "operator-revision:r:singler:SingleR::classifySingleR:2.14.1",
+          "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+        ]
+      },
+      "snippets": [
+        {
+          "chunk_id": "approved-v2:a90fcf086e1d71d73a6e9502",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "relevance_score": 13.0,
+          "source_bound": true,
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+          "task": "",
+          "title": "pinned_singler_single_r",
+          "tool_name": "singler"
+        },
+        {
+          "chunk_id": "approved-v2:3baaf9c26e5bfc94a0951e93",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "`r Biocpkg(\"SingleR\")` is an automatic annotation method for single-cell RNA sequencing (scRNAseq) data [@aran2019reference].\nGiven a reference dataset of samples (single-cell or bulk) with known labels, \nit labels new cells from a test dataset based on similarity to the reference.",
+          "claim_type": "method",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "relevance_score": 12.0,
+          "source_bound": true,
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+          "task": "",
+          "title": "pinned_singler_vignette",
+          "tool_name": "singler"
+        },
+        {
+          "chunk_id": "approved-v2:bf28f60dbfacce443e310e6f",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+          "claim_type": "method",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:d426b082f012b8be5a4f74cf",
+          "relevance_score": 12.0,
+          "source_bound": true,
+          "source_id": "source-revision:d426b082f012b8be5a4f74cf",
+          "source_span": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+          "task": "",
+          "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+          "tool_name": "singler"
+        },
+        {
+          "chunk_id": "approved-v2:da656b7a304bf427841ba866",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Performs unbiased cell type recognition from single-cell RNA sequencing data, by leveraging reference transcriptomic datasets of pure cell types to infer the cell of origin of each single cell independently.",
+          "claim_type": "method",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+          "relevance_score": 12.0,
+          "source_bound": true,
+          "source_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+          "source_span": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+          "task": "",
+          "title": "recovered_c744746dfe8e1d26",
+          "tool_name": "singler"
+        },
+        {
+          "chunk_id": "approved-v2:8c6e4d35063c19b8a67f5eab",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\n#' Each row should be named with the gene name.\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "relevance_score": 11.0,
+          "source_bound": true,
+          "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "source_span": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+          "task": "",
+          "title": "pinned_singler_train",
+          "tool_name": "singler"
+        }
+      ],
+      "stage_timings": []
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 43099,
+      "process_started_at": "2026-09-20T20:49:22.400809Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "cell_type_annotation",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.95,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "SINGLE_CELL",
+      "error_type": "",
+      "input_tokens": 2064,
+      "intent": "evidence_qa",
+      "latency_ms": 3401.227167007164,
+      "model_name": "deepseek-v4-pro",
+      "needs_clarification": false,
+      "output_tokens": 502,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "requested_tools": [],
+      "retrieval_query": "What are the input scale and gene correspondence requirements for SingleR classic mode reference annotation, and what conditions should be verified before starting?",
+      "status": "ready",
+      "task_switch": false,
+      "tool_calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "cell_type_annotation",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode"
+          ],
+          "query": "SingleR classic mode input scale and gene correspondence requirements for reference annotation",
+          "reason": "User asks whether input scale and gene correspondence are sufficient to start SingleR classic mode and what conditions to verify first.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "SingleR"
+          ],
+          "top_k": 5
+        }
+      ],
+      "user_reported_context": {
+        "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+        "mapping_table_provided": "false (user: mapping_table_provided=false)",
+        "marker_mode": "classic (user: marker_mode=classic)",
+        "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+        "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+        "species": "human for both test and reference (user: species=human for both test and reference)",
+        "test_assay": "UMI counts (user: test_assay=UMI counts)",
+        "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+      }
+    },
+    "semantic_route": {
+      "confidence": 0.95,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "semantic_primary",
+      "source": "semantic_parser"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 11618.17,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "dev-K03-reference-annotation-b--scientific_kg--freeze-r0",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "cell_type_annotation",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [
+      "claim-001"
+    ],
+    "last_plan_id": null,
+    "referenced_tools": [
+      "singler"
+    ],
+    "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "state_epoch": 0,
+    "user_reported_context": {
+      "environment": "Bioconductor 3.21 (user: environment=Bioconductor 3.21 / version must be checked against book session)",
+      "mapping_table_provided": "false (user: mapping_table_provided=false)",
+      "marker_mode": "classic (user: marker_mode=classic)",
+      "reference_assay": "log-normalized expression (user: reference_assay=log-normalized expression)",
+      "reference_gene_namespace": "HGNC symbols (user: reference_gene_namespace=HGNC symbols)",
+      "species": "human for both test and reference (user: species=human for both test and reference)",
+      "test_assay": "UMI counts (user: test_assay=UMI counts)",
+      "test_gene_namespace": "Ensembl stable IDs (user: test_gene_namespace=Ensembl stable IDs)"
+    }
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "EVIDENCE_QA",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "EVIDENCE_QA",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "cell_type_annotation",
+    "modality": "scRNA-seq",
+    "task": "cell_type_annotation"
+  },
+  "final_report": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。[1]\n\n测试与参考必须有非空基因交集；若交集为空（例如基因注释命名空间不同），会报错。[2]\n\n你提供的：reference_gene_namespace=HGNC symbols；test_gene_namespace=Ensembl stable IDs。\n\n你提供的：reference_assay=log-normalized expression；test_assay=UMI counts。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此不能直接开始，需先确认交集是否非空。\n\n请提供测试与参考基因交集是否非空，或提供用于映射 HGNC symbols 与 Ensembl stable IDs 的映射表/已转换的基因名？",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [
+    {
+      "authority": "source_bound",
+      "claim_text": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).",
+      "claim_type": "input_requirement",
+      "evidence_span": {
+        "content_hash": "edcd88841d89c2b313145cd28c9e00f31972299e30f6dc8253b190fb2c85fba0",
+        "end_offset": 416,
+        "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+        "exact_text": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\n#' Each row should be named with the gene name.\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.",
+        "locator": {
+          "kind": "text_offsets",
+          "value": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416"
+        },
+        "ontology_version": "2.0.0-core-review.1",
+        "schema_version": "sckg-ontology-core-5c-design-v1",
+        "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "start_offset": 128
+      },
+      "exact_excerpt": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\n#' Each row should be named with the gene name.\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.",
+      "index": 1,
+      "kg_statements": [
+        {
+          "assessment_ids": [
+            "assessment:42b9e8ac4d9f37c40e5ad192"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:pinned_singler_train:57719f98471c",
+              "assessment_id": "assessment:42b9e8ac4d9f37c40e5ad192",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [
+            {
+              "id": "constraint:3e31da7abffff3570d64",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "required_value_states": [
+                "rows named with gene names"
+              ],
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:2a1d8c6222deffc2c2a44047",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "requirement",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:e1fe7be463224e079f6c",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:5a063d137bee5f8da152209d",
+            "statement_revision_id": "statement-revision:5a063d137bee5f8da152209d:1",
+            "subject_id": "operator-revision:r:singler:SingleR::trainSingleR:2.14.1"
+          },
+          "requirements": [
+            {
+              "activation_status": "unconditional",
+              "combination": "ALL_OF",
+              "id": "requirement:e1fe7be463224e079f6c",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "REQUIRED"
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "software_version": "unknown"
+            },
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+          "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "statement": "Reference data have genes in rows and known-labelled reference samples in columns; normalization is separately conditioned on automatic marker detection.",
+          "statement_id": "statement-revision:5a063d137bee5f8da152209d:1",
+          "trusted": true
+        }
+      ],
+      "knowledge_source": "KG_GROUNDED",
+      "selected_for_claim_types": [
+        "input_requirement"
+      ],
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_revision": {
+        "artifact_hash": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+        "source_artifact_id": "source-artifact:536f448fffdd3507aa80196bcbb37fe4",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "source_type": "official_release_source",
+        "source_url": "https://bioconductor.org/packages/SingleR",
+        "source_work_id": "source-work:aa96d9bc1901f8e4be7959d3",
+        "text_hash": "e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2",
+        "title": "pinned_singler_train",
+        "version": "2.14.1"
+      },
+      "source_span": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+      "source_span_id": "approved-v2:8c6e4d35063c19b8a67f5eab",
+      "source_type": "official_release_source",
+      "source_url": "https://bioconductor.org/packages/SingleR",
+      "support_claim_types": [
+        "input_requirement"
+      ],
+      "title": "pinned_singler_train",
+      "tool_name": "singler"
+    },
+    {
+      "authority": "source_bound",
+      "claim_text": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "claim_type": "input_requirement",
+      "evidence_span": {
+        "content_hash": "89cb7a70e828834889396c29fcb769333d229484e2f42f68b165a6483db331ce",
+        "end_offset": 3224,
+        "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+        "exact_text": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+        "locator": {
+          "kind": "text_offsets",
+          "value": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224"
+        },
+        "ontology_version": "2.0.0-core-review.1",
+        "schema_version": "sckg-ontology-core-5c-design-v1",
+        "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "start_offset": 2979
+      },
+      "exact_excerpt": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "index": 2,
+      "kg_statements": [
+        {
+          "assessment_ids": [
+            "assessment:eb8bc243dc1e7cf71e73189f"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:pinned_singler_single_r:830217a0805a",
+              "assessment_id": "assessment:eb8bc243dc1e7cf71e73189f",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [
+            {
+              "id": "constraint:23ba49b839e10f728dd7",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "RepresentationConstraint",
+              "required_value_states": [
+                "nonempty intersection of reference and test genes"
+              ],
+              "schema_version": "sckg-ontology-core-5c-design-v1"
+            }
+          ],
+          "evidence_span_id": "evidence-span:0ab5fd03173fee190ba5fae9",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "has_requirement",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "requirement",
+            "epistemic_status": "asserted",
+            "object_id": "requirement:8396a770214001b5b4fb",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "has_requirement",
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:d014850014fb8b55ccfc4e61",
+            "statement_revision_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+            "subject_id": "operator-revision:r:singler:SingleR::SingleR:2.14.1"
+          },
+          "requirements": [
+            {
+              "activation_status": "unconditional",
+              "combination": "ALL_OF",
+              "id": "requirement:8396a770214001b5b4fb",
+              "ontology_version": "2.0.0-core-review.1",
+              "record_type": "Requirement",
+              "schema_version": "sckg-ontology-core-5c-design-v1",
+              "strength": "REQUIRED"
+            }
+          ],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "software_version": "unknown"
+            },
+            "qualifiers": {
+              "software_version": {
+                "expression": "2.14.1",
+                "status": "exact",
+                "subject_id": "package-release:r:singler:2.14.1"
+              }
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+          "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "statement": "The test and reference must have a nonempty gene intersection; different annotation namespaces can violate this condition.",
+          "statement_id": "statement-revision:d014850014fb8b55ccfc4e61:1",
+          "trusted": true
+        }
+      ],
+      "knowledge_source": "KG_GROUNDED",
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_revision": {
+        "artifact_hash": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+        "source_artifact_id": "source-artifact:0097af5af0c06863f2a4ea63c537e68c",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "source_type": "official_release_source",
+        "source_url": "https://bioconductor.org/packages/SingleR",
+        "source_work_id": "source-work:aa96d9bc1901f8e4be7959d3",
+        "text_hash": "654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181",
+        "title": "pinned_singler_single_r",
+        "version": "2.14.1"
+      },
+      "source_span": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+      "source_span_id": "approved-v2:a90fcf086e1d71d73a6e9502",
+      "source_type": "official_release_source",
+      "source_url": "https://bioconductor.org/packages/SingleR",
+      "title": "pinned_singler_single_r",
+      "tool_name": "singler"
+    },
+    {
+      "authority": "source_bound",
+      "claim_text": "`r Biocpkg(\"SingleR\")` is an automatic annotation method for single-cell RNA sequencing (scRNAseq) data [@aran2019reference].\nGiven a reference dataset of samples (single-cell or bulk) with known labels, \nit labels new cells from a test dataset based on similarity to the reference.",
+      "claim_type": "method",
+      "evidence_span": {
+        "content_hash": "8362f3fd51f38c31e3924e58d39e2ab1bf3b302aae5eb0a7115d375946d7f063",
+        "end_offset": 1185,
+        "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+        "exact_text": "`r Biocpkg(\"SingleR\")` is an automatic annotation method for single-cell RNA sequencing (scRNAseq) data [@aran2019reference].\nGiven a reference dataset of samples (single-cell or bulk) with known labels, \nit labels new cells from a test dataset based on similarity to the reference.",
+        "locator": {
+          "kind": "text_offsets",
+          "value": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185"
+        },
+        "ontology_version": "2.0.0-core-review.1",
+        "schema_version": "sckg-ontology-core-5c-design-v1",
+        "source_artifact_id": "source-artifact:a4f7b38fb7e124d555400f8db485c390",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "start_offset": 903
+      },
+      "exact_excerpt": "`r Biocpkg(\"SingleR\")` is an automatic annotation method for single-cell RNA sequencing (scRNAseq) data [@aran2019reference].\nGiven a reference dataset of samples (single-cell or bulk) with known labels, \nit labels new cells from a test dataset based on similarity to the reference.",
+      "index": 3,
+      "kg_statements": [
+        {
+          "assessment_ids": [
+            "assessment:de657b5fbf9bcefb2552b853"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:pinned_singler_vignette:9c9cbfbf15b0",
+              "assessment_id": "assessment:de657b5fbf9bcefb2552b853",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "SingleR propagates labels from reference samples to test cells based on expression similarity.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:605bf7bf44b38924bf6c0845",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:cell-type-annotation",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:ced3e34b43c76c9407468fb2",
+            "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "subject_id": "method:singler"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:a4f7b38fb7e124d555400f8db485c390",
+          "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+          "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+          "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+          "trusted": true
+        }
+      ],
+      "knowledge_source": "KG_GROUNDED",
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_revision": {
+        "artifact_hash": "256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d",
+        "source_artifact_id": "source-artifact:a4f7b38fb7e124d555400f8db485c390",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "source_type": "official_release_source",
+        "source_url": "https://bioconductor.org/packages/SingleR",
+        "source_work_id": "source-work:aa96d9bc1901f8e4be7959d3",
+        "text_hash": "256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d",
+        "title": "pinned_singler_vignette",
+        "version": "2.14.1"
+      },
+      "source_span": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+      "source_span_id": "approved-v2:3baaf9c26e5bfc94a0951e93",
+      "source_type": "official_release_source",
+      "source_url": "https://bioconductor.org/packages/SingleR",
+      "title": "pinned_singler_vignette",
+      "tool_name": "singler"
+    },
+    {
+      "authority": "source_bound",
+      "claim_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+      "claim_type": "method",
+      "evidence_span": {
+        "content_hash": "6d833ed42afbf2c51d3ec04290496791c3caae229672b6634cf8772a1f506e08",
+        "end_offset": 59475,
+        "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+        "exact_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+        "locator": {
+          "kind": "pdf_page",
+          "value": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475"
+        },
+        "ontology_version": "2.0.0-core-review.1",
+        "page": 11,
+        "schema_version": "sckg-ontology-core-5c-design-v1",
+        "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+        "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+        "start_offset": 58538
+      },
+      "exact_excerpt": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+      "index": 4,
+      "kg_statements": [
+        {
+          "assessment_ids": [
+            "assessment:ee813b4c3cbe6e143b679892"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:paper_SingleR_CAND_PUB_SingleR_2019_Aran:0a57086c1dee",
+              "assessment_id": "assessment:ee813b4c3cbe6e143b679892",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:cell-type-annotation",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:ced3e34b43c76c9407468fb2",
+            "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "subject_id": "method:singler"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+          "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+          "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+          "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+          "trusted": true
+        }
+      ],
+      "knowledge_source": "KG_GROUNDED",
+      "source_bound": true,
+      "source_id": "source-revision:d426b082f012b8be5a4f74cf",
+      "source_revision": {
+        "artifact_hash": "5af541933e2bb2ad102a600ec4a900cb82790b900ebf7e499661772a83f0a5ad",
+        "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+        "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+        "source_type": "primary_method_paper",
+        "source_url": "https://doi.org/10.1038/s41590-018-0276-y",
+        "source_work_id": "source-work:df17e1e6195f7ab35d6f516a",
+        "text_hash": "c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9",
+        "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+        "version": "published-doi:10.1038/s41590-018-0276-y"
+      },
+      "source_span": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+      "source_span_id": "approved-v2:bf28f60dbfacce443e310e6f",
+      "source_type": "primary_method_paper",
+      "source_url": "https://doi.org/10.1038/s41590-018-0276-y",
+      "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+      "tool_name": "singler"
+    },
+    {
+      "authority": "source_bound",
+      "claim_text": "Performs unbiased cell type recognition from single-cell RNA sequencing data, by leveraging reference transcriptomic datasets of pure cell types to infer the cell of origin of each single cell independently.",
+      "claim_type": "method",
+      "evidence_span": {
+        "content_hash": "52c289d6e0e2778d047f570c6b6cc943cd270ef579ee8daa3eef195a92adcaa7",
+        "end_offset": 594,
+        "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+        "exact_text": "Performs unbiased cell type recognition from single-cell RNA sequencing data, by leveraging reference transcriptomic datasets of pure cell types to infer the cell of origin of each single cell independently.",
+        "locator": {
+          "kind": "text_offsets",
+          "value": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594"
+        },
+        "ontology_version": "2.0.0-core-review.1",
+        "schema_version": "sckg-ontology-core-5c-design-v1",
+        "source_artifact_id": "source-artifact:5c01eb692907d03c08112688ef39f065",
+        "source_revision_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+        "start_offset": 387
+      },
+      "exact_excerpt": "Performs unbiased cell type recognition from single-cell RNA sequencing data, by leveraging reference transcriptomic datasets of pure cell types to infer the cell of origin of each single cell independently.",
+      "index": 5,
+      "kg_statements": [
+        {
+          "assessment_ids": [
+            "assessment:e11e5e2eefb52b8b80432733"
+          ],
+          "assessments": [
+            {
+              "activity_ref": "full-06-v2-01:recovered_c744746dfe8e1d26:bd365e107134",
+              "assessment_id": "assessment:e11e5e2eefb52b8b80432733",
+              "assessment_method": "offline_source_semantic_review_v1",
+              "assessor_ref": "GPT-6 Astra",
+              "created_at": "2026-09-20T13:01:20.609018+00:00",
+              "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+              "object_aligned": true,
+              "predicate_aligned": true,
+              "rationale": "SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+              "scope_alignment": "aligned",
+              "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+              "status": "completed",
+              "subject_aligned": true,
+              "support_type": "DIRECT_SUPPORT"
+            }
+          ],
+          "binding_basis": "immutable_package_and_exact_excerpt_hash",
+          "binding_verified": true,
+          "constraints": [],
+          "evidence_span_id": "evidence-span:20a9fd522de320b864cb8aa4",
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_status": "approved",
+          "locator": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+          "original_source_file_reverified": false,
+          "output_ports": [],
+          "predicate": "supports_task",
+          "production_retrieval_eligible": true,
+          "recommendation_eligible": false,
+          "registered_statement": {
+            "assertion_kind": "capability",
+            "epistemic_status": "asserted",
+            "object_id": "task:cell-type-annotation",
+            "ontology_version": "2.0.0-core-review.1",
+            "polarity": "POSITIVE",
+            "predicate": "supports_task",
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "record_type": "StatementRevision",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "scope_status": "explicit",
+            "statement_id": "statement:ced3e34b43c76c9407468fb2",
+            "statement_revision_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+            "subject_id": "method:singler"
+          },
+          "requirements": [],
+          "scope": {
+            "approval_implies_applicability": false,
+            "dimensions": {
+              "modality": "unknown"
+            },
+            "qualifiers": {
+              "modality": "scRNA-seq"
+            },
+            "scope_status": "explicit",
+            "status": "unknown"
+          },
+          "snapshot_id": "approved-scientific-kg-v2-01",
+          "source_artifact_id": "source-artifact:5c01eb692907d03c08112688ef39f065",
+          "source_revision_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+          "statement": "SingleR annotates single-cell gene expression by correlation with reference expression profiles. References listed for mouse and human are examples, not universally interchangeable reference resources. ; SingleR propagates labels from reference samples to test cells based on expression similarity. ; SingleR performs reference-based cell type annotation; the source word unbiased is not converted into a measured performance claim.",
+          "statement_id": "statement-revision:ced3e34b43c76c9407468fb2:1",
+          "trusted": true
+        }
+      ],
+      "knowledge_source": "KG_GROUNDED",
+      "source_bound": true,
+      "source_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+      "source_revision": {
+        "artifact_hash": "65c1e341952a6f342178ec27429ff397e2ec4ff6876ab6ae7c43ff12f1d8492d",
+        "source_artifact_id": "source-artifact:5c01eb692907d03c08112688ef39f065",
+        "source_revision_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+        "source_type": "official_api_or_package_documentation",
+        "source_url": "https://bioconductor.org/packages/release/bioc/html/SingleR.html",
+        "source_work_id": "source-work:a58fce029db36d1a1558a372",
+        "text_hash": "7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b",
+        "title": "recovered_c744746dfe8e1d26",
+        "version": "snapshot-sha256:65c1e341952a6f34"
+      },
+      "source_span": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+      "source_span_id": "approved-v2:da656b7a304bf427841ba866",
+      "source_type": "official_api_or_package_documentation",
+      "source_url": "https://bioconductor.org/packages/release/bioc/html/SingleR.html",
+      "title": "recovered_c744746dfe8e1d26",
+      "tool_name": "singler"
+    },
+    {
+      "authority": "source_bound",
+      "caution_context": {
+        "caution_id": "evidence-gap:9916be462431789ab740de29",
+        "description": "Version-pinned reference requirement: The method uses annotated reference expression data, but actual reference artifact bytes and immutable revisions have not been acquired. Do not mint ReferenceArtifactRevision from a paper citation or substitute a generic input matrix for a reference artifact.",
+        "evidence": [
+          {
+            "content_hash": "6d833ed42afbf2c51d3ec04290496791c3caae229672b6634cf8772a1f506e08",
+            "end_offset": 59475,
+            "evidence_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+            "exact_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+            "locator": {
+              "kind": "pdf_page",
+              "value": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "page": 11,
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+            "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+            "start_offset": 58538
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:singler"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      "claim_text": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+      "claim_type": "failure_mode",
+      "exact_excerpt": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+      "index": 6,
+      "kg_statements": [],
+      "knowledge_source": "CAUTION_CONTEXT",
+      "source_bound": true,
+      "source_id": "source-revision:d426b082f012b8be5a4f74cf",
+      "source_revision": {
+        "artifact_hash": "5af541933e2bb2ad102a600ec4a900cb82790b900ebf7e499661772a83f0a5ad",
+        "source_artifact_id": "source-artifact:fae57c993608662cdadcfe96e8543864",
+        "source_revision_id": "source-revision:d426b082f012b8be5a4f74cf",
+        "source_type": "primary_method_paper",
+        "source_url": "https://doi.org/10.1038/s41590-018-0276-y",
+        "source_work_id": "source-work:df17e1e6195f7ab35d6f516a",
+        "text_hash": "c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9",
+        "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+        "version": "published-doi:10.1038/s41590-018-0276-y"
+      },
+      "source_span": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+      "source_span_id": "evidence-span:b7a1d85165ad70a2d3df7b7f",
+      "source_type": "primary_method_paper",
+      "source_url": "https://doi.org/10.1038/s41590-018-0276-y",
+      "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+      "tool_name": ""
+    },
+    {
+      "authority": "source_bound",
+      "caution_context": {
+        "caution_id": "evidence-gap:42a6d741144e00f4a8e62c04",
+        "description": "Raw test expression allowance: Raw UMI counts or transcript counts are explicitly allowed and log transformation is not required for rank correlations. Core lacks an admitted accepts_representation predicate; do not translate acceptance into a new required-counts constraint.",
+        "evidence": [
+          {
+            "content_hash": "8210ce118637965088d8469abb8bd619294c89d1c8ec7b1da4e9903b6724f8b0",
+            "end_offset": 5245,
+            "evidence_span_id": "evidence-span:478c711accf5562d599b9d84",
+            "exact_text": "The default \\code{assay.type} is set to \\code{\"logcounts\"} simply for consistency with \\code{\\link{trainSingleR}}.\n#' In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+            "locator": {
+              "kind": "text_offsets",
+              "value": "source-artifact:d54e90055021dc5981b762ff1e59e3c6/text-sha256:afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8:4815:5245"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "source_artifact_id": "source-artifact:d54e90055021dc5981b762ff1e59e3c6",
+            "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+            "start_offset": 4815
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "operator-revision:r:singler:SingleR::classifySingleR:2.14.1"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      "claim_text": "The default \\code{assay.type} is set to \\code{\"logcounts\"} simply for consistency with \\code{\\link{trainSingleR}}.\n#' In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+      "claim_type": "failure_mode",
+      "exact_excerpt": "The default \\code{assay.type} is set to \\code{\"logcounts\"} simply for consistency with \\code{\\link{trainSingleR}}.\n#' In practice, the raw counts (for UMI data) or the transcript counts (for read count data) can also be used without normalization and log-transformation.\n#' Any monotonic transformation will have no effect the calculation of the correlation values other than for some minor differences due to numerical precision.",
+      "index": 7,
+      "kg_statements": [],
+      "knowledge_source": "CAUTION_CONTEXT",
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_revision": {
+        "artifact_hash": "afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8",
+        "source_artifact_id": "source-artifact:d54e90055021dc5981b762ff1e59e3c6",
+        "source_revision_id": "source-revision:af589576b2d9ead1a0be8ecb",
+        "source_type": "official_release_source",
+        "source_url": "https://bioconductor.org/packages/SingleR",
+        "source_work_id": "source-work:aa96d9bc1901f8e4be7959d3",
+        "text_hash": "afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8",
+        "title": "pinned_singler_classify",
+        "version": "2.14.1"
+      },
+      "source_span": "source-artifact:d54e90055021dc5981b762ff1e59e3c6/text-sha256:afc4c798893bcfbe9445beee9159b3838de220a44d86c65a38c9ad5bb3d91bc8:4815:5245",
+      "source_span_id": "evidence-span:478c711accf5562d599b9d84",
+      "source_type": "official_release_source",
+      "source_url": "https://bioconductor.org/packages/SingleR",
+      "title": "pinned_singler_classify",
+      "tool_name": ""
+    }
+  ],
+  "request_id": "dev-K03-reference-annotation-b--scientific_kg--freeze-r0",
+  "response_intent": "evidence_qa",
+  "retrieval_results": [
+    {
+      "chunk_id": "approved-v2:a90fcf086e1d71d73a6e9502",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "The function will automatically restrict the analysis to the intersection of the genes in both \\code{ref} and \\code{test}.\n#' If this intersection is empty (e.g., because the two datasets use different gene annotations), an error will be raised.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "relevance_score": 13.0,
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_span": "source-artifact:0097af5af0c06863f2a4ea63c537e68c/text-sha256:654d44be0e14a2b3ab1b89a5fe584efb3fd1e20c4f2d83201691fbddfaf51181:2979:3224",
+      "task": "",
+      "title": "pinned_singler_single_r",
+      "tool_name": "singler"
+    },
+    {
+      "chunk_id": "approved-v2:3baaf9c26e5bfc94a0951e93",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "`r Biocpkg(\"SingleR\")` is an automatic annotation method for single-cell RNA sequencing (scRNAseq) data [@aran2019reference].\nGiven a reference dataset of samples (single-cell or bulk) with known labels, \nit labels new cells from a test dataset based on similarity to the reference.",
+      "claim_type": "method",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "relevance_score": 12.0,
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_span": "source-artifact:a4f7b38fb7e124d555400f8db485c390/text-sha256:256a7c631fb5e3b0247cd54ad990238ffafb201cb215e530a1d9a88773773f2d:903:1185",
+      "task": "",
+      "title": "pinned_singler_vignette",
+      "tool_name": "singler"
+    },
+    {
+      "chunk_id": "approved-v2:bf28f60dbfacce443e310e6f",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Cell type annotation of single cells (SingleR). The SingleR pipeline is based on \ncorrelating gene expression of pure cell types with single-cell gene expression. \nSingleR can be used with any reference data set. For mouse samples, we used the \nImmGen database, a collection of 830 microarray samples, which we classified to \n20 main cell types and further annotated to 253 subtypes12; a data set of 358 mouse \nRNA-seq samples annotated to 28 cell types collected, processed, and shared, \ncourtesy of Bérénice Benayoun, can also be used. For human samples we used \nthe data sets from Blueprint Epigenomics, 144 RNA-seq pure immune samples \nannotated to 28 cell types14, and Encode, 115 RNA-seq pure stroma and immune \nsamples annotated to 17 cell types13. More reference data sets for mouse and \nhuman are available with the SingleR R package. For specific applications, smaller \ndata sets can be applicable (as demonstrated in Fig. 2c).",
+      "claim_type": "method",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:d426b082f012b8be5a4f74cf",
+      "relevance_score": 12.0,
+      "source_bound": true,
+      "source_id": "source-revision:d426b082f012b8be5a4f74cf",
+      "source_span": "source-artifact:fae57c993608662cdadcfe96e8543864/text-sha256:c26f06dddfe2259c8668798a3d52fa7c3b528cd07c3d6ead82f85e89d971d0e9:58538:59475",
+      "task": "",
+      "title": "paper_SingleR_CAND_PUB_SingleR_2019_Aran",
+      "tool_name": "singler"
+    },
+    {
+      "chunk_id": "approved-v2:da656b7a304bf427841ba866",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Performs unbiased cell type recognition from single-cell RNA sequencing data, by leveraging reference transcriptomic datasets of pure cell types to infer the cell of origin of each single cell independently.",
+      "claim_type": "method",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+      "relevance_score": 12.0,
+      "source_bound": true,
+      "source_id": "source-revision:aac7d6351f74cbc7c4ab775d",
+      "source_span": "source-artifact:5c01eb692907d03c08112688ef39f065/text-sha256:7184174fa7d638ad433c0145c0c850a1ce80347093bc05517e669caebadebc8b:387:594",
+      "task": "",
+      "title": "recovered_c744746dfe8e1d26",
+      "tool_name": "singler"
+    },
+    {
+      "chunk_id": "approved-v2:8c6e4d35063c19b8a67f5eab",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "@param ref A numeric matrix of expression values where rows are genes and columns are reference samples (individual cells or bulk samples).\n#' Each row should be named with the gene name.\n#' In general, the expression values are expected to be normalized and log-transformed, see Details.",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "relevance_score": 11.0,
+      "source_bound": true,
+      "source_id": "source-revision:af589576b2d9ead1a0be8ecb",
+      "source_span": "source-artifact:536f448fffdd3507aa80196bcbb37fe4/text-sha256:e797670c89f4723af7e9ec7a2c2e82b2a02fb725e15675b0c8e62f45fb420da2:128:416",
+      "task": "",
+      "title": "pinned_singler_train",
+      "tool_name": "singler"
+    }
+  ],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+    "process_id": 43099,
+    "process_started_at": "2026-09-20T20:49:22.400809Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "version": "2.7.2-rc",
+    "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+  },
+  "runtime_mode": "external_reasoning_with_deterministic_governance",
+  "scored_tools": [
+    {
+      "recommendation_eligible": false,
+      "score": 13.0,
+      "source_chunk_count": 1,
+      "tool_name": "singler"
+    }
+  ],
+  "semantic_route": {
+    "confidence": 0.95,
+    "domain": "SINGLE_CELL",
+    "intent": "evidence_qa",
+    "needs_clarification": false,
+    "source": "semantic_parser",
+    "task": "cell_type_annotation"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [
+    {
+      "recommendation_eligible": false,
+      "score": 13.0,
+      "source_chunk_count": 1,
+      "tool_name": "singler"
+    }
+  ],
+  "unverified_model_knowledge_claims": [],
+  "user_id": "local-research-user",
+  "user_query": "我想用 SingleR classic mode 给测试细胞做参考注释。输入尺度与基因对应关系是否足以直接开始？哪些条件应先验证？\n\n已提供的条件（未提供的值不作推断）：\nenvironment=Bioconductor 3.21 / version must be checked against book session\nmapping_table_provided=false\nmarker_mode=classic\nreference_assay=log-normalized expression\nreference_gene_namespace=HGNC symbols\nspecies=human for both test and reference\ntest_assay=UMI counts\ntest_gene_namespace=Ensembl stable IDs",
+  "verified_claims": [
+    {
+      "authority": "source_bound",
+      "citation_mapping": "valid",
+      "claim_id": "claim-001",
+      "claim_text": "SingleR classic 模式要求参考矩阵行名为基因名、列为已知标签的参考样本。",
+      "claim_type": "scientific",
+      "governance_action": "keep",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [],
+      "scope_match": "match",
+      "semantic_review_status": "not_run",
+      "source_span_ids": [
+        "approved-v2:8c6e4d35063c19b8a67f5eab"
+      ]
+    }
+  ],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "cell_type_annotation",
+    "tool_name": null
+  }
+}
