@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你观察到的“output appears Louvain”只是输出标签层面的现象，不能据此断定实际运行的 backend 就是 Louvain。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你指定了 leidenbase 和 igraph 两种算法，但当前没有提供 Seurat 版本和对应 backend 包版本，因此无法判断是否满足版本要求。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"Seurat 的 FindClusters 在 algorithm 参数指定 Leiden 相关后端时，需要相应的 R 包（如 leidenbase、igraph）已正确安装并可加载；若包缺失或版本不兼容，可能发生回退或报错。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"当前没有可用的 Seurat 官方文档或源码证据来确认 FindClusters 在指定 leidenbase/igraph 时必然回退到 Louvain 的具体机制。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供你实际运行的 Seurat 版本号，以及已安装的 leidenbase 和 igraph 包版本号。\",\n    \"missing_field\": \"seurat_version_and_backend_versions\",\n    \"why_needed\": \"不同 Seurat 版本对 Leiden 后端的调用方式和版本要求不同，缺少版本信息无法判断回退是否由版本不兼容或包缺失引起。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947636,
+  "id": "306ba370-858e-49ce-96b8-483fcea154ae",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 402,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 1156,
+    "prompt_tokens": 2948,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 3350
+  }
+}

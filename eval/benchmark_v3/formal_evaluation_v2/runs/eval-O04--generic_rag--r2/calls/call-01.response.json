@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"domain\": \"SINGLE_CELL\",\n  \"intent\": \"caveat_comparison\",\n  \"canonical_task\": \"clustering\",\n  \"confidence\": 0.9,\n  \"needs_clarification\": false,\n  \"clarification_question\": \"请提供 Seurat 版本、leidenbase 和 igraph 的版本，以及您如何确认输出是 Louvain 而非 Leiden（例如日志、参数或聚类结果特征）。\",\n  \"capability_request\": null,\n  \"constraints\": {},\n  \"requested_tools\": [],\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"search_evidence\",\n      \"query\": \"Seurat FindClusters algorithm parameter Leiden vs Louvain fallback behavior leidenbase igraph\",\n      \"canonical_task\": \"clustering\",\n      \"tool_names\": [\"leidenbase\", \"igraph\"],\n      \"claim_types\": [\"caveat\", \"input_requirement\", \"failure_mode\"],\n      \"top_k\": 5,\n      \"reason\": \"用户报告 FindClusters 总是回退到 Louvain，需要检索关于算法选择、后端依赖和回退机制的证据。\"\n    },\n    {\n      \"tool_name\": \"get_tool_contract\",\n      \"query\": \"Seurat FindClusters algorithm parameter\",\n      \"canonical_task\": \"clustering\",\n      \"tool_names\": [\"leidenbase\", \"igraph\"],\n      \"claim_types\": [\"input_requirement\", \"parameter\"],\n      \"top_k\": 3,\n      \"reason\": \"获取 FindClusters 的输入和参数契约，以检查 algorithm 参数如何影响后端选择。\"\n    }\n  ],\n  \"retrieval_query\": \"在 Seurat 的 FindClusters 函数中，当指定 algorithm 为 Leiden 时，为什么可能回退到 Louvain？leidenbase 和 igraph 后端的行为差异是什么？\",\n  \"user_reported_context\": {\n    \"observed_label\": {\"value\": \"output appears Louvain\", \"user_quote\": \"output appears Louvain\"},\n    \"requested_algorithms\": {\"value\": \"[\\\"leidenbase\\\",\\\"igraph\\\"]\", \"user_quote\": \"[\\\"leidenbase\\\",\\\"igraph\\\"]\"}\n  },\n  \"data_dependency\": \"none\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948109,
+  "id": "c856f383-961a-4e89-9bae-1fb5c59351e7",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 499,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2048,
+    "prompt_cache_miss_tokens": 45,
+    "prompt_tokens": 2093,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2048
+    },
+    "total_tokens": 2592
+  }
+}

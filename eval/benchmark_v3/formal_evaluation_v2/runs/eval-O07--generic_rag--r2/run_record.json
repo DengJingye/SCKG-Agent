@@ -1,0 +1,208 @@
+{
+  "answer_hash": "c9398d130d712d5ecaa87df4345373f4a78399d84fbbb446756ea6547f7bce29",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_c6aece6846e247e7914e5e547ea5c98d",
+  "case_id": "eval-O07",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 5516,
+  "latency_ms": 8965.503083993099,
+  "observed": {
+    "answer": "确定性检查结果记录：status=not_bound；input_registered=false；measurements_available=false。\n\n你提供的：input_class=recorded；traceback=available。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此无法对具体失败原因做科学判断。\n\n最小兼容性 triage 首先需要知道实际使用的 Seurat 版本和 scrapper 版本，因为不同版本对输入对象和转换接口的要求可能不同。\n\ntraceback 的具体内容能帮助定位失败发生在对象构造、转换还是下游调用阶段，因此应优先查看回溯中的错误类型和调用栈。\n\n请提供实际使用的 Seurat 版本和 scrapper 版本，以及 traceback 中的关键错误信息？",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1043,
+  "repetition": 2,
+  "run_id": "eval-O07--generic_rag--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-O07--generic_rag--r2",
+      "created_at": "2026-09-20T23:50:10.410618+00:00",
+      "finished_at": "2026-09-20T23:50:19.371358+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:59996b06f74b46ce",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-O07--generic_rag--r2",
+      "root_span_id": "span_89e90fd4ecf941d7968f16ce03807c23",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 8960.617,
+          "ended_at": "2026-09-20T23:50:19.371358+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_89e90fd4ecf941d7968f16ce03807c23",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:50:10.410668+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_c6aece6846e247e7914e5e547ea5c98d"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_caveat_comparison_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_caveat_comparison_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "architecture_test",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3808.967,
+          "ended_at": "2026-09-20T23:50:14.257504+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-O07--generic_rag--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_89e90fd4ecf941d7968f16ce03807c23",
+          "sequence": 2,
+          "span_id": "span_2cae2afb1a984bde9a1241abefa8c2b7",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:50:10.448498+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_c6aece6846e247e7914e5e547ea5c98d"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 6,
+            "source_bound_count": 6,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:generic_rag",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 35.131,
+          "ended_at": "2026-09-20T23:50:14.293913+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "sourcev2:d143c7242f30af38cfd1",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:5b5e3003de623fc2ebb0",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:49d54dc198f580838eba",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "publication:CAND_PUB_Seurat_v3_2019_Stuart",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "publication:CAND_PUB_Seurat_v4_2021_Hao",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:a2b1191acd8a3e73c1e8",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_89e90fd4ecf941d7968f16ce03807c23",
+          "sequence": 3,
+          "span_id": "span_238b01eba43940c6833ba90f552c0e96",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:50:14.258787+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_c6aece6846e247e7914e5e547ea5c98d"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_c6aece6846e247e7914e5e547ea5c98d",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

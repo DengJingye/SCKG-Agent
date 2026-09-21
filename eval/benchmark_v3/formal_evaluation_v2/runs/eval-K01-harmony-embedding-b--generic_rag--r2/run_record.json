@@ -1,0 +1,238 @@
+{
+  "answer_hash": "29d9776508a1a06dd17aaa5bdf61dfaa99bf2f15c770f474b6dbfc522d5ee52a",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_1fb0ed6c094748bf8c2f93c7036da40e",
+  "case_id": "eval-K01-harmony-embedding-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": null,
+  "latency_ms": 349.78458398836665,
+  "observed": {
+    "answer": "**直接结论：Harmony 的方法类型是：** Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix.[1]\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 0,
+    "runtime_mode": "degraded_local_fallback"
+  },
+  "output_tokens": null,
+  "repetition": 2,
+  "run_id": "eval-K01-harmony-embedding-b--generic_rag--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K01-harmony-embedding-b--generic_rag--r2",
+      "created_at": "2026-09-20T23:52:52.890254+00:00",
+      "finished_at": "2026-09-20T23:52:53.233700+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:baa8acbbd7bed906",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K01-harmony-embedding-b--generic_rag--r2",
+      "root_span_id": "span_82d25e4cc0ef41aa8fbb6434f943dc3f",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 343.403,
+          "ended_at": "2026-09-20T23:52:53.233700+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_82d25e4cc0ef41aa8fbb6434f943dc3f",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:52:52.890293+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_1fb0ed6c094748bf8c2f93c7036da40e"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "failed",
+              "reason_code": "semantic_proposal_not_available",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "query_or_context_task_anchor",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "governed_task_anchor_explicit_local_answer_shape_preserved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "governed_task_anchor_explicit_local_answer_shape_preserved",
+              "record_ref": {
+                "record_id": "batch_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 99.047,
+          "ended_at": "2026-09-20T23:52:53.020212+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K01-harmony-embedding-b--generic_rag--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_82d25e4cc0ef41aa8fbb6434f943dc3f",
+          "sequence": 2,
+          "span_id": "span_f62700dbc9ef4210a8c2e76d75d589da",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:52:52.921167+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_1fb0ed6c094748bf8c2f93c7036da40e"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 12,
+            "source_bound_count": 12,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:generic_rag",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 199.382,
+          "ended_at": "2026-09-20T23:52:53.220132+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "local-tool-search",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "sourcev2:bd5f8132711c97b4e432",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:90bcda8ebf611ed9c8d0",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:b2dedd51af165c5a66d3",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:9b523df00e1b6d838b0a",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:a2b1191acd8a3e73c1e8",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:c233a2497b7ccaca0ece",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:cd5d9b52fedacad1e81b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:3642d473a873ad61c82e",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:ed6a73e00d5121c3e48b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:d64d6a7e219ac78c081b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:d05728d66c5915b07be5",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:2aa92580c6c1eaebe77d",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_82d25e4cc0ef41aa8fbb6434f943dc3f",
+          "sequence": 3,
+          "span_id": "span_8f51be8a9a364ca1983af5ca3c5ca859",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:52:53.020749+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_1fb0ed6c094748bf8c2f93c7036da40e"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_1fb0ed6c094748bf8c2f93c7036da40e",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

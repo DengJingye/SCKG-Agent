@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scrublet 0.2.3 中，mean_center=true 表示将数据居中，使每个基因的均值为 0，此时文档说明会使用 sklearn.decomposition.PCA 进行降维。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"mean_center : bool, optional (default: True)\\n            If True, center the data such that each gene has a mean of 0.\\n            `sklearn.decomposition.PCA` will be used for dimensionality\\n            reduction.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"normalize_variance=true 表示将数据归一化，使每个基因的方差为 1；文档说明该参数下会使用 TruncatedSVD，除非 mean_center 为 True。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"normalize_variance : bool, optional (default: True)\\n            If True, normalize the data such that each gene has a variance of 1.\\n            `sklearn.decomposition.TruncatedSVD` will be used for dimensionality\\n            reduction, unless `mean_center` is True.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"由于你提供的 mean_center=true 与 normalize_variance=true 同时成立，按文档的“unless mean_center is True”条件，降维路径应选择 PCA 而不是 TruncatedSVD。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"`sklearn.decomposition.TruncatedSVD` will be used for dimensionality\\n            reduction, unless `mean_center` is True.\"\n        },\n        {\n          \"index\": 3,\n          \"quote\": \"`sklearn.decomposition.PCA` will be used for dimensionality\\n            reduction.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947578,
+  "id": "8458040d-85c7-4bca-9ad0-f3f8ffa21d40",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 483,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 9656,
+    "prompt_tokens": 11576,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 12059
+  }
+}

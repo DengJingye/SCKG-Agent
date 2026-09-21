@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"MOFA 的输入描述允许各数据矩阵来自相同或重叠的样本集合，因此它并不要求两个 view 的样本必须完全一一对应。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 cell_identity_link=none 表示两个 view 之间没有细胞身份对应关系，这属于样本集合完全不重叠的情况，而不是文档中描述的相同或重叠样本。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:cell_identity_link\"\n      ]\n    },\n    {\n      \"text\": \"现有证据只说明 MOFA 适用于相同或重叠样本，没有给出任意缺失或不重叠样本下的兼容性规则，因此不能据此断言你的两个队列可以直接用于该模型。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"两个 view 的样本集合是否至少存在部分重叠，或者你是否有可用的样本对应关系表？\",\n    \"missing_field\": \"sample_overlap_or_linkage\",\n    \"why_needed\": \"MOFA 的输入描述针对相同或重叠样本；在 cell_identity_link=none 且两个队列分别来自 cohort A 和 cohort B 的情况下，需要确认是否存在重叠样本或可建立的对应关系，才能判断该用法是否落在已描述范围内。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947656,
+  "id": "42e2182b-0ec8-430e-af8f-b2596aba4c8a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 461,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 4756,
+    "prompt_tokens": 6676,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 7137
+  }
+}

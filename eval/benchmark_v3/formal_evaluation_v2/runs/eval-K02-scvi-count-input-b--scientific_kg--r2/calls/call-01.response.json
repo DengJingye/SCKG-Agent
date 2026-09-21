@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"domain\": \"SINGLE_CELL\",\n  \"intent\": \"evidence_qa\",\n  \"canonical_task\": \"batch_integration\",\n  \"confidence\": 0.95,\n  \"needs_clarification\": false,\n  \"clarification_question\": \"\",\n  \"capability_request\": null,\n  \"constraints\": {},\n  \"requested_tools\": [\"scVI\"],\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"search_evidence\",\n      \"query\": \"scVI batch integration input requirements: can log1p normalized values be used directly, or are raw counts required?\",\n      \"canonical_task\": \"batch_integration\",\n      \"tool_names\": [\"scVI\"],\n      \"claim_types\": [\"input_requirement\", \"caveat\"],\n      \"top_k\": 5,\n      \"reason\": \"User asks whether current log1p normalized matrix can be direct input to scVI; need evidence on input requirements and caveats.\"\n    },\n    {\n      \"tool_name\": \"get_tool_contract\",\n      \"query\": \"scVI input contract: expected data type, normalization, and batch_key handling\",\n      \"canonical_task\": \"batch_integration\",\n      \"tool_names\": [\"scVI\"],\n      \"claim_types\": [\"input_requirement\", \"parameter\"],\n      \"top_k\": 3,\n      \"reason\": \"Retrieve governed inputs and parameters for scVI to confirm whether log1p normalized matrix is acceptable.\"\n    }\n  ],\n  \"retrieval_query\": \"For scVI batch integration, can a log1p normalized expression matrix (no raw counts) be used directly as model input? What are the input requirements and caveats?\",\n  \"user_reported_context\": {\n    \"batch_key\": {\"value\": \"donor\", \"user_quote\": \"batch_key=donor, complete\"},\n    \"matrix_state\": {\"value\": \"log1p normalized values only; no count source\", \"user_quote\": \"matrix_state=log1p normalized values only; no count source\"}\n  },\n  \"data_dependency\": \"none\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947774,
+  "id": "a99eac1e-5d10-46d8-afe7-43dd592e7495",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 451,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 85,
+    "prompt_tokens": 2005,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 2456
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "answer_hash": "b477c2ebd8568d8846fe8df831894cc2863ea30a8156dd7c21afa1dd2eb52482",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_e04eddb9b4eb4e10914c3340706b3343",
+  "case_id": "eval-O01",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 18696,
+  "latency_ms": 13137.039459004882,
+  "observed": {
+    "answer": "Harmony 的输入契约要求每个细胞有协变量标签，且 Seurat 对象需预先计算好细胞嵌入槽位；这提示应先核对 IntegrateLayers 调用前的对象状态，而不是直接归因于 JoinLayers。[3][4]\n\ngroup.by.vars 参数指定 Harmony 要移除效应的协变量；若该参数与 IntegrateLayers 的批次变量不一致，可能影响整合结果，但现有证据不能证明它会导致 RNA assay 零层。[4]\n\nHarmony 从低维嵌入开始，PCA 只是示例而非唯一必需方法；因此需要确认 IntegrateLayers 实际使用了哪个 reduction，而不是默认假设 PCA。[2]\n\n你提供的：observed_state=RNA assay reports zero layers；operation_sequence=IntegrateLayers(HarmonyIntegration) then JoinLayers。\n\n确定性检查结果记录：status=not_bound；input_registered=false；measurements_available=false。\n\n提醒：Harmony 的校正嵌入输出在 Seurat/SCE 访问器行为方面缺乏固定 OperatorRevision 证据，不能推断 RNA 计数校正或一般 API 兼容性；这不代表零层现象的原因。[6]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此无法执行任何修复或验证。\n\n建议的只读 triage 顺序：先检查 IntegrateLayers 调用前的 assay 层清单和 reduction 名称，再检查 JoinLayers 的参数与返回对象，最后核对 group.by.vars 与批次元数据是否一致；这些步骤不涉及修复。\n\n请提供 IntegrateLayers 调用前 RNA assay 的层清单（例如 Layers(object[['RNA']]) 的输出）以及 JoinLayers 使用的具体参数？",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1627,
+  "repetition": 2,
+  "run_id": "eval-O01--scientific_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-O01--scientific_kg--r2",
+      "created_at": "2026-09-20T23:49:53.196109+00:00",
+      "finished_at": "2026-09-20T23:50:06.324959+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:ddaaeb233497e037",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-O01--scientific_kg--r2",
+      "root_span_id": "span_98b245c573f5445ca997969c6ba956cd",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 13128.614,
+          "ended_at": "2026-09-20T23:50:06.324959+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_98b245c573f5445ca997969c6ba956cd",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:49:53.196219+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_e04eddb9b4eb4e10914c3340706b3343"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "batch_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3758.109,
+          "ended_at": "2026-09-20T23:49:56.985636+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-O01--scientific_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_98b245c573f5445ca997969c6ba956cd",
+          "sequence": 2,
+          "span_id": "span_c4ea83bef421498c8057c9c93e97aa4a",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:49:53.227497+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_e04eddb9b4eb4e10914c3340706b3343"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 5,
+            "source_bound_count": 5,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:scientific_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 8.302,
+          "ended_at": "2026-09-20T23:49:56.994610+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-v2:9d77c45874628ee5aaf4ee82",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:922351733d881e67dfb0f084",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:63d39eba1b2bed74322587d6",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:74537b27b4ce37d95c81841b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:8028cfbb6bd26da463baa19b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_98b245c573f5445ca997969c6ba956cd",
+          "sequence": 3,
+          "span_id": "span_ea40d6c536d74e1bb2cd800916ceea87",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:49:56.986302+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_e04eddb9b4eb4e10914c3340706b3343"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_e04eddb9b4eb4e10914c3340706b3343",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

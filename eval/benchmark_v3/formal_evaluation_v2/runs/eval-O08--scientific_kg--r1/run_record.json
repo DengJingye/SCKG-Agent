@@ -1,0 +1,183 @@
+{
+  "answer_hash": "725a1d36271acf087a1192dd58e1632f235c01ec2255f3349c61961df2efc118",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_11a107a9bf0440288c21ce960cce5908",
+  "case_id": "eval-O08",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 4860,
+  "latency_ms": 7911.71570798906,
+  "observed": {
+    "answer": "你提供的：message=sample_colors.tsv does not exist; skipped; exception follows。\n\n确定性检查结果记录：status=not_bound；input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前没有已批准的科学知识图谱声明直接描述 sample_colors.tsv 的生成步骤或失败模式。\n\n因此无法直接检查输出目录中的实际文件。\n\n一般建议先检查 cellbrowser 输出目录中是否存在 sample_colors.tsv，以及导出前是否在 AnnData 的 obs 或 uns 中定义了对应的颜色映射。\n\n请提供完整的异常 traceback 或输出目录中实际存在的文件列表，以便判断 sample_colors.tsv 缺失是警告还是导致后续异常的直接原因？",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 956,
+  "repetition": 1,
+  "run_id": "eval-O08--scientific_kg--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-O08--scientific_kg--r1",
+      "created_at": "2026-09-20T23:44:44.697212+00:00",
+      "finished_at": "2026-09-20T23:44:52.605641+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:0a3409bb945649b7",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-O08--scientific_kg--r1",
+      "root_span_id": "span_46cbfb4bc23e47c8b302cfc938e02683",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 7908.306,
+          "ended_at": "2026-09-20T23:44:52.605641+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_46cbfb4bc23e47c8b302cfc938e02683",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:44:44.697265+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_11a107a9bf0440288c21ce960cce5908"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "quality_control",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3902.622,
+          "ended_at": "2026-09-20T23:44:48.643540+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-O08--scientific_kg--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_46cbfb4bc23e47c8b302cfc938e02683",
+          "sequence": 2,
+          "span_id": "span_942bb6e7face497d8094358772864869",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:44:44.740945+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_11a107a9bf0440288c21ce960cce5908"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 2,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 2
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 10.526,
+          "ended_at": "2026-09-20T23:44:48.657869+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            },
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_46cbfb4bc23e47c8b302cfc938e02683",
+          "sequence": 3,
+          "span_id": "span_1ba98a6b7a69490781ee0ec220f8c7af",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:44:48.647300+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_11a107a9bf0440288c21ce960cce5908"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_11a107a9bf0440288c21ce960cce5908",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

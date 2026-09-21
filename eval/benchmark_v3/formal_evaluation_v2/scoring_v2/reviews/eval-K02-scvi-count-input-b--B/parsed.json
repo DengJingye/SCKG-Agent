@@ -1,0 +1,326 @@
+{
+  "judgments": [
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的输入要求是原始计数矩阵（raw counts），而不是已经 log1p 归一化的值。",
+        "如果无法获得原始计数，可以考虑使用不需要计数假设的替代方法，例如基于 PCA 或 Harmony 的批次整合。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-3cb5823f32259971",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly states scVI requires raw counts, not log1p-normalized values, and recommends alternatives if raw counts unavailable. No citations provided, but the scientific claim is accurate and no unsupported claim is made.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的输入要求是原始计数矩阵，模型内部会自行进行文库大小归一化，而不是接受已经 log1p 归一化的表达值。",
+        "如果只有 log1p 归一化值，通常无法可靠地还原原始计数，因为归一化过程会丢失每个细胞的文库大小信息。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-2c54a685e41d0152",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly rejects log1p-only input and explains why raw counts cannot be reliably recovered. No citations, but the scientific content is accurate.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的模型输入要求是原始计数矩阵（raw counts），而不是已经 log1p 归一化的表达值。",
+        "如果无法获得原始计数，可以考虑使用基于归一化表达矩阵的替代方法，例如 PCA 或 Harmony 进行批次整合和低维表示。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-24ddeb7ba89bb324",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly states raw counts requirement and suggests alternatives. No citations, but the claim is accurate.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": false,
+      "answer_quotes": [
+        "The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model."
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-faaa5897b1fae6b0",
+      "bounded_hypotheses": null,
+      "citation_support": "unreliable",
+      "condition_scope_error": false,
+      "major_scientific_error": true,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "The answer does not address whether the log1p-only matrix can be used as scVI input. It quotes a passage about data minification, which is not relevant to the raw-count input requirement. It fails to reject direct use and makes no condition-specific decision.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "missing"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": true
+    },
+    {
+      "acceptable_conclusion": false,
+      "answer_quotes": [
+        "我识别到任务为 batch integration，但没有解析出可安全核验的原子科学 claim。我不会用目录元数据或静态算法卡补造结论。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-4316f1fac2f77f9b",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "The answer refuses to provide a decision and does not address the required fact about raw counts. It fails to give a condition-specific answer.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "missing"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的输入要求是原始计数矩阵，模型内部会自行进行文库大小归一化和对数化等处理。",
+        "如果只有 log1p 归一化数据，可以考虑使用不需要原始计数的替代方法，例如基于 PCA 或 Harmony 的批次整合。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-d20971734974061e",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly rejects log1p-only input and suggests alternatives. No citations, but the scientific claim is accurate.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的输入要求是原始计数矩阵，模型内部会自行进行文库大小归一化和对数化等处理。",
+        "如果能够获得原始计数矩阵，则可以使用 scVI 进行批次整合和低维表示，并将 donor 作为批次键。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-00f923d998de1592",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly states raw counts requirement and mentions using donor as batch key if raw counts available. No citations, but the scientific claim is accurate.",
+      "required_fact_status": {
+        "scvi-batch-optional": "supported",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的输入要求是原始计数矩阵，模型内部会自行进行文库大小归一化和对数化等处理。",
+        "在决定是否使用 scVI 前，需要确认是否存在原始计数矩阵或可追溯的计数来源。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-16dd4eb2658e307a",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly rejects log1p-only input and asks for raw counts. No citations, but the scientific claim is accurate.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "已发表的 scVI 模型明确以原始计数数据作为输入，并在模型内部包含归一化过程。",
+        "你是否有与当前 log1p 归一化矩阵对应的原始计数矩阵，或能够恢复原始计数的来源？"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-fb87ed2dd6182b1a",
+      "bounded_hypotheses": null,
+      "citation_support": "reliable",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly states raw counts requirement and asks for raw counts. The cited excerpt supports the raw-count input claim.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "scVI 的输入要求是原始计数矩阵（raw counts），而不是已经 log1p 归一化的值。",
+        "如果无法获得原始计数，可以考虑使用不需要计数假设的替代方法，例如基于 PCA 或 Harmony 的批次整合。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-d93303e933609c75",
+      "bounded_hypotheses": null,
+      "citation_support": "no_citations",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly rejects log1p-only input and suggests alternatives. No citations, but the scientific claim is accurate.",
+      "required_fact_status": {
+        "scvi-batch-optional": "missing",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "已发表的 scVI 模型明确以原始计数数据作为输入，并在模型内部完成归一化。",
+        "因此不能直接作为该模型要求的原始计数输入。"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-eed36d2e1293312e",
+      "bounded_hypotheses": null,
+      "citation_support": "reliable",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly rejects log1p-only input and cites supporting evidence. The cited excerpt supports the raw-count input claim.",
+      "required_fact_status": {
+        "scvi-batch-optional": "supported",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    },
+    {
+      "acceptable_conclusion": true,
+      "answer_quotes": [
+        "已发表的 scVI 模型明确以原始计数数据作为输入，并在模型内部包含归一化过程。",
+        "你能否提供与当前 log1p 归一化矩阵对应的原始计数矩阵，或说明该矩阵是否由原始计数经 log1p 变换得到？"
+      ],
+      "answerable_resolution": null,
+      "approval_boundary_violation": null,
+      "artifact_validation": null,
+      "blind_id": "blind-788a0f66a94faac6",
+      "bounded_hypotheses": null,
+      "citation_support": "reliable",
+      "condition_scope_error": false,
+      "major_scientific_error": false,
+      "necessary_clarification": null,
+      "over_refusal": null,
+      "plan_validity": null,
+      "rationale": "Correctly rejects log1p-only input and asks for raw counts. The cited excerpt supports the raw-count input claim.",
+      "required_fact_status": {
+        "scvi-batch-optional": "supported",
+        "scvi-raw-counts": "supported"
+      },
+      "state_correctness": null,
+      "targeted_triage": null,
+      "unsupported_root_cause": null,
+      "unsupported_scientific_claim": false
+    }
+  ]
+}

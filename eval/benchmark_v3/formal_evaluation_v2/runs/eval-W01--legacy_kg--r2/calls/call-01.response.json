@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - 声明形状：`[100, 50]`\n   - 实际观测形状：`[100, 49]`\n   - 第二维 `49 ≠ 50`，违反 `output_schema.shape_must_equal_declared: true`。\n   - 这与 fixture 中 `expected` 字段一致：`\"invalid: observed second dimension 49 differs from declared 50\"`。\n\n2. **dtype 匹配（通过项）**\n   - 声明 dtype：`float32`\n   - 实际观测 dtype：`float32`\n   - 满足 `output_schema.dtype_must_equal_declared: true`。\n\n3. **可读性（通过项，但不足以判定成功）**\n   - `load_status: \"readable\"` 仅表示产物可被读取。\n   - 依据 `artifact_validators` 中 `\"readability alone is not success\"`，可读性不能抵消形状不匹配。\n\n补充说明：\n- `artifact_digest` 与 `input_digest` 均已提供，但本次核查未要求比对二者是否一致；当前决定性失败点已由形状差异直接确立。\n- 当前环境为 `read_only_artifact_review`，且 `approval_boundary.execution_or_mutation_authorized: false`，因此**不会执行 repair 或 rerun**。\n\n建议的后续动作（需另行批准后执行）：\n- 检查生成 `embedding.npy` 的上游流程，确认第二维为何从声明的 `50` 变为 `49`，例如特征列缺失、截断、索引错误或维度压缩逻辑异常。\n- 修复后重新生成产物，并再次进行只读核查，确认实际形状为 `[100, 50]` 且 dtype 为 `float32`。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947691,
+  "id": "6d15625f-9fa0-4071-93ad-c5f11765781b",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 414,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 470,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 884
+  }
+}

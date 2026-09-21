@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法校验失败**\n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者均为 64 个字符，但包含非十六进制字符（`c`、`d` 之外的字符不符合要求；此处实际为重复的 `c`/`d`，虽看似十六进制，但需注意：`c` 和 `d` 本身是合法十六进制字符，因此语法层面**可能通过**——但结合第 2 点，整体仍不满足 contract）。\n\n2. **schema/status 相等性校验失败**\n   - 声明要求 `schema_version` 等于 `artifact-manifest-v1`，且 `status` 等于 `completed`。\n   - 产物中 `schema_version` 为 `artifact-manifest-v1`，`status` 为 `completed`，表面一致。\n   - 但 `artifact_digest` 与 `input_digest` 不一致，且 `artifact.content` 中的哈希值（`cccc...`、`dddd...`）与冻结 fixture 中声明的 `input_sha256`/`output_sha256` 期望值（`input_digest`、`artifact_digest`）不匹配，说明产物内容与声明输入/输出摘要不一致。\n\n3. **required field presence 校验**\n   - 必需字段 `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在，此项通过。\n\n综合来看，虽然字段存在且表面值符合格式，但**摘要一致性**与**声明契约的相等性**未满足，因此判定为不满足 declared contract。\n\n建议的 repair/rerun（需批准后执行）：\n- 重新生成 `artifact_manifest.json`，确保 `input_sha256` 与 `output_sha256` 为真实内容的 64 位小写十六进制 SHA256 摘要，并与冻结 fixture 中的 `input_digest`、`artifact_digest` 一致。\n- 重新运行校验流程，确认 `schema_version`、`status` 及摘要均满足契约。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947855,
+  "id": "fe38e867-2e65-4918-b2eb-4d84d13d6a7a",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 532,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1048
+  }
+}

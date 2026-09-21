@@ -1,0 +1,103 @@
+{
+  "answer_hash": "8c00703404a3965423d208029b83fa6a7fc0276c2fd17b2cdbb4d13d1209d557",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_60ab5b1c5c9d4adc881bb428bb7fd266",
+  "case_id": "eval-W01",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 470,
+  "latency_ms": 2210.096082999371,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n- 声明形状：`[100, 50]`\n- 实际观测形状：`[100, 49]`\n- 第二维不一致：`49 ≠ 50`\n- 声明 dtype：`float32`\n- 实际观测 dtype：`float32`（此项一致）\n- 输出契约要求：`shape_must_equal_declared = true`，`dtype_must_equal_declared = true`\n- 校验规则明确：`readability alone is not success`，且 `expected` 字段已注明“observed second dimension 49 differs from declared 50”\n\n因此，虽然产物可读且 dtype 匹配，但形状不匹配，契约判定为失败。\n\n建议：需要 repair 或 rerun 以生成第二维为 50 的 embedding；当前审批边界为 `execution_or_mutation_authorized: false`，我不会执行修复或重跑。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 205,
+  "repetition": 0,
+  "run_id": "eval-W01--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W01--scientific_kg--r0",
+      "created_at": "2026-09-20T23:47:04.099736+00:00",
+      "finished_at": "2026-09-20T23:47:06.308052+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:f09e8da1aaf7065b",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W01--scientific_kg--r0",
+      "root_span_id": "span_d6de915f19b04f3e82bbadd923935a88",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 2208.21,
+          "ended_at": "2026-09-20T23:47:06.308052+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_d6de915f19b04f3e82bbadd923935a88",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:47:04.099769+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_60ab5b1c5c9d4adc881bb428bb7fd266"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 98.487,
+          "ended_at": "2026-09-20T23:47:04.229027+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W01--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_d6de915f19b04f3e82bbadd923935a88",
+          "sequence": 2,
+          "span_id": "span_8fdbc1df3c3b41c792fddea3a877c6ec",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:47:04.130534+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_60ab5b1c5c9d4adc881bb428bb7fd266"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_60ab5b1c5c9d4adc881bb428bb7fd266",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

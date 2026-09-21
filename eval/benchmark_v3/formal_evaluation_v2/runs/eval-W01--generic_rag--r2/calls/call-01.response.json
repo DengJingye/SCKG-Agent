@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - 声明形状：`[100, 50]`\n   - 实际观测形状：`[100, 49]`\n   - 第二维 49 ≠ 50，违反 `shape_must_equal_declared: true`。\n   - 这与预期描述一致：`\"observed second dimension 49 differs from declared 50\"`。\n\n2. **dtype 匹配（通过项）**\n   - 声明 dtype：`float32`\n   - 实际观测 dtype：`float32`\n   - 满足 `dtype_must_equal_declared: true`。\n\n3. **可读性（通过但不足以判定成功）**\n   - `load_status: \"readable\"` 仅表示产物可读取。\n   - 按 validator 规则 `\"readability alone is not success\"`，可读性不能抵消形状不匹配。\n\n结论：产物 `embedding.npy` 因第二维 49 与声明 50 不一致，判定为 **invalid / 不满足契约**。\n\n建议（需批准后执行，当前未授权执行或变更）：\n- 检查生成 embedding 的输入或降维/特征选择步骤，确认为何第二维从 50 变为 49。\n- 修复后重新生成 `embedding.npy`，并重新校验形状为 `[100, 50]`、dtype 为 `float32`。\n- 若 49 是新的正确维度，则需更新 declared contract 中的 `declared_shape`，而不是修改产物来“凑”旧契约。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948287,
+  "id": "c90d4f8f-ef68-4a5a-9825-e3c5751ba288",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 358,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 470,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 828
+  }
+}

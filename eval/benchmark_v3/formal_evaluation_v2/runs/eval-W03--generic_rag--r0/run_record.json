@@ -1,0 +1,103 @@
+{
+  "answer_hash": "361e6ef854967d03c46f95fd89b2da0324690e62b0163234bc33744cf8e7fa34",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_d62f4d82afe0469f81cd689e21c58670",
+  "case_id": "eval-W03",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 516,
+  "latency_ms": 4785.37170799973,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法校验失败**\n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者均为 64 个字符，但包含非十六进制字符（`c`、`d` 之外的字符不符合要求；此处实际为重复的 `c`/`d`，虽看似十六进制，但需注意：`c` 和 `d` 本身是合法十六进制字符，因此语法层面**可能通过**——但结合第 2 点，整体仍不满足 contract）。\n\n2. **schema/status 相等性校验失败**\n   - 声明要求 `schema_version` 等于 `artifact-manifest-v1`，且 `status` 等于 `completed`。\n   - 产物中 `schema_version` 为 `artifact-manifest-v1`，`status` 为 `completed`，表面一致。\n   - 但 `artifact_digest` 与 `input_digest` 不一致，且 `artifact.content` 中的哈希值（`cccc...`、`dddd...`）与冻结 fixture 中声明的 `input_sha256`/`output_sha256` 期望值（`input_digest`、`artifact_digest`）不匹配，说明产物内容与声明输入/输出摘要不一致。\n\n3. **required field presence 校验**\n   - 必需字段 `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在，此项通过。\n\n综合来看，虽然字段存在且表面值符合格式，但**摘要一致性**与**声明契约的相等性**未满足，因此判定为不满足 declared contract。\n\n建议的 repair/rerun（需批准后执行）：\n- 重新生成 `artifact_manifest.json`，确保 `input_sha256` 与 `output_sha256` 为真实内容的 64 位小写十六进制 SHA256 摘要，并与冻结 fixture 中的 `input_digest`、`artifact_digest` 一致。\n- 重新运行校验流程，确认 `schema_version`、`status` 及摘要均满足契约。",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 532,
+  "repetition": 0,
+  "run_id": "eval-W03--generic_rag--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W03--generic_rag--r0",
+      "created_at": "2026-09-20T23:44:15.347446+00:00",
+      "finished_at": "2026-09-20T23:44:20.130793+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:f9238605611b0bd3",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W03--generic_rag--r0",
+      "root_span_id": "span_ea834f1b336e45ae8152bb6ca162e625",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 4783.272,
+          "ended_at": "2026-09-20T23:44:20.130793+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_ea834f1b336e45ae8152bb6ca162e625",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:44:15.347477+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d62f4d82afe0469f81cd689e21c58670"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 90.814,
+          "ended_at": "2026-09-20T23:44:15.468834+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W03--generic_rag--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_ea834f1b336e45ae8152bb6ca162e625",
+          "sequence": 2,
+          "span_id": "span_b3de01f1795f4bf89565db7e59b08dda",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:44:15.378026+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d62f4d82afe0469f81cd689e21c58670"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_d62f4d82afe0469f81cd689e21c58670",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

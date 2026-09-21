@@ -1,0 +1,491 @@
+{
+  "answerability": {
+    "candidate_only": true,
+    "claim_ids": [
+      "claim-revision:uat:umap-input:v1"
+    ],
+    "direct_evidence_chunk_ids": [
+      "scanpy-authoritative-span:umap.input:1.11.2"
+    ],
+    "evidence_gap_id": "",
+    "evidence_span_ids": [
+      "scanpy-authoritative-span:umap.input:1.11.2"
+    ],
+    "fallback_reason": "",
+    "operator_revision_id": "operator-revision:scanpy.tl.umap:1.11.2:uat-corrected",
+    "reason": "direct_source_bound_graph_evidence_resolved",
+    "scientific_kg_used": true,
+    "scope_status": "explicit",
+    "source_revision_ids": [
+      "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa"
+    ],
+    "status": "SUPPORTED",
+    "version_status": "unspecified_scoped_evidence_only"
+  },
+  "dense_status": "not_requested",
+  "embedding_model": "",
+  "governance_leakage_count": 0,
+  "hits": [
+    {
+      "canonical_task": "dimensionality_reduction",
+      "chunk_id": "scanpy-authoritative-span:umap.input:1.11.2",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_bound": true,
+      "source_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa",
+      "source_span": "src/scanpy/tools/_umap.py#L142-L145",
+      "sparse_rank": null,
+      "text": "for neighbors settings",
+      "title": "Authoritative bounded evidence: scanpy-authoritative-span:umap.input:1.11.2",
+      "tool_name": "Scanpy",
+      "tool_names": [
+        "Scanpy"
+      ]
+    },
+    {
+      "canonical_task": "doublet_detection",
+      "chunk_id": "sourcev2:d37d4244266e4d045ea6",
+      "claim_type": "metric",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_bound": true,
+      "source_id": "SRCV2_ca3aff7c8eca6102",
+      "source_span": "section:document;paragraph:4-10",
+      "sparse_rank": 1,
+      "text": "For a brief overview of the methods, see the [introductory vignette](https://plger.github.io/scDblFinder/articles/introduction.html) (`vignette(\"introduction\", package=\"scDblFinder\")`). For the detailed study including comparison with alternative methods, see the [paper](https://doi.org/10.12688/f1000research.73600.2). Here, we will showcase doublet detection using the fast and comprehensive `scDblFinder` method. - **if you are using xgboost version 3.1 or higher, make sure that your version of scDblFinder is up-to-date, otherwise results might be suboptimal. For Bioc 3.22 users, version >1.24.7 is correct; for devel/later users, 1.25.4 on is fixed.** You may install the pakage using: ```r BiocManager::install(\"scDblFinder\") ``` Or, to get the very latest version, ```r BiocManager::install(\"plger/scDblFinder\") ``` The latest version will not be compatible with older Bioconductor versi...",
+      "title": "scDblFinder official GitHub README",
+      "tool_name": "scDblFinder",
+      "tool_names": [
+        "scDblFinder"
+      ]
+    },
+    {
+      "canonical_task": "doublet_detection",
+      "chunk_id": "sourcev2:95dc4c497cd678fed6ca",
+      "claim_type": "workflow",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01612903,
+      "source_bound": true,
+      "source_id": "SRCV2_ca3aff7c8eca6102",
+      "source_span": "section:Installation;paragraph:8-15",
+      "sparse_rank": 2,
+      "text": "Note that, when not installing from git, Bioconductor does not install the latest version of packages, but (to ensure compatibility between packages) installs the version tied to your Bioconductor version. To ensure the best results, install the latest Bioconductor release. We recommend to avoid using scDblFinder from versions prior to Bioconductor 3.14, which give suboptimal results, and scATAC users will need scDblFinder version 1.13.2 or above. Finally, the documentation here refers to the latest version. If you are using an earlier Bioconductor release, the more accurate documentation will be that of your version, available either from bioconductor or from `vignette(\"introduction\", package=\"scDblFinder\")`. Given an object `sce` of class `SingleCellExperiment` (which does not contain any empty drops, but hasn't been further filtered), you can launch the doublet detection with: ```r...",
+      "title": "scDblFinder official GitHub README",
+      "tool_name": "scDblFinder",
+      "tool_names": [
+        "scDblFinder"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "sourcev2:d3cdb44160b5451ecda5",
+      "claim_type": "general",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01587302,
+      "source_bound": true,
+      "source_id": "SRCV2_6225b07438c4a2cd",
+      "source_span": "section:Note `model` is modified in-place.;paragraph:128-134",
+      "sparse_rank": 3,
+      "text": "model.convert('GENCODEv44_Gene_id2name.csv') ``` Lastly, write out the converted model locally. ```python model.write('/path/to/local/folder/some_model_name.pkl') ``` This model can be used as with other CellTypist models. </details> + <details> <summary><strong>Subset a model</strong></summary> A CellTypist model can be restricted to a specified subset of cell types, allowing you to limit the search space and exclude cell types unlikely to be present in your query data. This is achieved by the [subset](https://celltypist.readthedocs.io/en/latest/celltypist.models.Model.html#celltypist.models.Model.subset) method. Note that this strategy is suboptimal/not recommended for subsetting a model. A more accurate approach is to retrain the original reference data using only the desired subset of cell types by [celltypist.train](https://celltypist.readthedocs.io/en/latest/celltypist.train.htm...",
+      "title": "CellTypist official GitHub README",
+      "tool_name": "CellTypist",
+      "tool_names": [
+        "CellTypist"
+      ]
+    },
+    {
+      "canonical_task": "rna_velocity",
+      "chunk_id": "sourcev2:ad93fe859f2ab479d566",
+      "claim_type": "output",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.015625,
+      "source_bound": true,
+      "source_id": "SRCV2_278b76876a91df44",
+      "source_span": "page:14;section:Plos Comp Utational Biology;paragraph:31",
+      "sparse_rank": 4,
+      "text": "Interestingly, the fraction of cells predicted to be upregulated is qualitatively more stable, suggesting that the inference step is best understood as an ad hoc binary classifier, rather than a quantitative descriptor of system state. Given the stability of this classifier, as well as our pre- liminary discussion of similar results in the context of validating protaccel [4], we used this binary classifier as a benchmark in the subsections named “Embedding” under “Logic and methodology” and “Prospects and solutions.” Regression of the piecewise deterministic “dynamical” model in scVelo asserts the imputed counts have normal noise with equal residuals for spliced and unspliced species, once again implausible in the low-copy number regime. More fundamentally, it fails to preserve gene- gene coherence. If a cell is predicted to lie at the beginning of a trajectory for one gene, this esti...",
+      "title": "RNA velocity unraveled",
+      "tool_name": "scVelo",
+      "tool_names": [
+        "scVelo"
+      ]
+    },
+    {
+      "canonical_task": "rna_velocity",
+      "chunk_id": "sourcev2:c5c0172337b0fef4307f",
+      "claim_type": "output",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01538462,
+      "source_bound": true,
+      "source_id": "SRCV2_278b76876a91df44",
+      "source_span": "page:13;section:Plos Comp Utational Biology;paragraph:30-31",
+      "sparse_rank": 5,
+      "text": "RNA velocity unravel ed PLOS Computationa l Biology | https:/ /doi.org/10.13 71/journal.p cbi.1010492 Septemb er 12, 2022 13 / 55 Interestingly, the fraction of cells predicted to be upregulated is qualitatively more stable, suggesting that the inference step is best understood as an ad hoc binary classifier, rather than a quantitative descriptor of system state. Given the stability of this classifier, as well as our pre- liminary discussion of similar results in the context of validating protaccel [4], we used this binary classifier as a benchmark in the subsections named “Embedding” under “Logic and methodology” and “Prospects and solutions.” Regression of the piecewise deterministic “dynamical” model in scVelo asserts the imputed counts have normal noise with equal residuals for spliced and unspliced species, once again implausible in the low-copy number regime. More fundamentally,...",
+      "title": "RNA velocity unraveled",
+      "tool_name": "scVelo",
+      "tool_names": [
+        "scVelo"
+      ]
+    },
+    {
+      "canonical_task": "cell_type_annotation",
+      "chunk_id": "uat-authoritative-span:singler.reference_state",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01515152,
+      "source_bound": true,
+      "source_id": "source-revision:bioconductor:SingleR:2.14.1",
+      "source_span": "SingleR/R/trainSingleR.R#L74-L99",
+      "sparse_rank": 6,
+      "text": "This function uses a training data set to select interesting features and construct nearest neighbor indices in rank space. The automatic marker detection identifies genes that are differentially expressed between pairs of labels in the reference dataset. The expression values are expected to be log-transformed and normalized. Classification with classifySingleR assumes that the test dataset contains all marker genes that were detected from the reference.",
+      "title": "Authoritative bounded evidence: uat-authoritative-span:singler.reference_state",
+      "tool_name": "SingleR",
+      "tool_names": [
+        "SingleR"
+      ]
+    },
+    {
+      "canonical_task": "spatial_mapping",
+      "chunk_id": "sourcev2:54801424bac774cfa5ff",
+      "claim_type": "workflow",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01492537,
+      "source_bound": true,
+      "source_id": "SRCV2_03edf6a16f14a2c3",
+      "source_span": "section:Usage and Tutorials;paragraph:11-24",
+      "sparse_rank": 7,
+      "text": "Cell2location package is implemented in a general way (using https://pyro.ai/ and https://scvi-tools.org/) to support multiple related models - both for spatial mapping, estimating reference cell type signatures and downstream analysis. We suggest using a separate conda environment for installing cell2location. Create conda environment and install `cell2location` package ```bash conda create -y -n cell2loc_env python=3.10 conda activate cell2loc_env pip install cell2location[tutorials] ``` Finally, to use this environment in jupyter notebook, add jupyter kernel for this environment: ```bash conda activate cell2loc_env python -m ipykernel install --user --name=cell2loc_env --display-name='Environment (cell2loc_env)' ``` If you do not have conda please install Miniconda first: ```bash cd /path/to/software wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh bash Mi...",
+      "title": "cell2location official GitHub README",
+      "tool_name": "cell2location",
+      "tool_names": [
+        "cell2location"
+      ]
+    },
+    {
+      "canonical_task": "batch_integration",
+      "chunk_id": "sourcev2:f1a596c7cdc59b5702f8",
+      "claim_type": "input_requirement",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01470588,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:8;section:results;paragraph:23",
+      "sparse_rank": 8,
+      "text": "Scales well to large datasets on CPU Method has GPU support Scales well to feature spaces beyond genes Method shows corrected expression Method gives relative cell embeddings Scib resultsTask detailsSpeedOutput Input Batch effect strength Fig. 5 | Guidelines to choose an integration method. a, T able of criteria to consider when choosing an integration method, and which methods fulfill each criterion. Ticks show which methods fulfill each criterion and gray dashes indicate partial fulfillment. When more than half of the methods fulfill a criterion, we instead highlight the methods that do not by a cross; hence blank spaces denote a cross except in the three rows with labeled crosses. Method outputs are ordered by their overall rank on RNa tasks. Python and R symbols indicate the primary language in which the method is programmed and used. Considerations are divided into the five broad...",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony",
+      "tool_names": []
+    },
+    {
+      "canonical_task": "doublet_detection",
+      "chunk_id": "sourcev2:7c8e2ffa37943b8749cd",
+      "claim_type": "failure_mode",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01449275,
+      "source_bound": true,
+      "source_id": "SRCV2_b7109f89611a4334",
+      "source_span": "section:Best practices;paragraph:5-9",
+      "sparse_rank": 9,
+      "text": "- When working with data from multiple samples, run Scrublet on each sample separately. Because Scrublet is designed to detect technical doublets formed by the random co-encapsulation of two cells, it may perform poorly on merged datasets where the cell type proportions are not representative of any single sample. - Check that the doublet score threshold is reasonable (in an ideal case, separating the two peaks of a bimodal simulated doublet score histogram, as in [this example](./examples/scrublet_basics.ipynb)), and adjust manually if necessary. - Visualize the doublet predictions in a 2-D embedding (e.g., UMAP or t-SNE). Predicted doublets should mostly co-localize (possibly in multiple clusters). If they do not, you may need to adjust the doublet score threshold, or change the pre-processing parameters to better resolve the cell states present in your data. To install with PyPI: `...",
+      "title": "Scrublet official GitHub README",
+      "tool_name": "Scrublet",
+      "tool_names": [
+        "Scrublet"
+      ]
+    },
+    {
+      "canonical_task": "clustering",
+      "chunk_id": "sourcev2:e810ebc61b261e98f689",
+      "claim_type": "general",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01428571,
+      "source_bound": true,
+      "source_id": "SRCV2_e4b4a5ffeaa82213",
+      "source_span": "page:6;section:Results;paragraph:10-11",
+      "sparse_rank": 10,
+      "text": "(Fig S 9b). Note that MNN_Correct took more than 660 min to process fewer than 50,000 cells. In summary, when working with an scRNA-seq dataset with a large number of cells and a large number of batches to be in- tegrated, ComBat, Scanorama and Regress_Out are more recommended if the time cost is the only consideration. Although the Regress_Out and ComBat algorithms are both based on linear regression, we noticed the superior- ity of the ComBat method compared to the Regress_Out method in terms of the batch-correction performance and the computing efficiency (Figs. 1, 2,S 9). The Re- gress_Out algorithm uses a general linear model (GLM) to regress out unwanted sources of variation in the ex- pression matrix. The coefficient for each batch block is estimated by fitting the GLM and is then set to zero to remove the corresponding batch effect. The ComBat al- gorithm uses the same strateg...",
+      "title": "Comparison of Scanpy-based algorithms to remove the batch effect from single-cell RNA-seq data",
+      "tool_name": "Scanpy",
+      "tool_names": [
+        "Scanpy"
+      ]
+    },
+    {
+      "canonical_task": "multimodal_integration",
+      "chunk_id": "sourcev2:d143c7242f30af38cfd1",
+      "claim_type": "workflow",
+      "dense_rank": null,
+      "governance_status": "retrieval_only",
+      "recommendation_eligible": false,
+      "score": 0.01408451,
+      "source_bound": true,
+      "source_id": "SRCV2_61862197e9bbeffa",
+      "source_span": "section:document;paragraph:1-8",
+      "sparse_rank": 11,
+      "text": "[![CRAN Version](https://www.r-pkg.org/badges/version/Seurat)](https://cran.r-project.org/package=Seurat) [![CRAN Downloads](https://cranlogs.r-pkg.org/badges/Seurat)](https://cran.r-project.org/package=Seurat) Seurat is an R toolkit for single-cell genomics, developed and maintained by the [Satija Lab](https://satijalab.org/) at [NYGC](https://www.nygenome.org/). > We are excited to release Seurat v5! This update introduces new functionality for spatial, multimodal, and scalable single-cell analysis. > > Seurat v5 is backwards-compatible with previous versions, so that users will continue to be able to re-run existing workflows. Installation instructions, documentation, and tutorials can be found at: Seurat can be successfully installed in R on any system (Mac OS X, Linux, Windows). Improvements and new features are added on a regular basis. For the most up-to-date development versio...",
+      "title": "Seurat official GitHub README",
+      "tool_name": "Seurat",
+      "tool_names": [
+        "Seurat"
+      ]
+    }
+  ],
+  "index_build_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+  "latency_ms": 322.947,
+  "mode": "kg_bm25",
+  "pipeline": [
+    "query_classification",
+    "canonical_task_normalization",
+    "kg_hard_filter",
+    "sqlite_fts5_bm25",
+    "local_dense_skipped",
+    "scientific_kg_evidence_lookup",
+    "rrf_fusion",
+    "governance_rerank_skipped",
+    "tool_contract_gate_skipped",
+    "retrieval_context_only"
+  ],
+  "query": "真实问题标题：BUG: MapQuery gives aberrant results if reference is subset after RunUMAP\n\n已提供的补充上下文：{\"query_state\":\"unchanged\",\"reference_state\":\"RunUMAP completed, then reference subset\",\"stored_reduction_model\":\"present but not inspected\",\"versions\":\"recorded\"}\n\n给出状态一致性检查和有界解释；不得把标题当成根因。\n\n已提供的条件（未提供的值不作推断）：\nquery_state=unchanged\nreference_state=RunUMAP completed, then reference subset\nstored_reduction_model=present but not inspected\nversions=recorded\nRetrieval hints: claim: method mechanism principle; claim: method documentation",
+  "schema_version": "hybrid-retrieval-v2",
+  "scientific_evidence": {
+    "baseline_identity": "Legacy KG (frozen 1651-node scientific inventory)",
+    "budget_omitted_chunk_ids": [],
+    "eligible_chunk_ids": [
+      "scanpy-authoritative-span:umap.input:1.11.2"
+    ],
+    "execution_authorized": false,
+    "fallback_reason": "",
+    "final_graph_chunk_ids": [
+      "scanpy-authoritative-span:umap.input:1.11.2"
+    ],
+    "gaps": [],
+    "graph_identity": {
+      "bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+      "manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+      "path": "data/evidence_candidates/scientific_kg_v1_uat_decision_rules",
+      "schema": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+      "snapshot": "scientific_kg_v1_uat_decision_rules",
+      "source_manifest_sha256": "6e9833933b5f0be991c67a0466d6af79fb970419a806608067d1b8654c62740b"
+    },
+    "knowledge_status": "candidate",
+    "mapped_chunk_ids": [
+      "scanpy-authoritative-span:umap.input:1.11.2"
+    ],
+    "merge_policy": "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification",
+    "parsed": {
+      "ecosystem": "",
+      "explicit_modality": [],
+      "explicit_species": [],
+      "fallback_reason": "",
+      "flavor": null,
+      "information_needs": [
+        "compatibility",
+        "input_requirement",
+        "scope"
+      ],
+      "operator": "scanpy.tl.umap",
+      "operator_id": "operator:scanpy.tl.umap",
+      "resolution": "bounded_scanpy_alias",
+      "version": null
+    },
+    "paths": [
+      {
+        "claim_content_hash": "80365924fded29723fcac195347bb43b9e451e00acdd4605c91bd162e2549321",
+        "claim_revision_id": "claim-revision:uat:umap-input:v1",
+        "constraint_ids": [
+          "representation-constraint:uat:neighbor-graph-reuse"
+        ],
+        "constraints": [
+          {
+            "allow_missing_modalities": false,
+            "constraint_id": "representation-constraint:uat:neighbor-graph-reuse",
+            "feature_alignment": "not_applicable",
+            "forbidden_transformations": [],
+            "observation_alignment": "same_observations",
+            "representation_type_id": "representation-type:neighbor_graph",
+            "required_component_roles": [
+              "connectivities",
+              "distances",
+              "parameters"
+            ],
+            "required_metadata": [
+              "ordered_observation_ids",
+              "lineage_id",
+              "neighbors_key",
+              "connectivities_key",
+              "distances_key",
+              "semantic_parameter_signature"
+            ],
+            "required_modalities": [
+              "rna"
+            ],
+            "required_provenance_method_ids": [],
+            "required_transformations": [],
+            "required_value_states": [
+              "fresh",
+              "graph_constructed"
+            ],
+            "schema_version": "sckg-representation-constraint-v1.1",
+            "scope_id": "scope:uat:scanpy:umap:1.11.2"
+          }
+        ],
+        "evidence": [
+          {
+            "binding_verified": true,
+            "chunk_ids": [
+              "scanpy-authoritative-span:umap.input:1.11.2"
+            ],
+            "content_hash": "3a80e9eaf778ccc9d8e5d1e829cd6d879b4b386f38b94f2a5d6f8e63da03bcab",
+            "evidence_span_id": "scanpy-authoritative-span:umap.input:1.11.2",
+            "knowledge_status": "candidate",
+            "locator": "src/scanpy/tools/_umap.py#L142-L145",
+            "mapping_basis": "span_identity_source_revision_locator_hash_and_exact_excerpt",
+            "source_file_sha256": "1b30b2ca1700363112eb07684d92bf5bb5f7620251d76950c0038ba0168a03f2",
+            "source_revision_id": "source-revision:github:scverse/scanpy:5400eb87ef7d4e9f6f5a9256d98a7927723456fa"
+          }
+        ],
+        "knowledge_status": "candidate",
+        "operator_revision_id": "operator-revision:scanpy.tl.umap:1.11.2:uat-corrected",
+        "output_port_ids": [],
+        "predicate": "requires_representation",
+        "requirement_ids": [
+          "requirement:uat:umap:neighbor-graph"
+        ],
+        "requirements": [
+          {
+            "level": "mandatory",
+            "reference_artifact_revision_ids": [],
+            "representation_constraint_ids": [
+              "representation-constraint:uat:neighbor-graph-reuse"
+            ],
+            "requirement_id": "requirement:uat:umap:neighbor-graph",
+            "schema_version": "sckg-requirement-v1.1",
+            "scope_id": "scope:uat:scanpy:umap:1.11.2",
+            "when": []
+          }
+        ],
+        "scope": {
+          "condition_status": "not_required",
+          "data_compatibility_assessed": false,
+          "registered_scope": {
+            "assay_technology_ids": [],
+            "biological_context_ids": [],
+            "combination": "all_of",
+            "evaluation_context_ids": [],
+            "modalities": [
+              "rna"
+            ],
+            "observation_units": [
+              "cell"
+            ],
+            "organism_taxa": [],
+            "parameter_conditions": [],
+            "representation_constraint_ids": [],
+            "resource_constraints": [],
+            "schema_version": "sckg-applicability-scope-v1.1",
+            "scope_id": "scope:uat:scanpy:umap:1.11.2",
+            "scope_status": "explicit",
+            "study_design_constraints": [],
+            "task_ids": [
+              "task:embedding"
+            ],
+            "valid_from": null,
+            "valid_to": null,
+            "version_constraints": [
+              {
+                "expression": "1.11.2",
+                "status": "exact",
+                "subject_id": "package-release:scanpy:1.11.2"
+              }
+            ]
+          },
+          "scope_id": "scope:uat:scanpy:umap:1.11.2",
+          "scope_status": "explicit",
+          "version_status": "unspecified_scoped_evidence_only"
+        },
+        "status": "mapped"
+      }
+    ],
+    "public_filter_identity_basis": "bound_scientific_claim_ownership_for_exact_graph_chunks;chunk_metadata_for_other_retrieval_channels",
+    "public_filter_rejected_chunk_ids": [],
+    "recommendation_eligible": false,
+    "resolved_operator_revision": "operator-revision:scanpy.tl.umap:1.11.2:uat-corrected",
+    "subject_resolution": {
+      "ambiguity_reason": "",
+      "candidate_operator_ids": [
+        "operator:scanpy.tl.umap"
+      ],
+      "candidate_operator_revision_ids": [
+        "operator-revision:scanpy.tl.umap:1.11.2:uat-corrected"
+      ],
+      "coverage_status": "CURRENT_DIRECT_EVIDENCE_SCOPE",
+      "provenance": [
+        "method_to_implementing_operator_revision"
+      ],
+      "resolved_method": "method:umap",
+      "resolved_package": "package:scanpy",
+      "resolved_project": "software-project:scanpy",
+      "resolved_subject_type": "operator_revision",
+      "selected_operator_id": "operator:scanpy.tl.umap",
+      "selected_operator_revision_id": "operator-revision:scanpy.tl.umap:1.11.2:uat-corrected",
+      "status": "RESOLVED",
+      "subject_text": "真实问题标题：BUG: MapQuery gives aberrant results if reference is subset after RunUMAP\n\n已提供的补充上下文：{\"query_state\":\"unchanged\",\"reference_state\":\"RunUMAP completed, then reference subset\",\"stored_reduction_model\":\"present but not inspected\",\"versions\":\"recorded\"}\n\n给出状态一致性检查和有界解释；不得把标题当成根因。\n\n已提供的条件（未提供的值不作推断）：\nquery_state=unchanged\nreference_state=RunUMAP completed, then reference subset\nstored_reduction_model=present but not inspected\nversions=recorded\nRetrieval hints: claim: method mechanism principle; claim: method documentation"
+    }
+  },
+  "stage_timings": [
+    {
+      "detail": "deterministic task/claim normalization",
+      "elapsed_ms": 14.351,
+      "stage": "intent",
+      "status": "completed"
+    },
+    {
+      "detail": "candidate_tools=0",
+      "elapsed_ms": 0.009,
+      "stage": "kg_filter",
+      "status": "completed"
+    },
+    {
+      "detail": "hits=136",
+      "elapsed_ms": 47.548,
+      "stage": "bm25",
+      "status": "completed"
+    },
+    {
+      "detail": "status=not_requested;hits=0",
+      "elapsed_ms": 0.004,
+      "stage": "dense_encode",
+      "status": "skipped"
+    },
+    {
+      "detail": "fused=137;reranked=137",
+      "elapsed_ms": 258.886,
+      "stage": "fusion",
+      "status": "completed"
+    }
+  ],
+  "warnings": []
+}

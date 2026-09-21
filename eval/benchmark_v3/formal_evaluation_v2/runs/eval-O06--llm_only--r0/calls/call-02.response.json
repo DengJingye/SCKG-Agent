@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入尚未绑定，测量数据不可用，因此无法对实际对象执行状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后又对参考数据做了子集”，这改变了参考对象的观测数量，但未说明子集后是否重新计算了 UMAP 或邻居图。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提供的查询状态为“未改变”，但未说明查询对象是否与参考对象共享同一 UMAP 模型或邻居图。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:query_state\"]\n    },\n    {\n      \"text\": \"你提到存储的降维模型存在但未检查，因此无法确认该模型是否与子集后的参考数据一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"你提到版本已记录，但未提供具体版本号，因此无法判断是否存在已知的 MapQuery 子集相关行为差异。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:versions\"]\n    },\n    {\n      \"text\": \"在 Scanpy 中，MapQuery 通常依赖参考数据的邻居图和 UMAP 模型；若参考数据在 RunUMAP 后被子集，而查询映射仍使用原始模型，可能导致索引或维度不匹配。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"一般建议在子集参考数据后重新计算邻居图和 UMAP，或确保查询映射使用的模型与子集后的参考数据一致。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"子集参考数据后，是否重新计算了邻居图和 UMAP 模型？\",\n    \"missing_field\": \"reference_subset_recomputed_umap\",\n    \"why_needed\": \"这决定了 MapQuery 使用的模型是否与子集后的参考数据一致，直接影响异常结果的可能原因。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947625,
+  "id": "cdc00ce3-f1e9-451d-8636-4995430f31b7",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 589,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2432,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 2518,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2432
+    },
+    "total_tokens": 3107
+  }
+}

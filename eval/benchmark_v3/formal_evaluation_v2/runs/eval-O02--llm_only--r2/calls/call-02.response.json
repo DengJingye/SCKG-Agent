@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察是 IntegrateLayers 未返回，且 worker_count=8；这只能说明运行未结束，不能据此断定是无限循环或由多核设置引起。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"user:observed_state\", \"user:worker_count\"]\n    },\n    {\n      \"text\": \"要区分“仍在计算”与“卡死/无限循环”，需要知道该调用已持续的时间或是否长时间无输出、无 CPU 活动。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"最小隔离步骤是：先记录当前 Seurat 版本和 future 后端（如 multisession/multicore），再用 worker_count=1 运行同一 IntegrateLayers 调用，观察是否正常返回。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供当前 Seurat 版本、future 后端，以及 IntegrateLayers 调用已持续的时间或是否长时间无输出/无 CPU 活动。\",\n    \"missing_field\": \"seurat_version_and_future_backend_and_duration\",\n    \"why_needed\": \"只有知道版本、后端和持续时间，才能判断是版本特定缺陷、后端不兼容还是仍在正常计算，并据此给出最小隔离步骤。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947880,
+  "id": "9126d3f3-7a3b-4463-8b4e-0f274fd30625",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 337,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 459,
+    "prompt_tokens": 2251,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2588
+  }
+}

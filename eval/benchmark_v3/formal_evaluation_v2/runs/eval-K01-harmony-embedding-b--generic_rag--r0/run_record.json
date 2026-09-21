@@ -1,0 +1,263 @@
+{
+  "answer_hash": "3e9d850615ff5bdbb41d6f1d52bce599eaf1ecfc07be615377c1a536af4c09d6",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_2eda7f099c02433787aeeba3b743b1ef",
+  "case_id": "eval-K01-harmony-embedding-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 2004,
+  "latency_ms": 4496.148874997743,
+  "observed": {
+    "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27\n[2] Harmony · Harmony official GitHub README · section:Standalone Mode;paragraph:12-23\n[3] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:16;section:Umap 1;paragraph:28\n[4] Harmony · Harmony official GitHub README · section:document;paragraph:1-14\n[5] Harmony · Benchmarking atlas-level data integration in single-cell genomics · page:2;section:Results;paragraph:4",
+    "lane": "generic_rag",
+    "product_status": "READY",
+    "provider_calls": 1,
+    "runtime_mode": "external_semantic_with_deterministic_governance"
+  },
+  "output_tokens": 496,
+  "repetition": 0,
+  "run_id": "eval-K01-harmony-embedding-b--generic_rag--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K01-harmony-embedding-b--generic_rag--r0",
+      "created_at": "2026-09-20T23:42:47.537619+00:00",
+      "finished_at": "2026-09-20T23:42:52.025881+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "UNIFIED_AGENT_TRACE",
+          "target_id": "agent-trace:fcba292884446c736791",
+          "target_type": "unified_agent_trace"
+        },
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:0a38f2b502691bbe",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K01-harmony-embedding-b--generic_rag--r0",
+      "root_span_id": "span_1e7d975be11c4e8c9df15362b3de9de5",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 4488.175,
+          "ended_at": "2026-09-20T23:42:52.025881+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_1e7d975be11c4e8c9df15362b3de9de5",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:42:47.537665+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_2eda7f099c02433787aeeba3b743b1ef"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_workflow_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_workflow_plan",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_plan",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "batch_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3474.553,
+          "ended_at": "2026-09-20T23:42:51.029865+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K01-harmony-embedding-b--generic_rag--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_1e7d975be11c4e8c9df15362b3de9de5",
+          "sequence": 2,
+          "span_id": "span_1cee7b2aebcb4dd1b0dd8c588d02392a",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:42:47.555286+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_2eda7f099c02433787aeeba3b743b1ef"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 5,
+            "source_bound_count": 5,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:generic_rag",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 35.847,
+          "ended_at": "2026-09-20T23:42:51.066058+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "sourcev2:39b8f557e5782a49ee55",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:55991224448b32e4adf4",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:bd5f8132711c97b4e432",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:4df3c8429556d94f694d",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "sourcev2:93af124776f195a05b54",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_1e7d975be11c4e8c9df15362b3de9de5",
+          "sequence": 3,
+          "span_id": "span_d1c44efc07aa4fddaff7f184153d23fd",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:42:51.030205+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_2eda7f099c02433787aeeba3b743b1ef"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "execution_request_count": 0
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "planning_result",
+              "outcome": "ready",
+              "reason_code": "plan_only",
+              "record_ref": null,
+              "rule_version": "research_planning_v0"
+            }
+          ],
+          "duration_ms": 956.563,
+          "ended_at": "2026-09-20T23:42:52.022678+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "action-bundle:4422592ff3f6646cf0be",
+              "record_type": "action_bundle",
+              "relation": "planning_context"
+            },
+            {
+              "record_id": "harmony:2.0.0",
+              "record_type": "tool_contract",
+              "relation": "planning_context"
+            },
+            {
+              "record_id": "action-bundle:fb62a4fb82819ca9c2c3",
+              "record_type": "action_bundle",
+              "relation": "planning_context"
+            },
+            {
+              "record_id": "scanorama:1.7.4",
+              "record_type": "tool_contract",
+              "relation": "planning_context"
+            }
+          ],
+          "operation": "plan_if_requested",
+          "output_refs": [
+            {
+              "record_id": "plan_e058d0a4ff91d384a40c",
+              "record_type": "workflow_plan",
+              "relation": "planned"
+            }
+          ],
+          "parent_span_id": "span_1e7d975be11c4e8c9df15362b3de9de5",
+          "sequence": 4,
+          "span_id": "span_f8e526bd58814b81a12f0dec991e5ec3",
+          "stage": "PLANNING",
+          "started_at": "2026-09-20T23:42:51.066110+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_2eda7f099c02433787aeeba3b743b1ef"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_2eda7f099c02433787aeeba3b743b1ef",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法**  \n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`  \n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`  \n   - 两者虽然都是 64 个小写十六进制字符，但 `c`、`d` 不是合法的十六进制字符（合法字符为 `0-9` 和 `a-f`）。  \n   - 因此不满足 `sha256_pattern: \"64 lowercase hexadecimal characters\"`。\n\n2. **schema/status 字段本身满足**  \n   - `schema_version` 为 `artifact-manifest-v1`，与 `expected_schema_version` 一致。  \n   - `status` 为 `completed`，与 `expected_status` 一致。  \n   - 必填字段 `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **artifact_digest 与 input_digest 未用于判定**  \n   - 当前 contract 未要求校验这两个 digest 与内容的一致性，因此不作为决定性证据。\n\n建议 repair/rerun：  \n- 将 `input_sha256` 和 `output_sha256` 替换为合法的 64 位小写十六进制 SHA256 值后重新提交核查。  \n- 当前处于只读核查模式，我不会执行修改或重跑。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947685,
+  "id": "ad373dfd-b658-47ed-9770-5b6a38fcdea2",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 357,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 873
+  }
+}

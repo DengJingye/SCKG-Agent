@@ -1,0 +1,1158 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [
+    {
+      "best_for": "需要快速获得 batch-corrected embedding 的 scRNA-seq 整合。",
+      "caveats": [
+        "输出是校正后的 embedding，不是 corrected count matrix。",
+        "过强校正可能抹去与 batch 混杂的真实生物差异。",
+        "项目内 pilot 只覆盖冻结的 scIB pancreas 设置。"
+      ],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "PCA embedding、batch labels 与稳定 cell IDs",
+      "mechanism": "在 PCA embedding 上迭代聚类并校正 batch-specific centroid。",
+      "output": "保持细胞顺序的 integrated embedding",
+      "readiness": "decision_ready",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "Harmony"
+    },
+    {
+      "best_for": "作为检索候选，需要结合数据与合同继续核对。",
+      "caveats": [],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation...",
+      "mechanism": "Push model Pull model Exploratory analyses Transfer learning Knowledge transfer x x Fig. 1 | Overview of scvi-hub...",
+      "output": "未确认",
+      "readiness": "catalog_only",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "scvi-tools"
+    },
+    {
+      "best_for": "多个 scRNA-seq batch/dataset 的 CPU 整合。",
+      "caveats": [
+        "基因交集和 batch 划分错误会直接破坏匹配。",
+        "稀有或 batch-specific 细胞群可能被错误对齐。",
+        "项目内 pilot 只覆盖冻结的 scIB pancreas 设置。"
+      ],
+      "content_source": "source_bound_chunks",
+      "contract_available": false,
+      "input": "按 batch 分组的表达矩阵、共同基因与稳定 cell IDs",
+      "mechanism": "通过数据集间匹配与流形拼接构建整合表示。",
+      "output": "`scanorama.integrate_scanpy()` 将 integrated embedding 写入 `adata.obsm['X_scanorama']`；受控 wrapper 输出时恢复原始细胞顺序",
+      "readiness": "decision_ready",
+      "scientific_pilot_available": false,
+      "source_chunk_count": 1,
+      "tool_name": "Scanorama"
+    }
+  ],
+  "answerability": {
+    "reason_codes": [
+      "explicit_evidence_gap"
+    ],
+    "unverified_model_knowledge_allowed": false,
+    "verdict": "ANSWER_VERIFIED",
+    "verified_context_available": false
+  },
+  "candidate_tools": [
+    "Harmony",
+    "scvi-tools",
+    "Scanorama"
+  ],
+  "canonical_trace_id": "trace_699590f3d7b446eaad44a9c7a6d0366e",
+  "claim_audit": {
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [],
+    "claims": [
+      {
+        "authority": "none",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "当前受治理知识库中没有足够证据支持该命题。",
+        "claim_type": "non_scientific",
+        "governance_action": "keep",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [],
+    "verified_claims": [],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [],
+      "kg_facts_used": [],
+      "knowledge_sources": [],
+      "references": [],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": false,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "explicit_evidence_gap"
+      ],
+      "unverified_model_knowledge_allowed": false,
+      "verdict": "ANSWER_VERIFIED",
+      "verified_context_available": false
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=batch_integration;task_source=explicit_query;semantic=failed",
+        "elapsed_ms": 100.655,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "deterministic task/claim normalization",
+        "elapsed_ms": 13.263,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "candidate_tools=200",
+        "elapsed_ms": 1171.495,
+        "stage": "kg_filter",
+        "status": "completed"
+      },
+      {
+        "detail": "hits=90",
+        "elapsed_ms": 77.067,
+        "stage": "bm25",
+        "status": "completed"
+      },
+      {
+        "detail": "status=not_requested;hits=0",
+        "elapsed_ms": 0.003,
+        "stage": "dense_encode",
+        "status": "skipped"
+      },
+      {
+        "detail": "fused=90;reranked=90",
+        "elapsed_ms": 160.821,
+        "stage": "fusion",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.011,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=failed",
+        "elapsed_ms": 22.293,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "batch_integration",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "Harmony",
+        "scvi-tools",
+        "Scanorama"
+      ],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {}
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 0,
+    "external_reasoning": {
+      "answer_claims": [],
+      "error_type": "RuntimeError",
+      "input_tokens": null,
+      "latency_ms": 0.0,
+      "model_name": "",
+      "output_tokens": null,
+      "provider": "",
+      "provider_call_attempted": false,
+      "provider_call_count": 0,
+      "status": "failed",
+      "support_check": {}
+    },
+    "grounded_answer_audit": {
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [],
+      "claims": [
+        {
+          "authority": "none",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "当前受治理知识库中没有足够证据支持该命题。",
+          "claim_type": "non_scientific",
+          "governance_action": "keep",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [],
+      "verified_claims": [],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "local-tool-search",
+        "latency_ms": 1565.154,
+        "payload": {
+          "answerability": {
+            "candidate_only": true,
+            "claim_ids": [],
+            "direct_evidence_chunk_ids": [],
+            "evidence_gap_id": "evidence-gap:scvi_tools:has_limitation",
+            "evidence_span_ids": [],
+            "fallback_reason": "unsupported_operator",
+            "operator_revision_id": "",
+            "reason": "explicit_evidence_gap",
+            "scientific_kg_used": false,
+            "scope_status": "",
+            "source_revision_ids": [],
+            "status": "INSUFFICIENT_EVIDENCE",
+            "version_status": ""
+          },
+          "answerability_reason": "explicit_evidence_gap",
+          "answerability_status": "INSUFFICIENT_EVIDENCE",
+          "chunk_ids": [
+            "sourcev2:014c85100179479b262e",
+            "sourcev2:17fd69d82be4c25d540b",
+            "sourcev2:f1a596c7cdc59b5702f8",
+            "sourcev2:e08285e48626040de93f",
+            "sourcev2:d16c0c452b9560bf81c3",
+            "sourcev2:727704405771292b6bfc",
+            "sourcev2:49d54dc198f580838eba",
+            "sourcev2:66a842d1b6b73f17825b",
+            "sourcev2:d66c87684e7925f1ca5c",
+            "sourcev2:2b88831596c4bbf3a834",
+            "sourcev2:b9f757749c16210255c0",
+            "sourcev2:43d6f4c8d739d4f48112"
+          ],
+          "claim_ids": [],
+          "evidence_gap_id": "evidence-gap:scvi_tools:has_limitation",
+          "evidence_span_ids": [],
+          "fallback_reason": "unsupported_operator",
+          "mode": "kg_bm25",
+          "operator_revision_id": "",
+          "query": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nbatch_key=donor, complete\nmatrix_state=raw integer UMI counts\nRetrieval hints: canonical task: batch integration; claim: accepted input raw UMI count matrix expression state requirements",
+          "scientific_kg_used": false,
+          "scope_status": "",
+          "source_revision_ids": [],
+          "version_status": ""
+        },
+        "result_count": 12,
+        "source_bound_count": 12,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "local-tool-search",
+          "canonical_task": "batch_integration",
+          "claim_types": [
+            "input_requirement"
+          ],
+          "query": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nbatch_key=donor, complete\nmatrix_state=raw integer UMI counts\nRetrieval hints: canonical task: batch integration; claim: accepted input raw UMI count matrix expression state requirements",
+          "reason": "required_grounding_for_single_cell_answer",
+          "tool_name": "search_evidence",
+          "tool_names": [],
+          "top_k": 12
+        }
+      ],
+      "rationale": "Deterministic fallback selected the minimum grounding tools.",
+      "source": "deterministic_fallback"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "",
+      "current_user_reported_context": {},
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "For mouse brain (RNA), we obtained the raw count matrix for the scRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al.",
+          "claim_type": "input_requirement",
+          "index": 1,
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:14;section:32. Using this approach, we;paragraph:37",
+          "source_span_id": "sourcev2:014c85100179479b262e",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "claim_text": "Preliminaries CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if a gene is a marker of a particular cell type.",
+          "claim_type": "input_requirement",
+          "index": 2,
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "SRCV2_3780074c1b538965",
+          "source_span": "page:7;section:Rpa3 Cg9593;paragraph:9",
+          "source_span_id": "sourcev2:17fd69d82be4c25d540b",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "scvi-tools: a library for deep probabilistic analysis of single-cell omics data",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "claim_text": "The first is a tab-delimited table format where the columns correspond to cells and the rows correspond to genes.",
+          "claim_type": "general",
+          "index": 3,
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "SRCV2_daf1d29894245278",
+          "source_span": "section:Data processing;paragraph:33-37",
+          "source_span_id": "sourcev2:d66c87684e7925f1ca5c",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Scanorama official GitHub README",
+          "tool_name": "Scanorama"
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": false,
+        "approved_kg_sha256": null,
+        "assessments": [],
+        "caution_context": [],
+        "coverage": "no_direct_statement",
+        "facts": [],
+        "gaps": [
+          "unsupported_operator"
+        ],
+        "identity": "Legacy / candidate evidence",
+        "legacy_kg_consulted": null,
+        "output_ports": [],
+        "reference_links": {},
+        "snapshot_id": null
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:legacy_kg",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": {
+        "candidate_only": true,
+        "claim_ids": [],
+        "direct_evidence_chunk_ids": [],
+        "evidence_gap_id": "evidence-gap:scvi_tools:has_limitation",
+        "evidence_span_ids": [],
+        "fallback_reason": "unsupported_operator",
+        "operator_revision_id": "",
+        "reason": "explicit_evidence_gap",
+        "scientific_kg_used": false,
+        "scope_status": "",
+        "source_revision_ids": [],
+        "status": "INSUFFICIENT_EVIDENCE",
+        "version_status": ""
+      },
+      "governance_leakage_count": 0,
+      "latency_ms": 1426.821,
+      "mode": "kg_bm25",
+      "pipeline": [
+        "query_classification",
+        "canonical_task_normalization",
+        "kg_hard_filter",
+        "sqlite_fts5_bm25",
+        "local_dense_skipped",
+        "scientific_kg_evidence_lookup",
+        "rrf_fusion",
+        "governance_rerank_skipped",
+        "tool_contract_gate_skipped",
+        "retrieval_context_only"
+      ],
+      "scientific_evidence": {
+        "baseline_identity": "Legacy KG (frozen 1651-node scientific inventory)",
+        "eligible_chunk_ids": [],
+        "evidence_gap": {
+          "blocking": "relation_specific_only",
+          "candidate_only": true,
+          "ecosystem": "scvi-tools",
+          "gap_id": "evidence-gap:scvi_tools:has_limitation",
+          "missing_knowledge": "has_limitation",
+          "reason": "Coverage matrix remains incomplete; absence is represented as unknown rather than inferred.",
+          "required_source": "claim-local authoritative evidence"
+        },
+        "execution_authorized": false,
+        "fallback_reason": "unsupported_operator",
+        "final_graph_chunk_ids": [],
+        "gaps": [],
+        "graph_identity": {
+          "bundle_sha256": "5e6b41d61cdd4204f4ebea6125be302fb981dd6e104cc883f21dbc3e6eec41c2",
+          "manifest_sha256": "f5272f1e69c5766a069ca3dd6565d90b323ccdf7a3944a987bd0cba5409ef638",
+          "path": "data/evidence_candidates/scientific_kg_v1_uat_decision_rules",
+          "schema": "sckg-scientific-knowledge-conformance-bundle-v1.1",
+          "snapshot": "scientific_kg_v1_uat_decision_rules",
+          "source_manifest_sha256": "6e9833933b5f0be991c67a0466d6af79fb970419a806608067d1b8654c62740b"
+        },
+        "knowledge_status": "candidate",
+        "mapped_chunk_ids": [],
+        "merge_policy": "equal_channel_rrf_k60_max12_stable_chunk_id_order_existing_public_filter_and_diversification",
+        "parsed": {
+          "ecosystem": "scvi-tools",
+          "explicit_modality": [],
+          "explicit_species": [],
+          "fallback_reason": "unsupported_operator",
+          "flavor": null,
+          "information_needs": [
+            "input_requirement",
+            "scope"
+          ],
+          "operator": null,
+          "operator_id": null,
+          "resolution": "bounded_scanpy_alias",
+          "version": null
+        },
+        "paths": [],
+        "public_filter_identity_basis": "bound_scientific_claim_ownership_for_exact_graph_chunks;chunk_metadata_for_other_retrieval_channels",
+        "public_filter_rejected_chunk_ids": [],
+        "recommendation_eligible": false,
+        "subject_resolution": {
+          "ambiguity_reason": "subject_not_resolved",
+          "candidate_operator_ids": [],
+          "candidate_operator_revision_ids": [],
+          "coverage_status": "UNKNOWN_SUBJECT",
+          "provenance": [],
+          "resolved_method": "",
+          "resolved_package": "",
+          "resolved_project": "",
+          "resolved_subject_type": "",
+          "selected_operator_id": "",
+          "selected_operator_revision_id": "",
+          "status": "UNRESOLVED",
+          "subject_text": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nbatch_key=donor, complete\nmatrix_state=raw integer UMI counts\nRetrieval hints: canonical task: batch integration; claim: accepted input raw UMI count matrix expression state requirements"
+        }
+      },
+      "snippets": [
+        {
+          "chunk_id": "sourcev2:014c85100179479b262e",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the scRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain. org; file name L5_all.loom) and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (http://dropviz.org/; DGE by Region section). Fluorescence-activated cell-sorted mouse brain tissue data (Smart-seq2 protocol, myeloid and nonmyeloid cells, including the annotation file ‘annotations_FACS. csv’) from Tabula Muris were obtained from figshare (https://figshare.com/projects/ Tabula_Muris_Transcriptomic_characterization_of_20_organs_and_tissues_from_ Mus_musc...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01639344,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:14;section:32. Using this approach, we;paragraph:37",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:17fd69d82be4c25d540b",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe the statistical model of CellAssign, highlighting diﬀerences between the scvi-tools implementation and the original implementation. Then we evaluate the scvi-tools implementation against the original on two datasets used in the original publication [ 39]. Preliminaries CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if a gene is a marker of a particular cell type. A size factor s for each cell may also be provided as input, otherwise it is computed empirically as the total unique molecular identiﬁer count of a cell. Additionally, a...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_3780074c1b538965",
+          "relevance_score": 0.01612903,
+          "source_bound": true,
+          "source_id": "SRCV2_3780074c1b538965",
+          "source_span": "page:7;section:Rpa3 Cg9593;paragraph:9",
+          "task": "batch_integration",
+          "title": "scvi-tools: a library for deep probabilistic analysis of single-cell omics data",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:f1a596c7cdc59b5702f8",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Scales well to large datasets on CPU Method has GPU support Scales well to feature spaces beyond genes Method shows corrected expression Method gives relative cell embeddings Scib resultsTask detailsSpeedOutput Input Batch effect strength Fig. 5 | Guidelines to choose an integration method. a, T able of criteria to consider when choosing an integration method, and which methods fulfill each criterion. Ticks show which methods fulfill each criterion and gray dashes indicate partial fulfillment. When more than half of the methods fulfill a criterion, we instead highlight the methods that do not by a cross; hence blank spaces denote a cross except in the three rows with labeled crosses. Method outputs are ordered by their overall rank on RNa tasks. Python and R symbols indicate the primary language in which the method is programmed and used. Considerations are divided into the five broad...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01587302,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:8;section:results;paragraph:23",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:e08285e48626040de93f",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Nature Methods | Volume 22 | September 2025 | 1836–1845 1837 Article https://doi.org/10.1038/s41592-025-02799-9 Model contributors have the option to share the data behind their model, enabling downstream analysis (examples in Figs. 2 and 3). The data can be uploaded either in its raw form (count matrix) or in a substantially reduced form, using a new feature we refer to as ‘data minification’ . The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model. This feature provides a compressed representation of a reference dataset, while still enabling much of the same functionality as with the raw data (Fig. 3). As an example, in scVI, which is based on a conditional variational autoencoder, the minified data would be the latent space coordinates (mean and variance) of each cel...",
+          "claim_type": "parameter",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.015625,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:2;section:document;paragraph:3",
+          "task": "batch_integration",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:d16c0c452b9560bf81c3",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Push model Pull model Exploratory analyses Transfer learning Knowledge transfer x x Fig. 1 | Overview of scvi-hub. Depicting the new functionality for model contribution (purple) and retrieval (teal) that is implemented in scvi-hub, and its placement in an analysis workflow. A code snippet is presented for each of the tasks, highlighting the simplicity of this workflow. The workflow for model deposition (for model contributors) consists of training the model on reference data, evaluating model fit, minifying the reference data and uploading the model to the scvi-hub. The training data (minified or raw) can be uploaded as well, either to Hugging Face or using any other online storage system (for example, Zenodo) that can provide a direct link to access the data. This link is included in the Model card (visible through Hugging Face). The workflow for model retrieval (for the model consu...",
+          "claim_type": "workflow",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.01538462,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:3;section:Results;paragraph:6-7",
+          "task": "batch_integration",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:727704405771292b6bfc",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "2 nature research | reporting summaryApril 2020 MTAB-5061 (ArrayExpress); immune cell bone marrow - GSE120221, GSE107727 (GEO); immune cell peripheral blood – 10X data from https:// support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_v3, GSE115189, GSE128066, GSE94820 (GEO); in addition to the Mouse Cell Atlas datasets of bone marrow and peripheral blood downloaded from https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop- seq data was available from GEO (GSE130148), while the 10X data was obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the snRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain.org; file name L5_all.loom), and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (ht...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01515152,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:25;section:52. Benchmarking atlas-level data integration in single-cell genomics—integration;paragraph:51",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:49d54dc198f580838eba",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "(Fig. 3a and Supplementary Data 1). While methods such as SAUCIE, LIGER, BBKNN and Seurat v3 tend to favor the removal of batch effects over conservation of biological variation, DESC and Conos make the opposite choice, and Scanorama, scVI and FastMNN (gene) balance these two objectives. Other methods strike different balances per task (Extended Data Fig. 4). This tradeoff is particularly noticeable where biological and batch effects overlap. For example, in the lung task, three datasets sample two distinct spatial locations (airway and parenchyma). Particular cell types such as endothelial cells perform different functions in these loca - tions (for example, gas exchange in the parenchyma). While Seurat v3 and BBKNN integrated across the locations to merge these cells, providing a broad cell-type overview, Scanorama preserved the spa - tial variation in endothelial cells and other ce...",
+          "claim_type": "general",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01388889,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:3;section:Results;paragraph:6",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:66a842d1b6b73f17825b",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "AnAl ysisNATurE METhODS assigned the same rank as unintegrated data on this task. For scRNA-seq tasks, we chose the best performing combination of features (HVG or full features) and scaling flavors for each integration method, and then ranked these from best- to worst-performing to give a final ranking per task. By taking the mean of these per-task rankings we ordered the methods by overall performance across tasks. Benchmarking setup. All integration runs were performed using our Snakemake pipeline. Methods were tested with scaled and unscaled data as input, using the full feature (gene/open chromatin window or peak) set or only HVGs. Where HVGs were used, the top 2,000 were selected using a custom method, which selected HVGs in a manner unaffected by batch variance. Specifically, we initially built the hvg_batch function on top of the highly_variable_genes function from Scanpy. Usi...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01162791,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:13;section:32. Using this approach, we;paragraph:36",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:d66c87684e7925f1ca5c",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the rows correspond to genes. A sample file looks something like: ``` gene cell_a cell_b gene_1 10 10 gene_2 20 20 ``` The second is a sparse matrix format used by 10X Genomics (example [here](http://cf.10xgenomics.com/samples/cell-exp/1.1.0/293t/293t_filtered_gene_bc_matrices.tar.gz)). This format has a directory where one file has a list of gene names (`genes.tsv`) and one file has a list of the nonzero transcript counts at certain gene/cell coordinates (`matrix.mtx`). To ensure a consistent data format, the examples first processes these raw files and saves them in `.npz` files along with some related metadata. To generate these files, run the command: ``` python bin/process.py conf/panorama.txt ``` The corresponding `.npz` files will be saved...",
+          "claim_type": "general",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_daf1d29894245278",
+          "relevance_score": 0.0075188,
+          "source_bound": true,
+          "source_id": "SRCV2_daf1d29894245278",
+          "source_span": "section:Data processing;paragraph:33-37",
+          "task": "batch_integration",
+          "title": "Scanorama official GitHub README",
+          "tool_name": "Scanorama"
+        },
+        {
+          "chunk_id": "sourcev2:2b88831596c4bbf3a834",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "If for some reason this doesn't work, you can also install from within the Scanorama repository: ``` git clone https://github.com/brianhie/scanorama.git cd scanorama/ python setup.py install --user ``` If you are running inside an anaconda environment, first install annoy by doing: ``` conda install -c conda-forge python-annoy ``` All of the data used in our study (around 4 GB) can be downloaded from http://cb.csail.mit.edu/cb/scanorama/data.tar.gz. Download and unpack this data with the command: ``` wget http://cb.csail.mit.edu/cb/scanorama/data.tar.gz tar xvf data.tar.gz ``` A smaller version of the data (around 720 MB), including 26 heterogeneous datasets, can be similarly downloaded from http://scanorama.csail.mit.edu/data_light.tar.gz. The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the r...",
+          "claim_type": "general",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_daf1d29894245278",
+          "relevance_score": 0.00735294,
+          "source_bound": true,
+          "source_id": "SRCV2_daf1d29894245278",
+          "source_span": "section:Setup;paragraph:28-35",
+          "task": "batch_integration",
+          "title": "Scanorama official GitHub README",
+          "tool_name": "Scanorama"
+        },
+        {
+          "chunk_id": "sourcev2:b9f757749c16210255c0",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "corrected = scanorama.correct_scanpy(adatas, return_dimred=True) ``` The function `integrate_scanpy()` will simply add an entry into `adata.obsm` called `'X_scanorama'` for each `adata` in `adatas`. `obsm['X_scanorama']` contains the low dimensional embeddings as a result of integration, which can be used for KNN graph construction, visualization, and other downstream analysis. The function `correct_scanpy()` is a little more involved -- it will create new `AnnData` objects and replace `adata.X` with the Scanorama-transformed cell-by-gene matrix, while keeping the other metadata in `adata` as well. You can also call Scanorama from R using the [`reticulate`](https://rstudio.github.io/reticulate/) package (tested with R version 3.5.1 and reticulate version 1.10): genes_list <- list( list of list of string ) library(reticulate) scanorama <- import('scanorama') integrated.data <- scanoram...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_daf1d29894245278",
+          "relevance_score": 0.0070922,
+          "source_bound": true,
+          "source_id": "SRCV2_daf1d29894245278",
+          "source_span": "section:Integration and batch correction.;paragraph:14-23",
+          "task": "batch_integration",
+          "title": "Scanorama official GitHub README",
+          "tool_name": "Scanorama"
+        },
+        {
+          "chunk_id": "sourcev2:43d6f4c8d739d4f48112",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "asf1 beat-IIb DNApol-alpha73 robo2 CycE Ama DNApol-alpha50 fz2 Kmn1 elB Lam noc Nph nkd msd5 fng msd1 vg ctp Set scra Chrac-16 ncd Ote pzg HDAC1 nesd tum CG8173 aurB feo pav CG6767 sip2 Det Cks30A CycB B52 Supplementary Table 2: Gene sets for multiple covariates Drosophila analysis. 30 .CC-BY 4.0 International licenseavailable under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe the statistical model of CellAssign, highlighting diﬀ...",
+          "claim_type": "metric",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_3780074c1b538965",
+          "relevance_score": 0.01492537,
+          "source_bound": true,
+          "source_id": "SRCV2_3780074c1b538965",
+          "source_span": "page:6;section:Rpa3 Cg9593;paragraph:8-9",
+          "task": "batch_integration",
+          "title": "scvi-tools: a library for deep probabilistic analysis of single-cell omics data",
+          "tool_name": "scvi-tools"
+        }
+      ],
+      "stage_timings": [
+        {
+          "detail": "deterministic task/claim normalization",
+          "elapsed_ms": 13.263,
+          "stage": "intent",
+          "status": "completed"
+        },
+        {
+          "detail": "candidate_tools=200",
+          "elapsed_ms": 1171.495,
+          "stage": "kg_filter",
+          "status": "completed"
+        },
+        {
+          "detail": "hits=90",
+          "elapsed_ms": 77.067,
+          "stage": "bm25",
+          "status": "completed"
+        },
+        {
+          "detail": "status=not_requested;hits=0",
+          "elapsed_ms": 0.003,
+          "stage": "dense_encode",
+          "status": "skipped"
+        },
+        {
+          "detail": "fused=90;reranked=90",
+          "elapsed_ms": 160.821,
+          "stage": "fusion",
+          "status": "completed"
+        }
+      ]
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 98556,
+      "process_started_at": "2026-09-20T23:47:46.877570Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.0,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "UNCERTAIN",
+      "error_type": "RuntimeError",
+      "input_tokens": null,
+      "intent": "evidence_qa",
+      "latency_ms": 0.0,
+      "model_name": "",
+      "needs_clarification": false,
+      "output_tokens": null,
+      "provider": "",
+      "provider_call_attempted": false,
+      "requested_tools": [],
+      "retrieval_query": "",
+      "status": "failed",
+      "task_switch": false,
+      "tool_calls": [],
+      "user_reported_context": {}
+    },
+    "semantic_route": {
+      "confidence": 1.0,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "query_or_context_task_anchor_preserved",
+      "source": "local_rule"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 1690.878,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "eval-K02-scvi-count-input-a--legacy_kg--r0",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "batch_integration",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [
+      "claim-001"
+    ],
+    "last_plan_id": null,
+    "referenced_tools": [
+      "Harmony",
+      "scvi-tools",
+      "Scanorama"
+    ],
+    "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "state_epoch": 0,
+    "user_reported_context": {}
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "EVIDENCE_QA",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "EVIDENCE_QA",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "batch_integration",
+    "modality": "scRNA-seq",
+    "task": "batch_integration"
+  },
+  "final_report": "当前受治理知识库中没有足够证据支持该命题。",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [],
+  "request_id": "eval-K02-scvi-count-input-a--legacy_kg--r0",
+  "response_intent": "evidence_qa",
+  "retrieval_results": [
+    {
+      "chunk_id": "sourcev2:014c85100179479b262e",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the scRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain. org; file name L5_all.loom) and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (http://dropviz.org/; DGE by Region section). Fluorescence-activated cell-sorted mouse brain tissue data (Smart-seq2 protocol, myeloid and nonmyeloid cells, including the annotation file ‘annotations_FACS. csv’) from Tabula Muris were obtained from figshare (https://figshare.com/projects/ Tabula_Muris_Transcriptomic_characterization_of_20_organs_and_tissues_from_ Mus_musc...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_a32b8508c092d86d",
+      "relevance_score": 0.01639344,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:14;section:32. Using this approach, we;paragraph:37",
+      "task": "batch_integration",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony"
+    },
+    {
+      "chunk_id": "sourcev2:17fd69d82be4c25d540b",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe the statistical model of CellAssign, highlighting diﬀerences between the scvi-tools implementation and the original implementation. Then we evaluate the scvi-tools implementation against the original on two datasets used in the original publication [ 39]. Preliminaries CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if a gene is a marker of a particular cell type. A size factor s for each cell may also be provided as input, otherwise it is computed empirically as the total unique molecular identiﬁer count of a cell. Additionally, a...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_3780074c1b538965",
+      "relevance_score": 0.01612903,
+      "source_bound": true,
+      "source_id": "SRCV2_3780074c1b538965",
+      "source_span": "page:7;section:Rpa3 Cg9593;paragraph:9",
+      "task": "batch_integration",
+      "title": "scvi-tools: a library for deep probabilistic analysis of single-cell omics data",
+      "tool_name": "scvi-tools"
+    },
+    {
+      "chunk_id": "sourcev2:f1a596c7cdc59b5702f8",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Scales well to large datasets on CPU Method has GPU support Scales well to feature spaces beyond genes Method shows corrected expression Method gives relative cell embeddings Scib resultsTask detailsSpeedOutput Input Batch effect strength Fig. 5 | Guidelines to choose an integration method. a, T able of criteria to consider when choosing an integration method, and which methods fulfill each criterion. Ticks show which methods fulfill each criterion and gray dashes indicate partial fulfillment. When more than half of the methods fulfill a criterion, we instead highlight the methods that do not by a cross; hence blank spaces denote a cross except in the three rows with labeled crosses. Method outputs are ordered by their overall rank on RNa tasks. Python and R symbols indicate the primary language in which the method is programmed and used. Considerations are divided into the five broad...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_a32b8508c092d86d",
+      "relevance_score": 0.01587302,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:8;section:results;paragraph:23",
+      "task": "batch_integration",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony"
+    },
+    {
+      "chunk_id": "sourcev2:e08285e48626040de93f",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Nature Methods | Volume 22 | September 2025 | 1836–1845 1837 Article https://doi.org/10.1038/s41592-025-02799-9 Model contributors have the option to share the data behind their model, enabling downstream analysis (examples in Figs. 2 and 3). The data can be uploaded either in its raw form (count matrix) or in a substantially reduced form, using a new feature we refer to as ‘data minification’ . The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model. This feature provides a compressed representation of a reference dataset, while still enabling much of the same functionality as with the raw data (Fig. 3). As an example, in scVI, which is based on a conditional variational autoencoder, the minified data would be the latent space coordinates (mean and variance) of each cel...",
+      "claim_type": "parameter",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_38d242fe56317fc5",
+      "relevance_score": 0.015625,
+      "source_bound": true,
+      "source_id": "SRCV2_38d242fe56317fc5",
+      "source_span": "page:2;section:document;paragraph:3",
+      "task": "batch_integration",
+      "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+      "tool_name": "scvi-tools"
+    },
+    {
+      "chunk_id": "sourcev2:d16c0c452b9560bf81c3",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "Push model Pull model Exploratory analyses Transfer learning Knowledge transfer x x Fig. 1 | Overview of scvi-hub. Depicting the new functionality for model contribution (purple) and retrieval (teal) that is implemented in scvi-hub, and its placement in an analysis workflow. A code snippet is presented for each of the tasks, highlighting the simplicity of this workflow. The workflow for model deposition (for model contributors) consists of training the model on reference data, evaluating model fit, minifying the reference data and uploading the model to the scvi-hub. The training data (minified or raw) can be uploaded as well, either to Hugging Face or using any other online storage system (for example, Zenodo) that can provide a direct link to access the data. This link is included in the Model card (visible through Hugging Face). The workflow for model retrieval (for the model consu...",
+      "claim_type": "workflow",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_38d242fe56317fc5",
+      "relevance_score": 0.01538462,
+      "source_bound": true,
+      "source_id": "SRCV2_38d242fe56317fc5",
+      "source_span": "page:3;section:Results;paragraph:6-7",
+      "task": "batch_integration",
+      "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+      "tool_name": "scvi-tools"
+    },
+    {
+      "chunk_id": "sourcev2:727704405771292b6bfc",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "2 nature research | reporting summaryApril 2020 MTAB-5061 (ArrayExpress); immune cell bone marrow - GSE120221, GSE107727 (GEO); immune cell peripheral blood – 10X data from https:// support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_v3, GSE115189, GSE128066, GSE94820 (GEO); in addition to the Mouse Cell Atlas datasets of bone marrow and peripheral blood downloaded from https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop- seq data was available from GEO (GSE130148), while the 10X data was obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the snRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain.org; file name L5_all.loom), and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (ht...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_a32b8508c092d86d",
+      "relevance_score": 0.01515152,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:25;section:52. Benchmarking atlas-level data integration in single-cell genomics—integration;paragraph:51",
+      "task": "batch_integration",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony"
+    },
+    {
+      "chunk_id": "sourcev2:49d54dc198f580838eba",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "(Fig. 3a and Supplementary Data 1). While methods such as SAUCIE, LIGER, BBKNN and Seurat v3 tend to favor the removal of batch effects over conservation of biological variation, DESC and Conos make the opposite choice, and Scanorama, scVI and FastMNN (gene) balance these two objectives. Other methods strike different balances per task (Extended Data Fig. 4). This tradeoff is particularly noticeable where biological and batch effects overlap. For example, in the lung task, three datasets sample two distinct spatial locations (airway and parenchyma). Particular cell types such as endothelial cells perform different functions in these loca - tions (for example, gas exchange in the parenchyma). While Seurat v3 and BBKNN integrated across the locations to merge these cells, providing a broad cell-type overview, Scanorama preserved the spa - tial variation in endothelial cells and other ce...",
+      "claim_type": "general",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_a32b8508c092d86d",
+      "relevance_score": 0.01388889,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:3;section:Results;paragraph:6",
+      "task": "batch_integration",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony"
+    },
+    {
+      "chunk_id": "sourcev2:66a842d1b6b73f17825b",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "AnAl ysisNATurE METhODS assigned the same rank as unintegrated data on this task. For scRNA-seq tasks, we chose the best performing combination of features (HVG or full features) and scaling flavors for each integration method, and then ranked these from best- to worst-performing to give a final ranking per task. By taking the mean of these per-task rankings we ordered the methods by overall performance across tasks. Benchmarking setup. All integration runs were performed using our Snakemake pipeline. Methods were tested with scaled and unscaled data as input, using the full feature (gene/open chromatin window or peak) set or only HVGs. Where HVGs were used, the top 2,000 were selected using a custom method, which selected HVGs in a manner unaffected by batch variance. Specifically, we initially built the hvg_batch function on top of the highly_variable_genes function from Scanpy. Usi...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_a32b8508c092d86d",
+      "relevance_score": 0.01162791,
+      "source_bound": true,
+      "source_id": "SRCV2_a32b8508c092d86d",
+      "source_span": "page:13;section:32. Using this approach, we;paragraph:36",
+      "task": "batch_integration",
+      "title": "Benchmarking atlas-level data integration in single-cell genomics",
+      "tool_name": "Harmony"
+    },
+    {
+      "chunk_id": "sourcev2:d66c87684e7925f1ca5c",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the rows correspond to genes. A sample file looks something like: ``` gene cell_a cell_b gene_1 10 10 gene_2 20 20 ``` The second is a sparse matrix format used by 10X Genomics (example [here](http://cf.10xgenomics.com/samples/cell-exp/1.1.0/293t/293t_filtered_gene_bc_matrices.tar.gz)). This format has a directory where one file has a list of gene names (`genes.tsv`) and one file has a list of the nonzero transcript counts at certain gene/cell coordinates (`matrix.mtx`). To ensure a consistent data format, the examples first processes these raw files and saves them in `.npz` files along with some related metadata. To generate these files, run the command: ``` python bin/process.py conf/panorama.txt ``` The corresponding `.npz` files will be saved...",
+      "claim_type": "general",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_daf1d29894245278",
+      "relevance_score": 0.0075188,
+      "source_bound": true,
+      "source_id": "SRCV2_daf1d29894245278",
+      "source_span": "section:Data processing;paragraph:33-37",
+      "task": "batch_integration",
+      "title": "Scanorama official GitHub README",
+      "tool_name": "Scanorama"
+    },
+    {
+      "chunk_id": "sourcev2:2b88831596c4bbf3a834",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "If for some reason this doesn't work, you can also install from within the Scanorama repository: ``` git clone https://github.com/brianhie/scanorama.git cd scanorama/ python setup.py install --user ``` If you are running inside an anaconda environment, first install annoy by doing: ``` conda install -c conda-forge python-annoy ``` All of the data used in our study (around 4 GB) can be downloaded from http://cb.csail.mit.edu/cb/scanorama/data.tar.gz. Download and unpack this data with the command: ``` wget http://cb.csail.mit.edu/cb/scanorama/data.tar.gz tar xvf data.tar.gz ``` A smaller version of the data (around 720 MB), including 26 heterogeneous datasets, can be similarly downloaded from http://scanorama.csail.mit.edu/data_light.tar.gz. The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the r...",
+      "claim_type": "general",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_daf1d29894245278",
+      "relevance_score": 0.00735294,
+      "source_bound": true,
+      "source_id": "SRCV2_daf1d29894245278",
+      "source_span": "section:Setup;paragraph:28-35",
+      "task": "batch_integration",
+      "title": "Scanorama official GitHub README",
+      "tool_name": "Scanorama"
+    },
+    {
+      "chunk_id": "sourcev2:b9f757749c16210255c0",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "corrected = scanorama.correct_scanpy(adatas, return_dimred=True) ``` The function `integrate_scanpy()` will simply add an entry into `adata.obsm` called `'X_scanorama'` for each `adata` in `adatas`. `obsm['X_scanorama']` contains the low dimensional embeddings as a result of integration, which can be used for KNN graph construction, visualization, and other downstream analysis. The function `correct_scanpy()` is a little more involved -- it will create new `AnnData` objects and replace `adata.X` with the Scanorama-transformed cell-by-gene matrix, while keeping the other metadata in `adata` as well. You can also call Scanorama from R using the [`reticulate`](https://rstudio.github.io/reticulate/) package (tested with R version 3.5.1 and reticulate version 1.10): genes_list <- list( list of list of string ) library(reticulate) scanorama <- import('scanorama') integrated.data <- scanoram...",
+      "claim_type": "input_requirement",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_daf1d29894245278",
+      "relevance_score": 0.0070922,
+      "source_bound": true,
+      "source_id": "SRCV2_daf1d29894245278",
+      "source_span": "section:Integration and batch correction.;paragraph:14-23",
+      "task": "batch_integration",
+      "title": "Scanorama official GitHub README",
+      "tool_name": "Scanorama"
+    },
+    {
+      "chunk_id": "sourcev2:43d6f4c8d739d4f48112",
+      "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+      "claim_span": "asf1 beat-IIb DNApol-alpha73 robo2 CycE Ama DNApol-alpha50 fz2 Kmn1 elB Lam noc Nph nkd msd5 fng msd1 vg ctp Set scra Chrac-16 ncd Ote pzg HDAC1 nesd tum CG8173 aurB feo pav CG6767 sip2 Det Cks30A CycB B52 Supplementary Table 2: Gene sets for multiple covariates Drosophila analysis. 30 .CC-BY 4.0 International licenseavailable under a was not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made The copyright holder for this preprint (which this version posted April 29, 2021. ; https://doi.org/10.1101/2021.04.28.441833doi: bioRxiv preprint Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe the statistical model of CellAssign, highlighting diﬀ...",
+      "claim_type": "metric",
+      "recommendation_eligible": false,
+      "record_id": "SRCV2_3780074c1b538965",
+      "relevance_score": 0.01492537,
+      "source_bound": true,
+      "source_id": "SRCV2_3780074c1b538965",
+      "source_span": "page:6;section:Rpa3 Cg9593;paragraph:8-9",
+      "task": "batch_integration",
+      "title": "scvi-tools: a library for deep probabilistic analysis of single-cell omics data",
+      "tool_name": "scvi-tools"
+    }
+  ],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+    "process_id": 98556,
+    "process_started_at": "2026-09-20T23:47:46.877570Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "version": "2.7.2-rc",
+    "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+  },
+  "runtime_mode": "degraded_local_fallback",
+  "scored_tools": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "Harmony"
+    },
+    {
+      "recommendation_eligible": false,
+      "score": 0.01612903,
+      "source_chunk_count": 1,
+      "tool_name": "scvi-tools"
+    },
+    {
+      "recommendation_eligible": false,
+      "score": 0.0075188,
+      "source_chunk_count": 1,
+      "tool_name": "Scanorama"
+    }
+  ],
+  "semantic_route": {
+    "confidence": 1.0,
+    "domain": "SINGLE_CELL",
+    "intent": "evidence_qa",
+    "needs_clarification": false,
+    "source": "local_rule",
+    "task": "batch_integration"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [
+    {
+      "recommendation_eligible": false,
+      "score": 0.01639344,
+      "source_chunk_count": 1,
+      "tool_name": "Harmony"
+    },
+    {
+      "recommendation_eligible": false,
+      "score": 0.01612903,
+      "source_chunk_count": 1,
+      "tool_name": "scvi-tools"
+    },
+    {
+      "recommendation_eligible": false,
+      "score": 0.0075188,
+      "source_chunk_count": 1,
+      "tool_name": "Scanorama"
+    }
+  ],
+  "unverified_model_knowledge_claims": [],
+  "user_id": "local-research-user",
+  "user_query": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nbatch_key=donor, complete\nmatrix_state=raw integer UMI counts",
+  "verified_claims": [],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "batch_integration",
+    "tool_name": null
+  }
+}

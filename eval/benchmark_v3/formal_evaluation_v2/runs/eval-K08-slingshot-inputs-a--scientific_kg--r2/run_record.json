@@ -1,0 +1,208 @@
+{
+  "answer_hash": "e5f324c914dda00aea5e6b5285eb640bdb60d7ff8898a33011e0f580b4b2a96f",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_798133f7f2914c65b3bbb6e25c521318",
+  "case_id": "eval-K08-slingshot-inputs-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 18267,
+  "latency_ms": 10033.530957996845,
+  "observed": {
+    "answer": "Slingshot 的起点是 n×J 的归一化表达矩阵，因此 normalized_expression=present 满足其基本输入形式。[1]\n\nSlingshot 假设细胞已被划分为 K 个簇，cluster_labels=present 与这一算法假设相符。[1]\n\n降维不是硬性必需条件：Slingshot 原则上可直接用于归一化表达，但强烈推荐先降维。[1]\n\n推荐降维的原因是曲线拟合使用欧氏距离，在高维空间可能表现不佳。[1]\n\n你提供的：reduced_dimensions=present。\n\n已知末端簇是可选的局部监督，不决定所有谱系的数量。[3]\n\n提醒：论文版本要求用户指定初始簇或根节点，但这属于版本特定说明，不能据此推断所有软件版本都必须显式传入根参数。[7]\n\n提醒：包描述中“在降维和聚类之后作为分析流程组件”只是流程定位，不能当作精确的通用硬性输入门槛。[6]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此推荐条件也已满足。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1381,
+  "repetition": 2,
+  "run_id": "eval-K08-slingshot-inputs-a--scientific_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K08-slingshot-inputs-a--scientific_kg--r2",
+      "created_at": "2026-09-20T23:43:03.780224+00:00",
+      "finished_at": "2026-09-20T23:43:13.804011+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:5788095c15408303",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K08-slingshot-inputs-a--scientific_kg--r2",
+      "root_span_id": "span_55b3371ee72640ffbdb127f85ee50976",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 10023.675,
+          "ended_at": "2026-09-20T23:43:13.804011+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_55b3371ee72640ffbdb127f85ee50976",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:43:03.780259+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_798133f7f2914c65b3bbb6e25c521318"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_tool_recommendation_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "trajectory_inference",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3789.481,
+          "ended_at": "2026-09-20T23:43:07.595414+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K08-slingshot-inputs-a--scientific_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_55b3371ee72640ffbdb127f85ee50976",
+          "sequence": 2,
+          "span_id": "span_554b58ccfcb0466995cef95dddc62e3a",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:43:03.805898+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_798133f7f2914c65b3bbb6e25c521318"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 2,
+            "result_count": 5,
+            "source_bound_count": 5,
+            "tool_call_count": 2
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:scientific_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 7.202,
+          "ended_at": "2026-09-20T23:43:07.603685+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            },
+            {
+              "record_id": "llm-tool-2",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-v2:6013f90e3320c3c794d9e64f",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:654a2d0dc20497e2bac57526",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:676726eddc4d4e6fb7cdf387",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:193f35067a89e1fb245d6362",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:ade195e9e9d7c84cebcce72d",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_55b3371ee72640ffbdb127f85ee50976",
+          "sequence": 3,
+          "span_id": "span_4367a14f92f14832b32e91638ed16e72",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:43:07.596483+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_798133f7f2914c65b3bbb6e25c521318"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_798133f7f2914c65b3bbb6e25c521318",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

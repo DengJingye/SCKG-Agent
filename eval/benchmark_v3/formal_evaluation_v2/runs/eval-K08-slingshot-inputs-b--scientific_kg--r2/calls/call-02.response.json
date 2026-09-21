@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"Slingshot 的输入起点是 n×J 的归一化表达矩阵，因此 normalized_expression=present 满足这一输入条件。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"We start from an n×J matrix of normalized expression measures (e.g., read counts) for n single cells and J genes or features.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"降维不是 Slingshot 的硬性必要条件，原文明确允许直接使用归一化表达，但强烈推荐先降维。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Although Slingshot can in principle be applied directly to the normalized expression measures, we strongly recommend a dimensionality reduction step before pseudotemporal reconstruction\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供 reduced_dimensions=present，因此已满足这一推荐条件。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:reduced_dimensions\"\n      ]\n    },\n    {\n      \"text\": \"Slingshot 假设细胞已被划分为 K 个簇，但这一假设不能自动转换为执行阻断条件。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Slingshot assumes that the n cells have been partitioned into K clusters, potentially corresponding to distinct cellular states.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供 cluster_labels=absent，因此当前缺少簇划分信息；这会影响 Slingshot 基于簇的 MST 阶段，但不应被当作硬性执行门槛。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:cluster_labels\"\n      ]\n    },\n    {\n      \"text\": \"已知末端簇只提供可选的局部监督，不会固定所有谱系的数量。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"Known terminal clusters provide optional local supervision; they do not fix the number of all lineages.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"Slingshot 能为每个谱系分配 pseudotime，因此具备完成你所述 pseudotime 推断任务的能力。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"Slingshot assigns per-lineage pseudotime to cells.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948056,
+  "id": "e825c989-7078-43a8-8935-9c932cca8753",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 654,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 10880,
+    "prompt_cache_miss_tokens": 13,
+    "prompt_tokens": 10893,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 10880
+    },
+    "total_tokens": 11547
+  }
+}

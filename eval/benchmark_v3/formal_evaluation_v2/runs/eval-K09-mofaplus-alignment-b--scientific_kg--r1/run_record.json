@@ -1,0 +1,193 @@
+{
+  "answer_hash": "faa06d788a7d4dbbb925c7cf6776cfa4458b33146f830a75ae496ce1d544f299",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_3880b38640824df18184447baf9770ec",
+  "case_id": "eval-K09-mofaplus-alignment-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 10110,
+  "latency_ms": 8109.104708011728,
+  "observed": {
+    "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\nMOFA 的官方文档只说明它适用于相同或重叠样本集上的多组学矩阵，没有声明它支持完全无对应关系的独立样本集。[3]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此无法确认它们是否属于相同或重叠的样本集。\n\n在缺少细胞身份对应关系的情况下，无法判断 RNA 细胞（cohort A）与 ATAC 细胞（cohort B）是否构成 MOFA 所要求的相同或重叠样本集，因此不能确认该用法满足 MOFA 的输入条件。\n\n两个 view 的样本是否共享任何可识别的细胞或样本 ID，即使 cell_identity_link 当前为 none？",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 900,
+  "repetition": 1,
+  "run_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r1",
+      "created_at": "2026-09-20T23:44:47.169897+00:00",
+      "finished_at": "2026-09-20T23:44:55.272842+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:25c755b7b900d4a8",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r1",
+      "root_span_id": "span_c61c2daa3d054922b30e7deb646ae38d",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 8102.865,
+          "ended_at": "2026-09-20T23:44:55.272842+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_c61c2daa3d054922b30e7deb646ae38d",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:44:47.169923+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_3880b38640824df18184447baf9770ec"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "single_cell_entity_or_tool_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "multimodal_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2942.977,
+          "ended_at": "2026-09-20T23:44:50.136019+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K09-mofaplus-alignment-b--scientific_kg--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_c61c2daa3d054922b30e7deb646ae38d",
+          "sequence": 2,
+          "span_id": "span_58048476ec0e4316b184746ca3b16138",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:44:47.193020+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_3880b38640824df18184447baf9770ec"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 3,
+            "source_bound_count": 3,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:scientific_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 3.916,
+          "ended_at": "2026-09-20T23:44:50.141416+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-v2:29d92f004f61fdc62d0bad1b",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:00aadd4e55f748cafa66f6cf",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:3b2b5b7873306cf2caad8ddb",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_c61c2daa3d054922b30e7deb646ae38d",
+          "sequence": 3,
+          "span_id": "span_ed78e042de4d42588ded3c1c364446ec",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:44:50.137497+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_3880b38640824df18184447baf9770ec"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_3880b38640824df18184447baf9770ec",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

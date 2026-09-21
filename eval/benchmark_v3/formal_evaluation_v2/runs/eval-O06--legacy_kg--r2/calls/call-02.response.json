@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入数据尚未绑定，测量数据不可用，因此无法执行任何实际的状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后对参考数据取子集”，这改变了参考数据的样本集合，但存储的降维模型尚未检查。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\", \"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"MapQuery 依赖参考数据的嵌入和邻居结构；如果参考数据在 RunUMAP 之后被取子集，而查询映射仍使用原始嵌入或邻居图，可能产生不一致的映射结果。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"由于没有提供具体的 MapQuery 实现版本或代码路径，无法断言该问题是否由参考子集与嵌入模型不匹配导致，也不能确定是否存在其他失败模式。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供 MapQuery 的具体实现版本或代码路径，以及参考子集后是否重新计算了嵌入或邻居图。\",\n    \"missing_field\": \"mapquery_implementation_details\",\n    \"why_needed\": \"不同实现版本对参考数据子集后的处理方式不同，缺少该信息无法判断异常结果的具体原因。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948257,
+  "id": "5dff1f5d-4aaf-46b4-b73a-164b4170ac3e",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 391,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2432,
+    "prompt_cache_miss_tokens": 94,
+    "prompt_tokens": 2526,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2432
+    },
+    "total_tokens": 2917
+  }
+}

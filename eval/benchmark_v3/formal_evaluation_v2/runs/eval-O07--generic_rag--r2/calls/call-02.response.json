@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前没有绑定数据，也没有已注册的输入或测量结果，因此无法对具体失败原因做科学判断。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供了 input_class=recorded 和 traceback=available，这只能说明输入类型和错误回溯可用，不能证明转换器本身有缺陷。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:input_class\", \"user:traceback\"]\n    },\n    {\n      \"text\": \"Seurat v5 官方说明称其向后兼容旧版本，但这不直接说明 scrapper 生成的数据集能否被 as.Seurat 接受。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Seurat v5 is backwards-compatible with previous versions, so that users will continue to be able to re-run existing workflows.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"最小兼容性 triage 首先需要知道实际使用的 Seurat 版本和 scrapper 版本，因为不同版本对输入对象和转换接口的要求可能不同。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"traceback 的具体内容能帮助定位失败发生在对象构造、转换还是下游调用阶段，因此应优先查看回溯中的错误类型和调用栈。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供实际使用的 Seurat 版本和 scrapper 版本，以及 traceback 中的关键错误信息。\",\n    \"missing_field\": \"seurat_version_and_scrapper_version_and_traceback_details\",\n    \"why_needed\": \"版本信息决定 as.Seurat 的预期输入格式和兼容性要求，traceback 细节能定位具体失败点，否则无法给出有针对性的最小兼容性判断。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948214,
+  "id": "b588d4f6-13a2-4421-bbc4-51c5c190dd5d",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 522,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 1098,
+    "prompt_tokens": 2890,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 3412
+  }
+}

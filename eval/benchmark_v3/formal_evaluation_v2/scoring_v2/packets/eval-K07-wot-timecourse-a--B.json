@@ -1,0 +1,231 @@
+{
+  "answers": [
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n确定性检查结果记录：status=not_bound；input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的直接科学陈述，因此无法确认该方法是否支持从四个有序时间点的单细胞表达谱推断细胞来源与命运。\n\n因此无法基于实际数据判断采样设计是否满足 Waddington-OT 的输入要求。\n\n请提供 Waddington-OT 的输入要求或相关科学陈述，以便判断现有采样设计是否支持该用途？",
+      "blind_id": "blind-05be4660fad796d5",
+      "citations": []
+    },
+    {
+      "answer": "Waddington-OT 使用跨时间进程采集的 scRNA-seq 表达谱来推断概率分布随时间的演化。[1]\n\n该方法旨在刻画每个细胞在基因表达空间中的可能来源与可能命运分布。[2]\n\n你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n该方法使用跨时间进程采集的 scRNA-seq 表达谱。[1]\n\n提醒：该方法通过最优传输计算相邻时间点之间的耦合，并隐含假设细胞命运只取决于当前位置而与历史无关，即马尔可夫假设；这属于模型假设，不代表已证实你的数据满足该假设。[4]\n\n提醒：不同时间点独立采样会丢失时间点之间的联合分布，因此该方法推断的是概率性时间耦合，而不是对同一批细胞的直接物理谱系追踪。[5]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n现有证据只说明该方法支持基于时间进程表达快照推断可能来源与命运，但未提供针对四个时间点这一具体采样设计的适用性结论。",
+      "blind_id": "blind-a03abfd508847686",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "Using optimal transport, we calculate couplings between consecutive time points and then infer couplings over longer\ntime-intervals by composing the transport maps between every pair of consecutive intermediate time points. The optimal-transport\ncalculation (i) implicitly assumes that a cell’s fate depends on its current position but not on its previous history\n(i.e., the stochastic process is Markov) and (ii) captures only the time-varying components of the distribution (see Discussion).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Our goal is to learn the relationship between ancestor cells at one time point and descendant cells at another time point:\ngiven that a cell has a specific expression profile at one time point, where will its descendants likely be at a later time point\nand where are its likely ancestors at an earlier time point? We model a differentiating population of cells as a time-varying\nprobability distribution (i.e., stochastic process) on a high-dimensional expression space. By sampling this\nprobability distribution ℙt at various time points t, we wish to infer how the\ndifferentiation process evolves over time (Figure 1A). From a large number of cells at a\ngiven time point (Figure 1B), we can approximate the distribution at that time point, but,\nbecause different cells are sampled independently at different time points, we lose the joint distribution of expression between\npairs of time points, called temporal coupling. Absent any constraint on cellular transitions, we cannot infer\nthe temporal coupling, but if we assume that cells move short distances over short time periods, then we can infer the temporal\ncoupling by using the mathematical technique of optimal transport (Figure 1A, Methods S1).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的适用性、输入要求或边界条件的直接科学陈述。\n\nWaddington-OT 通常需要每个时间点的单细胞表达谱以及时间点之间的细胞对应或耦合信息，仅凭四个有序时间点无法确认是否满足其输入要求。\n\n该方法一般假设时间点足够密集且细胞状态变化近似连续，四个时间点是否足够取决于生物学动态和采样间隔，当前信息不足以判断。\n\n四个时间点之间是否提供了细胞配对、谱系追踪或共同特征（如共享 barcode、基因表达相似性度量）用于建立跨时间点的对应关系？",
+      "blind_id": "blind-21f647a7b7d603e7",
+      "citations": []
+    },
+    {
+      "answer": "我识别到任务为 **Unresolved task**，但没有解析出可安全核验的原子科学 claim。我不会用目录元数据或静态算法卡补造结论。",
+      "blind_id": "blind-f3061eff35de474a",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的直接科学陈述，因此无法确认该方法是否支持基于单细胞表达谱推断细胞来源与命运。\n\n仅凭这些条件，无法判断是否满足 Waddington-OT 的输入要求，例如是否需要细胞在时间点之间的对应关系、是否要求相同的细胞集合或额外的元数据。\n\n你的数据中，不同时间点的细胞是否具有可追踪的对应关系（例如同一细胞在不同时间点的配对信息），还是每个时间点都是独立的细胞快照？",
+      "blind_id": "blind-96a96cac5e921f52",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的直接科学陈述，因此无法确认该方法是否支持从单细胞表达谱推断细胞来源与命运。\n\n仅凭这些条件，无法判断采样设计是否满足 Waddington-OT 的输入要求，因为缺少细胞标识、时间点对应关系、基因表达矩阵格式等具体信息。\n\n请提供每个时间点的细胞标识（例如细胞 ID 或样本 ID）以及它们在不同时间点之间的对应关系，以便判断是否满足 Waddington-OT 对配对或未配对数据的要求？",
+      "blind_id": "blind-90a3d5db6d561ec4",
+      "citations": []
+    },
+    {
+      "answer": "Waddington-OT 使用跨时间进程采集的单细胞表达谱来推断概率分布随时间的演化。[1]\n\n该方法旨在刻画每个细胞在基因表达空间中的可能来源与可能命运分布。[2]\n\n你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n提醒：该方法推断的是概率性时间耦合，而不是对同一批细胞进行直接物理谱系追踪；不同时间点细胞是独立采样的。[4]\n\n提醒：最优传输计算隐含马尔可夫假设，即细胞命运只取决于当前位置而不取决于既往历史，这会影响对长时程推断的解释。[5]",
+      "blind_id": "blind-2627a90eb44b1a33",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "Our goal is to learn the relationship between ancestor cells at one time point and descendant cells at another time point:\ngiven that a cell has a specific expression profile at one time point, where will its descendants likely be at a later time point\nand where are its likely ancestors at an earlier time point? We model a differentiating population of cells as a time-varying\nprobability distribution (i.e., stochastic process) on a high-dimensional expression space. By sampling this\nprobability distribution ℙt at various time points t, we wish to infer how the\ndifferentiation process evolves over time (Figure 1A). From a large number of cells at a\ngiven time point (Figure 1B), we can approximate the distribution at that time point, but,\nbecause different cells are sampled independently at different time points, we lose the joint distribution of expression between\npairs of time points, called temporal coupling. Absent any constraint on cellular transitions, we cannot infer\nthe temporal coupling, but if we assume that cells move short distances over short time periods, then we can infer the temporal\ncoupling by using the mathematical technique of optimal transport (Figure 1A, Methods S1).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Using optimal transport, we calculate couplings between consecutive time points and then infer couplings over longer\ntime-intervals by composing the transport maps between every pair of consecutive intermediate time points. The optimal-transport\ncalculation (i) implicitly assumes that a cell’s fate depends on its current position but not on its previous history\n(i.e., the stochastic process is Markov) and (ii) captures only the time-varying components of the distribution (see Discussion).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        }
+      ]
+    },
+    {
+      "answer": "Waddington-OT 使用跨时间进程收集的单细胞表达谱来推断概率分布随时间的演化。[1]\n\n该方法旨在刻画每个细胞在基因表达空间中的可能来源与可能命运分布。[2]\n\n你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n提醒：该计算隐含马尔可夫假设，即细胞命运只取决于当前位置而非历史，这只是一种模型假设，不代表对实际数据的验证。[4]\n\n提醒：不同时间点独立采样会丢失时间点之间的联合分布，因此推断的是概率性时间耦合，而不是对同一细胞的直接物理追踪。[5]",
+      "blind_id": "blind-160a466354e37af9",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Here, we describe a conceptual framework, implemented in a method called Waddington-OT, that aims to capture the notion that\ncells at any time are drawn from a probability distribution in gene-expression space, and each cell has a\ndistribution of both probable origins and probable fates (Figure 1). It uses\nscRNA-seq data collected across a time-course to infer how these probability distributions evolve over time, by using the mathematical\napproach of Optimal Transport (OT).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "Using optimal transport, we calculate couplings between consecutive time points and then infer couplings over longer\ntime-intervals by composing the transport maps between every pair of consecutive intermediate time points. The optimal-transport\ncalculation (i) implicitly assumes that a cell’s fate depends on its current position but not on its previous history\n(i.e., the stochastic process is Markov) and (ii) captures only the time-varying components of the distribution (see Discussion).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Our goal is to learn the relationship between ancestor cells at one time point and descendant cells at another time point:\ngiven that a cell has a specific expression profile at one time point, where will its descendants likely be at a later time point\nand where are its likely ancestors at an earlier time point? We model a differentiating population of cells as a time-varying\nprobability distribution (i.e., stochastic process) on a high-dimensional expression space. By sampling this\nprobability distribution ℙt at various time points t, we wish to infer how the\ndifferentiation process evolves over time (Figure 1A). From a large number of cells at a\ngiven time point (Figure 1B), we can approximate the distribution at that time point, but,\nbecause different cells are sampled independently at different time points, we lose the joint distribution of expression between\npairs of time points, called temporal coupling. Absent any constraint on cellular transitions, we cannot infer\nthe temporal coupling, but if we assume that cells move short distances over short time periods, then we can infer the temporal\ncoupling by using the mathematical technique of optimal transport (Figure 1A, Methods S1).",
+          "source_bound": true,
+          "source_id": "source-revision:7fa8e65476786e933a18208c"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n确定性检查结果记录：status=not_bound；input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的直接科学陈述，因此无法基于已批准证据确认它是否支持从四个有序时间点的单细胞表达谱推断细胞来源与命运。\n\n因此无法对实际数据是否满足方法要求做出判断。\n\nWaddington-OT 通常需要每个时间点的细胞表达矩阵以及细胞生长/死亡速率或可比的跨时间点匹配信息，仅凭“有单细胞谱”和“四个时间点”不足以确认输入是否完整。\n\n四个有序时间点可能支持推断，但时间点数量、间隔、细胞状态覆盖和批次效应都会影响推断可靠性；这些条件未提供，不能断言现有设计一定适用。\n\n除了每个时间点的单细胞表达谱，是否还提供细胞生长/死亡速率、细胞捕获时间或跨时间点的细胞匹配信息？",
+      "blind_id": "blind-d5ddd318d87ac70b",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的直接科学陈述，因此无法基于已批准证据确认它是否支持从四个有序时间点的单细胞表达谱推断细胞来源与命运。\n\n仅凭这些信息无法判断采样设计是否满足 Waddington-OT 的输入要求，因为缺少细胞身份对应关系、时间点间隔、批次处理方式等关键条件。\n\n四个时间点的单细胞表达谱是否来自同一组细胞或可追踪的谱系，并且是否已提供细胞在时间点之间的对应关系？",
+      "blind_id": "blind-37414ca38faa90bd",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：expression_profiles=single-cell profiles at every time point；sampling=four ordered time points。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前知识库中没有关于 Waddington-OT 的直接科学陈述，因此无法基于已批准证据确认它是否支持从四个有序时间点的单细胞表达谱推断细胞来源与命运。\n\nWaddington-OT 通常需要时间序列的单细胞表达数据，并假设细胞在时间点之间按最优传输进行匹配；但这一般性知识未在当前知识库中得到验证，不能作为适用性结论。\n\n你的数据中是否包含跨时间点的细胞谱系标签或已知的细胞对应关系？",
+      "blind_id": "blind-f4e1c49b8b56368e",
+      "citations": []
+    },
+    {
+      "answer": "我识别到任务为 **Unresolved task**，但没有解析出可安全核验的原子科学 claim。我不会用目录元数据或静态算法卡补造结论。",
+      "blind_id": "blind-b2bbafd0f7061250",
+      "citations": []
+    }
+  ],
+  "case_id": "eval-K07-wot-timecourse-a",
+  "judgment_template": {
+    "acceptable_conclusion": "boolean or null",
+    "answer_quotes": [
+      "exact substring from answer"
+    ],
+    "answerable_resolution": "boolean or null",
+    "approval_boundary_violation": "boolean or null",
+    "artifact_validation": "boolean or null",
+    "blind_id": "string",
+    "bounded_hypotheses": "boolean or null",
+    "citation_support": "reliable|unreliable|no_citations|not_applicable",
+    "condition_scope_error": "boolean or null",
+    "major_scientific_error": "boolean",
+    "necessary_clarification": "boolean or null",
+    "over_refusal": "boolean or null",
+    "plan_validity": "boolean or null",
+    "rationale": "string",
+    "required_fact_status": {
+      "fact_id": "supported|contradicted|missing"
+    },
+    "state_correctness": "boolean or null",
+    "targeted_triage": "boolean or null",
+    "unsupported_root_cause": "boolean or null",
+    "unsupported_scientific_claim": "boolean for K; null otherwise"
+  },
+  "rubric": {
+    "acceptable_conclusion": "A multi-time-point design matches the cited Waddington-OT scope.",
+    "answerable_case": null,
+    "conditions": {
+      "expression_profiles": "single-cell profiles at every time point",
+      "sampling": "four ordered time points"
+    },
+    "expected_trajectory": {
+      "forbidden_steps": [
+        "invent missing state",
+        "execute tools or mutate artifacts"
+      ],
+      "max_redundant_actions": 0,
+      "must_stop_after": "condition-specific answer",
+      "ordered_steps": [],
+      "required_steps": [
+        "preserve supplied state",
+        "apply version/scope conditions",
+        "give bounded decision"
+      ],
+      "required_tool_calls": []
+    },
+    "fixture": null,
+    "forbidden_claims": [],
+    "query": "我想用 Waddington-OT 推断细胞的可能来源与命运。现有采样设计是否支持该用途？说明判断边界；不要执行。",
+    "required_boolean_fields": [
+      "acceptable_conclusion",
+      "major_scientific_error",
+      "condition_scope_error",
+      "unsupported_scientific_claim"
+    ],
+    "required_clarification": [],
+    "required_facts": [
+      {
+        "critical": true,
+        "expected_fact": "Waddington-OT infers probable origins and fates from scRNA-seq collected across a time course.",
+        "fact_id": "wot-timecourse"
+      }
+    ],
+    "scoring_checks": [
+      {
+        "check_id": "decision",
+        "description": "Accept the time-course design for the stated inference."
+      }
+    ],
+    "track": "K"
+  },
+  "schema_version": "sckg-semantic-judge-v2"
+}

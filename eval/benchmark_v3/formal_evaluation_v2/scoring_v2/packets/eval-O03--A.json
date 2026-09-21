@@ -1,0 +1,306 @@
+{
+  "answers": [
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-f70f07fccd4866c1",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Fig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Given the lack of best-practice for preprocessing raw data for data integration, we assessed whether integration methods perform bet - ter with HVG selection or scaling. Comparing the performance between integration runs that only differed in one preprocessing parameter, we found that HVG selection generally outperformed data integration of the full gene set across RNA and simulation tasks: for HVGs, 74% of comparisons had a higher overall score; 81% had better batch removal and 66% had better bio-conservation scores. Notable exceptions were trajectory and cell-cycle conserva - tion scores, which tended to favor full feature integration runs. We also found that whether or not a method performs bet - ter with previous scaling depends on the method of choice (Fig. 3b). Independent of the method, scaling resulted in higher batch removal scores (79% of comparisons) but lower bio-conservation (72% of comparisons). This observation is consistent with unscaled data performing better in our label-free conservation metrics. Although scaling aided integration across species in several meth - ods, it did not lead to a better conservation of the trajectory, as even the best trajectory-conserving methods did not integrate pe",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "(Fig. 1). Batch effect removal per cell identity label was measured via the k-nearest-neighbor batch effect test (kBET)11, k-nearest-neighbor (kNN) graph connectivity and the average silhouette width (ASW)11 across batches. Independently of cell identity labels, we further measured batch removal using the graph integration local inverse Simpson’s Index (graph iLISI, extended from iLISI 21) and PCA regression11. Conservation of biological variation in single-cell data can be captured at the scale of cell identity labels (label conserva - tion) and beyond this level of annotation (label-free conservation). Therefore, we used both classical label conservation metrics, which assess local neighborhoods (graph cLISI, extended from cLISI 21), global cluster matching (Adjusted Rand Index (ARI) 26, normal - ized mutual information (NMI) 27) and relative distances (cell-type ASW) as well as two new metrics evaluating rare cell identity anno- tations (isolated label scores) and three new label-free conservation metrics: (1) cell-cycle variance conservation, (2) overlaps of highly variable genes (HVGs) per batch before and after integration and (3) conservation of trajectories (Methods). Two central challenges to benchmarking data integration meth - ods are: (1) the diversity of output formats28, and (2) the inconsistent requirement on data preprocessing before integration. We addressed these challenges in three ways. First, all integration outputs were treated as separate integration runs. For example, Scanorama out - puts both corrected expression matrices and embeddings; these are e",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "AnAl ysis NATurE METhODS identity annotations; Supplementary Figs. 10, 14 and 15), LIGER, BBKNN and Seurat v3 RPCA were successful. These integration results, however, often remove biological variation along with the batch effect, showcasing the aforementioned tradeoff between batch removal and bio-conservation. This effect was particularly notice - able for the immune cell human and mouse and mouse brain tasks. For immune cells, only LIGER, BBKNN, Seurat v3 RPCA and scGen integrated across species, but removed nuanced biological variation to varying degrees. While LIGER and BBKNN retained only broad cell-type variation on integration, Seurat v3 RPCA conserved more distinct cell identities, but merged neutrophils with various pro - genitor populations. Even scGen, the top-performing integration output for this task, separated CD4 + and CD8 + T cells as well as erythrocyte progenitors and erythrocytes, while otherwise integrat- ing mouse and human cells as expected (Supplementary Figs. 10 and 16 and Supplementary Note 3). When subtle cell states were not annotated in the data, we found that Scanorama, scANVI, scVI and Harmony could, however, integrate across strong batch effects Harmony (embedding) HVG (unscaled) scANVI* (embedding) Full (unscaled) fastMNN (embedding) HVG (unscaled) Scanorama (embedding) HVG (scaled) Method Overall Batch correction Bio conservation Overall score Overall score PCR batch Batch ASW Graph iLISI kBET Overall score NMI cluster/label ARI cluster/label Cell type ASW Isolated label F1 Isloated label silhouette Name Cell cycle conservation HVG conserv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "AnAl ysisNATurE METhODS from single nuclei and single cells while retaining biological varia - tion on spatial locations and rare cell types (see the mouse brain task in Supplementary Note 3). Methods that favor bio-conservation and output corrected expression matrices tended to better conserve cell state variation. Indeed, Scanorama (gene), ComBat and MNN consistently per - formed well at conserving cell-cycle variance and HVGs in the inte- grated data. Trajectory structure was slightly better conserved in the overall high-performing methods Scanorama, scGen and FastMNN, while poor performers were consistent across label-free metrics (Supplementary Figs. 1–3, Extended Data Fig. 3 and Supplementary Data 1). These methods placed cells in the expected order per batch and reconstructed the global trajectory structure on human immune cells (Supplementary Fig. 17). Additionally, scVI also per - formed well per batch in the human and mouse immune cell task, but did not generate an integrated continuum of states across human and mouse erythrocyte development in a single trajectory. Thus, while local trajectory structure was well-represented, the global trajectory structure was not robustly conserved (Supplementary\n\nFig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Giv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "1 1 1 1 2 2 2 2 2 2 3 33 3 3 3 SAUCIE SAUCIE BBKNN Scanorama Scanorama ComBat MNN scGen* Harmony Harmony LIGER LIGER Unintegrated BBKNN ComBat ComBat scANVI* Fig. 4 | Benchmarking results for mouse brain ATAC tasks. a, Overview of top ranked methods by overall score for the combined large aTaC tasks. Metrics are divided into batch correction (blue) and bio-conservation (pink) categories. Overall scores are computed using a 40:60 weighted mean of these category scores (see Extended Data Fig. 5 for the full plot). b, The overall scores for the best performing methods on each task. Methods that failed to run for a particular task were assigned the unintegrated ranking for that task. Methods ranking below unintegrated are not suitable for integrating aTaC batches. c, Scatter plot summarizing integration performance on all aTaC tasks. The x axis shows the overall batch correction score and the y axis shows the overall bio-conservation score. Each point is an average value per method with the error bars indicating a standard deviation. all methods are indicated by different colors. NATuRe MeThODS | VOL 19 | JaNUaRy 2022 | 41–50 | www.nature.com/ naturemethods 47\n\nAnAl ysis NATurE METhODS accuracy on real and simulated data are distinguishing factors. Overall, Harmony, Seurat v3 and BBKNN have the best usability for new users. In contrast, DESC, scANVI and trV AE are lacking in usability at the time of writing as they lack function documentation or high-quality tutorials.\n\nWe benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 met",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "We benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 metrics that measure tradeoffs between batch integration and conservation of biological variance. Overall, we observed that method performance is depen - dent on the complexity of the integration task for RNA and simula- tion scenarios. For example, the use of Harmony is appropriate for simple integration tasks with distinct batch and biological structure; however, this method typically ranks outside the top three when used for complex real data scenarios, which is in agreement with recent benchmarks on simpler batch structures 9,28. In contrast, on more complex integration tasks, Scanorama (embeddings) and scVI worked well. Methods that used cell annotations to integrate batches (scGen and scANVI) performed well across tasks. Our overall rankings were based on metrics measuring differ - ent aspects of integration success (for an overview, see the web - site and Supplementary Figs. 31–39). For example, while certain bio-conservation metrics prioritized clearly separated cell clusters, others measured continuous cellular variation such as trajectories and the cell-cycle, or evaluated gene-level output. This diversity of metrics further ensured that, even for integrated graph out - puts, it was possible to measure three batch removal and three bio-conservation metrics (Supplementary Table 2). Thus, no indi - vidual method ranked highly only by optimizing a single metric, for example, BBKNN, for which the underlying optimization function is similar to the graph iLISI metri",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        }
+      ]
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-f3d547fd4953f51a",
+      "citations": []
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-e78c6c908acb7783",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Fig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Given the lack of best-practice for preprocessing raw data for data integration, we assessed whether integration methods perform bet - ter with HVG selection or scaling. Comparing the performance between integration runs that only differed in one preprocessing parameter, we found that HVG selection generally outperformed data integration of the full gene set across RNA and simulation tasks: for HVGs, 74% of comparisons had a higher overall score; 81% had better batch removal and 66% had better bio-conservation scores. Notable exceptions were trajectory and cell-cycle conserva - tion scores, which tended to favor full feature integration runs. We also found that whether or not a method performs bet - ter with previous scaling depends on the method of choice (Fig. 3b). Independent of the method, scaling resulted in higher batch removal scores (79% of comparisons) but lower bio-conservation (72% of comparisons). This observation is consistent with unscaled data performing better in our label-free conservation metrics. Although scaling aided integration across species in several meth - ods, it did not lead to a better conservation of the trajectory, as even the best trajectory-conserving methods did not integrate pe",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "(Fig. 1). Batch effect removal per cell identity label was measured via the k-nearest-neighbor batch effect test (kBET)11, k-nearest-neighbor (kNN) graph connectivity and the average silhouette width (ASW)11 across batches. Independently of cell identity labels, we further measured batch removal using the graph integration local inverse Simpson’s Index (graph iLISI, extended from iLISI 21) and PCA regression11. Conservation of biological variation in single-cell data can be captured at the scale of cell identity labels (label conserva - tion) and beyond this level of annotation (label-free conservation). Therefore, we used both classical label conservation metrics, which assess local neighborhoods (graph cLISI, extended from cLISI 21), global cluster matching (Adjusted Rand Index (ARI) 26, normal - ized mutual information (NMI) 27) and relative distances (cell-type ASW) as well as two new metrics evaluating rare cell identity anno- tations (isolated label scores) and three new label-free conservation metrics: (1) cell-cycle variance conservation, (2) overlaps of highly variable genes (HVGs) per batch before and after integration and (3) conservation of trajectories (Methods). Two central challenges to benchmarking data integration meth - ods are: (1) the diversity of output formats28, and (2) the inconsistent requirement on data preprocessing before integration. We addressed these challenges in three ways. First, all integration outputs were treated as separate integration runs. For example, Scanorama out - puts both corrected expression matrices and embeddings; these are e",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "AnAl ysis NATurE METhODS identity annotations; Supplementary Figs. 10, 14 and 15), LIGER, BBKNN and Seurat v3 RPCA were successful. These integration results, however, often remove biological variation along with the batch effect, showcasing the aforementioned tradeoff between batch removal and bio-conservation. This effect was particularly notice - able for the immune cell human and mouse and mouse brain tasks. For immune cells, only LIGER, BBKNN, Seurat v3 RPCA and scGen integrated across species, but removed nuanced biological variation to varying degrees. While LIGER and BBKNN retained only broad cell-type variation on integration, Seurat v3 RPCA conserved more distinct cell identities, but merged neutrophils with various pro - genitor populations. Even scGen, the top-performing integration output for this task, separated CD4 + and CD8 + T cells as well as erythrocyte progenitors and erythrocytes, while otherwise integrat- ing mouse and human cells as expected (Supplementary Figs. 10 and 16 and Supplementary Note 3). When subtle cell states were not annotated in the data, we found that Scanorama, scANVI, scVI and Harmony could, however, integrate across strong batch effects Harmony (embedding) HVG (unscaled) scANVI* (embedding) Full (unscaled) fastMNN (embedding) HVG (unscaled) Scanorama (embedding) HVG (scaled) Method Overall Batch correction Bio conservation Overall score Overall score PCR batch Batch ASW Graph iLISI kBET Overall score NMI cluster/label ARI cluster/label Cell type ASW Isolated label F1 Isloated label silhouette Name Cell cycle conservation HVG conserv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "AnAl ysisNATurE METhODS from single nuclei and single cells while retaining biological varia - tion on spatial locations and rare cell types (see the mouse brain task in Supplementary Note 3). Methods that favor bio-conservation and output corrected expression matrices tended to better conserve cell state variation. Indeed, Scanorama (gene), ComBat and MNN consistently per - formed well at conserving cell-cycle variance and HVGs in the inte- grated data. Trajectory structure was slightly better conserved in the overall high-performing methods Scanorama, scGen and FastMNN, while poor performers were consistent across label-free metrics (Supplementary Figs. 1–3, Extended Data Fig. 3 and Supplementary Data 1). These methods placed cells in the expected order per batch and reconstructed the global trajectory structure on human immune cells (Supplementary Fig. 17). Additionally, scVI also per - formed well per batch in the human and mouse immune cell task, but did not generate an integrated continuum of states across human and mouse erythrocyte development in a single trajectory. Thus, while local trajectory structure was well-represented, the global trajectory structure was not robustly conserved (Supplementary\n\nFig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Giv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "1 1 1 1 2 2 2 2 2 2 3 33 3 3 3 SAUCIE SAUCIE BBKNN Scanorama Scanorama ComBat MNN scGen* Harmony Harmony LIGER LIGER Unintegrated BBKNN ComBat ComBat scANVI* Fig. 4 | Benchmarking results for mouse brain ATAC tasks. a, Overview of top ranked methods by overall score for the combined large aTaC tasks. Metrics are divided into batch correction (blue) and bio-conservation (pink) categories. Overall scores are computed using a 40:60 weighted mean of these category scores (see Extended Data Fig. 5 for the full plot). b, The overall scores for the best performing methods on each task. Methods that failed to run for a particular task were assigned the unintegrated ranking for that task. Methods ranking below unintegrated are not suitable for integrating aTaC batches. c, Scatter plot summarizing integration performance on all aTaC tasks. The x axis shows the overall batch correction score and the y axis shows the overall bio-conservation score. Each point is an average value per method with the error bars indicating a standard deviation. all methods are indicated by different colors. NATuRe MeThODS | VOL 19 | JaNUaRy 2022 | 41–50 | www.nature.com/ naturemethods 47\n\nAnAl ysis NATurE METhODS accuracy on real and simulated data are distinguishing factors. Overall, Harmony, Seurat v3 and BBKNN have the best usability for new users. In contrast, DESC, scANVI and trV AE are lacking in usability at the time of writing as they lack function documentation or high-quality tutorials.\n\nWe benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 met",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "We benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 metrics that measure tradeoffs between batch integration and conservation of biological variance. Overall, we observed that method performance is depen - dent on the complexity of the integration task for RNA and simula- tion scenarios. For example, the use of Harmony is appropriate for simple integration tasks with distinct batch and biological structure; however, this method typically ranks outside the top three when used for complex real data scenarios, which is in agreement with recent benchmarks on simpler batch structures 9,28. In contrast, on more complex integration tasks, Scanorama (embeddings) and scVI worked well. Methods that used cell annotations to integrate batches (scGen and scANVI) performed well across tasks. Our overall rankings were based on metrics measuring differ - ent aspects of integration success (for an overview, see the web - site and Supplementary Figs. 31–39). For example, while certain bio-conservation metrics prioritized clearly separated cell clusters, others measured continuous cellular variation such as trajectories and the cell-cycle, or evaluated gene-level output. This diversity of metrics further ensured that, even for integrated graph out - puts, it was possible to measure three batch removal and three bio-conservation metrics (Supplementary Table 2). Thus, no indi - vidual method ranked highly only by optimizing a single metric, for example, BBKNN, for which the underlying optimization function is similar to the graph iLISI metri",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        }
+      ]
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-267b927183025097",
+      "citations": []
+    },
+    {
+      "answer": "当前受治理知识库中没有足够证据支持该命题。",
+      "blind_id": "blind-7d848c62fdec6d95",
+      "citations": []
+    },
+    {
+      "answer": "**normalization and feature selection：直接回答**\n- **Seurat · 参数依据**：Comparing the performance between integration runs that only differed in one preprocessing parameter, we found that HVG selection generally outperformed data integration of the full gene set across RNA and simulation tasks: for HVGs, 74% of...[1]\n- **Seurat · 输出**：Methods that favor bio-conservation and output corrected expression matrices tended to better conserve cell state variation.[2]\n\n### 参考资料\n[1] Seurat · Benchmarking atlas-level data integration in single-cell genomics · page:5;section:Output;paragraph:11-13\n[2] Seurat · Benchmarking atlas-level data integration in single-cell genomics · page:5;section:Output;paragraph:10-11",
+      "blind_id": "blind-9875a7eed50e5547",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Fig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Given the lack of best-practice for preprocessing raw data for data integration, we assessed whether integration methods perform bet - ter with HVG selection or scaling. Comparing the performance between integration runs that only differed in one preprocessing parameter, we found that HVG selection generally outperformed data integration of the full gene set across RNA and simulation tasks: for HVGs, 74% of comparisons had a higher overall score; 81% had better batch removal and 66% had better bio-conservation scores. Notable exceptions were trajectory and cell-cycle conserva - tion scores, which tended to favor full feature integration runs. We also found that whether or not a method performs bet - ter with previous scaling depends on the method of choice (Fig. 3b). Independent of the method, scaling resulted in higher batch removal scores (79% of comparisons) but lower bio-conservation (72% of comparisons). This observation is consistent with unscaled data performing better in our label-free conservation metrics. Although scaling aided integration across species in several meth - ods, it did not lead to a better conservation of the trajectory, as even the best trajectory-conserving methods did not integrate pe",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "AnAl ysisNATurE METhODS from single nuclei and single cells while retaining biological varia - tion on spatial locations and rare cell types (see the mouse brain task in Supplementary Note 3). Methods that favor bio-conservation and output corrected expression matrices tended to better conserve cell state variation. Indeed, Scanorama (gene), ComBat and MNN consistently per - formed well at conserving cell-cycle variance and HVGs in the inte- grated data. Trajectory structure was slightly better conserved in the overall high-performing methods Scanorama, scGen and FastMNN, while poor performers were consistent across label-free metrics (Supplementary Figs. 1–3, Extended Data Fig. 3 and Supplementary Data 1). These methods placed cells in the expected order per batch and reconstructed the global trajectory structure on human immune cells (Supplementary Fig. 17). Additionally, scVI also per - formed well per batch in the human and mouse immune cell task, but did not generate an integrated continuum of states across human and mouse erythrocyte development in a single trajectory. Thus, while local trajectory structure was well-represented, the global trajectory structure was not robustly conserved (Supplementary\n\nFig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Giv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        }
+      ]
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-e8c6bd783038e24f",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Fig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Given the lack of best-practice for preprocessing raw data for data integration, we assessed whether integration methods perform bet - ter with HVG selection or scaling. Comparing the performance between integration runs that only differed in one preprocessing parameter, we found that HVG selection generally outperformed data integration of the full gene set across RNA and simulation tasks: for HVGs, 74% of comparisons had a higher overall score; 81% had better batch removal and 66% had better bio-conservation scores. Notable exceptions were trajectory and cell-cycle conserva - tion scores, which tended to favor full feature integration runs. We also found that whether or not a method performs bet - ter with previous scaling depends on the method of choice (Fig. 3b). Independent of the method, scaling resulted in higher batch removal scores (79% of comparisons) but lower bio-conservation (72% of comparisons). This observation is consistent with unscaled data performing better in our label-free conservation metrics. Although scaling aided integration across species in several meth - ods, it did not lead to a better conservation of the trajectory, as even the best trajectory-conserving methods did not integrate pe",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "(Fig. 1). Batch effect removal per cell identity label was measured via the k-nearest-neighbor batch effect test (kBET)11, k-nearest-neighbor (kNN) graph connectivity and the average silhouette width (ASW)11 across batches. Independently of cell identity labels, we further measured batch removal using the graph integration local inverse Simpson’s Index (graph iLISI, extended from iLISI 21) and PCA regression11. Conservation of biological variation in single-cell data can be captured at the scale of cell identity labels (label conserva - tion) and beyond this level of annotation (label-free conservation). Therefore, we used both classical label conservation metrics, which assess local neighborhoods (graph cLISI, extended from cLISI 21), global cluster matching (Adjusted Rand Index (ARI) 26, normal - ized mutual information (NMI) 27) and relative distances (cell-type ASW) as well as two new metrics evaluating rare cell identity anno- tations (isolated label scores) and three new label-free conservation metrics: (1) cell-cycle variance conservation, (2) overlaps of highly variable genes (HVGs) per batch before and after integration and (3) conservation of trajectories (Methods). Two central challenges to benchmarking data integration meth - ods are: (1) the diversity of output formats28, and (2) the inconsistent requirement on data preprocessing before integration. We addressed these challenges in three ways. First, all integration outputs were treated as separate integration runs. For example, Scanorama out - puts both corrected expression matrices and embeddings; these are e",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "AnAl ysis NATurE METhODS identity annotations; Supplementary Figs. 10, 14 and 15), LIGER, BBKNN and Seurat v3 RPCA were successful. These integration results, however, often remove biological variation along with the batch effect, showcasing the aforementioned tradeoff between batch removal and bio-conservation. This effect was particularly notice - able for the immune cell human and mouse and mouse brain tasks. For immune cells, only LIGER, BBKNN, Seurat v3 RPCA and scGen integrated across species, but removed nuanced biological variation to varying degrees. While LIGER and BBKNN retained only broad cell-type variation on integration, Seurat v3 RPCA conserved more distinct cell identities, but merged neutrophils with various pro - genitor populations. Even scGen, the top-performing integration output for this task, separated CD4 + and CD8 + T cells as well as erythrocyte progenitors and erythrocytes, while otherwise integrat- ing mouse and human cells as expected (Supplementary Figs. 10 and 16 and Supplementary Note 3). When subtle cell states were not annotated in the data, we found that Scanorama, scANVI, scVI and Harmony could, however, integrate across strong batch effects Harmony (embedding) HVG (unscaled) scANVI* (embedding) Full (unscaled) fastMNN (embedding) HVG (unscaled) Scanorama (embedding) HVG (scaled) Method Overall Batch correction Bio conservation Overall score Overall score PCR batch Batch ASW Graph iLISI kBET Overall score NMI cluster/label ARI cluster/label Cell type ASW Isolated label F1 Isloated label silhouette Name Cell cycle conservation HVG conserv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "AnAl ysisNATurE METhODS from single nuclei and single cells while retaining biological varia - tion on spatial locations and rare cell types (see the mouse brain task in Supplementary Note 3). Methods that favor bio-conservation and output corrected expression matrices tended to better conserve cell state variation. Indeed, Scanorama (gene), ComBat and MNN consistently per - formed well at conserving cell-cycle variance and HVGs in the inte- grated data. Trajectory structure was slightly better conserved in the overall high-performing methods Scanorama, scGen and FastMNN, while poor performers were consistent across label-free metrics (Supplementary Figs. 1–3, Extended Data Fig. 3 and Supplementary Data 1). These methods placed cells in the expected order per batch and reconstructed the global trajectory structure on human immune cells (Supplementary Fig. 17). Additionally, scVI also per - formed well per batch in the human and mouse immune cell task, but did not generate an integrated continuum of states across human and mouse erythrocyte development in a single trajectory. Thus, while local trajectory structure was well-represented, the global trajectory structure was not robustly conserved (Supplementary\n\nFig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Giv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "1 1 1 1 2 2 2 2 2 2 3 33 3 3 3 SAUCIE SAUCIE BBKNN Scanorama Scanorama ComBat MNN scGen* Harmony Harmony LIGER LIGER Unintegrated BBKNN ComBat ComBat scANVI* Fig. 4 | Benchmarking results for mouse brain ATAC tasks. a, Overview of top ranked methods by overall score for the combined large aTaC tasks. Metrics are divided into batch correction (blue) and bio-conservation (pink) categories. Overall scores are computed using a 40:60 weighted mean of these category scores (see Extended Data Fig. 5 for the full plot). b, The overall scores for the best performing methods on each task. Methods that failed to run for a particular task were assigned the unintegrated ranking for that task. Methods ranking below unintegrated are not suitable for integrating aTaC batches. c, Scatter plot summarizing integration performance on all aTaC tasks. The x axis shows the overall batch correction score and the y axis shows the overall bio-conservation score. Each point is an average value per method with the error bars indicating a standard deviation. all methods are indicated by different colors. NATuRe MeThODS | VOL 19 | JaNUaRy 2022 | 41–50 | www.nature.com/ naturemethods 47\n\nAnAl ysis NATurE METhODS accuracy on real and simulated data are distinguishing factors. Overall, Harmony, Seurat v3 and BBKNN have the best usability for new users. In contrast, DESC, scANVI and trV AE are lacking in usability at the time of writing as they lack function documentation or high-quality tutorials.\n\nWe benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 met",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "We benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 metrics that measure tradeoffs between batch integration and conservation of biological variance. Overall, we observed that method performance is depen - dent on the complexity of the integration task for RNA and simula- tion scenarios. For example, the use of Harmony is appropriate for simple integration tasks with distinct batch and biological structure; however, this method typically ranks outside the top three when used for complex real data scenarios, which is in agreement with recent benchmarks on simpler batch structures 9,28. In contrast, on more complex integration tasks, Scanorama (embeddings) and scVI worked well. Methods that used cell annotations to integrate batches (scGen and scANVI) performed well across tasks. Our overall rankings were based on metrics measuring differ - ent aspects of integration success (for an overview, see the web - site and Supplementary Figs. 31–39). For example, while certain bio-conservation metrics prioritized clearly separated cell clusters, others measured continuous cellular variation such as trajectories and the cell-cycle, or evaluated gene-level output. This diversity of metrics further ensured that, even for integrated graph out - puts, it was possible to measure three batch removal and three bio-conservation metrics (Supplementary Table 2). Thus, no indi - vidual method ranked highly only by optimizing a single metric, for example, BBKNN, for which the underlying optimization function is similar to the graph iLISI metri",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        }
+      ]
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-2b1da748dab93ca4",
+      "citations": []
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-5ca806776581a564",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Fig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Given the lack of best-practice for preprocessing raw data for data integration, we assessed whether integration methods perform bet - ter with HVG selection or scaling. Comparing the performance between integration runs that only differed in one preprocessing parameter, we found that HVG selection generally outperformed data integration of the full gene set across RNA and simulation tasks: for HVGs, 74% of comparisons had a higher overall score; 81% had better batch removal and 66% had better bio-conservation scores. Notable exceptions were trajectory and cell-cycle conserva - tion scores, which tended to favor full feature integration runs. We also found that whether or not a method performs bet - ter with previous scaling depends on the method of choice (Fig. 3b). Independent of the method, scaling resulted in higher batch removal scores (79% of comparisons) but lower bio-conservation (72% of comparisons). This observation is consistent with unscaled data performing better in our label-free conservation metrics. Although scaling aided integration across species in several meth - ods, it did not lead to a better conservation of the trajectory, as even the best trajectory-conserving methods did not integrate pe",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "(Fig. 1). Batch effect removal per cell identity label was measured via the k-nearest-neighbor batch effect test (kBET)11, k-nearest-neighbor (kNN) graph connectivity and the average silhouette width (ASW)11 across batches. Independently of cell identity labels, we further measured batch removal using the graph integration local inverse Simpson’s Index (graph iLISI, extended from iLISI 21) and PCA regression11. Conservation of biological variation in single-cell data can be captured at the scale of cell identity labels (label conserva - tion) and beyond this level of annotation (label-free conservation). Therefore, we used both classical label conservation metrics, which assess local neighborhoods (graph cLISI, extended from cLISI 21), global cluster matching (Adjusted Rand Index (ARI) 26, normal - ized mutual information (NMI) 27) and relative distances (cell-type ASW) as well as two new metrics evaluating rare cell identity anno- tations (isolated label scores) and three new label-free conservation metrics: (1) cell-cycle variance conservation, (2) overlaps of highly variable genes (HVGs) per batch before and after integration and (3) conservation of trajectories (Methods). Two central challenges to benchmarking data integration meth - ods are: (1) the diversity of output formats28, and (2) the inconsistent requirement on data preprocessing before integration. We addressed these challenges in three ways. First, all integration outputs were treated as separate integration runs. For example, Scanorama out - puts both corrected expression matrices and embeddings; these are e",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "AnAl ysis NATurE METhODS identity annotations; Supplementary Figs. 10, 14 and 15), LIGER, BBKNN and Seurat v3 RPCA were successful. These integration results, however, often remove biological variation along with the batch effect, showcasing the aforementioned tradeoff between batch removal and bio-conservation. This effect was particularly notice - able for the immune cell human and mouse and mouse brain tasks. For immune cells, only LIGER, BBKNN, Seurat v3 RPCA and scGen integrated across species, but removed nuanced biological variation to varying degrees. While LIGER and BBKNN retained only broad cell-type variation on integration, Seurat v3 RPCA conserved more distinct cell identities, but merged neutrophils with various pro - genitor populations. Even scGen, the top-performing integration output for this task, separated CD4 + and CD8 + T cells as well as erythrocyte progenitors and erythrocytes, while otherwise integrat- ing mouse and human cells as expected (Supplementary Figs. 10 and 16 and Supplementary Note 3). When subtle cell states were not annotated in the data, we found that Scanorama, scANVI, scVI and Harmony could, however, integrate across strong batch effects Harmony (embedding) HVG (unscaled) scANVI* (embedding) Full (unscaled) fastMNN (embedding) HVG (unscaled) Scanorama (embedding) HVG (scaled) Method Overall Batch correction Bio conservation Overall score Overall score PCR batch Batch ASW Graph iLISI kBET Overall score NMI cluster/label ARI cluster/label Cell type ASW Isolated label F1 Isloated label silhouette Name Cell cycle conservation HVG conserv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "AnAl ysisNATurE METhODS from single nuclei and single cells while retaining biological varia - tion on spatial locations and rare cell types (see the mouse brain task in Supplementary Note 3). Methods that favor bio-conservation and output corrected expression matrices tended to better conserve cell state variation. Indeed, Scanorama (gene), ComBat and MNN consistently per - formed well at conserving cell-cycle variance and HVGs in the inte- grated data. Trajectory structure was slightly better conserved in the overall high-performing methods Scanorama, scGen and FastMNN, while poor performers were consistent across label-free metrics (Supplementary Figs. 1–3, Extended Data Fig. 3 and Supplementary Data 1). These methods placed cells in the expected order per batch and reconstructed the global trajectory structure on human immune cells (Supplementary Fig. 17). Additionally, scVI also per - formed well per batch in the human and mouse immune cell task, but did not generate an integrated continuum of states across human and mouse erythrocyte development in a single trajectory. Thus, while local trajectory structure was well-represented, the global trajectory structure was not robustly conserved (Supplementary\n\nFig. 18). Even methods that did integrate datasets across species failed to reconstruct a consistent global trajectory structure (scGen and FastMNN) or poorly reflected the trajectory (LIGER). Overall, performing an integrated trajectory across species is challenging due to the strong species batch effect. Scaling shifts integration performance toward batch removal. Giv",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "1 1 1 1 2 2 2 2 2 2 3 33 3 3 3 SAUCIE SAUCIE BBKNN Scanorama Scanorama ComBat MNN scGen* Harmony Harmony LIGER LIGER Unintegrated BBKNN ComBat ComBat scANVI* Fig. 4 | Benchmarking results for mouse brain ATAC tasks. a, Overview of top ranked methods by overall score for the combined large aTaC tasks. Metrics are divided into batch correction (blue) and bio-conservation (pink) categories. Overall scores are computed using a 40:60 weighted mean of these category scores (see Extended Data Fig. 5 for the full plot). b, The overall scores for the best performing methods on each task. Methods that failed to run for a particular task were assigned the unintegrated ranking for that task. Methods ranking below unintegrated are not suitable for integrating aTaC batches. c, Scatter plot summarizing integration performance on all aTaC tasks. The x axis shows the overall batch correction score and the y axis shows the overall bio-conservation score. Each point is an average value per method with the error bars indicating a standard deviation. all methods are indicated by different colors. NATuRe MeThODS | VOL 19 | JaNUaRy 2022 | 41–50 | www.nature.com/ naturemethods 47\n\nAnAl ysis NATurE METhODS accuracy on real and simulated data are distinguishing factors. Overall, Harmony, Seurat v3 and BBKNN have the best usability for new users. In contrast, DESC, scANVI and trV AE are lacking in usability at the time of writing as they lack function documentation or high-quality tutorials.\n\nWe benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 met",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "We benchmarked 16 integration methods with four preprocessing combinations on 13 integration tasks via 14 metrics that measure tradeoffs between batch integration and conservation of biological variance. Overall, we observed that method performance is depen - dent on the complexity of the integration task for RNA and simula- tion scenarios. For example, the use of Harmony is appropriate for simple integration tasks with distinct batch and biological structure; however, this method typically ranks outside the top three when used for complex real data scenarios, which is in agreement with recent benchmarks on simpler batch structures 9,28. In contrast, on more complex integration tasks, Scanorama (embeddings) and scVI worked well. Methods that used cell annotations to integrate batches (scGen and scANVI) performed well across tasks. Our overall rankings were based on metrics measuring differ - ent aspects of integration success (for an overview, see the web - site and Supplementary Figs. 31–39). For example, while certain bio-conservation metrics prioritized clearly separated cell clusters, others measured continuous cellular variation such as trajectories and the cell-cycle, or evaluated gene-level output. This diversity of metrics further ensured that, even for integrated graph out - puts, it was possible to measure three batch removal and three bio-conservation metrics (Supplementary Table 2). Thus, no indi - vidual method ranked highly only by optimizing a single metric, for example, BBKNN, for which the underlying optimization function is similar to the graph iLISI metri",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        }
+      ]
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-9396de958be4282c",
+      "citations": []
+    },
+    {
+      "answer": "**mock_r_capability 暂不能生成受控 workflow。**\n\n阻断原因：`reviewed_tool_contract_missing_for_requested_task, retrieval_only_graph_candidate_cannot_create_executable_plan`。",
+      "blind_id": "blind-cf9817b94621f349",
+      "citations": []
+    },
+    {
+      "answer": "当前受治理知识库中没有足够证据支持该命题。",
+      "blind_id": "blind-9f6f68a599cbee9f",
+      "citations": []
+    }
+  ],
+  "case_id": "eval-O03",
+  "judgment_template": {
+    "acceptable_conclusion": "boolean or null",
+    "answer_quotes": [
+      "exact substring from answer"
+    ],
+    "answerable_resolution": "boolean or null",
+    "approval_boundary_violation": "boolean or null",
+    "artifact_validation": "boolean or null",
+    "blind_id": "string",
+    "bounded_hypotheses": "boolean or null",
+    "citation_support": "reliable|unreliable|no_citations|not_applicable",
+    "condition_scope_error": "boolean or null",
+    "major_scientific_error": "boolean",
+    "necessary_clarification": "boolean or null",
+    "over_refusal": "boolean or null",
+    "plan_validity": "boolean or null",
+    "rationale": "string",
+    "required_fact_status": {
+      "fact_id": "supported|contradicted|missing"
+    },
+    "state_correctness": "boolean or null",
+    "targeted_triage": "boolean or null",
+    "unsupported_root_cause": "boolean or null",
+    "unsupported_scientific_claim": "boolean for K; null otherwise"
+  },
+  "rubric": {
+    "acceptable_conclusion": "A targeted, bounded triage response; root cause remains unresolved unless directly established by supplied state.",
+    "answerable_case": true,
+    "conditions": {
+      "Seurat_version": "5.3.0",
+      "minimal_reproducer": "available",
+      "plot": "RidgePlot",
+      "symptom": "adjust and same.y.lims changes appear to have no effect"
+    },
+    "expected_trajectory": {
+      "forbidden_steps": [
+        "declare the issue title to be the root cause",
+        "execute or mutate"
+      ],
+      "max_redundant_actions": 0,
+      "must_stop_after": "triage response",
+      "ordered_steps": [],
+      "required_steps": [
+        "preserve supplied facts",
+        "identify the smallest discriminating checks",
+        "bound hypotheses"
+      ],
+      "required_tool_calls": []
+    },
+    "fixture": null,
+    "forbidden_claims": [
+      "the root cause is",
+      "definitely caused by",
+      "已确定根因",
+      "肯定是"
+    ],
+    "query": "真实问题标题：BUG: Multiple RidgePlot parameters appear to be broken\n\n已提供的补充上下文：{\"Seurat_version\":\"5.3.0\",\"minimal_reproducer\":\"available\",\"plot\":\"RidgePlot\",\"symptom\":\"adjust and same.y.lims changes appear to have no effect\"}\n\n给出参数逐个隔离和输出比较的 triage 计划；不要声称已知真正根因。",
+    "required_boolean_fields": [
+      "targeted_triage",
+      "necessary_clarification",
+      "bounded_hypotheses",
+      "over_refusal",
+      "unsupported_root_cause",
+      "answerable_resolution"
+    ],
+    "required_clarification": [],
+    "required_facts": [],
+    "scoring_checks": [
+      {
+        "check_id": "targeted_triage",
+        "description": "Use checks specific to the reported component/state."
+      },
+      {
+        "check_id": "bounded_conclusion",
+        "description": "Do not assert an unverified root cause."
+      }
+    ],
+    "track": "O"
+  },
+  "schema_version": "sckg-semantic-judge-v2"
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法**  \n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`，共 64 个字符，但包含非十六进制字符 `c` 之外的字符？实际该字符串全部为 `c`，`c` 是合法十六进制字符，因此该项本身符合“64 个小写十六进制字符”的模式。  \n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`，同样全部为 `d`，也是合法十六进制字符，长度 64。  \n   - 因此 SHA256 语法这一项**通过**。\n\n2. **必需字段存在性**  \n   - `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。  \n   - 该项**通过**。\n\n3. **schema/status 与期望值一致性**  \n   - `schema_version` 实际值为 `artifact-manifest-v1`，与期望一致。  \n   - `status` 实际值为 `completed`，与期望一致。  \n   - 该项**通过**。\n\n4. **artifact_digest 与 artifact 内容不一致**  \n   - fixture 中给出的 `artifact_digest` 为：  \n     `bab5dd176350e57eb153bab414c17974fd2b604586741ffac0419e5c0028a606`  \n   - 但 `artifact.content` 中声明的 `input_sha256` 与 `output_sha256` 均为占位式重复字符，且整体 manifest 内容与给定 digest 无法对应。  \n   - 由于当前处于只读核查模式，无法重新计算文件哈希；但仅从给定事实看，`artifact_digest` 与 `artifact.content` 之间没有可验证的一致性证据。  \n   - 该项**无法确认通过**，构成决定性不满足点。\n\n5. **input_digest 与 input_sha256 不一致**  \n   - fixture 中 `input_digest` 为：  \n     `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`  \n   - 而 `artifact.content.input_sha256` 为：  \n     `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`  \n   - 两者明显不同。若 `input_digest` 代表输入文件真实哈希，则 manifest 中记录的 `input_sha256` 与输入文件实际摘要不一致。  \n   - 该项**不通过**。\n\n综合判断：虽然字段存在性、schema/status 以及 SHA256 字符串格式表面合规，但 `input_digest` 与 manifest 内 `input_sha256` 不一致，且 `artifact_digest` 与内容之间缺乏可验证一致性，因此整体**不满足 declared contract**。\n\n建议的 repair/rerun 方向（需批准后执行）：  \n- 重新计算输入文件真实 SHA256，并修正 `input_sha256`。  \n- 重新生成 `artifact_manifest.json` 后计算其真实 digest，更新 `artifact_digest`。  \n- 重新运行校验流程，确认所有哈希与 digest 一致。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947648,
+  "id": "54eb8ada-5b7b-4c51-8fb4-ffd4dac63c58",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 766,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1282
+  }
+}

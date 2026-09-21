@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入数据尚未绑定，测量数据不可用，因此无法执行任何实际的状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后又对参考数据做了子集”，这改变了参考数据的样本集合，但查询数据状态未变。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\", \"user:query_state\"]\n    },\n    {\n      \"text\": \"你提到存储的降维模型存在但尚未检查，因此无法确认该模型是否与子集后的参考数据一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"在 Scanpy 的 MapQuery 流程中，参考数据子集后，之前计算的 UMAP 模型和邻居图可能不再与当前参考样本对齐，导致查询映射时索引或维度不匹配。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"由于没有提供具体的错误信息或数据对象，无法判断该问题是否由参考子集引起，也不能断言标题中的“异常结果”就是根因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供参考数据子集后保留的样本标识或子集前后的维度信息，以便检查存储的降维模型是否与当前参考数据一致。\",\n    \"missing_field\": \"reference_subset_ids\",\n    \"why_needed\": \"只有知道子集保留了哪些样本，才能判断存储的 UMAP 模型和邻居图是否仍然有效，从而定位 MapQuery 异常的可能原因。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948095,
+  "id": "6f5867cf-0c1c-4fb6-b304-aa54887471d1",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 469,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2176,
+    "prompt_cache_miss_tokens": 350,
+    "prompt_tokens": 2526,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2176
+    },
+    "total_tokens": 2995
+  }
+}

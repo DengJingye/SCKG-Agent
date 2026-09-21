@@ -1,0 +1,103 @@
+{
+  "answer_hash": "4fe5ae377f93645255d17593cb05b93a2f9d92c1664babe7b210e3f9d9c44fdc",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_095a83d6d6644920bf6beb806f12f803",
+  "case_id": "eval-W02",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 474,
+  "latency_ms": 2915.9043749968987,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 不匹配**\n   - 声明值（`declared_sha256`）：`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`\n   - 实际观测值（`observed_sha256`）：`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`\n   - 两者不一致，违反 `output_schema.sha256_must_equal_declared: true`。\n\n2. **校验规则明确要求精确比对 SHA256**\n   - `artifact_validators` 包含 `\"compare exact SHA256\"` 和 `\"do not accept exit code alone\"`。\n   - 因此 `exit_code: 0` 不能作为通过依据。\n\n3. **预期结果本身即为失败**\n   - `expected` 字段为 `\"invalid: checksum mismatch despite exit code 0\"`，与当前观测事实一致。\n\n建议（仅建议，未执行）：\n- 可发起 repair/rerun 流程，重新生成 `result.bin`，使其 SHA256 等于声明的 `aaaaaaaa...`。\n- 在重新校验时继续以精确 SHA256 比对为准，不将退出码 0 视为充分条件。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 281,
+  "repetition": 0,
+  "run_id": "eval-W02--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W02--scientific_kg--r0",
+      "created_at": "2026-09-20T23:48:52.019964+00:00",
+      "finished_at": "2026-09-20T23:48:54.934358+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:b3d8ade85e0469bb",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W02--scientific_kg--r0",
+      "root_span_id": "span_e78ba7d6ad3d495299896ba319cbb978",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 2914.325,
+          "ended_at": "2026-09-20T23:48:54.934358+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_e78ba7d6ad3d495299896ba319cbb978",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:48:52.019999+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_095a83d6d6644920bf6beb806f12f803"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 89.7,
+          "ended_at": "2026-09-20T23:48:52.139036+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W02--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_e78ba7d6ad3d495299896ba319cbb978",
+          "sequence": 2,
+          "span_id": "span_98616d0f5aeb4239b145251ee72afbb5",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:48:52.049337+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_095a83d6d6644920bf6beb806f12f803"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_095a83d6d6644920bf6beb806f12f803",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

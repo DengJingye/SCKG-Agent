@@ -1,0 +1,198 @@
+{
+  "answer_hash": "a1e7da6d1e10f1a8ed05fec824a5b9170b9b42735f167a9a89348cc8f14e644d",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_bd2c603cd6bb42d28d096951531a6043",
+  "case_id": "eval-K12-umap-strength-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 14651,
+  "latency_ms": 10447.136707996833,
+  "observed": {
+    "answer": "你提供的：min_dist=0.05。\n\nScanpy 1.11.2 文档说明，较小的 min_dist 会让嵌入点更聚集、更成团，较大的值则让点更均匀分散。[1]\n\n因此，min_dist=0.05 相对文档提到的 umap-learn 默认值 0.1 更小，按文档机制倾向于产生更聚集的嵌入。[1]\n\n但 min_dist 的实际效果还取决于 spread 等参数，不能脱离这些条件断言最终紧凑程度。[6]\n\n你提供的：proposed_conclusion=The clumps prove discrete biological cell types。\n\n文档只把输出描述为“数据的 UMAP 坐标”，并未把输出行明确标识为细胞，因此不能据此把图中的团块解释为离散细胞类型。[5]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nUMAP 的聚集可能受参数、预处理和数据结构影响，不能单独作为离散生物学细胞类型存在的证明。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 3,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1168,
+  "repetition": 0,
+  "run_id": "eval-K12-umap-strength-b--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K12-umap-strength-b--scientific_kg--r0",
+      "created_at": "2026-09-20T23:50:20.672944+00:00",
+      "finished_at": "2026-09-20T23:50:31.115692+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:8047043c97e50bca",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K12-umap-strength-b--scientific_kg--r0",
+      "root_span_id": "span_ab10b62835854d529c851618b62a6e9a",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 10442.622,
+          "ended_at": "2026-09-20T23:50:31.115692+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_ab10b62835854d529c851618b62a6e9a",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:50:20.672987+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_bd2c603cd6bb42d28d096951531a6043"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2912.489,
+          "ended_at": "2026-09-20T23:50:23.620505+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K12-umap-strength-b--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_ab10b62835854d529c851618b62a6e9a",
+          "sequence": 2,
+          "span_id": "span_09bde43005c04de19d4b5e088e966f5e",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:50:20.707990+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_bd2c603cd6bb42d28d096951531a6043"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 4,
+            "source_bound_count": 4,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "paired_ablation:scientific_kg",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 4.621,
+          "ended_at": "2026-09-20T23:50:23.626789+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "approved-v2:d1bd9b38a8bb5a3858624ccb",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:55bf4428bddcb9c12ce7ca23",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:ff4dbf88dfe5daaf44698209",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-v2:2c67a8ed5a72f2877cdf65c1",
+              "record_type": "evidence_chunk",
+              "relation": "retrieved"
+            },
+            {
+              "record_id": "approved-scientific-kg-v2-01",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_ab10b62835854d529c851618b62a6e9a",
+          "sequence": 3,
+          "span_id": "span_3c25a3b4040944a283007f1ac2e8a730",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:50:23.622161+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_bd2c603cd6bb42d28d096951531a6043"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_bd2c603cd6bb42d28d096951531a6043",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

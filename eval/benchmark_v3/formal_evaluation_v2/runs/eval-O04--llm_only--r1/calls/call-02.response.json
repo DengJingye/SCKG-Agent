@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你观察到“输出看起来像 Louvain”，这只能说明标签或聚类结果与 Louvain 相似，不能直接证明实际运行的是 Louvain 后端。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你请求的算法是 leidenbase 和 igraph，但当前没有提供 Seurat 版本和 Leiden 后端版本，因此无法判断是否因版本不匹配或参数未生效而回退。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"当前检查结果显示尚未绑定输入数据，也没有可用的测量结果，因此无法从运行状态确认实际使用的聚类后端。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"在 Seurat 中，FindClusters 的 algorithm 参数若设置为 leidenbase 或 igraph，通常需要相应的 Leiden 后端可用；若后端缺失或版本不兼容，可能发生回退或报错，但这需要结合具体版本信息确认。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"要区分“输出标签像 Louvain”和“实际后端是 Louvain”，需要检查聚类对象中保存的算法标识、日志或后端版本，而不是仅凭聚类结果外观判断。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供 Seurat 版本和 Leiden 后端（leidenbase/igraph）的具体版本号，以及 FindClusters 调用时使用的完整参数。\",\n    \"missing_field\": \"seurat_version_and_leiden_backend_version\",\n    \"why_needed\": \"版本不匹配或参数传递错误是导致算法回退的常见原因，缺少这些信息无法区分是标签误判、后端未生效还是版本兼容问题。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947856,
+  "id": "bd5595a0-ddb4-4676-abec-ec372bc62daa",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 511,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 1033,
+    "prompt_tokens": 2313,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1280
+    },
+    "total_tokens": 2824
+  }
+}

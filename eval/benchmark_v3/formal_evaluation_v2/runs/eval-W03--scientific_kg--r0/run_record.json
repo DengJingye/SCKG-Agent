@@ -1,0 +1,103 @@
+{
+  "answer_hash": "e14bd991aba4a8c1862baae51e2d7c0e8d909a3a4bc80159cc453a335fb506eb",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_e31e75b43a424576a360e61f1dc664c5",
+  "case_id": "eval-W03",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 516,
+  "latency_ms": 4981.518499989761,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 语法不合法**\n   - `input_sha256` = `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `output_sha256` = `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者均为 64 个字符，但包含非十六进制字符（`c` 和 `d` 本身是合法十六进制字符，但这里需要确认：`c`、`d` 属于 `0-9a-f`，因此**字符层面合法**）。\n   - 不过，`input_sha256` 与 `input_digest` 不一致：\n     - 声明中的 `input_digest` = `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`\n     - artifact 中的 `input_sha256` = `cccc...`\n     - 两者不相等，说明 artifact 中记录的输入摘要与冻结 fixture 中声明的输入摘要不匹配。\n\n2. **schema/status 字段**\n   - `schema_version` = `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` = `completed`，与 `expected_status` 一致。\n   - 必填字段 `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **artifact_digest 与 artifact 内容的关系**\n   - 未提供 artifact 内容本身的哈希计算依据，无法从给定信息判断 `artifact_digest` 是否与 `artifact_manifest.json` 的实际内容一致。但仅凭上述 `input_sha256` 与 `input_digest` 的不一致，已足以判定不满足契约。\n\n结论：由于 `input_sha256` 与冻结 fixture 中的 `input_digest` 不一致，artifact 未通过 declared contract 的核查。\n\n建议（需批准后方可执行）：\n- **repair**：修正 `artifact_manifest.json` 中的 `input_sha256`，使其等于 `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`。\n- **rerun**：若该 artifact 由流水线生成，建议重新运行生成流程，确保输入摘要被正确记录。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 567,
+  "repetition": 0,
+  "run_id": "eval-W03--scientific_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W03--scientific_kg--r0",
+      "created_at": "2026-09-20T23:42:39.913646+00:00",
+      "finished_at": "2026-09-20T23:42:44.893061+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:ef5f2824374b55e7",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W03--scientific_kg--r0",
+      "root_span_id": "span_a2390246eed74fb98470ef3d9b1ee378",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 4979.358,
+          "ended_at": "2026-09-20T23:42:44.893061+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_a2390246eed74fb98470ef3d9b1ee378",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:42:39.913670+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_e31e75b43a424576a360e61f1dc664c5"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 66.341,
+          "ended_at": "2026-09-20T23:42:40.003028+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W03--scientific_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_a2390246eed74fb98470ef3d9b1ee378",
+          "sequence": 2,
+          "span_id": "span_95a4b59f66104da9955e00eac14ba994",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:42:39.936685+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_e31e75b43a424576a360e61f1dc664c5"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_e31e75b43a424576a360e61f1dc664c5",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

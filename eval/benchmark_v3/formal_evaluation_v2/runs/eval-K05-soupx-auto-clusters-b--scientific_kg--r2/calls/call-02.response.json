@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"autoEstCont 的自动估计过程本身会识别标记基因，并在簇水平计算污染比例。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"The idea of this method is that genes that are highly expressed in the soup and are marker genes for some population can be used to estimate the background contamination. Marker genes are identified using the tfidf method (see quickMarkers). The contamination fraction is then calculated at the cluster level for each of these genes and clusters are then aggressively pruned to remove those that give implausible estimates.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"聚类信息不是 autoEstCont 的必需输入，也不是执行阻断条件；它只是对 subtraction 方法的一种推荐。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"As expression data is highly sparse at the single cell level, it is highly recommended that clustering information be provided to allow the subtraction method to share information between cells.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你已提供 droplet UMI counts，但没有 clusters；这并不自动满足或否定自动估计条件，因为当前 KG 未给出 autoEstCont 的完整必需输入清单。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:count_matrix\",\n        \"user:clusters\"\n      ]\n    },\n    {\n      \"text\": \"提醒：autoEstCont 假设通道内存在多种具有不同标记基因的细胞类型；在高度同质的样本上可能产生警告、错误或异常高的污染估计，这属于可检测性局限，不代表当前数据一定不适用。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"This function assumes that the channel contains multiple distinct cell types with different marker genes. If you try and run it on a channel with very homogenous cells (e.g. a cell line, flow-sorted cells), you will likely get a warning, an error, and/or an extremely high contamination estimate.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"提醒：背景表达谱通常来自低 UMI 的空液滴；这需要原始液滴数据中包含可识别的空液滴，而不是仅保留细胞后的计数矩阵。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 7,\n          \"quote\": \"To estimate the background expression profile we consider all droplets with <Nemp UMIs, which we assume unambiguously do not contain cells.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"你提供的 droplet UMI counts 是否包含空液滴（低 UMI 液滴），还是已经过滤为仅含细胞的计数矩阵？\",\n    \"missing_field\": \"empty_droplets_included\",\n    \"why_needed\": \"SoupX 的背景表达谱估计依赖空液滴；如果计数矩阵已去除空液滴，自动污染比例估计可能缺少必要的背景信息，从而改变需要补充的数据或步骤。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947738,
+  "id": "d0f1bba1-5e0f-46a5-a0ca-db85c1037d84",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 744,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 11648,
+    "prompt_cache_miss_tokens": 80,
+    "prompt_tokens": 11728,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 11648
+    },
+    "total_tokens": 12472
+  }
+}

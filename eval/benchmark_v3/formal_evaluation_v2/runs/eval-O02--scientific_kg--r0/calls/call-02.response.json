@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的信息是 IntegrateLayers 不返回，且 worker_count=8；这只能确认当前观察到的卡住状态，不能据此判断根因。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_state\", \"user:worker_count\"]\n    },\n    {\n      \"text\": \"当前检查结果没有绑定数据，也没有可用的测量结果，因此无法从运行状态进一步定位卡住发生在哪个阶段。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"要区分是 future 后端本身的问题还是 IntegrateLayers 内部并行逻辑的问题，需要知道实际使用的 future 后端类型，例如 multisession、multicore 或 cluster。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"Seurat 版本会改变 IntegrateLayers 的并行实现和已知问题范围，因此版本号是判断该卡住现象是否与特定版本缺陷相关的必要信息。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"你实际使用的 future 后端类型和 Seurat 版本分别是什么？\",\n    \"missing_field\": \"future_backend_and_seurat_version\",\n    \"why_needed\": \"不同 future 后端（如 multisession、multicore、cluster）和不同 Seurat 版本在 IntegrateLayers 并行执行时的行为差异很大；缺少这两项就无法判断卡住是后端配置问题、版本缺陷还是数据/调用方式问题，也无法给出有针对性的最小隔离步骤。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947917,
+  "id": "5cc5098e-6fcd-4e81-b512-d05c3b425c34",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 420,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 514,
+    "prompt_tokens": 2306,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2726
+  }
+}

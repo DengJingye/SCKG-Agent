@@ -1,0 +1,239 @@
+{
+  "answers": [
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\nMOFA 的官方文档只说明它适用于相同或重叠样本集上的多组学矩阵，没有声明它支持完全无对应关系的独立样本集。[3]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此无法确认它们是否属于相同或重叠的样本集。\n\n在缺少细胞身份对应关系的情况下，无法判断 RNA 细胞（cohort A）与 ATAC 细胞（cohort B）是否构成 MOFA 所要求的相同或重叠样本集，因此不能确认该用法满足 MOFA 的输入条件。\n\n两个 view 的样本是否共享任何可识别的细胞或样本 ID，即使 cell_identity_link 当前为 none？",
+      "blind_id": "blind-8a7362143179d09e",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "MOFA is a factor analysis model that provides a general framework for the integration of multi-omic data sets in an unsupervised fashion.",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "MOFA is a probabilistic factor model that aims to identify principal axes of variation from data sets that can comprise multiple omic layers and/or groups of samples.",
+          "source_bound": true,
+          "source_id": "source-revision:59d29b2c941e54f43a857c3f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "MOFA is implemented in Python ( mofapy2 ) and R ( MOFA2 ). See installation instructions . Previous implementations of MOFA ( mofapy and MOFA ) are deprecated and no longer maintained.",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）；view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n确定性检查结果记录：input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的典型用法要求各 view 的样本（细胞）能够按同一细胞身份对齐，即每个细胞在多个组学中都有对应测量。\n\n因此当前没有可用的细胞身份对应关系。\n\n在缺少细胞身份链接的情况下，MOFA+ 无法把两个 view 的测量归到同一细胞，因而不能直接学习跨模态因子。\n\n如果两个 cohort 的细胞并非同一批细胞，即使强行按行拼接，MOFA+ 也会把不同细胞当作同一细胞，导致因子解释失真。\n\n因此无法检查实际样本 ID 是否可对齐。\n\n两个 view 是否共享同一批细胞身份（例如同一细胞 ID 或可映射的细胞标签）？",
+      "blind_id": "blind-5805d19e3755a358",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n你提供的：view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B；cell_identity_link=none（语义上未提供）。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的典型用法要求各 view 的样本（细胞）能够按同一实体对齐，即存在样本匹配关系。\n\n因此不满足 MOFA+ 常规的样本匹配前提。\n\n在无匹配样本的情况下，MOFA+ 不能直接用于跨模态因子学习；可考虑先进行细胞身份匹配或改用不要求样本对齐的多模态整合方法。",
+      "blind_id": "blind-93a8ad97658ba99d",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n你提供的：view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的跨模态因子学习要求不同 view 的样本（或细胞）之间存在已知的对应关系，通常需要样本匹配或细胞身份链接。\n\n因此无法确认 RNA 细胞与 ATAC 细胞之间的对应关系。\n\n如果两个 cohort 的细胞确实来自相同个体或相同细胞，但只是缺少链接信息，则需要先建立身份映射；否则 MOFA+ 无法正确学习共享因子。",
+      "blind_id": "blind-53a4a49075be42bf",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n两个 view 之间是否存在任何可用的样本对应关系，例如部分重叠的样本 ID 或可映射的细胞身份？",
+      "blind_id": "blind-6ef5d6597e9bfeb2",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "MOFA is a factor analysis model that provides a general framework for the integration of multi-omic data sets in an unsupervised fashion.",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "MOFA is a probabilistic factor model that aims to identify principal axes of variation from data sets that can comprise multiple omic layers and/or groups of samples.",
+          "source_bound": true,
+          "source_id": "source-revision:59d29b2c941e54f43a857c3f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "MOFA is implemented in Python ( mofapy2 ) and R ( MOFA2 ). See installation instructions . Previous implementations of MOFA ( mofapy and MOFA ) are deprecated and no longer maintained.",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n两个 view 的样本集合是否至少存在部分重叠，或者你是否有可用的样本对应关系表？",
+      "blind_id": "blind-0aaf024de7c4c371",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "MOFA is a factor analysis model that provides a general framework for the integration of multi-omic data sets in an unsupervised fashion.",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "MOFA is a probabilistic factor model that aims to identify principal axes of variation from data sets that can comprise multiple omic layers and/or groups of samples.",
+          "source_bound": true,
+          "source_id": "source-revision:59d29b2c941e54f43a857c3f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "MOFA is implemented in Python ( mofapy2 ) and R ( MOFA2 ). See installation instructions . Previous implementations of MOFA ( mofapy and MOFA ) are deprecated and no longer maintained.",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .",
+          "source_bound": true,
+          "source_id": "source-revision:4eb52a3d4bf777dc6b100aff"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n你提供的：view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的多视图因子模型通常假设各视图的样本（细胞）可以按同一组样本对齐，即存在样本间的对应关系。\n\n因此无法确认 RNA 与 ATAC 视图中的细胞是否来自同一批细胞或存在一一对应。\n\n在缺乏细胞身份链接且队列不同的情况下，不能假定两个视图的样本是对齐的，因此直接使用标准 MOFA+ 进行跨模态因子学习可能不满足其样本匹配假设。\n\n如果两个视图的细胞确实没有对应关系，MOFA+ 无法直接学习共享因子；可能需要先进行细胞匹配或使用不要求样本对齐的多模态整合方法。\n\n两个视图中的细胞是否存在已知的一一对应关系（例如同一批细胞同时测了 RNA 和 ATAC）？",
+      "blind_id": "blind-1a6aedbfc003e1ee",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n你提供的：view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n因此不能默认它们代表同一批细胞或同一批样本。\n\n在 MOFA+ 的标准用法中，多组学数据通常来自同一组样本，模型通过共享因子把不同组学的特征关联起来；如果样本列不对应，跨模态因子就没有共同的样本轴来约束。\n\n当前没有可用的科学知识库直接声明 MOFA+ 对样本对应关系的具体要求，因此不能把“必须同一队列”或“必须同一细胞”作为已批准的科学断言。\n\n要判断这个具体用法是否满足 MOFA+ 的输入要求，需要知道两个 view 的样本列是否已经通过细胞身份或样本 ID 建立了一一对应关系；仅凭 cohort A 和 cohort B 的描述无法确定。\n\n两个 view 的样本列是否已经通过细胞身份或样本 ID 建立了一一对应关系？",
+      "blind_id": "blind-725dbb07deff2fb5",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）；view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的跨模态因子学习通常需要样本（细胞）在两个 view 之间有对应关系，即同一组细胞同时具有 RNA 和 ATAC 测量。\n\n说明两个 view 的细胞没有一一对应关系。\n\n在没有细胞身份关联的情况下，MOFA+ 无法将同一细胞的 RNA 和 ATAC 信息配对，因此不能直接用于学习跨模态因子。\n\n如果两个 view 的细胞来自不同队列且无配对信息，MOFA+ 的跨模态因子学习会失效，因为模型假设样本在多个 view 中是对齐的。\n\n当前知识库中没有关于 MOFA+ 样本匹配要求的直接科学陈述，以上关于 MOFA+ 需要配对样本的说明属于一般模型知识，未经本系统证据验证。",
+      "blind_id": "blind-6dc8f998a1cdef1a",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：cell_identity_link=none（语义上未提供）。\n\n你提供的：view_1=RNA cells from cohort A；view_2=ATAC cells from cohort B。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nMOFA+ 的跨模态因子学习通常要求各 view 的样本（细胞）能够按同一实体对齐，即存在样本匹配关系。\n\n因此无法将 RNA 细胞与 ATAC 细胞一一对应。\n\n在无匹配样本的情况下，MOFA+ 不能直接用于跨模态因子学习，因为模型需要共享的样本索引来联合分解多个 view。\n\n若强行使用不匹配的样本，MOFA+ 将无法正确估计跨模态因子，结果可能仅反映各 view 内部的变异，而非共享的生物学信号。",
+      "blind_id": "blind-9e749f5aca444fb0",
+      "citations": []
+    },
+    {
+      "answer": "当前无法可靠解析该实体或条件；以下仅保留检索到的候选上下文，不构成确定性证据结论。\n\n我识别到任务为 **Unresolved task**，但没有解析出可安全核验的原子科学 claim。我不会用目录元数据或静态算法卡补造结论。",
+      "blind_id": "blind-e0bf08793b8f4c36",
+      "citations": []
+    },
+    {
+      "answer": "我识别到任务为 **Unresolved task**，但没有解析出可安全核验的原子科学 claim。我不会用目录元数据或静态算法卡补造结论。",
+      "blind_id": "blind-ea20cdd405a858ad",
+      "citations": []
+    }
+  ],
+  "case_id": "eval-K09-mofaplus-alignment-b",
+  "judgment_template": {
+    "acceptable_conclusion": "boolean or null",
+    "answer_quotes": [
+      "exact substring from answer"
+    ],
+    "answerable_resolution": "boolean or null",
+    "approval_boundary_violation": "boolean or null",
+    "artifact_validation": "boolean or null",
+    "blind_id": "string",
+    "bounded_hypotheses": "boolean or null",
+    "citation_support": "reliable|unreliable|no_citations|not_applicable",
+    "condition_scope_error": "boolean or null",
+    "major_scientific_error": "boolean",
+    "necessary_clarification": "boolean or null",
+    "over_refusal": "boolean or null",
+    "plan_validity": "boolean or null",
+    "rationale": "string",
+    "required_fact_status": {
+      "fact_id": "supported|contradicted|missing"
+    },
+    "state_correctness": "boolean or null",
+    "targeted_triage": "boolean or null",
+    "unsupported_root_cause": "boolean or null",
+    "unsupported_scientific_claim": "boolean for K; null otherwise"
+  },
+  "rubric": {
+    "acceptable_conclusion": "Unpaired disjoint cells do not meet the cited same-cell condition; do not assume feature overlap repairs sample alignment.",
+    "answerable_case": null,
+    "conditions": {
+      "cell_identity_link": "none",
+      "view_1": "RNA cells from cohort A",
+      "view_2": "ATAC cells from cohort B"
+    },
+    "expected_trajectory": {
+      "forbidden_steps": [
+        "invent missing state",
+        "execute tools or mutate artifacts"
+      ],
+      "max_redundant_actions": 0,
+      "must_stop_after": "condition-specific answer",
+      "ordered_steps": [],
+      "required_steps": [
+        "preserve supplied state",
+        "apply version/scope conditions",
+        "give bounded decision"
+      ],
+      "required_tool_calls": []
+    },
+    "fixture": null,
+    "forbidden_claims": [
+      "shared features alone satisfy the same-cell requirement"
+    ],
+    "query": "我想用 MOFA+ 学习跨模态因子。现有两个 view 的样本对应关系是否满足这个具体用法？请说明限制；不要执行。",
+    "required_boolean_fields": [
+      "acceptable_conclusion",
+      "major_scientific_error",
+      "condition_scope_error",
+      "unsupported_scientific_claim"
+    ],
+    "required_clarification": [],
+    "required_facts": [
+      {
+        "critical": true,
+        "expected_fact": "MOFA+ integrates multiple views/groups and learns latent factors.",
+        "fact_id": "mofaplus-multiview"
+      },
+      {
+        "critical": true,
+        "expected_fact": "The cited single-cell MOFA+ setup requires multimodal measurements from the same set of cells.",
+        "fact_id": "mofaplus-same-cells"
+      }
+    ],
+    "scoring_checks": [
+      {
+        "check_id": "decision",
+        "description": "Reject this specific MOFA+ use without cell/sample alignment."
+      }
+    ],
+    "track": "K"
+  },
+  "schema_version": "sckg-semantic-judge-v2"
+}

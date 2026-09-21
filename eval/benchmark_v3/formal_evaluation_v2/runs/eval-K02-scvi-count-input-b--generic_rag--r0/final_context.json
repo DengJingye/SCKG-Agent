@@ -1,0 +1,664 @@
+{
+  "product_context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [],
+      "kg_facts_used": [],
+      "knowledge_sources": [
+        "RETRIEVAL_GROUNDED"
+      ],
+      "references": [
+        {
+          "authority": "source_bound",
+          "claim_text": "The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model.",
+          "claim_type": "parameter",
+          "exact_excerpt": "Nature Methods | Volume 22 | September 2025 | 1836–1845 1837 Article https://doi.org/10.1038/s41592-025-02799-9 Model contributors have the option to share the data behind their model, enabling downstream analysis (examples in Figs. 2 and 3). The data can be uploaded either in its raw form (count matrix) or in a substantially reduced form, using a new feature we refer to as ‘data minification’ . The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model. This feature provides a compressed representation of a reference dataset, while still enabling much of the same functionality as with the raw data (Fig. 3). As an example, in scVI, which is based on a conditional variational autoencoder, the minified data would be the latent space coordinates (mean and variance) of each cell. This representation enables efficient downstream analysis such as differential expression, feature correla- tion and missing data imputation9,11,13,21,22. Notably, the capability of working directly with minified data is becoming essential, as current atlas-level projects contain information on millions of cells, and analysis of those datasets has, therefore, been inherently tied to high-performance computing resources. Data mini- fication results in significantly less memory requirements and speeds up generation of expression values (Supplementary Fig. 1), thereby enabling investigation of large-scale atlases on conventional hardware. The second set of users scvi-hub caters to are model consumers, who wish to analyze existing (reference) datasets or leverage refer - ence datasets to analyze their own (query) data. Model consumers begin by searching and downloading their desired reference model and, if needed, its corresponding data in either minified or raw form. These steps can be done either through the Hugging Face website or directly through the scvi-hub Python API (which internally uses the Hugging Face API). Since scvi-hub is part of the scvi-tools package and the scverse ecosystem23, consumers can seamlessly integrate the downloaded models into existing analysis workflows, which provide a slew of functionalities for exploration, visualization and analysis. Extensive tutorials exist to work with scvi-hub in the R ecosystem as well, thus supporting downstream analysis with Seurat 24 and other popular environments. In the following sections, we describe the functionalities for model criticism, which can be used by both contributors (before uploading their models) and consumers (to check existing models before conducting analysis). We then describe the functionalities that are available for consumers through their downloaded models, including both analysis of the reference data (using its minified form) and analysis of user-provided data. Evaluation to select models and test their suitability Model evaluation is a key feature of scvi-hub, enabling contributors to assess models before uploading and users to judge their relevance and quality. T o support this, we developed scvi.criticism, a module for evaluating models trained with scvi-tools. It implements PPCs, which compare statistics from model-generated data to those from the observed data21,19. Specifically, we compute gene-level and cell-level coefficient of variation and differential expression and assess their similarity. A close match indicates a well-trained model. T o demonstrate this, we computed PPC on the Human Lung Cell Atlas (HLCA) dataset25 using the author-provided scANVI model (Fig. 2a,b). The model captured the distribution of observed gene expression well, recovering similar differential expression patterns and even marker expression for regulatory T (Treg) cells, which were not annotated in the original dataset. This shows how pretrained models can recover fine-grained cell types via generated counts (Fig. 2a–f and Supplementary Fig. 2). Contributors can use scvi.criticism to compare candidate models (for example, with different hyperparameters) and include these evalu- ations in the Model card on Hugging Face. This is particularly helpful for models provided with minified data, where raw counts are unavailable and can provide confidence in the reliability of these generated counts. variety of machine learning libraries and frameworks or use different versions of the same library, making them difficult to quickly ingest and use. Second, there is no standard for how pretrained models should be deposited, which limits reuse to knowledge of a particular publication or model deposition.",
+          "index": 1,
+          "kg_statements": [],
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "selected_for_claim_types": [
+            "input_requirement"
+          ],
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:2;section:document;paragraph:3",
+          "source_span_id": "sourcev2:e08285e48626040de93f",
+          "source_type": "source_document",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        }
+      ],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": false,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "source_bound_context_with_optional_model_knowledge"
+      ],
+      "unverified_model_knowledge_allowed": false,
+      "verdict": "ANSWER_DUAL_LAYER",
+      "verified_context_available": true
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=evidence_qa;task=batch_integration;task_source=explicit_query;semantic=failed",
+        "elapsed_ms": 107.985,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "deterministic task/claim normalization",
+        "elapsed_ms": 15.359,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "candidate_tools=0",
+        "elapsed_ms": 0.004,
+        "stage": "kg_filter",
+        "status": "skipped"
+      },
+      {
+        "detail": "hits=89",
+        "elapsed_ms": 75.901,
+        "stage": "bm25",
+        "status": "completed"
+      },
+      {
+        "detail": "status=not_requested;hits=0",
+        "elapsed_ms": 0.003,
+        "stage": "dense_encode",
+        "status": "skipped"
+      },
+      {
+        "detail": "fused=89;reranked=89",
+        "elapsed_ms": 22.345,
+        "stage": "fusion",
+        "status": "completed"
+      },
+      {
+        "detail": "route=EVIDENCE_QA",
+        "elapsed_ms": 0.008,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=failed",
+        "elapsed_ms": 16.057,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "batch_integration",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [
+        "scvi-tools"
+      ],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {}
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 0,
+    "external_reasoning": {
+      "answer_claims": [],
+      "error_type": "RuntimeError",
+      "input_tokens": null,
+      "latency_ms": 0.0,
+      "model_name": "",
+      "output_tokens": null,
+      "provider": "",
+      "provider_call_attempted": false,
+      "provider_call_count": 0,
+      "status": "failed",
+      "support_check": {}
+    },
+    "grounded_answer_audit": {
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [
+        1
+      ],
+      "claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "直接结论：scvi-tools 的输入要求是：** The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model.",
+          "claim_type": "input_requirement",
+          "governance_action": "keep",
+          "lexical_support": 0.62963,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "sourcev2:e08285e48626040de93f"
+          ]
+        }
+      ],
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 1.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [],
+      "verified_claims": [
+        {
+          "authority": "source_bound",
+          "citation_mapping": "valid",
+          "claim_id": "claim-001",
+          "claim_text": "直接结论：scvi-tools 的输入要求是：** The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model.",
+          "claim_type": "input_requirement",
+          "governance_action": "keep",
+          "lexical_support": 0.62963,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": [
+            "sourcev2:e08285e48626040de93f"
+          ]
+        }
+      ],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "local-tool-search",
+        "latency_ms": 267.919,
+        "payload": {
+          "answerability": null,
+          "chunk_ids": [
+            "sourcev2:884bdd4521ab2161f4bb",
+            "sourcev2:727704405771292b6bfc",
+            "sourcev2:014c85100179479b262e",
+            "sourcev2:83049df3fb6e9692c6ba",
+            "sourcev2:a26f43fb597fc7be9c8d",
+            "sourcev2:66a842d1b6b73f17825b",
+            "sourcev2:f1a596c7cdc59b5702f8",
+            "sourcev2:49d54dc198f580838eba",
+            "sourcev2:d869d09f04f1e0c29624",
+            "sourcev2:a71a8f87822fe5671668",
+            "sourcev2:e08285e48626040de93f",
+            "sourcev2:17fd69d82be4c25d540b"
+          ],
+          "mode": "bm25",
+          "query": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nbatch_key=donor, complete\nmatrix_state=log1p normalized values only; no count source\nRetrieval hints: canonical task: batch integration; claim: accepted input raw UMI count matrix expression state requirements"
+        },
+        "result_count": 12,
+        "source_bound_count": 12,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "local-tool-search",
+          "canonical_task": "batch_integration",
+          "claim_types": [
+            "input_requirement"
+          ],
+          "query": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nbatch_key=donor, complete\nmatrix_state=log1p normalized values only; no count source\nRetrieval hints: canonical task: batch integration; claim: accepted input raw UMI count matrix expression state requirements",
+          "reason": "required_grounding_for_single_cell_answer",
+          "tool_name": "search_evidence",
+          "tool_names": [],
+          "top_k": 12
+        }
+      ],
+      "rationale": "Deterministic fallback selected the minimum grounding tools.",
+      "source": "deterministic_fallback"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "evidence_qa",
+      "current_task": "",
+      "current_user_reported_context": {},
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model.",
+          "claim_type": "parameter",
+          "index": 1,
+          "knowledge_source": "RETRIEVAL_GROUNDED",
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:2;section:document;paragraph:3",
+          "source_span_id": "sourcev2:e08285e48626040de93f",
+          "support_claim_types": [
+            "input_requirement"
+          ],
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": false,
+        "approved_kg_sha256": null,
+        "assessments": [],
+        "caution_context": [],
+        "coverage": "no_direct_statement",
+        "facts": [],
+        "gaps": [],
+        "identity": "Legacy / candidate evidence",
+        "legacy_kg_consulted": null,
+        "output_ports": [],
+        "reference_links": {},
+        "snapshot_id": null
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:generic_rag",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": null,
+      "governance_leakage_count": 0,
+      "latency_ms": 118.044,
+      "mode": "bm25",
+      "pipeline": [
+        "query_classification",
+        "canonical_task_normalization",
+        "kg_filter_skipped",
+        "sqlite_fts5_bm25",
+        "local_dense_skipped",
+        "rrf_fusion",
+        "governance_rerank_skipped",
+        "tool_contract_gate_skipped",
+        "retrieval_context_only"
+      ],
+      "scientific_evidence": null,
+      "snippets": [
+        {
+          "chunk_id": "sourcev2:884bdd4521ab2161f4bb",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Nature Methods Article https://doi.org/10.1038/s41592-025-02799-9 query cells for the pretrained HLCA scANVI model. We set the batch_key to the respective tissue to learn independent transfer mappings for each organ. We computed the coefficient of variation over cells separately for each tissue and plotted the results similar to the top plot in Fig. 2d. Reference-based analysis For this analysis, we used the HLCA 25 dataset and their pretrained scANVI model. We used cellxgene_census to download the dataset (implemented in scvi-tools) and used the raw, unnormalized counts for all analysis. We used scvi-hub to download the model from the Hugging Face Model Hub. The author-provided UMAP embeddings were used and Scanpy was used for downstream analysis. The cell-type UMAP is representative of the ‘ann_level_3’ annotations. T o generate Fig. 2c, we used the minified data from Hugging Face a...",
+          "claim_type": "output",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.01639344,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:12;section:Methods;paragraph:25",
+          "task": "batch_integration",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:727704405771292b6bfc",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "2 nature research | reporting summaryApril 2020 MTAB-5061 (ArrayExpress); immune cell bone marrow - GSE120221, GSE107727 (GEO); immune cell peripheral blood – 10X data from https:// support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.0/pbmc_10k_v3, GSE115189, GSE128066, GSE94820 (GEO); in addition to the Mouse Cell Atlas datasets of bone marrow and peripheral blood downloaded from https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop- seq data was available from GEO (GSE130148), while the 10X data was obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the snRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain.org; file name L5_all.loom), and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (ht...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01612903,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:25;section:52. Benchmarking atlas-level data integration in single-cell genomics—integration;paragraph:51",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:014c85100179479b262e",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the scRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain. org; file name L5_all.loom) and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (http://dropviz.org/; DGE by Region section). Fluorescence-activated cell-sorted mouse brain tissue data (Smart-seq2 protocol, myeloid and nonmyeloid cells, including the annotation file ‘annotations_FACS. csv’) from Tabula Muris were obtained from figshare (https://figshare.com/projects/ Tabula_Muris_Transcriptomic_characterization_of_20_organs_and_tissues_from_ Mus_musc...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01587302,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:14;section:32. Using this approach, we;paragraph:37",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:83049df3fb6e9692c6ba",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Fig. 4 | Query analysis using a census-level pretrained model. Using a custom model trained on the CELLxGENE Census data to analyze a dataset with CAR T cells. a, CV on query data. Each dot is a cell. The y axis reports the cell-wise CV computed on the raw data and the x axis on generated data. b, Probability that the cell neighborhood contains CAR T cells displayed on a random subset of the census dataset. We concatenated the query data and the same number of cells from the whole census dataset. Cells are colored by the probability that cells in the neighborhood are query cells. Gray cells contained no cells from the query dataset in the neighborhood graph. c, Same embedding as in b colored by the cell-type labels of the cross-tissue immune cell atlas34. Coarse labels are provided (compare Supplementary Fig. 9c). Most CAR T cells overlap with regions with T cells and myeloid cells. d...",
+          "claim_type": "output",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.015625,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:8;section:Umap 2;paragraph:17",
+          "task": "batch_integration",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:a26f43fb597fc7be9c8d",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Can Ergen 1,2,7 , Valeh Valiollah Pour Amiri1,7, Martin Kim 1, Ori Kronfeld3, Aaron Streets 1,4,5, Adam Gayoso 1,6 & Nir Yosef 1,2,3 The growing availability of single-cell omics datasets presents new opportunities for reuse, while challenges in data transfer, normalization and integration remain a barrier. Here we present scvi-hub: a platform for efficiently sharing and accessing single-cell omics datasets using pretrained probabilistic models. It enables immediate execution of fundamental tasks like visualization, imputation, annotation and deconvolution on new query datasets using state-of-the-art methods, with massively reduced storage and compute requirements. We show that pretrained models support efficient analysis of large references, including the CZI CELLxGENE Discover Census. Scvi-hub is built within the scvi-tools open-source environment and integrated into scverse. Scvi-h...",
+          "claim_type": "general",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.01538462,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:1;section:document;paragraph:2",
+          "task": "normalization",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:66a842d1b6b73f17825b",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "AnAl ysisNATurE METhODS assigned the same rank as unintegrated data on this task. For scRNA-seq tasks, we chose the best performing combination of features (HVG or full features) and scaling flavors for each integration method, and then ranked these from best- to worst-performing to give a final ranking per task. By taking the mean of these per-task rankings we ordered the methods by overall performance across tasks. Benchmarking setup. All integration runs were performed using our Snakemake pipeline. Methods were tested with scaled and unscaled data as input, using the full feature (gene/open chromatin window or peak) set or only HVGs. Where HVGs were used, the top 2,000 were selected using a custom method, which selected HVGs in a manner unaffected by batch variance. Specifically, we initially built the hvg_batch function on top of the highly_variable_genes function from Scanpy. Usi...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01492537,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:13;section:32. Using this approach, we;paragraph:36",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:f1a596c7cdc59b5702f8",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Scales well to large datasets on CPU Method has GPU support Scales well to feature spaces beyond genes Method shows corrected expression Method gives relative cell embeddings Scib resultsTask detailsSpeedOutput Input Batch effect strength Fig. 5 | Guidelines to choose an integration method. a, T able of criteria to consider when choosing an integration method, and which methods fulfill each criterion. Ticks show which methods fulfill each criterion and gray dashes indicate partial fulfillment. When more than half of the methods fulfill a criterion, we instead highlight the methods that do not by a cross; hence blank spaces denote a cross except in the three rows with labeled crosses. Method outputs are ordered by their overall rank on RNa tasks. Python and R symbols indicate the primary language in which the method is programmed and used. Considerations are divided into the five broad...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01449275,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:8;section:results;paragraph:23",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:49d54dc198f580838eba",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "(Fig. 3a and Supplementary Data 1). While methods such as SAUCIE, LIGER, BBKNN and Seurat v3 tend to favor the removal of batch effects over conservation of biological variation, DESC and Conos make the opposite choice, and Scanorama, scVI and FastMNN (gene) balance these two objectives. Other methods strike different balances per task (Extended Data Fig. 4). This tradeoff is particularly noticeable where biological and batch effects overlap. For example, in the lung task, three datasets sample two distinct spatial locations (airway and parenchyma). Particular cell types such as endothelial cells perform different functions in these loca - tions (for example, gas exchange in the parenchyma). While Seurat v3 and BBKNN integrated across the locations to merge these cells, providing a broad cell-type overview, Scanorama preserved the spa - tial variation in endothelial cells and other ce...",
+          "claim_type": "general",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_a32b8508c092d86d",
+          "relevance_score": 0.01369863,
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d",
+          "source_span": "page:3;section:Results;paragraph:6",
+          "task": "batch_integration",
+          "title": "Benchmarking atlas-level data integration in single-cell genomics",
+          "tool_name": "Harmony"
+        },
+        {
+          "chunk_id": "sourcev2:d869d09f04f1e0c29624",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "- [API example usage](#api-example-usage) - [Full tutorial](#full-tutorial) - [Installation](#installation) - [Testing](#testing) - [Troubleshooting](#troubleshooting) Scanorama enables batch-correction and integration of heterogeneous scRNA-seq datasets, which is described in the paper [\"Efficient integration of heterogeneous single-cell transcriptomes using Scanorama\"](https://www.nature.com/articles/s41587-019-0113-3) by Brian Hie, Bryan Bryson, and Bonnie Berger. This repository contains the Scanorama source code as well as scripts necessary for reproducing the results in the paper. A detailed step-by-step protocol for Scanorama integration is described in the paper [\"Scanorama: integrating large and diverse single-cell transcriptomic datasets\"](https://www.nature.com/articles/s41596-024-00991-3). Scanorama is designed to be used in scRNA-seq pipelines downstream of noise-reductio...",
+          "claim_type": "workflow",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_daf1d29894245278",
+          "relevance_score": 0.00819672,
+          "source_bound": true,
+          "source_id": "SRCV2_daf1d29894245278",
+          "source_span": "section:Scanorama;paragraph:1-11",
+          "task": "batch_integration",
+          "title": "Scanorama official GitHub README",
+          "tool_name": "Scanorama"
+        },
+        {
+          "chunk_id": "sourcev2:a71a8f87822fe5671668",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Nature Methods | Volume 22 | September 2025 | 1836–1845 1836 nature methods Article https://doi.org/10.1038/s41592-025-02799-9 Scvi-hub: an actionable repository for model-driven single-cell analysis Can Ergen 1,2,7 , Valeh Valiollah Pour Amiri1,7, Martin Kim 1, Ori Kronfeld3, Aaron Streets 1,4,5, Adam Gayoso 1,6 & Nir Yosef 1,2,3 The growing availability of single-cell omics datasets presents new opportunities for reuse, while challenges in data transfer, normalization and integration remain a barrier. Here we present scvi-hub: a platform for efficiently sharing and accessing single-cell omics datasets using pretrained probabilistic models. It enables immediate execution of fundamental tasks like visualization, imputation, annotation and deconvolution on new query datasets using state-of-the-art methods, with massively reduced storage and compute requirements. We show that pretrained...",
+          "claim_type": "general",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.01515152,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:1;section:document;paragraph:1-2",
+          "task": "normalization",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:e08285e48626040de93f",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Nature Methods | Volume 22 | September 2025 | 1836–1845 1837 Article https://doi.org/10.1038/s41592-025-02799-9 Model contributors have the option to share the data behind their model, enabling downstream analysis (examples in Figs. 2 and 3). The data can be uploaded either in its raw form (count matrix) or in a substantially reduced form, using a new feature we refer to as ‘data minification’ . The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model. This feature provides a compressed representation of a reference dataset, while still enabling much of the same functionality as with the raw data (Fig. 3). As an example, in scVI, which is based on a conditional variational autoencoder, the minified data would be the latent space coordinates (mean and variance) of each cel...",
+          "claim_type": "parameter",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_38d242fe56317fc5",
+          "relevance_score": 0.01470588,
+          "source_bound": true,
+          "source_id": "SRCV2_38d242fe56317fc5",
+          "source_span": "page:2;section:document;paragraph:3",
+          "task": "batch_integration",
+          "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+          "tool_name": "scvi-tools"
+        },
+        {
+          "chunk_id": "sourcev2:17fd69d82be4c25d540b",
+          "claim_boundary": "Retrieval context only; cannot authorize execution or promote evidence.",
+          "claim_span": "Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe the statistical model of CellAssign, highlighting diﬀerences between the scvi-tools implementation and the original implementation. Then we evaluate the scvi-tools implementation against the original on two datasets used in the original publication [ 39]. Preliminaries CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if a gene is a marker of a particular cell type. A size factor s for each cell may also be provided as input, otherwise it is computed empirically as the total unique molecular identiﬁer count of a cell. Additionally, a...",
+          "claim_type": "input_requirement",
+          "recommendation_eligible": false,
+          "record_id": "SRCV2_3780074c1b538965",
+          "relevance_score": 0.01428571,
+          "source_bound": true,
+          "source_id": "SRCV2_3780074c1b538965",
+          "source_span": "page:7;section:Rpa3 Cg9593;paragraph:9",
+          "task": "batch_integration",
+          "title": "scvi-tools: a library for deep probabilistic analysis of single-cell omics data",
+          "tool_name": "scvi-tools"
+        }
+      ],
+      "stage_timings": [
+        {
+          "detail": "deterministic task/claim normalization",
+          "elapsed_ms": 15.359,
+          "stage": "intent",
+          "status": "completed"
+        },
+        {
+          "detail": "candidate_tools=0",
+          "elapsed_ms": 0.004,
+          "stage": "kg_filter",
+          "status": "skipped"
+        },
+        {
+          "detail": "hits=89",
+          "elapsed_ms": 75.901,
+          "stage": "bm25",
+          "status": "completed"
+        },
+        {
+          "detail": "status=not_requested;hits=0",
+          "elapsed_ms": 0.003,
+          "stage": "dense_encode",
+          "status": "skipped"
+        },
+        {
+          "detail": "fused=89;reranked=89",
+          "elapsed_ms": 22.345,
+          "stage": "fusion",
+          "status": "completed"
+        }
+      ]
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 3569,
+      "process_started_at": "2026-09-20T23:53:37.340976Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.0,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "UNCERTAIN",
+      "error_type": "RuntimeError",
+      "input_tokens": null,
+      "intent": "evidence_qa",
+      "latency_ms": 0.0,
+      "model_name": "",
+      "needs_clarification": false,
+      "output_tokens": null,
+      "provider": "",
+      "provider_call_attempted": false,
+      "requested_tools": [],
+      "retrieval_query": "",
+      "status": "failed",
+      "task_switch": false,
+      "tool_calls": [],
+      "user_reported_context": {}
+    },
+    "semantic_route": {
+      "confidence": 1.0,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "query_or_context_task_anchor_preserved",
+      "source": "local_rule"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 395.291,
+    "uploaded_context_present": false
+  },
+  "product_references": [
+    {
+      "authority": "source_bound",
+      "claim_text": "The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model.",
+      "claim_type": "parameter",
+      "exact_excerpt": "Nature Methods | Volume 22 | September 2025 | 1836–1845 1837 Article https://doi.org/10.1038/s41592-025-02799-9 Model contributors have the option to share the data behind their model, enabling downstream analysis (examples in Figs. 2 and 3). The data can be uploaded either in its raw form (count matrix) or in a substantially reduced form, using a new feature we refer to as ‘data minification’ . The low-dimensional posterior parameters of the data can be converted into an approximated and normalized form of the original data, using the generative part of the model. This feature provides a compressed representation of a reference dataset, while still enabling much of the same functionality as with the raw data (Fig. 3). As an example, in scVI, which is based on a conditional variational autoencoder, the minified data would be the latent space coordinates (mean and variance) of each cell. This representation enables efficient downstream analysis such as differential expression, feature correla- tion and missing data imputation9,11,13,21,22. Notably, the capability of working directly with minified data is becoming essential, as current atlas-level projects contain information on millions of cells, and analysis of those datasets has, therefore, been inherently tied to high-performance computing resources. Data mini- fication results in significantly less memory requirements and speeds up generation of expression values (Supplementary Fig. 1), thereby enabling investigation of large-scale atlases on conventional hardware. The second set of users scvi-hub caters to are model consumers, who wish to analyze existing (reference) datasets or leverage refer - ence datasets to analyze their own (query) data. Model consumers begin by searching and downloading their desired reference model and, if needed, its corresponding data in either minified or raw form. These steps can be done either through the Hugging Face website or directly through the scvi-hub Python API (which internally uses the Hugging Face API). Since scvi-hub is part of the scvi-tools package and the scverse ecosystem23, consumers can seamlessly integrate the downloaded models into existing analysis workflows, which provide a slew of functionalities for exploration, visualization and analysis. Extensive tutorials exist to work with scvi-hub in the R ecosystem as well, thus supporting downstream analysis with Seurat 24 and other popular environments. In the following sections, we describe the functionalities for model criticism, which can be used by both contributors (before uploading their models) and consumers (to check existing models before conducting analysis). We then describe the functionalities that are available for consumers through their downloaded models, including both analysis of the reference data (using its minified form) and analysis of user-provided data. Evaluation to select models and test their suitability Model evaluation is a key feature of scvi-hub, enabling contributors to assess models before uploading and users to judge their relevance and quality. T o support this, we developed scvi.criticism, a module for evaluating models trained with scvi-tools. It implements PPCs, which compare statistics from model-generated data to those from the observed data21,19. Specifically, we compute gene-level and cell-level coefficient of variation and differential expression and assess their similarity. A close match indicates a well-trained model. T o demonstrate this, we computed PPC on the Human Lung Cell Atlas (HLCA) dataset25 using the author-provided scANVI model (Fig. 2a,b). The model captured the distribution of observed gene expression well, recovering similar differential expression patterns and even marker expression for regulatory T (Treg) cells, which were not annotated in the original dataset. This shows how pretrained models can recover fine-grained cell types via generated counts (Fig. 2a–f and Supplementary Fig. 2). Contributors can use scvi.criticism to compare candidate models (for example, with different hyperparameters) and include these evalu- ations in the Model card on Hugging Face. This is particularly helpful for models provided with minified data, where raw counts are unavailable and can provide confidence in the reliability of these generated counts. variety of machine learning libraries and frameworks or use different versions of the same library, making them difficult to quickly ingest and use. Second, there is no standard for how pretrained models should be deposited, which limits reuse to knowledge of a particular publication or model deposition.",
+      "index": 1,
+      "kg_statements": [],
+      "knowledge_source": "RETRIEVAL_GROUNDED",
+      "selected_for_claim_types": [
+        "input_requirement"
+      ],
+      "source_bound": true,
+      "source_id": "SRCV2_38d242fe56317fc5",
+      "source_span": "page:2;section:document;paragraph:3",
+      "source_span_id": "sourcev2:e08285e48626040de93f",
+      "source_type": "source_document",
+      "support_claim_types": [
+        "input_requirement"
+      ],
+      "title": "Scvi-hub: an actionable repository for model-driven single-cell analysis",
+      "tool_name": "scvi-tools"
+    }
+  ],
+  "synthesis_calls": []
+}

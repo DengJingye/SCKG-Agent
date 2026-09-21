@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的是 Seurat 5.3.0 的多模型 SCTAssay，且尚未比较各模型的 feature 清单；因此“部分请求特征缺失”首先应检查这些特征是否在每个 SCT 模型中都被建模，而不是直接归因于 GetResidual 的 bug。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:Seurat_version\", \"user:assay\", \"user:per_model_feature_inventory\", \"user:symptom\"]\n    },\n    {\n      \"text\": \"当前没有可用的测量数据或已注册输入，无法直接检查实际对象中的特征存在性；需要先提供或注册数据后才能做确定性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:measurements_available\", \"observed:input_registered\"]\n    },\n    {\n      \"text\": \"在 Seurat 中，SCTAssay 的 GetResidual 通常依赖每个模型保存的 feature 集合；如果某个特征未在某个模型中建模，该模型可能无法返回该特征的残差，从而表现为缺失。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"首要检查是列出每个 SCT 模型的 feature 名称（例如通过 rownames 或模型元数据），并比较请求特征与各模型特征集合的交集，确认缺失发生在哪个模型。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供每个 SCT 模型实际包含的 feature 名称列表，或允许访问该 Seurat 对象以进行检查。\",\n    \"missing_field\": \"per_model_feature_names\",\n    \"why_needed\": \"只有知道每个模型实际建模了哪些特征，才能判断缺失是模型间特征不一致还是 GetResidual 本身的问题。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947944,
+  "id": "fb5476af-03ad-4297-a68e-434a73275137",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 451,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2432,
+    "prompt_cache_miss_tokens": 126,
+    "prompt_tokens": 2558,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2432
+    },
+    "total_tokens": 3009
+  }
+}

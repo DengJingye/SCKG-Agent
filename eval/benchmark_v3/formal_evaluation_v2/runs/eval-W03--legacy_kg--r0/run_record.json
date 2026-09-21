@@ -1,0 +1,103 @@
+{
+  "answer_hash": "9dffbcf23b4c4eb6af44da82519749c7adf91a627c5a4d1bf59c48e777876fb4",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_779d0a8853184100ba79b7d3e1ad787e",
+  "case_id": "eval-W03",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 516,
+  "latency_ms": 5918.555040989304,
+  "observed": {
+    "answer": "只读核查结果：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法校验失败**\n   - `output_sha256` 值为：\n     - `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 该值包含字符 `d` 以外的内容吗？实际看它全部由 `d` 组成，但长度需要核对：  \n     按 declared contract 要求应为 **64 个小写十六进制字符**。\n   - 该字符串长度为 64，且 `d` 是合法十六进制字符，因此单看 `output_sha256` 本身**语法上可能通过**。\n   - 但 `input_sha256` 为：\n     - `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - 同样为 64 个 `c`，也符合十六进制字符集。\n\n2. **决定性失败点：artifact_digest 与 artifact.content 不一致**\n   - fixture 中给出的 `artifact_digest` 为：\n     - `bab5dd176350e57eb153bab414c17974fd2b604586741ffac0419e5c0028a606`\n   - 而 `artifact.content` 的规范化 JSON 内容为：\n     ```json\n     {\n       \"input_sha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\n       \"output_sha256\": \"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\n       \"schema_version\": \"artifact-manifest-v1\",\n       \"status\": \"completed\"\n     }\n     ```\n   - 根据 declared contract 中 `artifact_validators` 包含 **schema/status equality** 以及整体 artifact 校验逻辑，`artifact_digest` 应能由 `artifact.content` 推导或匹配。\n   - 当前提供的 `artifact_digest` 与上述内容无法对应，因此 artifact 完整性/一致性校验失败。\n\n3. **字段存在性与 schema/status 检查**\n   - `required_fields` 均存在：`schema_version`、`status`、`input_sha256`、`output_sha256`。\n   - `schema_version` 等于 `artifact-manifest-v1`，符合 `expected_schema_version`。\n   - `status` 等于 `completed`，符合 `expected_status`。\n   - 因此这部分**通过**。\n\n结论：  \n- 字段存在性：通过  \n- schema/status equality：通过  \n- SHA256 语法：通过  \n- artifact 内容与 `artifact_digest` 一致性：**失败**\n\n由于 artifact 内容与声明的 digest 不一致，整体判定为 **invalid under the declared contract**。\n\n建议的 repair/rerun 方向（需批准后执行）：  \n- 重新生成 `artifact_manifest.json`，确保其规范化内容与 `artifact_digest` 一致；或  \n- 若内容正确，则重新计算并更新 `artifact_digest`。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 688,
+  "repetition": 0,
+  "run_id": "eval-W03--legacy_kg--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W03--legacy_kg--r0",
+      "created_at": "2026-09-20T23:45:35.423246+00:00",
+      "finished_at": "2026-09-20T23:45:41.338899+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:755562c2d41cd6a3",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W03--legacy_kg--r0",
+      "root_span_id": "span_ba92085242374857a8393c301bcf7b86",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 5915.546,
+          "ended_at": "2026-09-20T23:45:41.338899+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_ba92085242374857a8393c301bcf7b86",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:45:35.423302+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_779d0a8853184100ba79b7d3e1ad787e"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 93.109,
+          "ended_at": "2026-09-20T23:45:35.547463+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W03--legacy_kg--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_ba92085242374857a8393c301bcf7b86",
+          "sequence": 2,
+          "span_id": "span_b9613200c117486a8c12c4d7853dc0df",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:45:35.454357+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_779d0a8853184100ba79b7d3e1ad787e"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_779d0a8853184100ba79b7d3e1ad787e",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

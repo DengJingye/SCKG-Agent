@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"SoupX 的 autoEstCont 会自动计算污染比例，这是其文档化能力。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"autoEstCont\\nAutomatically calculate the contamination fraction\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"自动估计利用 soup 中高表达且为某群体标记基因的基因，通过 tfidf 方法识别标记基因，并在簇水平计算污染比例。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 2,\n          \"quote\": \"genes that are highly expressed in the soup and are marker genes for\\nsome population can be used to estimate the background contamination. Marker genes are identified\\nusing the tfidf method (see quickMarkers). The contamination fraction is then calculated at the\\ncluster level\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你已提供 sensible cluster labels，这满足自动估计在簇水平计算污染比例所需的聚类信息条件。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:clusters\"\n      ]\n    },\n    {\n      \"text\": \"你已提供 droplet UMI counts，这满足 SoupX 面向 droplet-based 单细胞测量的输入条件。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:count_matrix\"\n      ]\n    },\n    {\n      \"text\": \"自动估计还依赖 soup 中高表达且可作为群体标记的基因；当前未提供标记基因或 soup 表达谱信息，因此无法确认这一条件是否满足。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"提醒：autoEstCont 假设通道内存在多种不同细胞类型；若细胞高度同质，可能得到警告、错误或极高污染估计，这属于可检测性局限，不代表当前数据一定不适用。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 6,\n          \"quote\": \"This function assumes that the channel contains multiple distinct cell types with different marker\\ngenes. If you try and run it on a channel with very homogenous cells (e.g. a cell line, flow-sorted\\ncells), you will likely get a warning, an error, and/or an extremely high contamination estimate.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"提醒：手动指定污染比例仍是替代方案，不能据此推断自动估计必须执行或标记基因必须可用。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 7,\n          \"quote\": \"It is also possible to manually specify the contamination fraction, which can be useful when the aforementioned estimation procedures are deemed inaccurate or it is desirable to overcorrect the data.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"是否已提供或可提供用于自动估计的 soup 表达谱及标记基因信息？\",\n    \"missing_field\": \"soup_profile_and_marker_genes\",\n    \"why_needed\": \"autoEstCont 需要 soup 中高表达且为群体标记的基因来估计污染比例；缺少该信息无法确认自动过程的条件是否完整满足。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947741,
+  "id": "13bce859-7a0b-4f91-85b1-2dcecbdb1e3e",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 798,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 9938,
+    "prompt_tokens": 11730,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 12528
+  }
+}

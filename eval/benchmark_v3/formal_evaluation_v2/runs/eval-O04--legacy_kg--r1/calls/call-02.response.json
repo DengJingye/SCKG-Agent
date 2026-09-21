@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你观察到的“output appears Louvain”只是输出标签层面的现象，不能据此断定实际聚类后端就是 Louvain。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你请求的算法是 leidenbase 和 igraph，但当前没有提供 Seurat 版本或 Leiden 后端版本，因此无法判断是否因版本不兼容导致回退。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"当前没有绑定输入数据，也没有可用的测量结果，所以无法检查实际运行日志或聚类对象中的算法字段。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"Seurat 的 FindClusters 在指定 algorithm 参数时，实际行为可能受版本和依赖安装影响，但现有资料未提供针对 leidenbase 或 igraph 回退的具体说明。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Seurat is an R toolkit for single-cell genomics, developed and maintained by the Satija Lab at NYGC.\"\n        }\n      ]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供你使用的 Seurat 版本号以及是否安装了 leidenbase 或 igraph 依赖，并说明你是如何判断输出为 Louvain 的？\",\n    \"missing_field\": \"seurat_version_and_backend_dependency_status\",\n    \"why_needed\": \"版本和依赖状态直接决定 FindClusters 是否会回退到 Louvain，而输出标签本身不足以确认实际后端。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947822,
+  "id": "d6c24f96-a492-461e-8daa-078b84872207",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 451,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 1011,
+    "prompt_tokens": 2803,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 3254
+  }
+}

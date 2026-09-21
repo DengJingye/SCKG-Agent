@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前检查结果显示数据尚未绑定，也没有可用的测量数据，因此无法直接判断 as.Seurat 失败的具体原因。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供了 input_class=recorded 和 traceback=available，但 Seurat 版本和 scrapper 版本都未提供，这是进行兼容性判断前首先需要确认的信息。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:input_class\", \"user:traceback\"]\n    },\n    {\n      \"text\": \"Seurat v5 官方说明其向后兼容旧版本，但该说明不涉及 scrapper 生成的数据格式，不能据此推断转换器一定兼容。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Seurat v5 is backwards-compatible with previous versions, so that users will continue to be able to re-run existing workflows.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"在缺少版本信息的情况下，无法确定 as.Seurat 失败是版本不匹配、数据格式问题还是其他原因，需要先获取具体版本号。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供 Seurat 和 scrapper 的具体版本号，以及 traceback 中的关键错误信息。\",\n    \"missing_field\": \"seurat_version_and_scrapper_version\",\n    \"why_needed\": \"版本信息是判断兼容性的基础，traceback 内容能帮助定位失败的具体环节。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947719,
+  "id": "b01d255b-86e8-4a90-aa97-c44fa341ad69",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 431,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 1075,
+    "prompt_tokens": 2867,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 3298
+  }
+}

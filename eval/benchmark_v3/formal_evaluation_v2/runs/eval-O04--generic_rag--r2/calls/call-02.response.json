@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的观察是“输出看起来像 Louvain”，但这只是输出标签层面的现象，不能直接等同于实际使用的后端就是 Louvain。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你指定尝试了 leidenbase 和 igraph 两种算法，这是你提供的请求条件，但当前没有证据表明实际执行时是否成功调用了对应后端。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"当前没有可用的 Seurat 版本或 leiden 后端版本信息，因此无法判断是否属于已知的版本相关回退问题。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"要区分“输出标签像 Louvain”和“实际后端是 Louvain”，需要检查 FindClusters 返回对象中记录的算法标识或日志信息，而不是仅凭聚类结果的外观判断。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"leidenbase 和 igraph 是两种不同的 Leiden 实现后端，它们可能在依赖安装、调用接口或默认参数上存在差异，但当前没有具体版本信息，无法确定你遇到的行为差异来自哪一端。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"能否提供实际运行时 Seurat 的版本号以及 FindClusters 返回对象中记录的算法名称或日志输出？\",\n    \"missing_field\": \"seurat_version_and_actual_algorithm_log\",\n    \"why_needed\": \"只有确认实际调用的后端和版本，才能判断是版本兼容问题、后端调用失败还是仅输出标签误判，从而避免把观察现象直接当作根因。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948113,
+  "id": "93185d88-5063-4126-ae02-ddcac01598ff",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 463,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 512,
+    "prompt_tokens": 2304,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2767
+  }
+}

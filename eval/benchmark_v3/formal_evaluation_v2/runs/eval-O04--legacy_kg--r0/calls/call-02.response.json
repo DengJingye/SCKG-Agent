@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"输出标签显示为 Louvain 并不等于实际使用了 Louvain 后端；FindClusters 的标签可能沿用默认命名或未反映实际算法。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的观察是“输出看起来像 Louvain”，这只能说明标签或结果形态，不能证明实际执行了 Louvain 算法。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_label\"]\n    },\n    {\n      \"text\": \"你请求的算法是 leidenbase 和 igraph，但当前没有 Seurat 版本或后端版本信息，无法判断是否满足这些算法所需的版本条件。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:requested_algorithms\"]\n    },\n    {\n      \"text\": \"当前没有绑定数据或测量结果，无法检查实际聚类标签、参数或后端日志，因此不能下根因结论。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"Seurat 的 FindClusters 在 algorithm 参数不受支持或依赖缺失时可能回退到默认聚类方法，但具体回退条件取决于版本和实现，当前证据不足以确认。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供实际使用的 Seurat 版本号和 leiden/igraph 后端版本号，以及 FindClusters 调用时的完整参数和输出对象中存储的算法标识。\",\n    \"missing_field\": \"seurat_version_and_backend_version\",\n    \"why_needed\": \"版本差异会改变 algorithm 参数的可用性和回退行为；没有版本和实际算法标识，无法区分是标签命名问题、后端未生效还是版本不兼容导致的回退。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948247,
+  "id": "a6b30a76-166d-40bd-9027-842fa937d784",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 498,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 1168,
+    "prompt_tokens": 2960,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 3458
+  }
+}

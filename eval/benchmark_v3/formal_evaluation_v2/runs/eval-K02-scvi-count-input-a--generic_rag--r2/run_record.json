@@ -1,0 +1,178 @@
+{
+  "answer_hash": "9fe88c6b8fedf11b57bcda79345685c408270240bc53aad4b3a89a04e2920c6d",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_528c928c98db4406bccbca2a7f24c654",
+  "case_id": "eval-K02-scvi-count-input-a",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 4199,
+  "latency_ms": 6795.513917008066,
+  "observed": {
+    "answer": "你提供的：batch_key=donor。\n\n确定性检查结果记录：input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的模型输入通常要求原始整数 UMI 计数矩阵，因此你提供的 raw integer UMI counts 在数据类型上符合这一常规输入形式。\n\n当前没有可引用的科学知识库声明来确认 scVI 在你的具体数据状态下可直接作为输入，因此这属于未经验证的一般知识。\n\n因此不能据此确认实际矩阵是否已满足 scVI 的输入要求。\n\n请提供表达矩阵中是否包含需要过滤的低质量细胞或基因，以及不同 donor 的细胞数量分布情况？",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 768,
+  "repetition": 2,
+  "run_id": "eval-K02-scvi-count-input-a--generic_rag--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K02-scvi-count-input-a--generic_rag--r2",
+      "created_at": "2026-09-20T23:40:42.622489+00:00",
+      "finished_at": "2026-09-20T23:40:49.416488+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:a74480431471e2c1",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K02-scvi-count-input-a--generic_rag--r2",
+      "root_span_id": "span_b8a7522164064e86accdc126bd958b33",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 6792.733,
+          "ended_at": "2026-09-20T23:40:49.416488+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_b8a7522164064e86accdc126bd958b33",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:40:42.622512+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_528c928c98db4406bccbca2a7f24c654"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "batch_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2864.806,
+          "ended_at": "2026-09-20T23:40:45.513342+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K02-scvi-count-input-a--generic_rag--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_b8a7522164064e86accdc126bd958b33",
+          "sequence": 2,
+          "span_id": "span_bf9aee3fcc7340f3ab1c0716c6bb1b1e",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:40:42.647949+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_528c928c98db4406bccbca2a7f24c654"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 1,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 23.139,
+          "ended_at": "2026-09-20T23:40:45.537812+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [
+            {
+              "record_id": "retrieval-foundation-v1-ff5b4829bc5943f4",
+              "record_type": "retrieval_index",
+              "relation": "queried"
+            }
+          ],
+          "parent_span_id": "span_b8a7522164064e86accdc126bd958b33",
+          "sequence": 3,
+          "span_id": "span_0a338528a4514e82a2dcd8addafe89a3",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:40:45.514614+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_528c928c98db4406bccbca2a7f24c654"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_528c928c98db4406bccbca2a7f24c654",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

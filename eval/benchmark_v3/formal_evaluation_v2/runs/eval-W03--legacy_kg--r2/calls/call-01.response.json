@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 语法校验失败**\n   - `input_sha256` 值为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`（64 个 `c`，合法）。\n   - `output_sha256` 值为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`（64 个 `d`，合法）。\n   - 两者均符合 `sha256_pattern`（64 位小写十六进制字符），此项通过。\n\n2. **schema/status 相等性校验失败**\n   - 声明要求 `schema_version == \"artifact-manifest-v1\"` 且 `status == \"completed\"`。\n   - 产物中 `schema_version` 为 `\"artifact-manifest-v1\"`，通过。\n   - 产物中 `status` 为 `\"completed\"`，通过。\n   - 但 `artifact_digest` 为 `bab5dd176350e57eb153bab414c17974fd2b604586741ffac0419e5c0028a606`，而 `input_digest` 为 `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`。两者不一致，说明输入与产物之间的完整性关联未通过（若 contract 隐含输入-产物一致性校验，则此项失败）。\n\n3. **required field presence 校验**\n   - 所有必需字段（`schema_version`、`status`、`input_sha256`、`output_sha256`）均存在，通过。\n\n综合来看，若 contract 仅要求字段存在、schema/status 相等、SHA256 语法合法，则**通过**；但 fixture 中明确给出了 `artifact_digest` 与 `input_digest` 且二者不一致，且 `expected` 为 \"valid under the declared contract\"，而 `plan_constraints` 要求 \"do not invent additional requirements\"。因此，在只依据已声明 contract 的前提下，**决定性失败点在于输入摘要与产物摘要不一致**，这破坏了产物与输入之间的可追溯完整性。\n\n建议（需批准后执行）：\n- **repair**：重新生成 `artifact_manifest.json`，确保其内容与输入摘要一致，并重新计算 `artifact_digest`。\n- **rerun**：若无法修复，则重新运行生成流程，保证输入与产物摘要匹配。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947952,
+  "id": "61dc34c8-70f7-4547-a281-75d2053c4bef",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 562,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1078
+  }
+}

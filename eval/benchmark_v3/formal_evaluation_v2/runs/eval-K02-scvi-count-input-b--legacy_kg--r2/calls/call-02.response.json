@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的输入要求是原始计数矩阵，模型内部会自行进行文库大小归一化和对数化等处理。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是仅 log1p 归一化值且无计数来源，这不符合 scVI 对原始计数的输入要求，因此不能直接作为模型输入。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"如果无法获得原始计数，使用 log1p 归一化值作为输入会导致模型假设不成立，可能产生误导性的低维表示和批次整合结果。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"在决定是否使用 scVI 前，需要确认是否存在原始计数矩阵或可追溯的计数来源。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"是否存在原始计数矩阵或可追溯的计数来源？\",\n    \"missing_field\": \"raw_counts_availability\",\n    \"why_needed\": \"scVI 需要原始计数作为输入，当前仅 log1p 归一化值无法满足模型要求，确认计数来源是决定能否使用 scVI 的关键。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947877,
+  "id": "e57e4d1c-2cfe-4224-a261-f9d13f1dbe7d",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 359,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 441,
+    "prompt_tokens": 2233,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2592
+  }
+}

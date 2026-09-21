@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"totalVI 的设计目标正是对 CITE-seq 的 RNA 与蛋白质两种模态进行联合建模，因此从模态类型上看与你的数据形式匹配。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 RNA 和 protein 都是 UMI counts，符合 totalVI 对计数型输入的基本要求；但具体实现还需要确认是否已进行过滤、归一化或对数转换等预处理。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:rna\", \"user:protein\"]\n    },\n    {\n      \"text\": \"两个 CITE-seq 批次意味着存在批次效应，totalVI 可以通过批次标签作为协变量来学习批次校正的潜在表示，但前提是每个批次都有足够的细胞数且蛋白面板一致。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:batches\"]\n    },\n    {\n      \"text\": \"当前没有可用的科学知识图谱证据来确认 totalVI 在你的具体数据条件下的适用性或失败模式，因此上述适配性判断属于一般方法学知识，未经本系统验证。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"两个批次的蛋白质面板是否完全一致，以及每个批次的细胞数是否足够支持批次校正？\",\n    \"missing_field\": \"protein_panel_consistency_and_cell_counts\",\n    \"why_needed\": \"totalVI 的批次校正假设蛋白特征在不同批次间对齐；若面板不一致或某批次细胞过少，联合建模可能失效或产生误导性潜在表示。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947767,
+  "id": "96fc2093-a206-45cf-a949-4b7954e4e8d2",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 421,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 411,
+    "prompt_tokens": 2331,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 2752
+  }
+}

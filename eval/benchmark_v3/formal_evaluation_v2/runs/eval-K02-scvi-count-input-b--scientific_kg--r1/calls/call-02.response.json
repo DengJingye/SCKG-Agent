@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"你提供的矩阵状态是仅 log1p 归一化值、没有原始计数来源，因此不能直接作为已发表 scVI 模型的输入。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:matrix_state\"]\n    },\n    {\n      \"text\": \"已发表的 scVI 模型明确以原始计数数据作为输入，并在模型内部包含归一化过程。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 4,\n          \"quote\": \"scVI takes raw count data as input and includes an effective normalization procedure that is integrated into its model.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"原始计数输入是 scVI 的显式要求，而不是可选条件。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 4,\n          \"quote\": \"scVI takes raw count data as input and includes an effective normalization procedure that is integrated into its model.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"scVI 支持批次整合和低维表示，但这一能力本身不意味着它适用于你当前的 log1p 归一化矩阵。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"The original scVI model explicitly supports batch integration. No comparative superiority is asserted.\"\n        },\n        {\n          \"index\": 2,\n          \"quote\": \"The original scVI model explicitly supports dimensionality reduction. No comparative superiority is asserted.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"模型在批次注释可用时会以批次注释为条件；你已提供 batch_key=donor，但该条件不改变原始计数输入要求。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"The distribution is conditioned on the batch annotation bn of each cell (if available), as well as two additional, unobserved random variables.\"\n        }\n      ],\n      \"context_fact_ids\": [\"user:batch_key\"]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"你能否提供与当前 log1p 归一化矩阵对应的原始计数矩阵，或说明该矩阵是否由原始计数经 log1p 变换得到？\",\n    \"missing_field\": \"raw_count_matrix_availability\",\n    \"why_needed\": \"scVI 的输入要求是原始计数；只有确认原始计数矩阵是否可用，才能判断能否直接运行 scVI，或是否需要改用其他输入形式。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947549,
+  "id": "e3c1f69f-27dc-4c12-9be2-b44f72036c3d",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 610,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 11264,
+    "prompt_cache_miss_tokens": 54,
+    "prompt_tokens": 11318,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 11264
+    },
+    "total_tokens": 11928
+  }
+}

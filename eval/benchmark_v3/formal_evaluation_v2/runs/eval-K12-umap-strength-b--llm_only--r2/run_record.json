@@ -1,0 +1,172 @@
+{
+  "answer_hash": "66ef87e602f005a38bd47fd4ebcc0c8f42811954793be4910f5b637ee39e556b",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_af5fc53fecdd44e788e0be1ae943c5b2",
+  "case_id": "eval-K12-umap-strength-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 4245,
+  "latency_ms": 5760.3064170107245,
+  "observed": {
+    "answer": "你提供的：min_dist=0.05。\n\n你提供的：proposed_conclusion=The clumps prove discrete biological cell types。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n当前没有可用的 Scanpy 1.11.2 文档或科学知识图谱证据来支持“min_dist=0.05 使 UMAP 图更紧凑”这一说法。\n\n当前没有证据支持“UMAP 图中的团块证明离散的生物细胞类型”这一结论；UMAP 聚类结构可能受参数、数据预处理和算法特性影响，不能直接等同于生物学上的离散类型。",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 679,
+  "repetition": 2,
+  "run_id": "eval-K12-umap-strength-b--llm_only--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K12-umap-strength-b--llm_only--r2",
+      "created_at": "2026-09-20T23:41:38.201520+00:00",
+      "finished_at": "2026-09-20T23:41:43.959592+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:f9017d0c1790227f",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K12-umap-strength-b--llm_only--r2",
+      "root_span_id": "span_8581bc7029c6451d9cb8d72de8d98175",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 5757.976,
+          "ended_at": "2026-09-20T23:41:43.959592+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_8581bc7029c6451d9cb8d72de8d98175",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:41:38.201544+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_af5fc53fecdd44e788e0be1ae943c5b2"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "scanpy_core_workflow",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 2962.268,
+          "ended_at": "2026-09-20T23:41:41.185051+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K12-umap-strength-b--llm_only--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_8581bc7029c6451d9cb8d72de8d98175",
+          "sequence": 2,
+          "span_id": "span_aca95e3c15bf454292fd3c8caa8bd519",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:41:38.222741+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_af5fc53fecdd44e788e0be1ae943c5b2"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.573,
+          "ended_at": "2026-09-20T23:41:41.187983+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_8581bc7029c6451d9cb8d72de8d98175",
+          "sequence": 3,
+          "span_id": "span_3d3322bfb96a4dd2bb10c9f9b67a4f83",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:41:41.187388+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_af5fc53fecdd44e788e0be1ae943c5b2"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_af5fc53fecdd44e788e0be1ae943c5b2",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：数据状态为 not_bound，输入未注册，测量数据不可用，因此无法对实际数据执行一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后对参考数据取子集”，这改变了参考对象的样本集合，但未提供子集前后的样本 ID 或维度信息。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提供的存储降维模型状态为“存在但未检查”，因此无法判断该模型是否与子集后的参考数据在样本或特征上一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"你提供的查询状态为“未改变”，但没有给出查询对象的样本 ID 或特征集合，无法与参考子集进行对齐检查。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:query_state\"]\n    },\n    {\n      \"text\": \"你提供的版本信息为“已记录”，但没有给出具体版本号，无法据此判断 MapQuery 或 Scanpy 的版本相关行为。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:versions\"]\n    },\n    {\n      \"text\": \"当前知识库中没有关于 MapQuery 在 RunUMAP 后取参考子集这一具体场景的直接科学陈述，因此不能把标题中的“异常结果”当作已证实的根因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"从一般原理看，如果参考数据在降维后取子集，而存储的降维模型仍基于完整参考数据，则模型与子集后的参考对象可能不一致；但这只是条件性推断，不适用于未提供具体数据的情况。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供参考子集前后的样本 ID 列表（或至少子集后的样本 ID）以及存储降维模型对应的样本 ID 或维度信息，以便进行一致性检查。\",\n    \"missing_field\": \"reference_subset_sample_ids\",\n    \"why_needed\": \"只有知道子集后的样本集合和存储模型对应的样本集合，才能判断两者是否一致，从而评估 MapQuery 结果异常的可能原因。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948124,
+  "id": "4794fa87-9de5-4bae-a718-5a650676f183",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 641,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2432,
+    "prompt_cache_miss_tokens": 87,
+    "prompt_tokens": 2519,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2432
+    },
+    "total_tokens": 3160
+  }
+}

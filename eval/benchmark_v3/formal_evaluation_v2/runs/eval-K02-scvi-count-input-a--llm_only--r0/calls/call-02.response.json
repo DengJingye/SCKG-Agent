@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的输入要求是原始整数 UMI 计数矩阵，当前矩阵状态为 raw integer UMI counts，符合这一输入形式。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 batch_key=donor 可以作为批次变量传入 scVI，用于批次整合。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:batch_key\"]\n    },\n    {\n      \"text\": \"当前没有已注册的输入数据或测量结果，因此无法确认矩阵是否已实际加载、是否包含有效基因和细胞，也无法验证 donor 标签是否与细胞对应。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"在满足原始整数 UMI 计数、基因和细胞维度有效、donor 标签与细胞一一对应且无缺失的条件下，该矩阵可以直接作为 scVI 输入。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"当前表达矩阵是否已经实际加载并包含有效的基因和细胞维度，且 donor 标签是否与每个细胞一一对应且无缺失？\",\n    \"missing_field\": \"matrix_loaded_and_labels_aligned\",\n    \"why_needed\": \"scVI 需要原始整数 UMI 计数矩阵以及完整的批次标签；如果矩阵未加载或标签缺失/不对应，则不能直接作为输入。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947867,
+  "id": "91a24390-3a45-4ef2-9d38-cbf919cd97fd",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 396,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1792,
+    "prompt_cache_miss_tokens": 404,
+    "prompt_tokens": 2196,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1792
+    },
+    "total_tokens": 2592
+  }
+}

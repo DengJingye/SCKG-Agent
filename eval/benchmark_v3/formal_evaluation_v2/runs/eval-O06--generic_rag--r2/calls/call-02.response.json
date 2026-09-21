@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入数据尚未绑定，测量数据不可用，因此无法对实际对象执行状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后又对参考数据做了子集”，这改变了参考对象的观测数量，但未提供子集前后的样本标识或维度信息。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提到存储的降维模型存在但未检查，因此无法判断该模型是否与子集后的参考数据一致，也无法判断 MapQuery 会使用哪个模型。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"当前知识库没有关于 MapQuery 在参考子集后出现异常结果的直接科学陈述，因此不能把标题中的“BUG”当作已证实的根因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"从一般原理看，如果参考数据在 UMAP 之后被过滤，而查询数据仍使用旧的参考嵌入或邻居图，可能产生不一致的映射；但这只是可能的机制，不是对你数据的诊断。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供子集前后参考数据的样本标识（例如 barcode/obs_names）以及存储的降维模型对应的样本标识，以便检查两者是否一致。\",\n    \"missing_field\": \"reference_subset_sample_ids\",\n    \"why_needed\": \"只有知道子集前后的样本标识和模型对应的样本标识，才能判断模型是否与子集后的参考数据匹配，从而评估 MapQuery 异常是否源于这种不一致。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947751,
+  "id": "8378a4c9-966f-4a62-a241-734f320a3ce7",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 487,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2048,
+    "prompt_cache_miss_tokens": 474,
+    "prompt_tokens": 2522,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2048
+    },
+    "total_tokens": 3009
+  }
+}

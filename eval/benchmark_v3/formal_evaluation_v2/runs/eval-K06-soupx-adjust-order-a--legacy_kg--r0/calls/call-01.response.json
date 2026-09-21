@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"domain\": \"SINGLE_CELL\",\n  \"intent\": \"execution\",\n  \"canonical_task\": \"ambient_rna_removal\",\n  \"confidence\": 0.95,\n  \"needs_clarification\": false,\n  \"clarification_question\": \"\",\n  \"capability_request\": null,\n  \"constraints\": {},\n  \"requested_tools\": [\"SoupX\"],\n  \"tool_calls\": [\n    {\n      \"tool_name\": \"get_tool_contract\",\n      \"query\": \"SoupX adjustCounts prerequisites and required inputs\",\n      \"canonical_task\": \"ambient_rna_removal\",\n      \"tool_names\": [\"SoupX\"],\n      \"claim_types\": [\"input_requirement\", \"parameter\"],\n      \"top_k\": 5,\n      \"reason\": \"User asks whether SoupX adjustCounts can be run directly given current state (contamination_fraction estimated, count_matrix present). Need to check tool contract for required inputs and prerequisites.\"\n    },\n    {\n      \"tool_name\": \"search_evidence\",\n      \"query\": \"SoupX adjustCounts required inputs and prerequisites before correction\",\n      \"canonical_task\": \"ambient_rna_removal\",\n      \"tool_names\": [\"SoupX\"],\n      \"claim_types\": [\"input_requirement\", \"caveat\"],\n      \"top_k\": 5,\n      \"reason\": \"Retrieve evidence on what steps must be completed before running adjustCounts, e.g., whether contamination fraction estimation is sufficient or if other preprocessing is needed.\"\n    }\n  ],\n  \"retrieval_query\": \"What are the required inputs and prerequisites for running SoupX adjustCounts? Given that contamination_fraction is estimated and count_matrix is present, can correction be performed directly or are other steps needed first?\",\n  \"user_reported_context\": {\n    \"contamination_fraction\": {\n      \"value\": \"estimated for this channel\",\n      \"user_quote\": \"contamination_fraction=estimated for this channel\"\n    },\n    \"count_matrix\": {\n      \"value\": \"present\",\n      \"user_quote\": \"count_matrix=present\"\n    }\n  },\n  \"data_dependency\": \"none\"\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947996,
+  "id": "c6b9a262-cbd2-437d-a180-756fdbed35ba",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 466,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 72,
+    "prompt_tokens": 1992,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 2458
+  }
+}

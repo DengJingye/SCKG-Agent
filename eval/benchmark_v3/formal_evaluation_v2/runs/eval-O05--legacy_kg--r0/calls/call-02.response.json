@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Seurat 5.3.0 中，GetResidual 对 multi-model SCTAssay 的行为取决于每个模型实际建模的特征集合；若某特征未在所有模型中建模，可能被跳过或导致缺失。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"首要检查是比较每个 SCT 模型的 feature 集合，确认请求的特征是否在每个模型中都有对应模型项，而不是直接认定是 GetResidual 的 bug。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"你提供的 per_model_feature_inventory 为“尚未比较”，因此当前无法判断缺失特征是否源于模型间特征不一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:per_model_feature_inventory\"]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供每个 SCT 模型实际建模的特征列表（或缺失特征在哪些模型中不存在），以便判断缺失是否由模型间特征不一致导致。\",\n    \"missing_field\": \"per_model_feature_inventory\",\n    \"why_needed\": \"只有知道每个模型的特征集合，才能区分是模型未包含该特征还是 GetResidual 本身的问题。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947587,
+  "id": "f1f89f3e-8d96-49b7-86b6-62a8a753960f",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 311,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2176,
+    "prompt_cache_miss_tokens": 400,
+    "prompt_tokens": 2576,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2176
+    },
+    "total_tokens": 2887
+  }
+}

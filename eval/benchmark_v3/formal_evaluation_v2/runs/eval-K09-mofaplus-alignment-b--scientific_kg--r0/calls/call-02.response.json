@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"MOFA 的输入描述允许各数据矩阵来自相同或重叠的样本集合，因此它并不强制要求两个 view 的样本完全一一对应。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 cell_identity_link=none 表示两个 view 之间没有细胞身份对应关系，这属于样本重叠程度未知的情况，而不是已确认的完全不重叠。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:cell_identity_link\"\n      ]\n    },\n    {\n      \"text\": \"当前证据只说明 MOFA 支持相同或重叠样本，但没有给出任意缺失或完全不重叠样本下的兼容性规则，因此不能据此断言你的 RNA cohort A 与 ATAC cohort B 可以直接用于该用法。\",\n      \"basis\": \"CAUTION_CONTEXT\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"Given several data matrices with measurements of multiple -omics data types on the same or on overlapping sets of samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors .\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"两个 view 之间是否存在任何可用的样本对应关系，例如部分重叠的样本 ID 或可映射的细胞身份？\",\n    \"missing_field\": \"sample_overlap_or_mapping\",\n    \"why_needed\": \"MOFA 的输入描述要求相同或重叠的样本集合；如果完全没有对应关系，则无法判断该用法是否满足其输入条件，也无法评估跨模态因子学习的可行性。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947918,
+  "id": "53a50aac-cdb3-4805-8acf-56d1e3aea5fd",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 455,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 6656,
+    "prompt_cache_miss_tokens": 16,
+    "prompt_tokens": 6672,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 6656
+    },
+    "total_tokens": 7127
+  }
+}

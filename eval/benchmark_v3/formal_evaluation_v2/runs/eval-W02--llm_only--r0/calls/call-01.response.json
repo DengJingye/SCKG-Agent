@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **校验和直接不匹配**\n   - 声明值（`declared_sha256`）：`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`\n   - 实际观测值（`observed_sha256`）：`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`\n   - 两者不一致，违反 `output_schema.sha256_must_equal_declared: true`。\n\n2. **exit code 不能作为通过依据**\n   - `artifact.exit_code = 0`，但 `artifact_validators` 明确要求：\n     - `compare exact SHA256`\n     - `do not accept exit code alone`\n   - 因此仅凭退出码为 0 不能判定产物有效。\n\n3. **预期结果本身即为失败**\n   - `expected = \"invalid: checksum mismatch despite exit code 0\"`，与当前观测事实一致。\n\n建议的 repair/rerun 方向（需另行批准，当前不执行）：\n- 重新生成 `result.bin`，使其 SHA256 等于声明的 `aaaaaaaa...`。\n- 或确认声明值是否录入错误；若声明值有误，应修正 `declared_sha256` 后重新校验。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947816,
+  "id": "eef2e68a-af9a-4f4c-a0d5-54809d2de38d",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 289,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 90,
+    "prompt_tokens": 474,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 763
+  }
+}

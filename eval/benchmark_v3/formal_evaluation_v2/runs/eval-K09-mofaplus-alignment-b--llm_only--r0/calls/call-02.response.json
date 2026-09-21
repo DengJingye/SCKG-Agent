@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"MOFA+ 的典型用法要求各 view 的样本（细胞）能够按同一细胞身份对齐，即每个细胞在多个组学中都有对应测量。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 cell_identity_link=none，且 view_1 是 cohort A 的 RNA 细胞、view_2 是 cohort B 的 ATAC 细胞，因此当前没有可用的细胞身份对应关系。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:cell_identity_link\", \"user:view_1\", \"user:view_2\"]\n    },\n    {\n      \"text\": \"在缺少细胞身份链接的情况下，MOFA+ 无法把两个 view 的测量归到同一细胞，因而不能直接学习跨模态因子。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"如果两个 cohort 的细胞并非同一批细胞，即使强行按行拼接，MOFA+ 也会把不同细胞当作同一细胞，导致因子解释失真。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"当前没有已注册的输入数据或测量结果，因此无法检查实际样本 ID 是否可对齐。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:input_registered\", \"observed:measurements_available\"]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"两个 view 是否共享同一批细胞身份（例如同一细胞 ID 或可映射的细胞标签）？\",\n    \"missing_field\": \"shared_cell_identity\",\n    \"why_needed\": \"MOFA+ 需要按细胞对齐多组学测量；若没有共享细胞身份，则无法判断是否满足该用法的样本对应要求。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947572,
+  "id": "0c2af325-2df0-47a8-a201-e83d24215ce5",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 485,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2304,
+    "prompt_cache_miss_tokens": 48,
+    "prompt_tokens": 2352,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2304
+    },
+    "total_tokens": 2837
+  }
+}

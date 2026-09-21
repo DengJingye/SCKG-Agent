@@ -1,0 +1,172 @@
+{
+  "answer_hash": "aef7cf774878a6e0b82d30e170db073c18978c40569795c37a7fcb59ba7fe7df",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_cfa3744e68c546c99894a06a5a9218ae",
+  "case_id": "eval-O01",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 4749,
+  "latency_ms": 8182.653249998111,
+  "observed": {
+    "answer": "你提供的：observed_state=RNA assay reports zero layers。\n\n你提供的：operation_sequence=IntegrateLayers(HarmonyIntegration) then JoinLayers。\n\n你提供的：Seurat_version=5.3.0。\n\n你提供的：reproducer=minimal object and assay/layer inventory available。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n在 Seurat 5.3.0 中，IntegrateLayers 使用 HarmonyIntegration 后，RNA assay 的 layers 通常应包含 counts、data 和 scale.data 等，但具体层集合取决于上游处理。\n\nJoinLayers 会将多个 layers 合并为一个，但若在调用前 RNA assay 已无 layers，则 JoinLayers 无法恢复任何层。\n\n不能直接推断根因。\n\n当前没有可用的科学知识图谱证据来支持或反驳任何特定根因。\n\n在运行 IntegrateLayers 之前，RNA assay 是否已经包含任何 layers（例如 counts、data）？",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 2,
+    "runtime_mode": "external_reasoning_with_deterministic_governance"
+  },
+  "output_tokens": 1104,
+  "repetition": 0,
+  "run_id": "eval-O01--llm_only--r0",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-O01--llm_only--r0",
+      "created_at": "2026-09-20T23:50:52.089069+00:00",
+      "finished_at": "2026-09-20T23:51:00.269368+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:da3466e23b4030fa",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-O01--llm_only--r0",
+      "root_span_id": "span_6ab5a71d8b124a34a852372fd68d8ab5",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 8180.2,
+          "ended_at": "2026-09-20T23:51:00.269368+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_6ab5a71d8b124a34a852372fd68d8ab5",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:50:52.089102+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_cfa3744e68c546c99894a06a5a9218ae"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "single_cell_evidence_qa_resolved",
+              "reason_code": "validated_semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "semantic_request_resolved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "semantic_primary",
+              "record_ref": {
+                "record_id": "batch_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 3978.74,
+          "ended_at": "2026-09-20T23:50:56.096351+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-O01--llm_only--r0",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_6ab5a71d8b124a34a852372fd68d8ab5",
+          "sequence": 2,
+          "span_id": "span_3708fd912ec24b5c8be97451545e4a63",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:50:52.117578+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_cfa3744e68c546c99894a06a5a9218ae"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.579,
+          "ended_at": "2026-09-20T23:50:56.097983+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "llm-tool-1",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_6ab5a71d8b124a34a852372fd68d8ab5",
+          "sequence": 3,
+          "span_id": "span_218fdb95977c46868e9947503b1f8fa0",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:50:56.097397+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_cfa3744e68c546c99894a06a5a9218ae"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_cfa3744e68c546c99894a06a5a9218ae",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

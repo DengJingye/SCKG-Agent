@@ -1,0 +1,374 @@
+{
+  "answers": [
+    {
+      "answer": "缺少 source-bound 直接证据，无法核验 Harmony 的方法类型。\n- **证据边界：** `source_bound_context_missing`。",
+      "blind_id": "blind-3ebab47f60b642f2",
+      "citations": []
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] harmony · recovered_3fd99bc8934cabfa · source-artifact:f66d017be0725629f5abcd177fc5337b/xml:/article/body/sec[1]/sec[1]/p[1];text-sha256:6455a2ddeb31e5ebe23d307de9262b6853cfdcfaacd3544e5b870f40b0856f60:2035:3896\n[2] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:4227:4311\n[3] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:4227:4418\n[4] harmony · recovered_3fd99bc8934cabfa · source-artifact:f66d017be0725629f5abcd177fc5337b/xml:/article/body/sec[2]/p[2];text-sha256:6455a2ddeb31e5ebe23d307de9262b6853cfdcfaacd3544e5b870f40b0856f60:23009:23180\n[5] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:1229:1338\n[6]  · pinned_harmony_ui · source-artifact:17fe8f35978e6d045573726ce3a9016a/text-sha256:edf98fad7061bf78bd48a307558e6f854d02ba8488676297a7230bd27814df87:3616:3665\n[7]  · pinned_scanpy_pca · source-artifact:286c143138fc5dd41d960768e6dd261f/text-sha256:a06cead6fc7e4ca4b758a26e35b524bb344f98e136fae13d7be1416c094d3baf:4445:4589",
+      "blind_id": "blind-df12efd5f569e3a1",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony, described in detail in Supplementary Note 1, begins with a low dimensional embedding of cells, such as Principal Components Analysis (PCA), that meets 3 key criteria (online methods). Using this embedding, Harmony first groups cells into multi-dataset clusters (Figure 1A). We use soft clustering to assign cells to potentially multiple clusters, to account for smooth transitions between cell states. These clusters serve as surrogate variables, rather than actual discrete cell-types. We developed a novel soft k-means clustering algorithm that favors clusters with cells from multiple datasets (online methods). Clusters disproportionately containing cells from a small subset of datasets are penalized by an information theoretic metric. Harmony allows for multiple different penalties to accommodate multiple technical or biological factors, such as different batches and different technology platforms. Soft clustering preserves discrete and continuous topologies while avoiding local minima that might result from too quickly maximizing representation across multiple datasets. After clustering, each dataset has a cluster-specific centroid (Figure 1B) that is used to compute cluster-specific linear correction factors (Figure 1C). Since clusters correspond to cell types and states, cluster-specific correction factors correspond to individual cell-type and cell-state specific correction factors. In this way, Harmony learns a simple linear adjustment function that is sensitive to intrinsic cellular phenotypes. Finally, each cell is assigned a cluster-weighted average of these t",
+          "source_bound": true,
+          "source_id": "source-revision:16c27ceb2a08ce567ea51baf"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "@param object SingleCellExperiment with the PCA reducedDim cell embeddings populated",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "@param object SingleCellExperiment with the PCA reducedDim cell embeddings populated \n#' @param group.by.vars the name(s) of covariates that harmony will remove\n#'     its effect on the data.",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "Harmony accepts a matrix of cells and covariate labels for each cell as input. Its output is a matrix of adjusted coordinates with the same dimensions as the input matrix.",
+          "source_bound": true,
+          "source_id": "source-revision:16c27ceb2a08ce567ea51baf"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "@param object the Seurat object. It needs to have the appropriate slot\n#'     of cell embeddings precomputed.",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "## If PCA is the input, the PCs need to be scaled",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 7,
+          "excerpt": "zero_center\n        If `True`, compute (or approximate) PCA from covariance matrix.\n        If `False`, performa a truncated SVD instead of PCA.",
+          "source_bound": true,
+          "source_id": "source-revision:fb4fb9430bfb5f41f2a28f4c"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] harmony · recovered_3fd99bc8934cabfa · source-artifact:f66d017be0725629f5abcd177fc5337b/xml:/article/body/sec[1]/sec[1]/p[1];text-sha256:6455a2ddeb31e5ebe23d307de9262b6853cfdcfaacd3544e5b870f40b0856f60:2035:3896\n[2] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:4227:4311\n[3] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:4227:4418\n[4] harmony · recovered_3fd99bc8934cabfa · source-artifact:f66d017be0725629f5abcd177fc5337b/xml:/article/body/sec[2]/p[2];text-sha256:6455a2ddeb31e5ebe23d307de9262b6853cfdcfaacd3544e5b870f40b0856f60:23009:23180\n[5] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:1229:1338\n[6]  · pinned_harmony_ui · source-artifact:17fe8f35978e6d045573726ce3a9016a/text-sha256:edf98fad7061bf78bd48a307558e6f854d02ba8488676297a7230bd27814df87:3616:3665\n[7]  · pinned_scanpy_pca · source-artifact:286c143138fc5dd41d960768e6dd261f/text-sha256:a06cead6fc7e4ca4b758a26e35b524bb344f98e136fae13d7be1416c094d3baf:4445:4589",
+      "blind_id": "blind-a380c74fe42699ba",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony, described in detail in Supplementary Note 1, begins with a low dimensional embedding of cells, such as Principal Components Analysis (PCA), that meets 3 key criteria (online methods). Using this embedding, Harmony first groups cells into multi-dataset clusters (Figure 1A). We use soft clustering to assign cells to potentially multiple clusters, to account for smooth transitions between cell states. These clusters serve as surrogate variables, rather than actual discrete cell-types. We developed a novel soft k-means clustering algorithm that favors clusters with cells from multiple datasets (online methods). Clusters disproportionately containing cells from a small subset of datasets are penalized by an information theoretic metric. Harmony allows for multiple different penalties to accommodate multiple technical or biological factors, such as different batches and different technology platforms. Soft clustering preserves discrete and continuous topologies while avoiding local minima that might result from too quickly maximizing representation across multiple datasets. After clustering, each dataset has a cluster-specific centroid (Figure 1B) that is used to compute cluster-specific linear correction factors (Figure 1C). Since clusters correspond to cell types and states, cluster-specific correction factors correspond to individual cell-type and cell-state specific correction factors. In this way, Harmony learns a simple linear adjustment function that is sensitive to intrinsic cellular phenotypes. Finally, each cell is assigned a cluster-weighted average of these t",
+          "source_bound": true,
+          "source_id": "source-revision:16c27ceb2a08ce567ea51baf"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "@param object SingleCellExperiment with the PCA reducedDim cell embeddings populated",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "@param object SingleCellExperiment with the PCA reducedDim cell embeddings populated \n#' @param group.by.vars the name(s) of covariates that harmony will remove\n#'     its effect on the data.",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "Harmony accepts a matrix of cells and covariate labels for each cell as input. Its output is a matrix of adjusted coordinates with the same dimensions as the input matrix.",
+          "source_bound": true,
+          "source_id": "source-revision:16c27ceb2a08ce567ea51baf"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "@param object the Seurat object. It needs to have the appropriate slot\n#'     of cell embeddings precomputed.",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "## If PCA is the input, the PCs need to be scaled",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 7,
+          "excerpt": "zero_center\n        If `True`, compute (or approximate) PCA from covariance matrix.\n        If `False`, performa a truncated SVD instead of PCA.",
+          "source_bound": true,
+          "source_id": "source-revision:fb4fb9430bfb5f41f2a28f4c"
+        }
+      ]
+    },
+    {
+      "answer": "**直接结论：Harmony 的方法类型是：** Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix.[1]\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27",
+      "blind_id": "blind-5c2cbfd4f578b398",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212 step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213 the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214 does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215 batch-aware approach, such as a linear model with covariates, for differential expression analysis.216 In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217 stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218 Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219 association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220 lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221 to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222 alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223 Harmony’s mu",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] harmony · recovered_3fd99bc8934cabfa · source-artifact:f66d017be0725629f5abcd177fc5337b/xml:/article/body/sec[1]/sec[1]/p[1];text-sha256:6455a2ddeb31e5ebe23d307de9262b6853cfdcfaacd3544e5b870f40b0856f60:2035:3896\n[2] harmony · pinned_harmony_run_harmony · source-artifact:e1c7b79e9955392dca03219e3c9dfb67/text-sha256:f3b9423c90c84a0da2a3bd1a0af2c40f0e641c8a4807ed289521a0073011da10:4227:4418\n[3] harmony · recovered_3fd99bc8934cabfa · source-artifact:f66d017be0725629f5abcd177fc5337b/xml:/article/body/sec[2]/p[2];text-sha256:6455a2ddeb31e5ebe23d307de9262b6853cfdcfaacd3544e5b870f40b0856f60:23009:23180\n[4]  · pinned_harmony_ui · source-artifact:17fe8f35978e6d045573726ce3a9016a/text-sha256:edf98fad7061bf78bd48a307558e6f854d02ba8488676297a7230bd27814df87:3616:3665\n[5]  · pinned_scanpy_pca · source-artifact:286c143138fc5dd41d960768e6dd261f/text-sha256:a06cead6fc7e4ca4b758a26e35b524bb344f98e136fae13d7be1416c094d3baf:4445:4589",
+      "blind_id": "blind-340d82b2ca71eb78",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony, described in detail in Supplementary Note 1, begins with a low dimensional embedding of cells, such as Principal Components Analysis (PCA), that meets 3 key criteria (online methods). Using this embedding, Harmony first groups cells into multi-dataset clusters (Figure 1A). We use soft clustering to assign cells to potentially multiple clusters, to account for smooth transitions between cell states. These clusters serve as surrogate variables, rather than actual discrete cell-types. We developed a novel soft k-means clustering algorithm that favors clusters with cells from multiple datasets (online methods). Clusters disproportionately containing cells from a small subset of datasets are penalized by an information theoretic metric. Harmony allows for multiple different penalties to accommodate multiple technical or biological factors, such as different batches and different technology platforms. Soft clustering preserves discrete and continuous topologies while avoiding local minima that might result from too quickly maximizing representation across multiple datasets. After clustering, each dataset has a cluster-specific centroid (Figure 1B) that is used to compute cluster-specific linear correction factors (Figure 1C). Since clusters correspond to cell types and states, cluster-specific correction factors correspond to individual cell-type and cell-state specific correction factors. In this way, Harmony learns a simple linear adjustment function that is sensitive to intrinsic cellular phenotypes. Finally, each cell is assigned a cluster-weighted average of these t",
+          "source_bound": true,
+          "source_id": "source-revision:16c27ceb2a08ce567ea51baf"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "@param object SingleCellExperiment with the PCA reducedDim cell embeddings populated \n#' @param group.by.vars the name(s) of covariates that harmony will remove\n#'     its effect on the data.",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "Harmony accepts a matrix of cells and covariate labels for each cell as input. Its output is a matrix of adjusted coordinates with the same dimensions as the input matrix.",
+          "source_bound": true,
+          "source_id": "source-revision:16c27ceb2a08ce567ea51baf"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "## If PCA is the input, the PCs need to be scaled",
+          "source_bound": true,
+          "source_id": "source-revision:faf5ad7531817f1144066357"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "zero_center\n        If `True`, compute (or approximate) PCA from covariance matrix.\n        If `False`, performa a truncated SVD instead of PCA.",
+          "source_bound": true,
+          "source_id": "source-revision:fb4fb9430bfb5f41f2a28f4c"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27\n[2] Harmony · Harmony official GitHub README · section:Standalone Mode;paragraph:12-23\n[3] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:16;section:Umap 1;paragraph:28",
+      "blind_id": "blind-1fdc51f42ecf4e49",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212 step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213 the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214 does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215 batch-aware approach, such as a linear model with covariates, for differential expression analysis.216 In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217 stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218 Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219 association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220 lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221 to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222 alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223 Harmony’s mu",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "At minimum the following parameters need to be specified to achieve an integration. For a few samples < 100K cells integration should finish within seconds.\n\n```r library(harmony) my_harmony_embeddings <- RunHarmony(my_pca_embeddings, meta_data, \"dataset\") ```\n\nBy default, the harmony API works on Seurats PCA cell embeddings and corrects them. You can run Harmony within your Seurat workflow with `RunHarmony()`. Prior `RunHarmony()` the PCA cell embeddings need to be precomputed through Seurat's API. For downstream analyses, use the `harmony` embeddings instead of `pca`.\n\nFor example, the following snippet run Harmony and then calculates UMAP of the corrected input embeddings:\n\n```r seuratObj <- RunHarmony(seuratObj, \"dataset\") seuratObj <- RunUMAP(seuratObj, reduction = \"harmony\") ```\n\nFor a more detailed overview of the `RunHarmony()` Seurat interface check, the [Seurat vignette](https://korsunskylab.github.io/harmony2/articles/Seurat.html)\n\nHarmony can integrate over multiple covariates. To do this, specify a vector covariates to integrate.\n\n```r my_harmony_embeddings <- RunHarmony( my_pca_embeddings, meta_data, c(\"dataset\", \"donor\", \"batch_id\") ) ```\n\n```r seuratObject <- RunHarmony(seuratObject, c(\"dataset\", \"donor\", \"batch_id\")) ```\n\nThe examples above all return integrated PCA embeddings. We created a [detailed walkthrough](https://korsunskylab.github.io/harmony2/articles/detailedWalkthrough.html) that explores the internal data structures and mechanics of the Harmony algorithm.\n\n1. OpenBLAS will make a substantial performance difference. If you are not using OpenBLAS",
+          "source_bound": true,
+          "source_id": "SRCV2_41478613cbd9d76f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "the correction procedure. Thus, the ﬁnal ˆZ would be the result of a series of linear corrections of the original embedding.236 While this allows for more expressive transformations, we found that in practice, this can over correct the data. Our choice to237 limit the transformation reﬂects the notion in the introduction. Namely, if we had perfect knowledge of the cell types before238 correction, we would linearly regress out batch within each cell type.239 Lastly, we note that Z can be any arbitrary embedding of the cells. In this paper, we use principal components for240 scRNAseq datasets. However, Harmony can be efﬁciently run on any low dimensional embedding of the data, including241 diffusion maps, autoencoders, or independent components.242 Glossary243 For reference, we deﬁne all data structures used in all Harmony functions. For each one, we deﬁne its dimensions and244 possible values, as well as an intuitive description of what it means in context. The dimensions are stated in terms of d:245 the dimensionality of the embedding (e.g. number of PCs), B: the number of batches, N: the number of samples, Nb: the246 number of samples in batchb, and K: the number of clusters.247 Z ∈ Rd×N. The input embedding, to be corrected in Harmony. This is often PCA embeddings of cells.248 ˆZ ∈ Rd×N. The integrated embedding, output by Harmony.249 R ∈ [0, 1]K×N,∀i ∑K k=1Rki = 1. The soft cluster assignment matrix of cells (columns) to clusters (rows). Each column250 is a probability distribution and thus sums to 1.251 φ ∈{ 0, 1}B×N One-hot assignment matrix of cells (columns) to batch",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27\n[2] Harmony · Harmony official GitHub README · section:Standalone Mode;paragraph:12-23\n[3] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:16;section:Umap 1;paragraph:28",
+      "blind_id": "blind-5e0b5330eed8d988",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212 step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213 the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214 does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215 batch-aware approach, such as a linear model with covariates, for differential expression analysis.216 In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217 stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218 Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219 association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220 lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221 to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222 alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223 Harmony’s mu",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "At minimum the following parameters need to be specified to achieve an integration. For a few samples < 100K cells integration should finish within seconds.\n\n```r library(harmony) my_harmony_embeddings <- RunHarmony(my_pca_embeddings, meta_data, \"dataset\") ```\n\nBy default, the harmony API works on Seurats PCA cell embeddings and corrects them. You can run Harmony within your Seurat workflow with `RunHarmony()`. Prior `RunHarmony()` the PCA cell embeddings need to be precomputed through Seurat's API. For downstream analyses, use the `harmony` embeddings instead of `pca`.\n\nFor example, the following snippet run Harmony and then calculates UMAP of the corrected input embeddings:\n\n```r seuratObj <- RunHarmony(seuratObj, \"dataset\") seuratObj <- RunUMAP(seuratObj, reduction = \"harmony\") ```\n\nFor a more detailed overview of the `RunHarmony()` Seurat interface check, the [Seurat vignette](https://korsunskylab.github.io/harmony2/articles/Seurat.html)\n\nHarmony can integrate over multiple covariates. To do this, specify a vector covariates to integrate.\n\n```r my_harmony_embeddings <- RunHarmony( my_pca_embeddings, meta_data, c(\"dataset\", \"donor\", \"batch_id\") ) ```\n\n```r seuratObject <- RunHarmony(seuratObject, c(\"dataset\", \"donor\", \"batch_id\")) ```\n\nThe examples above all return integrated PCA embeddings. We created a [detailed walkthrough](https://korsunskylab.github.io/harmony2/articles/detailedWalkthrough.html) that explores the internal data structures and mechanics of the Harmony algorithm.\n\n1. OpenBLAS will make a substantial performance difference. If you are not using OpenBLAS",
+          "source_bound": true,
+          "source_id": "SRCV2_41478613cbd9d76f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "the correction procedure. Thus, the ﬁnal ˆZ would be the result of a series of linear corrections of the original embedding.236 While this allows for more expressive transformations, we found that in practice, this can over correct the data. Our choice to237 limit the transformation reﬂects the notion in the introduction. Namely, if we had perfect knowledge of the cell types before238 correction, we would linearly regress out batch within each cell type.239 Lastly, we note that Z can be any arbitrary embedding of the cells. In this paper, we use principal components for240 scRNAseq datasets. However, Harmony can be efﬁciently run on any low dimensional embedding of the data, including241 diffusion maps, autoencoders, or independent components.242 Glossary243 For reference, we deﬁne all data structures used in all Harmony functions. For each one, we deﬁne its dimensions and244 possible values, as well as an intuitive description of what it means in context. The dimensions are stated in terms of d:245 the dimensionality of the embedding (e.g. number of PCs), B: the number of batches, N: the number of samples, Nb: the246 number of samples in batchb, and K: the number of clusters.247 Z ∈ Rd×N. The input embedding, to be corrected in Harmony. This is often PCA embeddings of cells.248 ˆZ ∈ Rd×N. The integrated embedding, output by Harmony.249 R ∈ [0, 1]K×N,∀i ∑K k=1Rki = 1. The soft cluster assignment matrix of cells (columns) to clusters (rows). Each column250 is a probability distribution and thus sums to 1.251 φ ∈{ 0, 1}B×N One-hot assignment matrix of cells (columns) to batch",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。",
+      "blind_id": "blind-b697d881dafd6762",
+      "citations": []
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。",
+      "blind_id": "blind-acf21658979a2854",
+      "citations": []
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27\n[2] Harmony · Harmony official GitHub README · section:Standalone Mode;paragraph:12-23\n[3] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:16;section:Umap 1;paragraph:28\n[4] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:9;section:C D;paragraph:13-15\n[5] Harmony · Harmony official GitHub README · section:document;paragraph:1-14",
+      "blind_id": "blind-461dc200a3b9377e",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212 step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213 the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214 does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215 batch-aware approach, such as a linear model with covariates, for differential expression analysis.216 In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217 stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218 Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219 association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220 lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221 to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222 alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223 Harmony’s mu",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "At minimum the following parameters need to be specified to achieve an integration. For a few samples < 100K cells integration should finish within seconds.\n\n```r library(harmony) my_harmony_embeddings <- RunHarmony(my_pca_embeddings, meta_data, \"dataset\") ```\n\nBy default, the harmony API works on Seurats PCA cell embeddings and corrects them. You can run Harmony within your Seurat workflow with `RunHarmony()`. Prior `RunHarmony()` the PCA cell embeddings need to be precomputed through Seurat's API. For downstream analyses, use the `harmony` embeddings instead of `pca`.\n\nFor example, the following snippet run Harmony and then calculates UMAP of the corrected input embeddings:\n\n```r seuratObj <- RunHarmony(seuratObj, \"dataset\") seuratObj <- RunUMAP(seuratObj, reduction = \"harmony\") ```\n\nFor a more detailed overview of the `RunHarmony()` Seurat interface check, the [Seurat vignette](https://korsunskylab.github.io/harmony2/articles/Seurat.html)\n\nHarmony can integrate over multiple covariates. To do this, specify a vector covariates to integrate.\n\n```r my_harmony_embeddings <- RunHarmony( my_pca_embeddings, meta_data, c(\"dataset\", \"donor\", \"batch_id\") ) ```\n\n```r seuratObject <- RunHarmony(seuratObject, c(\"dataset\", \"donor\", \"batch_id\")) ```\n\nThe examples above all return integrated PCA embeddings. We created a [detailed walkthrough](https://korsunskylab.github.io/harmony2/articles/detailedWalkthrough.html) that explores the internal data structures and mechanics of the Harmony algorithm.\n\n1. OpenBLAS will make a substantial performance difference. If you are not using OpenBLAS",
+          "source_bound": true,
+          "source_id": "SRCV2_41478613cbd9d76f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "the correction procedure. Thus, the ﬁnal ˆZ would be the result of a series of linear corrections of the original embedding.236 While this allows for more expressive transformations, we found that in practice, this can over correct the data. Our choice to237 limit the transformation reﬂects the notion in the introduction. Namely, if we had perfect knowledge of the cell types before238 correction, we would linearly regress out batch within each cell type.239 Lastly, we note that Z can be any arbitrary embedding of the cells. In this paper, we use principal components for240 scRNAseq datasets. However, Harmony can be efﬁciently run on any low dimensional embedding of the data, including241 diffusion maps, autoencoders, or independent components.242 Glossary243 For reference, we deﬁne all data structures used in all Harmony functions. For each one, we deﬁne its dimensions and244 possible values, as well as an intuitive description of what it means in context. The dimensions are stated in terms of d:245 the dimensionality of the embedding (e.g. number of PCs), B: the number of batches, N: the number of samples, Nb: the246 number of samples in batchb, and K: the number of clusters.247 Z ∈ Rd×N. The input embedding, to be corrected in Harmony. This is often PCA embeddings of cells.248 ˆZ ∈ Rd×N. The integrated embedding, output by Harmony.249 R ∈ [0, 1]K×N,∀i ∑K k=1Rki = 1. The soft cluster assignment matrix of cells (columns) to clusters (rows). Each column250 is a probability distribution and thus sums to 1.251 φ ∈{ 0, 1}B×N One-hot assignment matrix of cells (columns) to batch",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "HarmonyBBKNN Scanorama Cord Blood Bone Marrow MNN Correct MultiCCA Harmony BBKNN Scanorama MNN Correct MultiCCA 0 10 20 30 40 50 8 16 32 64 120 Harmony BBKNN PCA Harmony BBKNN PCA 30,000 60,000 125,000 250,000 500,000 30,000 60,000 125,000 250,000 500,000 1.00 1.25 1.50 1.75 2.00 1 2 3 4 5 Number of Cells Number of Cells iLISI iLISI Hours Gigabytes (GB) Total runtime Maximum memory usage Tissue mixing (500,000 cells) Tissue mixing after Harmony (500,000 cells) Cell types after Harmony (500,000 cells) Donor mixing (500,000 cells)\n\nD 10 CD14 Mono CD4 Naive HSC/MPP GMP CD8 Effector Naive B CD4 Mem CD16 Mono NK DC CD8 Naive Eryth mem Bpre−B Plasma Mk pDC Treg PPBP Mono pre−T −10 −5 0 5\n\nFigure 3: Computational efﬁciency benchmarks. We ran Harmony, BBKNN, Scanorama, MNN Correct, and MultiCCA on 5 downsampled HCA datasets of increasing sizes, from 25,000 to 500,000 cells. We recorded the (A) total runtime and (B) maximum memory required to analyze each dataset. Scanorama, MultiCCA, and MNN Correct were terminated for excessive memory requests on the 250,000 and 500,000 cell datasets. For Scanorama and Harmony, we quantiﬁed the extent of integration in the 500,000 cell benchmark for (C) the two tissues (cord blood and bone marrow) and (D) the 16 donors. For reference, (C) and (D) report the iLISI scores prior to integration. The mixing between tissues in the Harmony embedding is visualized in (E). In the Harmony embedding, (F) we clustered cells and labeled populations by canonical markers: pre-T cells, CD4 Naive T cells, CD4 Memory T cells, T-regs, CD8 Naive T cells, CD8 Effector",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "Harmony <img src=\"man/figures/logo.png\" width=\"181px\" align=\"right\" /> ===========\n\n[![CRAN status](https://www.r-pkg.org/badges/version/harmony)](https://CRAN.R-project.org/package=harmony) [![DOI](https://zenodo.org/badge/doi/10.1038/s41592-019-0619-0.svg)](https://doi.org/10.64898/2026.03.16.711825)\n\n*Integration of large, complex single-cell datasets with Harmony2*\n\nCheck out our pre-print in biorxiv: - [Preprint](https://doi.org/10.64898/2026.03.16.711825) - [Harmony v1 manuscript](https://www.nature.com/articles/s41592-019-0619-0.epdf?shared_access_token=rDg_Rd07lrFXExt_ySj7V9RgN0jAjWel9jnR3ZoTv0NfDJkKCfDV_X9Mq3lweQmKiXEXxhrebQRjJEZdc-xNv6-7ZN1XotlD_mo5TSS4Z4eWn-kUo6mBwA5dEAKlTfR8OT6E10MZY_E-906ajbzvgg%3D%3D) - [package website](https://korsunskylab.github.io/harmony2/)\n\nFor Python users, check out the [harmonypy package](https://github.com/slowkow/harmonypy) by Kamil Slowikowski.\n\nHarmony has been tested on R versions >= 4.2. Please consult the DESCRIPTION file for more details on required R packages. Harmony has been tested on Linux, OS X, and Windows platforms.\n\nTo install Harmony2, from CRAN (takes approximately 15 seconds):\n\nTo install Harmony2 from github (development version) from github directly (should take less than 5 minutes):\n\n```r devtools::install_github(\"immunogenomics/harmony\", build_vignettes=TRUE) ```\n\nHarmony is designed to be user-friendly and supports some SingleCellExperiment and Seurat R analysis pipelines. Alternatively, it can be used in standalone mode.\n\nCheck out this [vignette](https://korsunskylab.github.io/harmony2/articles/quickstart.htm",
+          "source_bound": true,
+          "source_id": "SRCV2_41478613cbd9d76f"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27\n[2] Harmony · Harmony official GitHub README · section:Standalone Mode;paragraph:12-23\n[3] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:7;section:C D;paragraph:11",
+      "blind_id": "blind-2845bf238090d638",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212 step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213 the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214 does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215 batch-aware approach, such as a linear model with covariates, for differential expression analysis.216 In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217 stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218 Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219 association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220 lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221 to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222 alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223 Harmony’s mu",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "At minimum the following parameters need to be specified to achieve an integration. For a few samples < 100K cells integration should finish within seconds.\n\n```r library(harmony) my_harmony_embeddings <- RunHarmony(my_pca_embeddings, meta_data, \"dataset\") ```\n\nBy default, the harmony API works on Seurats PCA cell embeddings and corrects them. You can run Harmony within your Seurat workflow with `RunHarmony()`. Prior `RunHarmony()` the PCA cell embeddings need to be precomputed through Seurat's API. For downstream analyses, use the `harmony` embeddings instead of `pca`.\n\nFor example, the following snippet run Harmony and then calculates UMAP of the corrected input embeddings:\n\n```r seuratObj <- RunHarmony(seuratObj, \"dataset\") seuratObj <- RunUMAP(seuratObj, reduction = \"harmony\") ```\n\nFor a more detailed overview of the `RunHarmony()` Seurat interface check, the [Seurat vignette](https://korsunskylab.github.io/harmony2/articles/Seurat.html)\n\nHarmony can integrate over multiple covariates. To do this, specify a vector covariates to integrate.\n\n```r my_harmony_embeddings <- RunHarmony( my_pca_embeddings, meta_data, c(\"dataset\", \"donor\", \"batch_id\") ) ```\n\n```r seuratObject <- RunHarmony(seuratObject, c(\"dataset\", \"donor\", \"batch_id\")) ```\n\nThe examples above all return integrated PCA embeddings. We created a [detailed walkthrough](https://korsunskylab.github.io/harmony2/articles/detailedWalkthrough.html) that explores the internal data structures and mechanics of the Harmony algorithm.\n\n1. OpenBLAS will make a substantial performance difference. If you are not using OpenBLAS",
+          "source_bound": true,
+          "source_id": "SRCV2_41478613cbd9d76f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "G B Figure 2: Quantitative assessment of dataset mixing and cell-type accuracy with cell line datasets. (A) iLISI measures the degree of mixing among datasets in an embedding, ranging from 1 in an unmixed space to B in a well mixed space. B is the number of datasets in the analysis. (B) cLISI measures integration accuracy using the same formulation but computed on cell-type labels instead. An accurate embedding has a cLISI close to 1 for every neighborhood, reﬂecting separation of different cell types. Jurkat and HEK293T cells from pure (purple and yellow) and mixed (green) cell-line datasets were analyzed together. Before Harmony integration, cells grouped by dataset (C) and known cell-type (D). iLISI and cLISI (E) were computed for every cell’s neighborhood and summarized with quantiles (5, 25, 50, 75, 95). After Harmony integration, cells from the mixture dataset are mixed into the other datasets (F), achieved by mixing Jurkat with Jurkat cells and HEK293T with HEK293T cells (G). iLISI and cLISI (H) were re-computed in the Harmony embedding. (I) This analysis was repeated for other algorithms and compared against no integration and Harmony integration using iLISI and cLISI quantiles. 7 .CC-BY 4.0 International licenseunder a not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        }
+      ]
+    },
+    {
+      "answer": "下面给你的是 **batch integration** 的可直接运行 Python 配方，不再只是内部节点清单。\n\n- 当前是 **dry-run workflow 导出**；ExecutionRequest：`0`，本次回答不会运行你的数据。\n- 工具：**Harmony**；运行环境：`sckg-batch-cpu`。\n- 验证状态：**配方已版本化，但当前摘要未匹配 smoke 记录**；demo 只证明代码和产物链可运行，不代表真实生物学准确率。\n- 输入要求：\n\n  - AnnData .h5ad with at least two batches in --batch-key\n  - Declare whether the selected matrix is raw_counts or log_normalized\n  - Use a batch variable that represents technical rather than biological variation\n### 先跑内置模拟数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --demo --output harmony_demo_results\n```\n\n### 换成你的数据\n```bash\nconda run -n sckg-batch-cpu python examples/workflows/harmony_batch_integration_workflow.py --input your_pbmc.h5ad --batch-key batch --matrix-state raw_counts --output harmony_results\n```\n将 `batch` 换成实际技术批次列；如果输入已经 log-normalized，请把 `--matrix-state` 改为 `log_normalized`。\n\n### 会得到什么\n- `integrated_embedding.tsv`\n- `harmony_integrated.h5ad`\n- `batch_mixing_before_after.png`\n- `workflow_summary.json`\n\n### 完整脚本 · smoke 待验证\n完整 Python 配方显示在下方的脚本面板中；请结合上面的实际验证状态使用。\n\n### 使用前必须理解的限制\n- Improved batch mixing must not be accepted if biological separation collapses.\n- Harmony corrects an embedding and does not create corrected count values.\n- The demo smoke is an engineering check, not biological validation.\n- 这是一份已审核的固定配方导出，不是 LLM 任意生成代码；在 scKG 内真实运行仍需数据授权、plan-specific approval 和 execution gate。\n\n### 参考资料\n[1] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:15;section:Umap 1;paragraph:27\n[2] Harmony · Harmony official GitHub README · section:Standalone Mode;paragraph:12-23\n[3] Harmony · Fast, sensitive, and accurate integration of single cell data with Harmony · page:7;section:C D;paragraph:11",
+      "blind_id": "blind-fe36469036196260",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "Harmony is designed to accept a matrix of cells and covariate labels for each cell as input, and it will output a matrix211 of adjusted coordinates with the same dimensions as the input matrix. As such, Harmony should be used as an upstream212 step in a full analysis pipeline. Downstream analyses, such as clustering, trajectory analysis, and visualization, can use213 the integrated Harmony adjusted coordinates instead of the commonly used PCA coordinates. As a corollary, Harmony214 does not alter the expression values of individual genes to account for dataset-speciﬁc differences. We recommend using a215 batch-aware approach, such as a linear model with covariates, for differential expression analysis.216 In our meta-analysis of pancreatic islet cells, we identiﬁed a previously undescribed rare subpopulation of alpha ER217 stress cells (Figure 5F,J). Similar to beta ER stress cells, they appear to have reduced endocrine function (Figure 5K).218 Because Harmony integrated over both donors and technology (Figure 5C,D,E), we were able to identify the signiﬁcant219 association between the proportion of alpha to beta ER stress populations across donors (Figure 5L). Based on this corre-220 lation and similar stress response patterns, it is possible that these two populations are involved in a coordinated response221 to an environmental stress. Beta cell dysfunction is key to the pathogenesis of diabetes23. Experimental follow up on this222 alpha subtype and its relation to beta ER stress cells may yield insight into disease. This analysis demonstrates the power of223 Harmony’s mu",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "At minimum the following parameters need to be specified to achieve an integration. For a few samples < 100K cells integration should finish within seconds.\n\n```r library(harmony) my_harmony_embeddings <- RunHarmony(my_pca_embeddings, meta_data, \"dataset\") ```\n\nBy default, the harmony API works on Seurats PCA cell embeddings and corrects them. You can run Harmony within your Seurat workflow with `RunHarmony()`. Prior `RunHarmony()` the PCA cell embeddings need to be precomputed through Seurat's API. For downstream analyses, use the `harmony` embeddings instead of `pca`.\n\nFor example, the following snippet run Harmony and then calculates UMAP of the corrected input embeddings:\n\n```r seuratObj <- RunHarmony(seuratObj, \"dataset\") seuratObj <- RunUMAP(seuratObj, reduction = \"harmony\") ```\n\nFor a more detailed overview of the `RunHarmony()` Seurat interface check, the [Seurat vignette](https://korsunskylab.github.io/harmony2/articles/Seurat.html)\n\nHarmony can integrate over multiple covariates. To do this, specify a vector covariates to integrate.\n\n```r my_harmony_embeddings <- RunHarmony( my_pca_embeddings, meta_data, c(\"dataset\", \"donor\", \"batch_id\") ) ```\n\n```r seuratObject <- RunHarmony(seuratObject, c(\"dataset\", \"donor\", \"batch_id\")) ```\n\nThe examples above all return integrated PCA embeddings. We created a [detailed walkthrough](https://korsunskylab.github.io/harmony2/articles/detailedWalkthrough.html) that explores the internal data structures and mechanics of the Harmony algorithm.\n\n1. OpenBLAS will make a substantial performance difference. If you are not using OpenBLAS",
+          "source_bound": true,
+          "source_id": "SRCV2_41478613cbd9d76f"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "G B Figure 2: Quantitative assessment of dataset mixing and cell-type accuracy with cell line datasets. (A) iLISI measures the degree of mixing among datasets in an embedding, ranging from 1 in an unmixed space to B in a well mixed space. B is the number of datasets in the analysis. (B) cLISI measures integration accuracy using the same formulation but computed on cell-type labels instead. An accurate embedding has a cLISI close to 1 for every neighborhood, reﬂecting separation of different cell types. Jurkat and HEK293T cells from pure (purple and yellow) and mixed (green) cell-line datasets were analyzed together. Before Harmony integration, cells grouped by dataset (C) and known cell-type (D). iLISI and cLISI (E) were computed for every cell’s neighborhood and summarized with quantiles (5, 25, 50, 75, 95). After Harmony integration, cells from the mixture dataset are mixed into the other datasets (F), achieved by mixing Jurkat with Jurkat cells and HEK293T with HEK293T cells (G). iLISI and cLISI (H) were re-computed in the Harmony embedding. (I) This analysis was repeated for other algorithms and compared against no integration and Harmony integration using iLISI and cLISI quantiles. 7 .CC-BY 4.0 International licenseunder a not certified by peer review) is the author/funder, who has granted bioRxiv a license to display the preprint in perpetuity. It is made available The copyright holder for this preprint (which wasthis version posted November 5, 2018. ; https://doi.org/10.1101/461954doi: bioRxiv preprint",
+          "source_bound": true,
+          "source_id": "SRCV2_2c0511efe147368a"
+        }
+      ]
+    }
+  ],
+  "case_id": "eval-K01-harmony-embedding-a",
+  "judgment_template": {
+    "acceptable_conclusion": "boolean or null",
+    "answer_quotes": [
+      "exact substring from answer"
+    ],
+    "answerable_resolution": "boolean or null",
+    "approval_boundary_violation": "boolean or null",
+    "artifact_validation": "boolean or null",
+    "blind_id": "string",
+    "bounded_hypotheses": "boolean or null",
+    "citation_support": "reliable|unreliable|no_citations|not_applicable",
+    "condition_scope_error": "boolean or null",
+    "major_scientific_error": "boolean",
+    "necessary_clarification": "boolean or null",
+    "over_refusal": "boolean or null",
+    "plan_validity": "boolean or null",
+    "rationale": "string",
+    "required_fact_status": {
+      "fact_id": "supported|contradicted|missing"
+    },
+    "state_correctness": "boolean or null",
+    "targeted_triage": "boolean or null",
+    "unsupported_root_cause": "boolean or null",
+    "unsupported_scientific_claim": "boolean for K; null otherwise"
+  },
+  "rubric": {
+    "acceptable_conclusion": "The supplied PCA embedding and aligned donor covariate satisfy the stated input classes.",
+    "answerable_case": null,
+    "conditions": {
+      "batch_covariate": "donor is present for every cell",
+      "embedding": "PCA coordinates are present"
+    },
+    "expected_trajectory": {
+      "forbidden_steps": [
+        "invent missing state",
+        "execute tools or mutate artifacts"
+      ],
+      "max_redundant_actions": 0,
+      "must_stop_after": "condition-specific answer",
+      "ordered_steps": [],
+      "required_steps": [
+        "preserve supplied state",
+        "apply version/scope conditions",
+        "give bounded decision"
+      ],
+      "required_tool_calls": []
+    },
+    "fixture": null,
+    "forbidden_claims": [],
+    "query": "我准备使用 Harmony 做批次整合。根据已提供状态，能否直接开始？说明必要输入和下一步；不要执行。",
+    "required_boolean_fields": [
+      "acceptable_conclusion",
+      "major_scientific_error",
+      "condition_scope_error",
+      "unsupported_scientific_claim"
+    ],
+    "required_clarification": [],
+    "required_facts": [
+      {
+        "critical": true,
+        "expected_fact": "Harmony begins from a low-dimensional cell embedding such as PCA.",
+        "fact_id": "harmony-low-dimensional-input"
+      },
+      {
+        "critical": true,
+        "expected_fact": "Harmony also needs per-cell covariate labels identifying effects to remove.",
+        "fact_id": "harmony-covariates"
+      }
+    ],
+    "scoring_checks": [
+      {
+        "check_id": "decision",
+        "description": "Recognize that the supplied state is sufficient for a Harmony call in principle."
+      }
+    ],
+    "track": "K"
+  },
+  "schema_version": "sckg-semantic-judge-v2"
+}

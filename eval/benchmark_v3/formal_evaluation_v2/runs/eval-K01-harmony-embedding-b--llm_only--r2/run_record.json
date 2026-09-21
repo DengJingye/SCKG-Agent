@@ -1,0 +1,172 @@
+{
+  "answer_hash": "cba31d432be1556fee36a2b4a0213237894313f20a506e640720fdf69ede1bf3",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_cabe281151414c599358b45fe4f21d8a",
+  "case_id": "eval-K01-harmony-embedding-b",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": null,
+  "latency_ms": 166.13733301346656,
+  "observed": {
+    "answer": "缺少 source-bound 直接证据，无法核验 Harmony 的方法类型。\n- **证据边界：** `source_bound_context_missing`。",
+    "lane": "llm_only",
+    "product_status": "ANSWERED",
+    "provider_calls": 0,
+    "runtime_mode": "degraded_local_fallback"
+  },
+  "output_tokens": null,
+  "repetition": 2,
+  "run_id": "eval-K01-harmony-embedding-b--llm_only--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-K01-harmony-embedding-b--llm_only--r2",
+      "created_at": "2026-09-20T23:53:13.866629+00:00",
+      "finished_at": "2026-09-20T23:53:14.026418+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:98cee25f0a3d2a4b",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-K01-harmony-embedding-b--llm_only--r2",
+      "root_span_id": "span_7067e19bd4fc4c4fbc11a9807b407a7d",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 159.743,
+          "ended_at": "2026-09-20T23:53:14.026418+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_7067e19bd4fc4c4fbc11a9807b407a7d",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:53:13.866669+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_cabe281151414c599358b45fe4f21d8a"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "route_local_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "canonical_or_context_task_detected",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_llm_proposal",
+              "outcome": "failed",
+              "reason_code": "semantic_proposal_not_available",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_clarification_signal",
+              "outcome": "not_required",
+              "reason_code": "query_or_context_task_anchor",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "route_fusion_decision",
+              "outcome": "single_cell_evidence_qa_ask",
+              "reason_code": "governed_task_anchor_explicit_local_answer_shape_preserved",
+              "record_ref": null,
+              "rule_version": "research_route_fusion_v1"
+            },
+            {
+              "decision_type": "research_route",
+              "outcome": "single_cell_ask",
+              "reason_code": "governed_task_anchor_explicit_local_answer_shape_preserved",
+              "record_ref": {
+                "record_id": "batch_integration",
+                "record_type": "canonical_task",
+                "relation": "selected"
+              },
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 121.181,
+          "ended_at": "2026-09-20T23:53:14.020811+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-K01-harmony-embedding-b--llm_only--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_7067e19bd4fc4c4fbc11a9807b407a7d",
+          "sequence": 2,
+          "span_id": "span_ede8d21476174c0baf6a9c81050ae9f1",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:53:13.899626+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_cabe281151414c599358b45fe4f21d8a"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {
+            "observation_count": 0,
+            "result_count": 0,
+            "source_bound_count": 0,
+            "tool_call_count": 1
+          },
+          "decision_evidence": [
+            {
+              "decision_type": "adaptive_retrieval",
+              "outcome": "bm25",
+              "reason_code": "retrieval_result_missing",
+              "record_ref": null,
+              "rule_version": "adaptive_retrieval_v0"
+            }
+          ],
+          "duration_ms": 0.532,
+          "ended_at": "2026-09-20T23:53:14.021913+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "local-tool-search",
+              "record_type": "research_tool_call",
+              "relation": "executes"
+            }
+          ],
+          "operation": "retrieve_governed_evidence",
+          "output_refs": [],
+          "parent_span_id": "span_7067e19bd4fc4c4fbc11a9807b407a7d",
+          "sequence": 3,
+          "span_id": "span_d4c49daf032346d9aff52a377031e33e",
+          "stage": "RETRIEVAL",
+          "started_at": "2026-09-20T23:53:14.021380+00:00",
+          "status": "BLOCKED",
+          "trace_id": "trace_cabe281151414c599358b45fe4f21d8a"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_cabe281151414c599358b45fe4f21d8a",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

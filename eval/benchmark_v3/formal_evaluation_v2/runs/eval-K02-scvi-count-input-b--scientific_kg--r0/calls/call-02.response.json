@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"已发表的 scVI 模型明确以原始计数数据作为输入，并在模型内部完成归一化。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 4,\n          \"quote\": \"scVI takes raw count data as input and includes an effective normalization procedure that is integrated into its model.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的矩阵状态是仅含 log1p 归一化值且没有计数来源，因此不能直接作为该模型要求的原始计数输入。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:matrix_state\"\n      ]\n    },\n    {\n      \"text\": \"scVI 原始模型支持批次整合和低维表示，但这不等于当前 log1p 矩阵可直接适用。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"The original scVI model explicitly supports batch integration. No comparative superiority is asserted.\"\n        },\n        {\n          \"index\": 2,\n          \"quote\": \"The original scVI model explicitly supports dimensionality reduction. No comparative superiority is asserted.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"模型在批次注释可用时会以其为条件；你已提供 batch_key=donor，但该条件不改变原始计数输入要求。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 5,\n          \"quote\": \"The distribution is conditioned on the batch annotation bn of each cell (if available), as well as two additional, unobserved random variables.\"\n        }\n      ],\n      \"context_fact_ids\": [\n        \"user:batch_key\"\n      ]\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947992,
+  "id": "0cd94bba-50b2-4be8-9601-24091bc7dd7e",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 427,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 9398,
+    "prompt_tokens": 11318,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 11745
+  }
+}

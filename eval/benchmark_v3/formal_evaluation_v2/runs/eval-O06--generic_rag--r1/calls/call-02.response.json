@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"当前观察：输入尚未绑定，测量数据不可用，因此无法对实际数据执行状态一致性检查。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"observed:status\", \"observed:input_registered\", \"observed:measurements_available\"]\n    },\n    {\n      \"text\": \"你提供的参考状态是“RunUMAP 完成后对参考数据取子集”，这属于用户提供的上下文事实，不能据此推断 MapQuery 的失败机制。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reference_state\"]\n    },\n    {\n      \"text\": \"你提供的存储降维模型状态为“存在但未检查”，因此无法确认其内容是否与子集后的参考数据一致。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:stored_reduction_model\"]\n    },\n    {\n      \"text\": \"你提供的版本信息为“已记录”，但未给出具体版本号，无法用于判断是否存在版本不匹配。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:versions\"]\n    },\n    {\n      \"text\": \"当前知识库中没有关于 MapQuery 在 RunUMAP 后取子集导致异常的直接科学陈述，因此不能断言该操作是根因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"检索到的 Harmony 文献仅说明其校正步骤假设数据正交且正态分布，与 MapQuery 的参考子集问题无直接关联。\",\n      \"basis\": \"RETRIEVAL_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 1,\n          \"quote\": \"Caveat. This section assumes the modeled data are orthogonal and each normally distributed. This is not true for the L2391 normalized data used in spherical clustering.\"\n        }\n      ]\n    },\n    {\n      \"text\": \"要判断 MapQuery 是否因参考子集而失败，需要检查存储的降维模型是否包含子集前的完整参考嵌入，以及查询映射时使用的参考数据是否与模型匹配。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"存储的降维模型是否包含子集前的完整参考嵌入，还是仅包含子集后的参考数据？\",\n    \"missing_field\": \"stored_reduction_model_content\",\n    \"why_needed\": \"这决定了 MapQuery 在映射查询时使用的参考嵌入是否与子集后的参考数据一致，是判断异常是否由参考子集导致的关键。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947914,
+  "id": "d3b6c7f7-fdeb-423a-8769-01f912d9c997",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 630,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 3200,
+    "prompt_cache_miss_tokens": 124,
+    "prompt_tokens": 3324,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 3200
+    },
+    "total_tokens": 3954
+  }
+}

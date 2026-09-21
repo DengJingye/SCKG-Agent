@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Seurat 5.3.0 中，IntegrateLayers 使用 HarmonyIntegration 后，RNA assay 的 layers 通常应包含 counts、data 和 scale.data 等，但具体层集合取决于上游处理。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"JoinLayers 会将多个 layers 合并为一个，但若在调用前 RNA assay 已无 layers，则 JoinLayers 无法恢复任何层。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    },\n    {\n      \"text\": \"你提供的观察是 RNA assay 报告零 layers，这属于用户提供的事实，不能直接推断根因。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:observed_state\"]\n    },\n    {\n      \"text\": \"你提供的操作顺序是 IntegrateLayers(HarmonyIntegration) 然后 JoinLayers，这属于用户提供的事实。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:operation_sequence\"]\n    },\n    {\n      \"text\": \"你提供的 Seurat 版本是 5.3.0，这属于用户提供的事实。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:Seurat_version\"]\n    },\n    {\n      \"text\": \"你提到有最小对象和 assay/layer 清单可用于复现，这属于用户提供的事实。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\"user:reproducer\"]\n    },\n    {\n      \"text\": \"当前没有可用的科学知识图谱证据来支持或反驳任何特定根因。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": []\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"在运行 IntegrateLayers 之前，RNA assay 是否已经包含任何 layers（例如 counts、data）？\",\n    \"missing_field\": \"pre_integration_layers\",\n    \"why_needed\": \"这决定了零 layers 是 IntegrateLayers 导致的，还是之前就缺失，从而改变 triage 顺序。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948256,
+  "id": "3fedc927-bea8-4f5d-9581-5e52d0fc3449",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 538,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2048,
+    "prompt_cache_miss_tokens": 587,
+    "prompt_tokens": 2635,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2048
+    },
+    "total_tokens": 3173
+  }
+}

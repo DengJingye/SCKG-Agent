@@ -1,0 +1,103 @@
+{
+  "answer_hash": "332ef5db2e32640f86aa86d0b28d7210c794292837b1052df7818ecdffba3586",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_566f314321354a92954d92d55c043bdf",
+  "case_id": "eval-W01",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 470,
+  "latency_ms": 3287.015458001406,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - 声明形状：`[100, 50]`\n   - 实际观测形状：`[100, 49]`\n   - 第二维 `49 ≠ 50`，违反 `output_schema.shape_must_equal_declared: true`。\n   - 这与 fixture 中 `expected` 字段一致：`\"invalid: observed second dimension 49 differs from declared 50\"`。\n\n2. **dtype 匹配（通过项）**\n   - 声明 dtype：`float32`\n   - 实际观测 dtype：`float32`\n   - 满足 `output_schema.dtype_must_equal_declared: true`。\n\n3. **可读性（通过但不足以判定成功）**\n   - `load_status: \"readable\"`，但 fixture 明确说明 `\"readability alone is not success\"`，因此不能作为通过合同的依据。\n\n结论：由于形状维度不匹配这一决定性证据，当前 artifact `embedding.npy` 未通过合同校验。\n\n建议（需批准后执行）：\n- 检查生成 embedding 的流程，确认为何第二维输出为 49 而非声明的 50。\n- 修复生成逻辑后重新运行，产出形状为 `[100, 50]`、dtype 为 `float32` 的 artifact。\n- 重新执行只读核查以确认修复结果。",
+    "lane": "scientific_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 318,
+  "repetition": 2,
+  "run_id": "eval-W01--scientific_kg--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W01--scientific_kg--r2",
+      "created_at": "2026-09-20T23:45:59.594049+00:00",
+      "finished_at": "2026-09-20T23:46:02.879301+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:21a823dbb7d3d1b1",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W01--scientific_kg--r2",
+      "root_span_id": "span_8a0daba3f3a144f2b28ab3fc20759ce1",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 3285.13,
+          "ended_at": "2026-09-20T23:46:02.879301+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_8a0daba3f3a144f2b28ab3fc20759ce1",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:45:59.594113+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_566f314321354a92954d92d55c043bdf"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 101.228,
+          "ended_at": "2026-09-20T23:45:59.727095+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W01--scientific_kg--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_8a0daba3f3a144f2b28ab3fc20759ce1",
+          "sequence": 2,
+          "span_id": "span_efb2df7658f84dd096f4d1efb286a1bd",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:45:59.625867+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_566f314321354a92954d92d55c043bdf"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_566f314321354a92954d92d55c043bdf",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

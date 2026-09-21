@@ -1,0 +1,1253 @@
+{
+  "action_safety": {
+    "execution_request_allowed": false,
+    "reason_codes": [],
+    "source": "deterministic_policy",
+    "verdict": "ALLOW"
+  },
+  "agent_mode": "ASK",
+  "algorithm_cards": [],
+  "answerability": {
+    "reason_codes": [
+      "source_bound_context_with_optional_model_knowledge"
+    ],
+    "unverified_model_knowledge_allowed": true,
+    "verdict": "ANSWER_DUAL_LAYER",
+    "verified_context_available": true
+  },
+  "candidate_tools": [],
+  "canonical_trace_id": "trace_3c794651da9c4e319ef2261bb4efe8b7",
+  "claim_audit": {
+    "caution_context": [],
+    "citation_coverage": 1.0,
+    "citation_precision": 1.0,
+    "cited_references": [],
+    "claims": [
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+    "execution_claim_violation": false,
+    "governance_violation_count": 0,
+    "invalid_citations": [],
+    "passed": true,
+    "reasons": [],
+    "schema_version": "grounded-answer-audit-v3",
+    "scientific_answer": true,
+    "semantic_claim_correctness": null,
+    "structurally_supported_claim_rate": 0.0,
+    "unsupported_claim_count": 0,
+    "unverified_model_knowledge_claims": [
+      {
+        "authority": "model_knowledge_unverified",
+        "citation_mapping": "not_applicable",
+        "claim_id": "claim-001",
+        "claim_text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。",
+        "claim_type": "scientific",
+        "governance_action": "label_unverified",
+        "lexical_support": 0.0,
+        "numeric_scope_match": "not_applicable",
+        "reasons": [
+          "not_scientific_authority"
+        ],
+        "scope_match": "unknown",
+        "semantic_review_status": "not_run",
+        "source_span_ids": []
+      }
+    ],
+    "verified_claims": [],
+    "verifier": "deterministic_structure_v3"
+  },
+  "context_pack": {
+    "action_safety": {
+      "execution_request_allowed": false,
+      "reason_codes": [],
+      "source": "deterministic_policy",
+      "verdict": "ALLOW"
+    },
+    "answer_provenance": {
+      "caution_context_used": [],
+      "claims": [
+        {
+          "citations": [],
+          "claim_id": "answer-1",
+          "context_authority": {
+            "user:batch_composition": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:protein_missing_in_scrna": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:rna_data_type": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:rna_data_type",
+            "user:batch_composition",
+            "user:protein_missing_in_scrna"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：rna_data_type=UMI counts；batch_composition=one CITE-seq batch plus one scRNA-seq batch；protein_missing_in_scrna=protein missing only in the scRNA-seq batch。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-2",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。"
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "shared_gene_set",
+          "text": "两个批次是否共享完全相同的基因集合？",
+          "why_needed": "来源中的缺失蛋白处理明确假设所有批次共享同一组基因；若不满足，则不能按该条件判断 totalVI 的适配性。"
+        }
+      ],
+      "kg_facts_used": [],
+      "knowledge_sources": [
+        "MODEL_KNOWLEDGE",
+        "USER_CLARIFICATION",
+        "USER_PROVIDED_FACT"
+      ],
+      "references": [],
+      "schema_version": "answer-provenance-v1",
+      "scientific_kg_used": false,
+      "semantic_support_verified": false
+    },
+    "answerability": {
+      "reason_codes": [
+        "source_bound_context_with_optional_model_knowledge"
+      ],
+      "unverified_model_knowledge_allowed": true,
+      "verdict": "ANSWER_DUAL_LAYER",
+      "verified_context_available": true
+    },
+    "application_graph": {
+      "runtime": "deterministic_graph",
+      "same_business_nodes_with_or_without_langgraph": true,
+      "visited_nodes": [
+        "gateway",
+        "requirement_parse",
+        "action_retrieval",
+        "answer_or_handoff"
+      ]
+    },
+    "capability_context": [],
+    "chat_stage_timings": [
+      {
+        "detail": "mode=ASK;intent=caveat_comparison;task=multimodal_integration;task_source=semantic_parser;semantic=ready",
+        "elapsed_ms": 4101.669,
+        "stage": "intent",
+        "status": "completed"
+      },
+      {
+        "detail": "route=CAVEAT_COMPARISON",
+        "elapsed_ms": 0.009,
+        "stage": "parent_planning",
+        "status": "skipped"
+      },
+      {
+        "detail": "runtime=ready",
+        "elapsed_ms": 6987.145,
+        "stage": "answer_compose",
+        "status": "completed"
+      }
+    ],
+    "conversation_state": {
+      "confirmed_domain": "SINGLE_CELL",
+      "confirmed_task": "multimodal_integration",
+      "last_action_bundle_ids": [],
+      "last_answer_claims": [
+        "claim-001"
+      ],
+      "last_plan_id": null,
+      "referenced_tools": [],
+      "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "state_epoch": 0,
+      "user_reported_context": {
+        "batch_composition": "one CITE-seq batch plus one scRNA-seq batch (user: batches=one CITE-seq batch plus one scRNA-seq batch)",
+        "protein_missing_in_scrna": "protein missing only in the scRNA-seq batch (user: protein=missing only in the scRNA-seq batch)",
+        "rna_data_type": "UMI counts (user: RNA=UMI counts in both)"
+      }
+    },
+    "conversation_turns_used": 0,
+    "external_provider_call_count": 3,
+    "external_reasoning": {
+      "answer_claims": [
+        {
+          "citations": [],
+          "claim_id": "answer-1",
+          "context_authority": {
+            "user:batch_composition": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:protein_missing_in_scrna": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            },
+            "user:rna_data_type": {
+              "authority": "user_provided_context_only",
+              "availability": "available",
+              "kind": "USER_PROVIDED_FACT",
+              "scientific_evidence": false
+            }
+          },
+          "context_fact_ids": [
+            "user:rna_data_type",
+            "user:batch_composition",
+            "user:protein_missing_in_scrna"
+          ],
+          "execution_authorized": false,
+          "execution_gate": false,
+          "knowledge_source": "USER_PROVIDED_FACT",
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "text": "你提供的：rna_data_type=UMI counts；batch_composition=one CITE-seq batch plus one scRNA-seq batch；protein_missing_in_scrna=protein missing only in the scRNA-seq batch。",
+          "trusted": false
+        },
+        {
+          "citations": [],
+          "claim_id": "answer-2",
+          "knowledge_source": "MODEL_KNOWLEDGE",
+          "text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。"
+        },
+        {
+          "citations": [],
+          "claim_id": "clarification",
+          "knowledge_source": "USER_CLARIFICATION",
+          "missing_field": "shared_gene_set",
+          "text": "两个批次是否共享完全相同的基因集合？",
+          "why_needed": "来源中的缺失蛋白处理明确假设所有批次共享同一组基因；若不满足，则不能按该条件判断 totalVI 的适配性。"
+        }
+      ],
+      "error_type": "",
+      "input_tokens": 5341,
+      "latency_ms": 6985.067917004926,
+      "model_name": "deepseek-v4-pro",
+      "output_tokens": 892,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "provider_call_count": 2,
+      "status": "ready",
+      "support_check": {
+        "assessor": "same_provider_model",
+        "authority_changed": false,
+        "independent_verification": false,
+        "narrowed_segment_count": 0,
+        "precheck_rejected_segment_count": 3,
+        "quotes_resolved_from_store": 0,
+        "removed_segment_count": 2,
+        "status": "completed",
+        "structurally_rejected_segment_count": 0
+      }
+    },
+    "grounded_answer_audit": {
+      "caution_context": [],
+      "citation_coverage": 1.0,
+      "citation_precision": 1.0,
+      "cited_references": [],
+      "claims": [
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "contract": "exact_quote_and_structural_audit_not_semantic_verification",
+      "execution_claim_violation": false,
+      "governance_violation_count": 0,
+      "invalid_citations": [],
+      "passed": true,
+      "reasons": [],
+      "schema_version": "grounded-answer-audit-v3",
+      "scientific_answer": true,
+      "semantic_claim_correctness": null,
+      "structurally_supported_claim_rate": 0.0,
+      "unsupported_claim_count": 0,
+      "unverified_model_knowledge_claims": [
+        {
+          "authority": "model_knowledge_unverified",
+          "citation_mapping": "not_applicable",
+          "claim_id": "claim-001",
+          "claim_text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。",
+          "claim_type": "scientific",
+          "governance_action": "label_unverified",
+          "lexical_support": 0.0,
+          "numeric_scope_match": "not_applicable",
+          "reasons": [
+            "not_scientific_authority"
+          ],
+          "scope_match": "unknown",
+          "semantic_review_status": "not_run",
+          "source_span_ids": []
+        }
+      ],
+      "verified_claims": [],
+      "verifier": "deterministic_structure_v3"
+    },
+    "memory_context": {
+      "can_affect_scientific_authority": false,
+      "explicit_preferences": {}
+    },
+    "missing_evidence": [
+      "source_bound_context_missing"
+    ],
+    "rejected_external_answer_audit": null,
+    "research_tool_observations": [
+      {
+        "call_id": "llm-tool-1",
+        "latency_ms": 3.274,
+        "payload": {
+          "answerability": {
+            "candidate_only": false,
+            "claim_ids": [],
+            "direct_evidence_chunk_ids": [],
+            "evidence_gap_id": "",
+            "evidence_span_ids": [],
+            "fallback_reason": "",
+            "operator_revision_id": "",
+            "reason": "approved_kg_no_matching_statement",
+            "scientific_kg_used": false,
+            "scope_status": "unknown",
+            "source_revision_ids": [],
+            "status": "INSUFFICIENT_EVIDENCE",
+            "version_status": ""
+          },
+          "answerability_reason": "approved_kg_no_matching_statement",
+          "answerability_status": "INSUFFICIENT_EVIDENCE",
+          "chunk_ids": [],
+          "claim_ids": [],
+          "evidence_gap_id": "",
+          "evidence_span_ids": [],
+          "fallback_reason": "",
+          "mode": "kg_bm25",
+          "operator_revision_id": "",
+          "query": "totalVI multimodal integration with one CITE-seq batch and one scRNA-seq batch where protein is missing in scRNA-seq batch: input requirements, missing modality handling, failure modes, and batch correction",
+          "scientific_kg_used": false,
+          "scope_status": "unknown",
+          "source_revision_ids": [],
+          "version_status": ""
+        },
+        "result_count": 0,
+        "source_bound_count": 0,
+        "status": "completed",
+        "tool_name": "search_evidence",
+        "warnings": []
+      }
+    ],
+    "research_tool_plan": {
+      "answer_strategy": "grounded",
+      "calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "multimodal_integration",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode",
+            "caveat"
+          ],
+          "query": "totalVI multimodal integration with one CITE-seq batch and one scRNA-seq batch where protein is missing in scRNA-seq batch: input requirements, missing modality handling, failure modes, and batch correction",
+          "reason": "Assess suitability of totalVI for the described data configuration, focusing on missing protein modality and batch effects.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "totalVI"
+          ],
+          "top_k": 5
+        }
+      ],
+      "rationale": "LLM proposed bounded read-only tools; local policy normalized the plan.",
+      "source": "semantic_parser"
+    },
+    "resolved_capability_request": null,
+    "response_context": {
+      "authority": "History is not evidence. Approval is not applicability. Unknown/partially_known is not wildcard. Explain conditional knowledge without asserting it applies to the user's data. REQUIRED is scientific/API requirement only; never an execution gate. Caution/EvidenceGap is an untrusted, non-assertive reminder, never a scientific assertion or execution permission.",
+      "context_facts": [
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:rna_data_type",
+          "field": "rna_data_type",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "RNA=UMI counts in both",
+          "value": "UMI counts"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:batch_composition",
+          "field": "batch_composition",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "batches=one CITE-seq batch plus one scRNA-seq batch",
+          "value": "one CITE-seq batch plus one scRNA-seq batch"
+        },
+        {
+          "authority": "user_provided_context_only",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "user:protein_missing_in_scrna",
+          "field": "protein_missing_in_scrna",
+          "kind": "USER_PROVIDED_FACT",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "user_quote": "protein=missing only in the scRNA-seq batch",
+          "value": "protein missing only in the scRNA-seq batch"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:status",
+          "field": "status",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": "not_bound"
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:input_registered",
+          "field": "input_registered",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        },
+        {
+          "authority": "deterministic_runtime_observation",
+          "availability": "available",
+          "execution_authorized": false,
+          "external_scientific_truth": false,
+          "fact_id": "observed:measurements_available",
+          "field": "measurements_available",
+          "kind": "OBSERVED_STATE",
+          "method_requirement_evidence": false,
+          "scientific_evidence": false,
+          "value": false
+        }
+      ],
+      "conversation": [],
+      "current_intent": "caveat_comparison",
+      "current_task": "multimodal_integration",
+      "current_user_reported_context": {
+        "batch_composition": "one CITE-seq batch plus one scRNA-seq batch (user: batches=one CITE-seq batch plus one scRNA-seq batch)",
+        "protein_missing_in_scrna": "protein missing only in the scRNA-seq batch (user: protein=missing only in the scRNA-seq batch)",
+        "rna_data_type": "UMI counts (user: RNA=UMI counts in both)"
+      },
+      "data_state": {
+        "input_registered": false,
+        "measurements_available": false,
+        "status": "not_bound"
+      },
+      "evidence": [
+        {
+          "claim_text": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+          "claim_type": "failure_mode",
+          "index": 1,
+          "knowledge_source": "CAUTION_CONTEXT",
+          "source_id": "source-revision:d0f246cacd071ac3194be0d3",
+          "source_span": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[2]/sec[1]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:3286:3882",
+          "source_span_id": "evidence-span:60e3ef935480978551534155",
+          "title": "recovered_f79528d3f1f2249d",
+          "tool_name": ""
+        },
+        {
+          "claim_text": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+          "claim_type": "failure_mode",
+          "index": 2,
+          "knowledge_source": "CAUTION_CONTEXT",
+          "source_id": "source-revision:d0f246cacd071ac3194be0d3",
+          "source_span": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[4]/sec[2]/sec[2]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:43442:44047",
+          "source_span_id": "evidence-span:801f068a414588df49746e2f",
+          "title": "recovered_f79528d3f1f2249d",
+          "tool_name": ""
+        }
+      ],
+      "planner": {
+        "blockers": [],
+        "execution_authorized": false,
+        "status": "ANSWERED"
+      },
+      "resolved_question": "Is totalVI suitable for joint modeling of one CITE-seq batch and one scRNA-seq batch where protein data is missing in the scRNA-seq batch? What are the input requirements, handling of missing modalities, and potential failure modes?",
+      "schema_version": "scientific-response-context-v2",
+      "scientific_kg": {
+        "adapter_called": true,
+        "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+        "assessments": [],
+        "caution_context": [
+          {
+            "caution_id": "evidence-gap:3f1b34103459319b7d54509c",
+            "description": "All-cells protein requirement: The source expressly permits different panels and scRNA-only subsets; do not require measured proteins in every cell.",
+            "evidence": [
+              {
+                "content_hash": "02b1c2d60406738672688061158b3c390ca069538058f0875b59e8a89dea373d",
+                "end_offset": 3882,
+                "evidence_span_id": "evidence-span:60e3ef935480978551534155",
+                "exact_text": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+                "locator": {
+                  "kind": "section",
+                  "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[2]/sec[1]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:3286:3882"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "section": "xml:/article/body/sec[2]/sec[1]/p[1]",
+                "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+                "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+                "start_offset": 3286
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:b288a4186eb2cfc4d5c6a2f4",
+            "description": "Missing-protein integration schema: Preserve the batch-dependent missingness and shared-gene assumptions; no blanket raw paired matrix requirement or imputation guarantee.",
+            "evidence": [
+              {
+                "content_hash": "0f7637785c8c8230e6079af6b5ac6cb7770c7b1082cf5438ae7edcdb306d1ead",
+                "end_offset": 44047,
+                "evidence_span_id": "evidence-span:801f068a414588df49746e2f",
+                "exact_text": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+                "locator": {
+                  "kind": "section",
+                  "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[4]/sec[2]/sec[2]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:43442:44047"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "section": "xml:/article/body/sec[4]/sec[2]/sec[2]/p[1]",
+                "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+                "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+                "start_offset": 43442
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:99fe02c787e6e20c9ee3271d",
+            "description": "Chromatin accessibility and clonotype capabilities: These are prospective extensions in the paper, not implemented totalVI claims.",
+            "evidence": [
+              {
+                "content_hash": "d4570a0b97c163978a9f754c53ba1dd6f48e7331841109a5c5aac800bcd32bdd",
+                "end_offset": 35609,
+                "evidence_span_id": "evidence-span:e9fd478080f22735c03580a8",
+                "exact_text": "Through a single pipeline that jointly analyzes paired RNA and protein measurements, totalVI simplifies data analysis and interpretation that would otherwise be conducted in separate pipelines whose disparate results must be reconciled post hoc. totalVI is available through the scvi-tools software package, which connects it with the popular Scanpy [56] and Seurat [34] pipelines, and enables analysis on free cloud computing environments like Google Colab. The flexibility and scalability of totalVI make it easily applicable to future datasets with larger protein panels, and enable extensions that incorporate additional paired measurements. For example, we expect totalVI to naturally handle intracellular proteins measured with barcoded antibodies. Further additions of modalities like chromatin accessibility [57] or clonotype features [58] can also be implemented within the totalVI codebase with consideration of the modality-specific likelihood. By combining multiple views of cellular processes, totalVI can reveal a more complete picture that redefines cell states and elucidates mechanistic relationships between molecular components of the cell.",
+                "locator": {
+                  "kind": "section",
+                  "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[3]/p[4];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:34450:35609"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "section": "xml:/article/body/sec[3]/p[4]",
+                "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+                "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+                "start_offset": 34450
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:480c66e5490d1af42bc4e7ea",
+            "description": "Benchmark rankings and generalization: No unqualified performance rankings or universal accuracy claims; dataset-specific numerical comparisons require an evaluation model and independently checked experiment context.",
+            "evidence": [],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": false,
+            "status": "unbound_evidence_gap",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          }
+        ],
+        "coverage": "no_direct_statement",
+        "facts": [],
+        "gaps": [
+          "approved_kg_no_matching_statement"
+        ],
+        "identity": "Approved Scientific KG v2",
+        "legacy_kg_consulted": false,
+        "output_ports": [],
+        "reference_links": {
+          "1": {
+            "caution_ids": [
+              "evidence-gap:3f1b34103459319b7d54509c"
+            ],
+            "statement_ids": []
+          },
+          "2": {
+            "caution_ids": [
+              "evidence-gap:b288a4186eb2cfc4d5c6a2f4"
+            ],
+            "statement_ids": []
+          }
+        },
+        "snapshot_id": "approved-scientific-kg-v2-01"
+      },
+      "tool_contracts": [],
+      "user_reported_context": {}
+    },
+    "retrieval_context": {
+      "adaptive_decision": {
+        "deterministic": true,
+        "enable_dense": false,
+        "escalated": false,
+        "reason": "paired_ablation:scientific_kg",
+        "route": "bm25",
+        "source_bound_hits_before_escalation": 0
+      },
+      "dense_status": "not_requested",
+      "embedding_worker": {
+        "failure_reason": "",
+        "model": "BAAI/bge-m3",
+        "model_revision": "",
+        "ready_at": null,
+        "source_digest": "",
+        "started_at": null,
+        "state": "not_started"
+      },
+      "evidence_answerability": {
+        "candidate_only": false,
+        "claim_ids": [],
+        "direct_evidence_chunk_ids": [],
+        "evidence_gap_id": "",
+        "evidence_span_ids": [],
+        "fallback_reason": "",
+        "operator_revision_id": "",
+        "reason": "approved_kg_no_matching_statement",
+        "scientific_kg_used": false,
+        "scope_status": "unknown",
+        "source_revision_ids": [],
+        "status": "INSUFFICIENT_EVIDENCE",
+        "version_status": ""
+      },
+      "governance_leakage_count": 0,
+      "latency_ms": 0.7283750019269064,
+      "mode": "kg_bm25",
+      "pipeline": [
+        "approved_manifest_allowlist",
+        "scope_policy",
+        "approved_exact_evidence_index"
+      ],
+      "scientific_evidence": {
+        "adapter": "ApprovedScientificKG",
+        "approved_kg_sha256": "06b6772dac4c17c75e8a52b01d40574ecd992702d5228e7634fa8e20f61638c4",
+        "approved_statements_visible": 121,
+        "caution_policy": {
+          "execution_authorized": false,
+          "execution_gate": false,
+          "production_retrieval_eligible": false,
+          "scientific_assertion": false,
+          "trusted": false
+        },
+        "cautions": [
+          {
+            "caution_id": "evidence-gap:3f1b34103459319b7d54509c",
+            "description": "All-cells protein requirement: The source expressly permits different panels and scRNA-only subsets; do not require measured proteins in every cell.",
+            "evidence": [
+              {
+                "content_hash": "02b1c2d60406738672688061158b3c390ca069538058f0875b59e8a89dea373d",
+                "end_offset": 3882,
+                "evidence_span_id": "evidence-span:60e3ef935480978551534155",
+                "exact_text": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+                "locator": {
+                  "kind": "section",
+                  "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[2]/sec[1]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:3286:3882"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "section": "xml:/article/body/sec[2]/sec[1]/p[1]",
+                "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+                "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+                "start_offset": 3286
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:b288a4186eb2cfc4d5c6a2f4",
+            "description": "Missing-protein integration schema: Preserve the batch-dependent missingness and shared-gene assumptions; no blanket raw paired matrix requirement or imputation guarantee.",
+            "evidence": [
+              {
+                "content_hash": "0f7637785c8c8230e6079af6b5ac6cb7770c7b1082cf5438ae7edcdb306d1ead",
+                "end_offset": 44047,
+                "evidence_span_id": "evidence-span:801f068a414588df49746e2f",
+                "exact_text": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+                "locator": {
+                  "kind": "section",
+                  "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[4]/sec[2]/sec[2]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:43442:44047"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "section": "xml:/article/body/sec[4]/sec[2]/sec[2]/p[1]",
+                "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+                "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+                "start_offset": 43442
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:99fe02c787e6e20c9ee3271d",
+            "description": "Chromatin accessibility and clonotype capabilities: These are prospective extensions in the paper, not implemented totalVI claims.",
+            "evidence": [
+              {
+                "content_hash": "d4570a0b97c163978a9f754c53ba1dd6f48e7331841109a5c5aac800bcd32bdd",
+                "end_offset": 35609,
+                "evidence_span_id": "evidence-span:e9fd478080f22735c03580a8",
+                "exact_text": "Through a single pipeline that jointly analyzes paired RNA and protein measurements, totalVI simplifies data analysis and interpretation that would otherwise be conducted in separate pipelines whose disparate results must be reconciled post hoc. totalVI is available through the scvi-tools software package, which connects it with the popular Scanpy [56] and Seurat [34] pipelines, and enables analysis on free cloud computing environments like Google Colab. The flexibility and scalability of totalVI make it easily applicable to future datasets with larger protein panels, and enable extensions that incorporate additional paired measurements. For example, we expect totalVI to naturally handle intracellular proteins measured with barcoded antibodies. Further additions of modalities like chromatin accessibility [57] or clonotype features [58] can also be implemented within the totalVI codebase with consideration of the modality-specific likelihood. By combining multiple views of cellular processes, totalVI can reveal a more complete picture that redefines cell states and elucidates mechanistic relationships between molecular components of the cell.",
+                "locator": {
+                  "kind": "section",
+                  "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[3]/p[4];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:34450:35609"
+                },
+                "ontology_version": "2.0.0-core-review.1",
+                "schema_version": "sckg-ontology-core-5c-design-v1",
+                "section": "xml:/article/body/sec[3]/p[4]",
+                "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+                "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+                "start_offset": 34450
+              }
+            ],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": true,
+            "status": "unasserted_candidate_caution",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          },
+          {
+            "caution_id": "evidence-gap:480c66e5490d1af42bc4e7ea",
+            "description": "Benchmark rankings and generalization: No unqualified performance rankings or universal accuracy claims; dataset-specific numerical comparisons require an evaluation model and independently checked experiment context.",
+            "evidence": [],
+            "execution_authorized": false,
+            "execution_gate": false,
+            "human_review_status": "pending",
+            "production_retrieval_eligible": false,
+            "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+            "scientific_assertion": false,
+            "scope_status": "unknown",
+            "source_excerpt_available": false,
+            "status": "unbound_evidence_gap",
+            "subject_ids": [
+              "method:totalvi"
+            ],
+            "supports_negative_claim": false,
+            "supports_positive_claim": false,
+            "trusted": false
+          }
+        ],
+        "eligible_chunk_ids": [],
+        "excluded_statement_ids": [
+          "statement-revision:408c18b92c771381a3509e0b:1",
+          "statement-revision:5d0fff6647ebd834c5916616:1",
+          "statement-revision:5f21204d9dfb5efe92fa62e4:1",
+          "statement-revision:6eaefa5a4e46ee61c5a38da3:1",
+          "statement-revision:97be25d55462e6fee000c17f:1",
+          "statement-revision:b84854bd0a99f2b35f9f709b:1"
+        ],
+        "execution_authorized": false,
+        "fallback_reason": "approved_kg_no_matching_statement",
+        "final_graph_chunk_ids": [],
+        "hash_verified": true,
+        "held_statements_visible": 0,
+        "legacy_kg_consulted": false,
+        "package_commit": "6018699092d979a2da0dda45a19c920018ed9eda",
+        "paths": [],
+        "query_count": 1,
+        "scope_context": {
+          "modality": "scrna-seq"
+        },
+        "scope_policy_active": true,
+        "snapshot_id": "approved-scientific-kg-v2-01",
+        "subjects": [
+          "method:totalvi"
+        ]
+      },
+      "snippets": [],
+      "stage_timings": []
+    },
+    "runtime_build": {
+      "dirty_worktree": false,
+      "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+      "process_id": 94494,
+      "process_started_at": "2026-09-20T23:41:40.530438Z",
+      "schema_version": "runtime-build-identity-v1",
+      "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+      "version": "2.7.2-rc",
+      "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+    },
+    "semantic_parse": {
+      "answer_shape": "direct",
+      "canonical_task": "multimodal_integration",
+      "capability_request": null,
+      "clarification_question": "",
+      "confidence": 0.95,
+      "constraints": {},
+      "data_dependency": "none",
+      "domain": "SINGLE_CELL",
+      "error_type": "",
+      "input_tokens": 2013,
+      "intent": "caveat_comparison",
+      "latency_ms": 4035.2378749958007,
+      "model_name": "deepseek-v4-pro",
+      "needs_clarification": false,
+      "output_tokens": 521,
+      "provider": "https://api.deepseek.com",
+      "provider_call_attempted": true,
+      "requested_tools": [
+        "totalVI"
+      ],
+      "retrieval_query": "Is totalVI suitable for joint modeling of one CITE-seq batch and one scRNA-seq batch where protein data is missing in the scRNA-seq batch? What are the input requirements, handling of missing modalities, and potential failure modes?",
+      "status": "ready",
+      "task_switch": false,
+      "tool_calls": [
+        {
+          "call_id": "llm-tool-1",
+          "canonical_task": "multimodal_integration",
+          "claim_types": [
+            "input_requirement",
+            "failure_mode",
+            "caveat"
+          ],
+          "query": "totalVI multimodal integration with one CITE-seq batch and one scRNA-seq batch where protein is missing in scRNA-seq batch: input requirements, missing modality handling, failure modes, and batch correction",
+          "reason": "Assess suitability of totalVI for the described data configuration, focusing on missing protein modality and batch effects.",
+          "tool_name": "search_evidence",
+          "tool_names": [
+            "totalVI"
+          ],
+          "top_k": 5
+        },
+        {
+          "call_id": "llm-tool-2",
+          "canonical_task": "multimodal_integration",
+          "claim_types": [
+            "input_requirement",
+            "parameter",
+            "output"
+          ],
+          "query": "totalVI",
+          "reason": "Check governed inputs and parameters to confirm whether totalVI supports missing protein modality across batches.",
+          "tool_name": "get_tool_contract",
+          "tool_names": [
+            "totalVI"
+          ],
+          "top_k": 1
+        }
+      ],
+      "user_reported_context": {
+        "batch_composition": "one CITE-seq batch plus one scRNA-seq batch (user: batches=one CITE-seq batch plus one scRNA-seq batch)",
+        "protein_missing_in_scrna": "protein missing only in the scRNA-seq batch (user: protein=missing only in the scRNA-seq batch)",
+        "rna_data_type": "UMI counts (user: RNA=UMI counts in both)"
+      }
+    },
+    "semantic_route": {
+      "confidence": 0.95,
+      "domain": "SINGLE_CELL",
+      "needs_clarification": false,
+      "reason": "semantic_primary",
+      "source": "semantic_parser"
+    },
+    "tool_contract_context": [],
+    "total_latency_ms": 11094.243,
+    "uploaded_context_present": false
+  },
+  "conversation_id": "eval-K03-totalvi-modalities-b--scientific_kg--r2",
+  "conversation_state": {
+    "confirmed_domain": "SINGLE_CELL",
+    "confirmed_task": "multimodal_integration",
+    "last_action_bundle_ids": [],
+    "last_answer_claims": [
+      "claim-001"
+    ],
+    "last_plan_id": null,
+    "referenced_tools": [],
+    "runtime_build_id": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "state_epoch": 0,
+    "user_reported_context": {
+      "batch_composition": "one CITE-seq batch plus one scRNA-seq batch (user: batches=one CITE-seq batch plus one scRNA-seq batch)",
+      "protein_missing_in_scrna": "protein missing only in the scRNA-seq batch (user: protein=missing only in the scRNA-seq batch)",
+      "rna_data_type": "UMI counts (user: RNA=UMI counts in both)"
+    }
+  },
+  "current_step": "complete",
+  "decision_report": null,
+  "deterministic_parent_result": {
+    "blockers": [],
+    "execution_request_count": 0,
+    "next_actions": [],
+    "route": "CAVEAT_COMPARISON",
+    "status": "ANSWERED",
+    "workflow_plan": null
+  },
+  "domain": "SINGLE_CELL",
+  "error_message": null,
+  "execution_handoff": {
+    "approval_required": false,
+    "artifact_id": null,
+    "blockers": [],
+    "decision_id": null,
+    "environment_id": null,
+    "execution_request_count": 0,
+    "next_actions": [],
+    "package_id": null,
+    "plan_id": null,
+    "profile_id": null,
+    "router_route": "CAVEAT_COMPARISON",
+    "run_id": null,
+    "status": "not_requested",
+    "target_view": "runs_results"
+  },
+  "extracted_constraints": {
+    "canonical_task": "multimodal_integration",
+    "modality": "scRNA-seq",
+    "task": "multimodal_integration"
+  },
+  "final_report": "你提供的：rna_data_type=UMI counts；batch_composition=one CITE-seq batch plus one scRNA-seq batch；protein_missing_in_scrna=protein missing only in the scRNA-seq batch。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。\n\n两个批次是否共享完全相同的基因集合？",
+  "hallucination_audit": {
+    "authority": "deterministic_evidence_boundary",
+    "issues": [],
+    "passed": true
+  },
+  "migration_paths": [],
+  "references": [
+    {
+      "authority": "source_bound",
+      "caution_context": {
+        "caution_id": "evidence-gap:3f1b34103459319b7d54509c",
+        "description": "All-cells protein requirement: The source expressly permits different panels and scRNA-only subsets; do not require measured proteins in every cell.",
+        "evidence": [
+          {
+            "content_hash": "02b1c2d60406738672688061158b3c390ca069538058f0875b59e8a89dea373d",
+            "end_offset": 3882,
+            "evidence_span_id": "evidence-span:60e3ef935480978551534155",
+            "exact_text": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[2]/sec[1]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:3286:3882"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[2]/sec[1]/p[1]",
+            "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+            "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+            "start_offset": 3286
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:totalvi"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      "claim_text": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+      "claim_type": "failure_mode",
+      "exact_excerpt": "totalVI uses a probabilistic latent variable model [19] to represent the uncertainty in the observed RNA and protein counts from a CITE-seq experiment as a composite of biological and technical sources of variation. The input to totalVI consists of the matrices of RNA and protein unique molecular identifier (UMI) counts (Fig. 1a). Categorical covariates such as experimental batch or donor are optional inputs used for integrating datasets and referred to henceforth as “batch”. Input datasets can have different antibody panels, and a subset can be scRNA-seq datasets (i.e., without proteins).",
+      "index": 1,
+      "kg_statements": [],
+      "knowledge_source": "CAUTION_CONTEXT",
+      "source_bound": true,
+      "source_id": "source-revision:d0f246cacd071ac3194be0d3",
+      "source_revision": {
+        "artifact_hash": "879e9dd9c1200c23f383044434081332002ec2e68f59da68f5ce24cbfc6c20d5",
+        "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+        "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+        "source_type": "primary_method_paper",
+        "source_url": "https://doi.org/10.1038/s41592-020-01050-x",
+        "source_work_id": "source-work:f79528d3f1f2249df8b0762c",
+        "text_hash": "3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e",
+        "title": "recovered_f79528d3f1f2249d",
+        "version": "published-doi:10.1038/s41592-020-01050-x"
+      },
+      "source_span": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[2]/sec[1]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:3286:3882",
+      "source_span_id": "evidence-span:60e3ef935480978551534155",
+      "source_type": "primary_method_paper",
+      "source_url": "https://doi.org/10.1038/s41592-020-01050-x",
+      "title": "recovered_f79528d3f1f2249d",
+      "tool_name": ""
+    },
+    {
+      "authority": "source_bound",
+      "caution_context": {
+        "caution_id": "evidence-gap:b288a4186eb2cfc4d5c6a2f4",
+        "description": "Missing-protein integration schema: Preserve the batch-dependent missingness and shared-gene assumptions; no blanket raw paired matrix requirement or imputation guarantee.",
+        "evidence": [
+          {
+            "content_hash": "0f7637785c8c8230e6079af6b5ac6cb7770c7b1082cf5438ae7edcdb306d1ead",
+            "end_offset": 44047,
+            "evidence_span_id": "evidence-span:801f068a414588df49746e2f",
+            "exact_text": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+            "locator": {
+              "kind": "section",
+              "value": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[4]/sec[2]/sec[2]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:43442:44047"
+            },
+            "ontology_version": "2.0.0-core-review.1",
+            "schema_version": "sckg-ontology-core-5c-design-v1",
+            "section": "xml:/article/body/sec[4]/sec[2]/sec[2]/p[1]",
+            "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+            "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+            "start_offset": 43442
+          }
+        ],
+        "execution_authorized": false,
+        "execution_gate": false,
+        "human_review_status": "pending",
+        "production_retrieval_eligible": false,
+        "routing_basis": "Source co-occurrence or explicit gap subject; not an ontology relation or applicability assertion.",
+        "scientific_assertion": false,
+        "scope_status": "unknown",
+        "source_excerpt_available": true,
+        "status": "unasserted_candidate_caution",
+        "subject_ids": [
+          "method:totalvi"
+        ],
+        "supports_negative_claim": false,
+        "supports_positive_claim": false,
+        "trusted": false
+      },
+      "claim_text": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+      "claim_type": "failure_mode",
+      "exact_excerpt": "Here we adapted the training procedure from [65] to handle missing protein data. As any single batch may correspond to an experiment that used a different protein panel (or no proteins in the case of a scRNA-seq experiment), the missingness of protein features depends on the batch index sn. Further, suppose all batches share the same set of genes. Across all batches, there are T proteins. For cell n, we denote the observed protein expressions ynobs and the unobserved protein expressions ynmis. The log likelihood of the observed data decomposes as\n(11)logpv(x1:N,y1:Nobs,s1:N)=∑n=1Nlogpv(xn,ynobs|sn)",
+      "index": 2,
+      "kg_statements": [],
+      "knowledge_source": "CAUTION_CONTEXT",
+      "source_bound": true,
+      "source_id": "source-revision:d0f246cacd071ac3194be0d3",
+      "source_revision": {
+        "artifact_hash": "879e9dd9c1200c23f383044434081332002ec2e68f59da68f5ce24cbfc6c20d5",
+        "source_artifact_id": "source-artifact:884e738e91cfb0cab46306828a98280f",
+        "source_revision_id": "source-revision:d0f246cacd071ac3194be0d3",
+        "source_type": "primary_method_paper",
+        "source_url": "https://doi.org/10.1038/s41592-020-01050-x",
+        "source_work_id": "source-work:f79528d3f1f2249df8b0762c",
+        "text_hash": "3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e",
+        "title": "recovered_f79528d3f1f2249d",
+        "version": "published-doi:10.1038/s41592-020-01050-x"
+      },
+      "source_span": "source-artifact:884e738e91cfb0cab46306828a98280f/xml:/article/body/sec[4]/sec[2]/sec[2]/p[1];text-sha256:3766e1d43421d5144d2a92c51830bb6ffc8e9e12f94c524c377faacb41a9aa1e:43442:44047",
+      "source_span_id": "evidence-span:801f068a414588df49746e2f",
+      "source_type": "primary_method_paper",
+      "source_url": "https://doi.org/10.1038/s41592-020-01050-x",
+      "title": "recovered_f79528d3f1f2249d",
+      "tool_name": ""
+    }
+  ],
+  "request_id": "eval-K03-totalvi-modalities-b--scientific_kg--r2",
+  "response_intent": "caveat_comparison",
+  "retrieval_results": [],
+  "runtime_build": {
+    "dirty_worktree": false,
+    "git_head": "f3df9056364200fdc114d9cfd8d71fa76b915219",
+    "process_id": 94494,
+    "process_started_at": "2026-09-20T23:41:40.530438Z",
+    "schema_version": "runtime-build-identity-v1",
+    "source_fingerprint": "281d19caad46c091a8ee80027be5fc145e0540ab2477d33db7e76f271c973e5c",
+    "version": "2.7.2-rc",
+    "worktree_digest": "56c175f7adc2693efff0e39b51bb93fb271938164d2ba1e6c46f79b4590c0af6"
+  },
+  "runtime_mode": "external_reasoning_with_deterministic_governance",
+  "scored_tools": [],
+  "semantic_route": {
+    "confidence": 0.95,
+    "domain": "SINGLE_CELL",
+    "intent": "caveat_comparison",
+    "needs_clarification": false,
+    "source": "semantic_parser",
+    "task": "multimodal_integration"
+  },
+  "status": "ANSWERED",
+  "tool_candidates": [],
+  "unverified_model_knowledge_claims": [
+    {
+      "authority": "model_knowledge_unverified",
+      "citation_mapping": "not_applicable",
+      "claim_id": "claim-001",
+      "claim_text": "还需要确认两个批次是否共享同一组基因；如果基因集合不一致，来源中按批次缺失蛋白的似然分解条件就不满足。",
+      "claim_type": "scientific",
+      "governance_action": "label_unverified",
+      "lexical_support": 0.0,
+      "numeric_scope_match": "not_applicable",
+      "reasons": [
+        "not_scientific_authority"
+      ],
+      "scope_match": "unknown",
+      "semantic_review_status": "not_run",
+      "source_span_ids": []
+    }
+  ],
+  "user_id": "local-research-user",
+  "user_query": "我想用 totalVI 联合建模这些批次。根据已提供的模态状态，方法是否适配？说明条件边界；不要执行。\n\n已提供的条件（未提供的值不作推断）：\nRNA=UMI counts in both\nbatches=one CITE-seq batch plus one scRNA-seq batch\nprotein=missing only in the scRNA-seq batch",
+  "verified_claims": [],
+  "workflow_code_bundle": null,
+  "workflow_plan": null,
+  "workflow_recommendations": [],
+  "workspace_handoff": {
+    "blockers": [],
+    "handoff_id": null,
+    "notebook_strategy": "none",
+    "origin_trace_id": null,
+    "original_plan_id": null,
+    "pack_id": null,
+    "pack_version": null,
+    "parent_request_id": null,
+    "plan_id": null,
+    "preferred_method_ids": [],
+    "status": "not_applicable",
+    "stepwise_preview_available": false,
+    "target_representations": [],
+    "target_view": "data_preview",
+    "task_family": "multimodal_integration",
+    "tool_name": null
+  }
+}

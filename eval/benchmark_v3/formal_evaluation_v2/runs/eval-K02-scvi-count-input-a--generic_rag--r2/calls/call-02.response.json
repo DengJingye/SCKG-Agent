@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"scVI 的模型输入通常要求原始整数 UMI 计数矩阵，因此你提供的 raw integer UMI counts 在数据类型上符合这一常规输入形式。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"当前没有可引用的科学知识库声明来确认 scVI 在你的具体数据状态下可直接作为输入，因此这属于未经验证的一般知识。\",\n      \"basis\": \"MODEL_KNOWLEDGE\",\n      \"citations\": [],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你已提供 batch_key=donor，这可以作为 scVI 的批次协变量；但仅凭该字段无法判断不同 donor 之间是否存在需要额外处理的批次效应或样本量是否足够。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:batch_key\"\n      ]\n    },\n    {\n      \"text\": \"当前状态显示输入尚未注册、测量数据尚不可用，因此不能据此确认实际矩阵是否已满足 scVI 的输入要求。\",\n      \"basis\": \"OBSERVED_STATE\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"observed:input_registered\",\n        \"observed:measurements_available\"\n      ]\n    }\n  ],\n  \"clarification\": {\n    \"question\": \"请提供表达矩阵中是否包含需要过滤的低质量细胞或基因，以及不同 donor 的细胞数量分布情况。\",\n    \"missing_field\": \"cell_gene_qc_and_donor_counts\",\n    \"why_needed\": \"scVI 对输入矩阵的质量和批次内细胞数量敏感；缺少这些信息无法判断当前矩阵是否适合直接作为模型输入，也无法评估批次整合的可靠性。\"\n  }\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947645,
+  "id": "2561a67c-ebbf-4f88-bc13-4fba0ba19461",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 419,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 2176,
+    "prompt_cache_miss_tokens": 23,
+    "prompt_tokens": 2199,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 2176
+    },
+    "total_tokens": 2618
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "answer_hash": "5bd6be9a145d49229f3b4a43a9128098c63faa53415521fc0ac9fc6086b2c0bc",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_0210c90cb00b4fde84213a6432370d81",
+  "case_id": "eval-W02",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 474,
+  "latency_ms": 3155.180082991137,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 不匹配（决定性失败项）**\n   - declared_sha256：`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`\n   - observed_sha256：`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`\n   - 两者不一致，违反 `output_schema.sha256_must_equal_declared = true`。\n\n2. **artifact_validators 明确要求**\n   - `\"compare exact SHA256\"`\n   - `\"do not accept exit code alone\"`\n   - 因此即使 `exit_code = 0`，也不能作为通过依据。\n\n3. **expected 字段也直接声明**\n   - `\"invalid: checksum mismatch despite exit code 0\"`\n   - 与当前观察结果一致。\n\n补充说明：\n- `artifact_digest` 与 `input_digest` 已冻结，但决定性判据是 observed_sha256 与 declared_sha256 不一致。\n- 当前环境为 `read_only_artifact_review`，且 `execution_or_mutation_authorized = false`，因此本次仅做只读核查。\n\n建议的 repair/rerun 方向（需另行批准后执行）：\n- 重新生成 `result.bin`，使其 SHA256 精确等于 declared_sha256；\n- 或确认 declared_sha256 是否登记错误，并在授权流程中修正契约；\n- 重新运行后再次执行 exact SHA256 比对，不能仅凭 exit code 判定通过。",
+    "lane": "legacy_kg",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 346,
+  "repetition": 1,
+  "run_id": "eval-W02--legacy_kg--r1",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W02--legacy_kg--r1",
+      "created_at": "2026-09-20T23:42:38.594515+00:00",
+      "finished_at": "2026-09-20T23:42:41.747952+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:b9ed0c8d96d346ae",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W02--legacy_kg--r1",
+      "root_span_id": "span_cd1bdcb25bb643bfa65b450cd2f9eb0f",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 3153.384,
+          "ended_at": "2026-09-20T23:42:41.747952+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_cd1bdcb25bb643bfa65b450cd2f9eb0f",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:42:38.594543+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_0210c90cb00b4fde84213a6432370d81"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 76.239,
+          "ended_at": "2026-09-20T23:42:38.692685+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W02--legacy_kg--r1",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_cd1bdcb25bb643bfa65b450cd2f9eb0f",
+          "sequence": 2,
+          "span_id": "span_0e5a4e8bbf3244cfba1d0ed379a0b648",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:42:38.616446+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_0210c90cb00b4fde84213a6432370d81"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_0210c90cb00b4fde84213a6432370d81",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

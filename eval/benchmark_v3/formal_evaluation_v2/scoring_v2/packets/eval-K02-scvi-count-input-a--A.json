@@ -1,0 +1,248 @@
+{
+  "answers": [
+    {
+      "answer": "scVI 的输入要求是原始计数数据，模型内部包含归一化过程。[1]\n\n你提供的：matrix_state=raw integer UMI counts。\n\nscVI 在批次注释可用时会以批次注释为条件建模，donor 可作为批次键。[5]\n\n你提供的：batch_key=donor。\n\nscVI 支持批次整合和低维表示，但未声称相对其他方法的优越性。[2]\n\n论文中的超参数是研究设置，不是通用前提或当前默认值，不能直接当作你的运行参数。[7]\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n符合 scVI 对原始计数输入的要求。",
+      "blind_id": "blind-3f5b2c5e614dbef1",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "scVI takes raw count data as input and includes an effective normalization procedure that is integrated into its model.",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "To address these limitations, we developed a fully probabilistic approach for normalization and downstream analysis of scRNA-seq data, which we refer to as Single-cell Variational Inference (scVI). scVI is based on a hierarchical Bayesian model [15] with conditional distributions specified by deep neural networks, which can be trained very efficiently even for very large datasets. The transcriptome of each cell is encoded through a non-linear transformation into a low-dimensional latent vector of normal random variables. This latent representation is then decoded by another non-linear transformation to generate a posterior estimate of the distributional parameters of each gene in each cell, assuming a zero-inflated negative binomial distribution, which accounts for the observed over-dispersion and limited sensitivity [10, 16, 17]. Independent of our work, several recent manuscripts have also demonstrated the utility of using neural networks to embed scRNA-seq datasets in a scalable manner [18, 19, 20, 21]. scVI stands out from these methods in two important ways (Online Methods, Supplementary Note 1, Supplementary Table 1). First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size [8, 22] and batch effects [10, 23]. Second, scVI is the only method that offers readily available solutions for a range of analysis tasks using the same generative model. In the following, we demonstrate this property, focusing on batch removal and normalization, dimensionality reduction and clustering, and differential expression. For ",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "To address these limitations, we developed a fully probabilistic approach for normalization and downstream analysis of scRNA-seq data, which we refer to as Single-cell Variational Inference (scVI). scVI is based on a hierarchical Bayesian model [15] with conditional distributions specified by deep neural networks, which can be trained very efficiently even for very large datasets. The transcriptome of each cell is encoded through a non-linear transformation into a low-dimensional latent vector of normal random variables. This latent representation is then decoded by another non-linear transformation to generate a posterior estimate of the distributional parameters of each gene in each cell, assuming a zero-inflated negative binomial distribution, which accounts for the observed over-dispersion and limited sensitivity [10, 16, 17]. Independent of our work, several recent manuscripts have also demonstrated the utility of using neural networks to embed scRNA-seq datasets in a scalable manner [18, 19, 20, 21]. scVI stands out from these methods in two important ways (Online Methods, Supplementary Note 1, Supplementary Table 1). First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size [8, 22] and batch effects [10, 23]. Second, scVI is the only method that offers readily available solutions for a range of analysis tasks using the same generative model. In the following, we demonstrate this property, focusing on batch removal and normalization, dimensionality reduction and clustering, and differential expression. For ",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "To address these limitations, we developed a fully probabilistic approach for normalization and downstream analysis of scRNA-seq data, which we refer to as Single-cell Variational Inference (scVI). scVI is based on a hierarchical Bayesian model [15] with conditional distributions specified by deep neural networks, which can be trained very efficiently even for very large datasets. The transcriptome of each cell is encoded through a non-linear transformation into a low-dimensional latent vector of normal random variables. This latent representation is then decoded by another non-linear transformation to generate a posterior estimate of the distributional parameters of each gene in each cell, assuming a zero-inflated negative binomial distribution, which accounts for the observed over-dispersion and limited sensitivity [10, 16, 17]. Independent of our work, several recent manuscripts have also demonstrated the utility of using neural networks to embed scRNA-seq datasets in a scalable manner [18, 19, 20, 21]. scVI stands out from these methods in two important ways (Online Methods, Supplementary Note 1, Supplementary Table 1). First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size [8, 22] and batch effects [10, 23]. Second, scVI is the only method that offers readily available solutions for a range of analysis tasks using the same generative model. In the following, we demonstrate this property, focusing on batch removal and normalization, dimensionality reduction and clustering, and differential expression. For ",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "We model the observed expression xng of each gene g in each cell n as a sample drawn from a conditional distribution that has a zero-inflated negative binomial (ZINB) form [10, 16, 17] (Online Methods). The distribution is conditioned on the batch annotation bn of each cell (if available), as well as two additional, unobserved random variables.",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "Looking ahead, scVI provides a general probabilistic representation of gene expression in single cells and can therefore enable other forms of scRNA-seq analysis that were not explored in this manuscript, such as lineage inference [1] or cell-state annotation [7, 44]. Furthermore, since it only requires the latent space and the specification of the model (which both have a low memory footprint) to generate any data point (cell × gene) of interest, scVI can be used as an effective baseline for scalable and interactive visualization tools [45, 46, 47]. Finally, scVI can be extended to merge multiple datasets from a given tissue while integrating prior biological annotations of cell types. We therefore expect this work to be of immediate interest, especially in cases where dataset harmonization has to be done in a manner that is scalable and conducive to various forms of downstream analysis [14].",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 7,
+          "excerpt": "Throughout the paper, we use Adam (a first order stochastic optimizer) with ε = 0.01. As indicated in [27], we use deterministic warmup and batch normalization during learning to learn an expressive model. A complete list of hyperparameters is provided in Supplementary Table2. The hyperparameters were chosen using a small grid search that maximized held-out log likelihood—a common practice for training deep generative models. One of the strengths of scVI is that we have only three dataset-specific hyperparameters to set (learning rate, number of layers, and layer width). We optimize the objective function until convergence –usually between 120 and 250 epochs, where each epoch is a complete pass through the dataset (let us note that bigger datasets require fewer epochs). For the larger subset of the BRAIN-LARGE dataset, we also ran with the early stopping criterion: the algorithm stops after 12 consecutive epochs with no improvement on the validation loss.",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：batch_key=donor。\n\n你提供的：matrix_state=raw integer UMI counts。\n\n确定性检查结果记录：input_registered=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的输入要求是原始整数 UMI 计数矩阵，因此你提供的 raw integer UMI counts 在数据类型上符合这一要求。\n\n当前没有可用的科学知识库证据来确认 scVI 在你的具体数据条件下可以直接使用，因此无法给出有依据的适用性判断。\n\n因此无法基于实际数据状态进行进一步判断。",
+      "blind_id": "blind-361e5d95619228c4",
+      "citations": []
+    },
+    {
+      "answer": "现有条件不足以唯一解析证据；请补充具体版本、方法变体或适用条件。",
+      "blind_id": "blind-3a2d31b918eecd5f",
+      "citations": []
+    },
+    {
+      "answer": "当前受治理知识库中没有足够证据支持该命题。",
+      "blind_id": "blind-029916c73cba19b2",
+      "citations": []
+    },
+    {
+      "answer": "模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的模型输入通常要求原始整数 UMI 计数矩阵，因此当前矩阵状态在计数类型上符合这一常见输入形式。\n\n批次键已指定为 donor，但仅凭“donor”无法判断不同供体之间是否存在需要整合的技术批次或生物异质性，这会影响整合目标是否合理。\n\n当前没有可用的科学知识库证据来确认该矩阵是否满足 scVI 对输入格式、基因过滤或批次设计的全部要求，因此不能直接断言可以无修改地作为模型输入。\n\n该原始整数 UMI 计数矩阵是否已经完成基因过滤、细胞质控，并且 donor 是否代表需要去除的技术批次而非主要生物分组？",
+      "blind_id": "blind-2f1b928e51d16f1c",
+      "citations": []
+    },
+    {
+      "answer": "当前受治理知识库中没有足够证据支持该命题。",
+      "blind_id": "blind-f162be01eea3f9dd",
+      "citations": []
+    },
+    {
+      "answer": "**batch integration：直接回答**\n- **Harmony · 输入要求**：For mouse brain (RNA), we obtained the raw count matrix for the scRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al.[1]\n- **scvi-tools · 输入要求**：Preliminaries CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if a gene is a marker of a particular...[2]\n- **Scanorama · 输入要求**：The first is a tab-delimited table format where the columns correspond to cells and the rows correspond to genes.[3]\n\n### 参考资料\n[1] Harmony · Benchmarking atlas-level data integration in single-cell genomics · page:14;section:32. Using this approach, we;paragraph:37\n[2] scvi-tools · scvi-tools: a library for deep probabilistic analysis of single-cell omics data · page:7;section:Rpa3 Cg9593;paragraph:9\n[3] Scanorama · Scanorama official GitHub README · section:Data processing;paragraph:33-37",
+      "blind_id": "blind-d4d68dff4a1c86ca",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "AnAl ysis NATurE METhODS https://figshare.com/articles/MCA_DGE_Data/5435866. For the lung integration task, the Drop-seq data were available from GEO (GSE130148), while the 10X data were obtained directly from the authors. For mouse brain (RNA), we obtained the raw count matrix for the scRNA-seq dataset from GEO (GSE110823), the annotated count matrix (10X Genomics protocol) from Zeisel et al. (http://mousebrain. org; file name L5_all.loom) and the count matrices per cell type (Drop-seq protocol) from Saunders et al. (http://dropviz.org/; DGE by Region section). Fluorescence-activated cell-sorted mouse brain tissue data (Smart-seq2 protocol, myeloid and nonmyeloid cells, including the annotation file ‘annotations_FACS. csv’) from Tabula Muris were obtained from figshare (https://figshare.com/projects/ Tabula_Muris_Transcriptomic_characterization_of_20_organs_and_tissues_from_ Mus_musculus_at_single_cell_resolution/27733). For the mouse brain (ATAC) integration, we used FASTQ files from Fang et al. (six samples, single-nucleus ATAC-seq protocol; retrieved from http://data.nemoarchive.org/biccn/grant/ cemba/ecker/chromatin/scell/raw/) and Cusanovich et al. (four samples, combinatorial indexing scATAC-seq protocol; GEO accession number GSE111586) and we retrieved fragment and index files from a 10X Genomics dataset for fresh adult mouse brain cortex (sample retrieved from https://support.10xgenomics.com/ single-cell-atac/datasets/1.2.0/atac_v1_adult_brain_fresh_5k). Our reprocessed versions of these datasets are publicly available as preprocessed Anndata objects on Figshare (h",
+          "source_bound": true,
+          "source_id": "SRCV2_a32b8508c092d86d"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "Supplementary Note 1 In this note, we describe the implementation of CellAssign in scvi-tools. Unlike other external methods in scvi-tools, there are slight diﬀerences in the scvi-tools implementation. First we describe the statistical model of CellAssign, highlighting diﬀerences between the scvi-tools implementation and the original implementation. Then we evaluate the scvi-tools implementation against the original on two datasets used in the original publication [ 39]. Preliminaries CellAssign takes as input a scRNA-seq gene expression matrix X with N cells and G genes along with a cell-type marker matrix ρ which is a binary matrix of G genes by C cell types denoting if a gene is a marker of a particular cell type. A size factor s for each cell may also be provided as input, otherwise it is computed empirically as the total unique molecular identiﬁer count of a cell. Additionally, a design matrix D containing p observed covariates, such as day, donor, etc, is an optional input. Generative process CellAssign uses a negative binomial mixture model to make cell-type predictions. The cell-type proportion is drawn from a Dirichlet distribution, (π 1, ..., π C) ∼ Dirichlet(α, ..., α ), (1) with α = 0. 01. CellAssign then posits that the observed gene expression counts xng for cell n and gene g are generated by the following process: δgc ∼ LogNormal(¯δ, σ 2) (2) log µ ngc = log sn + δgcρgc + βg0 + ∑ p βgpdpn (3) ˜φ ngc = B∑ i=1 ai × exp(− b × (µ ngc − vi)2) (4) zn ∼ Discrete(π ) (5) xng |zn = c ∼ NegativeBinomial(µ ngc, ˜φ ngc) (6) Notably, the logarithm of the mean of the negat",
+          "source_bound": true,
+          "source_id": "SRCV2_3780074c1b538965"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "The script `bin/process.py` can handle two file formats. The first is a tab-delimited table format where the columns correspond to cells and the rows correspond to genes. A sample file looks something like: ``` gene cell_a cell_b gene_1 10 10 gene_2 20 20 ``` The second is a sparse matrix format used by 10X Genomics (example [here](http://cf.10xgenomics.com/samples/cell-exp/1.1.0/293t/293t_filtered_gene_bc_matrices.tar.gz)). This format has a directory where one file has a list of gene names (`genes.tsv`) and one file has a list of the nonzero transcript counts at certain gene/cell coordinates (`matrix.mtx`).\n\nTo ensure a consistent data format, the examples first processes these raw files and saves them in `.npz` files along with some related metadata. To generate these files, run the command: ``` python bin/process.py conf/panorama.txt ``` The corresponding `.npz` files will be saved in the `data/` directory.\n\nNew files can be processed by feeding them into `bin/process.py` via the command line or a configuration file, or by modifying the `data_names` variables at the top of `bin/config.py`.\n\nFor a good illustration of how Scanorama works, we can integrate three toy datasets: 293T cells, Jurkat cells, and a 50:50 293T:Jurkat mixture. To integrate these datasets, run: ``` python bin/293t_jurkat.py ``` By default, this prints a log reporting the alignments the algorithm has found between datasets and saves visualization images to a file in the repository's top-level directory.\n\nWe can also stitch a much larger number of cells from many more datsets. To do this, run ``` pyth",
+          "source_bound": true,
+          "source_id": "SRCV2_daf1d29894245278"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：batch_key=donor。\n\n确定性检查结果记录：input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的输入要求是原始整数 UMI 计数矩阵，当前矩阵状态为 raw integer UMI counts，符合这一输入形式。\n\n因此无法确认矩阵是否已实际加载、是否包含有效基因和细胞，也无法验证 donor 标签是否与细胞对应。\n\n在满足原始整数 UMI 计数、基因和细胞维度有效、donor 标签与细胞一一对应且无缺失的条件下，该矩阵可以直接作为 scVI 输入。\n\n当前表达矩阵是否已经实际加载并包含有效的基因和细胞维度，且 donor 标签是否与每个细胞一一对应且无缺失？",
+      "blind_id": "blind-25f91d2cbeee7165",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：batch_key=donor。\n\n确定性检查结果记录：input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的模型输入通常要求原始整数 UMI 计数矩阵，因此你提供的 raw integer UMI counts 在数据类型上符合这一常规输入形式。\n\n当前没有可引用的科学知识库声明来确认 scVI 在你的具体数据状态下可直接作为输入，因此这属于未经验证的一般知识。\n\n因此不能据此确认实际矩阵是否已满足 scVI 的输入要求。\n\n请提供表达矩阵中是否包含需要过滤的低质量细胞或基因，以及不同 donor 的细胞数量分布情况？",
+      "blind_id": "blind-fde789ee038be2db",
+      "citations": []
+    },
+    {
+      "answer": "你提供的：batch_key=donor。\n\n确定性检查结果记录：input_registered=false；measurements_available=false。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的输入要求是原始整数 UMI 计数矩阵，因此当前矩阵状态符合这一输入形式。\n\n因此无法确认矩阵是否实际可用或已加载。\n\nscVI 通常建议在建模前过滤低质量细胞和低表达基因，并确保计数为未归一化的 UMI 计数；这些是通用实践，不是当前数据已满足的条件。\n\n当前表达矩阵是否已经完成低质量细胞和低表达基因的过滤？",
+      "blind_id": "blind-36b1717f5d5b3d31",
+      "citations": []
+    },
+    {
+      "answer": "scVI 的输入要求是原始计数数据，模型内部包含归一化过程。[1]\n\n你提供的：matrix_state=raw integer UMI counts。\n\nscVI 支持批次整合任务，但该支持不构成任何比较性优势。[2]\n\nscVI 支持低维表示任务，但该支持不构成任何比较性优势。[3]\n\n模型在批次注释可用时会以批次注释为条件；你提供的 batch_key=donor 可作为批次注释使用。[5]\n\n你提供的：batch_key=donor。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\n符合 scVI 对原始计数输入的要求。",
+      "blind_id": "blind-9dc72ef74ee671fa",
+      "citations": [
+        {
+          "citation_number": 1,
+          "excerpt": "scVI takes raw count data as input and includes an effective normalization procedure that is integrated into its model.",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 2,
+          "excerpt": "To address these limitations, we developed a fully probabilistic approach for normalization and downstream analysis of scRNA-seq data, which we refer to as Single-cell Variational Inference (scVI). scVI is based on a hierarchical Bayesian model [15] with conditional distributions specified by deep neural networks, which can be trained very efficiently even for very large datasets. The transcriptome of each cell is encoded through a non-linear transformation into a low-dimensional latent vector of normal random variables. This latent representation is then decoded by another non-linear transformation to generate a posterior estimate of the distributional parameters of each gene in each cell, assuming a zero-inflated negative binomial distribution, which accounts for the observed over-dispersion and limited sensitivity [10, 16, 17]. Independent of our work, several recent manuscripts have also demonstrated the utility of using neural networks to embed scRNA-seq datasets in a scalable manner [18, 19, 20, 21]. scVI stands out from these methods in two important ways (Online Methods, Supplementary Note 1, Supplementary Table 1). First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size [8, 22] and batch effects [10, 23]. Second, scVI is the only method that offers readily available solutions for a range of analysis tasks using the same generative model. In the following, we demonstrate this property, focusing on batch removal and normalization, dimensionality reduction and clustering, and differential expression. For ",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 3,
+          "excerpt": "To address these limitations, we developed a fully probabilistic approach for normalization and downstream analysis of scRNA-seq data, which we refer to as Single-cell Variational Inference (scVI). scVI is based on a hierarchical Bayesian model [15] with conditional distributions specified by deep neural networks, which can be trained very efficiently even for very large datasets. The transcriptome of each cell is encoded through a non-linear transformation into a low-dimensional latent vector of normal random variables. This latent representation is then decoded by another non-linear transformation to generate a posterior estimate of the distributional parameters of each gene in each cell, assuming a zero-inflated negative binomial distribution, which accounts for the observed over-dispersion and limited sensitivity [10, 16, 17]. Independent of our work, several recent manuscripts have also demonstrated the utility of using neural networks to embed scRNA-seq datasets in a scalable manner [18, 19, 20, 21]. scVI stands out from these methods in two important ways (Online Methods, Supplementary Note 1, Supplementary Table 1). First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size [8, 22] and batch effects [10, 23]. Second, scVI is the only method that offers readily available solutions for a range of analysis tasks using the same generative model. In the following, we demonstrate this property, focusing on batch removal and normalization, dimensionality reduction and clustering, and differential expression. For ",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 4,
+          "excerpt": "To address these limitations, we developed a fully probabilistic approach for normalization and downstream analysis of scRNA-seq data, which we refer to as Single-cell Variational Inference (scVI). scVI is based on a hierarchical Bayesian model [15] with conditional distributions specified by deep neural networks, which can be trained very efficiently even for very large datasets. The transcriptome of each cell is encoded through a non-linear transformation into a low-dimensional latent vector of normal random variables. This latent representation is then decoded by another non-linear transformation to generate a posterior estimate of the distributional parameters of each gene in each cell, assuming a zero-inflated negative binomial distribution, which accounts for the observed over-dispersion and limited sensitivity [10, 16, 17]. Independent of our work, several recent manuscripts have also demonstrated the utility of using neural networks to embed scRNA-seq datasets in a scalable manner [18, 19, 20, 21]. scVI stands out from these methods in two important ways (Online Methods, Supplementary Note 1, Supplementary Table 1). First, it is the only method that explicitly models the two key nuisance factors in scRNA-seq data, namely library size [8, 22] and batch effects [10, 23]. Second, scVI is the only method that offers readily available solutions for a range of analysis tasks using the same generative model. In the following, we demonstrate this property, focusing on batch removal and normalization, dimensionality reduction and clustering, and differential expression. For ",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 5,
+          "excerpt": "We model the observed expression xng of each gene g in each cell n as a sample drawn from a conditional distribution that has a zero-inflated negative binomial (ZINB) form [10, 16, 17] (Online Methods). The distribution is conditioned on the batch annotation bn of each cell (if available), as well as two additional, unobserved random variables.",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 6,
+          "excerpt": "Looking ahead, scVI provides a general probabilistic representation of gene expression in single cells and can therefore enable other forms of scRNA-seq analysis that were not explored in this manuscript, such as lineage inference [1] or cell-state annotation [7, 44]. Furthermore, since it only requires the latent space and the specification of the model (which both have a low memory footprint) to generate any data point (cell × gene) of interest, scVI can be used as an effective baseline for scalable and interactive visualization tools [45, 46, 47]. Finally, scVI can be extended to merge multiple datasets from a given tissue while integrating prior biological annotations of cell types. We therefore expect this work to be of immediate interest, especially in cases where dataset harmonization has to be done in a manner that is scalable and conducive to various forms of downstream analysis [14].",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        },
+        {
+          "citation_number": 7,
+          "excerpt": "Throughout the paper, we use Adam (a first order stochastic optimizer) with ε = 0.01. As indicated in [27], we use deterministic warmup and batch normalization during learning to learn an expressive model. A complete list of hyperparameters is provided in Supplementary Table2. The hyperparameters were chosen using a small grid search that maximized held-out log likelihood—a common practice for training deep generative models. One of the strengths of scVI is that we have only three dataset-specific hyperparameters to set (learning rate, number of layers, and layer width). We optimize the objective function until convergence –usually between 120 and 250 epochs, where each epoch is a complete pass through the dataset (let us note that bigger datasets require fewer epochs). For the larger subset of the BRAIN-LARGE dataset, we also ran with the early stopping criterion: the algorithm stops after 12 consecutive epochs with no improvement on the validation loss.",
+          "source_bound": true,
+          "source_id": "source-revision:16458904763d237b8d7cefcb"
+        }
+      ]
+    },
+    {
+      "answer": "你提供的：batch_key=donor。\n\n模型通识（尚未核验）\n\n当前本地证据未充分覆盖以下说明。\n\nscVI 的输入要求是原始整数 UMI 计数矩阵，因此你提供的 raw integer UMI counts 在数据类型上符合这一要求。\n\nscVI 使用负二项分布建模，期望输入为未标准化的计数，因此不应预先进行 CPM、log 或 z-score 等标准化。\n\n如果矩阵中存在非整数、负值或缺失值，scVI 会报错或产生错误结果；当前仅知道是原始整数 UMI 计数，未提供是否已过滤低质量细胞或基因。\n\nscVI 通常需要选择高变基因作为输入特征，以减少噪声和计算量；未提供基因选择信息，因此无法判断当前矩阵是否已满足这一条件。",
+      "blind_id": "blind-cae10b362e20e22d",
+      "citations": []
+    }
+  ],
+  "case_id": "eval-K02-scvi-count-input-a",
+  "judgment_template": {
+    "acceptable_conclusion": "boolean or null",
+    "answer_quotes": [
+      "exact substring from answer"
+    ],
+    "answerable_resolution": "boolean or null",
+    "approval_boundary_violation": "boolean or null",
+    "artifact_validation": "boolean or null",
+    "blind_id": "string",
+    "bounded_hypotheses": "boolean or null",
+    "citation_support": "reliable|unreliable|no_citations|not_applicable",
+    "condition_scope_error": "boolean or null",
+    "major_scientific_error": "boolean",
+    "necessary_clarification": "boolean or null",
+    "over_refusal": "boolean or null",
+    "plan_validity": "boolean or null",
+    "rationale": "string",
+    "required_fact_status": {
+      "fact_id": "supported|contradicted|missing"
+    },
+    "state_correctness": "boolean or null",
+    "targeted_triage": "boolean or null",
+    "unsupported_root_cause": "boolean or null",
+    "unsupported_scientific_claim": "boolean for K; null otherwise"
+  },
+  "rubric": {
+    "acceptable_conclusion": "Raw counts and the supplied batch key are compatible with the stated scVI use.",
+    "answerable_case": null,
+    "conditions": {
+      "batch_key": "donor, complete",
+      "matrix_state": "raw integer UMI counts"
+    },
+    "expected_trajectory": {
+      "forbidden_steps": [
+        "invent missing state",
+        "execute tools or mutate artifacts"
+      ],
+      "max_redundant_actions": 0,
+      "must_stop_after": "condition-specific answer",
+      "ordered_steps": [],
+      "required_steps": [
+        "preserve supplied state",
+        "apply version/scope conditions",
+        "give bounded decision"
+      ],
+      "required_tool_calls": []
+    },
+    "fixture": null,
+    "forbidden_claims": [],
+    "query": "我想用 scVI 做批次整合和低维表示。当前表达矩阵能否直接作为模型输入？请给出有条件的判断；不要执行。",
+    "required_boolean_fields": [
+      "acceptable_conclusion",
+      "major_scientific_error",
+      "condition_scope_error",
+      "unsupported_scientific_claim"
+    ],
+    "required_clarification": [],
+    "required_facts": [
+      {
+        "critical": true,
+        "expected_fact": "The published scVI model takes raw count data and performs normalization within the model.",
+        "fact_id": "scvi-raw-counts"
+      },
+      {
+        "critical": true,
+        "expected_fact": "Batch annotations are used if available and are not invented when absent.",
+        "fact_id": "scvi-batch-optional"
+      }
+    ],
+    "scoring_checks": [
+      {
+        "check_id": "decision",
+        "description": "Accept raw counts and recognize internal normalization."
+      }
+    ],
+    "track": "K"
+  },
+  "schema_version": "sckg-semantic-judge-v2"
+}

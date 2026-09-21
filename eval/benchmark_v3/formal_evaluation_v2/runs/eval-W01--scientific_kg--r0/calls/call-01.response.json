@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n- 声明形状：`[100, 50]`\n- 实际观测形状：`[100, 49]`\n- 第二维不一致：`49 ≠ 50`\n- 声明 dtype：`float32`\n- 实际观测 dtype：`float32`（此项一致）\n- 输出契约要求：`shape_must_equal_declared = true`，`dtype_must_equal_declared = true`\n- 校验规则明确：`readability alone is not success`，且 `expected` 字段已注明“observed second dimension 49 differs from declared 50”\n\n因此，虽然产物可读且 dtype 匹配，但形状不匹配，契约判定为失败。\n\n建议：需要 repair 或 rerun 以生成第二维为 50 的 embedding；当前审批边界为 `execution_or_mutation_authorized: false`，我不会执行修复或重跑。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948024,
+  "id": "a95b2bb1-94e1-44a1-946e-cae5340e4aa0",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 205,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 86,
+    "prompt_tokens": 470,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 675
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "answer_hash": "945668482eea42559967f001203f3abd4467bce5b8f0446c7f45849f06dbfad1",
+  "artifact_refs": [
+    "runtime_receipt.json",
+    "final_context.json",
+    "output.json"
+  ],
+  "canonical_trace_id": "trace_d8e394f16b8b4727802944505f36d9be",
+  "case_id": "eval-W01",
+  "error": "",
+  "evaluation_failures": [],
+  "experiment_id": "formal-evaluation-v2-20260921-provider-recovery",
+  "input_tokens": 470,
+  "latency_ms": 3581.576333002886,
+  "observed": {
+    "answer": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **形状不匹配（决定性失败项）**\n   - 声明形状：`[100, 50]`\n   - 实际观测形状：`[100, 49]`\n   - 第二维 49 ≠ 50，违反 `shape_must_equal_declared: true`。\n   - 这与预期描述一致：`\"observed second dimension 49 differs from declared 50\"`。\n\n2. **dtype 匹配（通过项）**\n   - 声明 dtype：`float32`\n   - 实际观测 dtype：`float32`\n   - 满足 `dtype_must_equal_declared: true`。\n\n3. **可读性（通过但不足以判定成功）**\n   - `load_status: \"readable\"` 仅表示产物可读取。\n   - 按 validator 规则 `\"readability alone is not success\"`，可读性不能抵消形状不匹配。\n\n结论：产物 `embedding.npy` 因第二维 49 与声明 50 不一致，判定为 **invalid / 不满足契约**。\n\n建议（需批准后执行，当前未授权执行或变更）：\n- 检查生成 embedding 的输入或降维/特征选择步骤，确认为何第二维从 50 变为 49。\n- 修复后重新生成 `embedding.npy`，并重新校验形状为 `[100, 50]`、dtype 为 `float32`。\n- 若 49 是新的正确维度，则需更新 declared contract 中的 `declared_shape`，而不是修改产物来“凑”旧契约。",
+    "lane": "generic_rag",
+    "product_status": "ANSWERED",
+    "provider_calls": 1,
+    "runtime_mode": "external_general_reasoning"
+  },
+  "output_tokens": 358,
+  "repetition": 2,
+  "run_id": "eval-W01--generic_rag--r2",
+  "status": "completed",
+  "trace": [
+    {
+      "conversation_id": "eval-W01--generic_rag--r2",
+      "created_at": "2026-09-20T23:51:26.627339+00:00",
+      "finished_at": "2026-09-20T23:51:30.206418+00:00",
+      "handoff_id": null,
+      "links": [
+        {
+          "link_type": "APPLICATION_GRAPH_ALIAS",
+          "target_id": "application-graph:d2fd3926be433dbc",
+          "target_type": "application_graph"
+        }
+      ],
+      "original_plan_id": null,
+      "parent_request_id": null,
+      "parent_trace_id": null,
+      "principal_ref": null,
+      "request_id": "eval-W01--generic_rag--r2",
+      "root_span_id": "span_774e9b95929e43e0bb8f8a1ff2f2b2bf",
+      "schema_version": "sckg-trace-v0",
+      "spans": [
+        {
+          "component": "trace_context",
+          "counters": {},
+          "decision_evidence": [],
+          "duration_ms": 3578.896,
+          "ended_at": "2026-09-20T23:51:30.206418+00:00",
+          "error_code": null,
+          "input_refs": [],
+          "operation": "request",
+          "output_refs": [],
+          "parent_span_id": null,
+          "sequence": 1,
+          "span_id": "span_774e9b95929e43e0bb8f8a1ff2f2b2bf",
+          "stage": "REQUEST",
+          "started_at": "2026-09-20T23:51:26.627453+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d8e394f16b8b4727802944505f36d9be"
+        },
+        {
+          "component": "research_chat_service",
+          "counters": {},
+          "decision_evidence": [
+            {
+              "decision_type": "research_route",
+              "outcome": "general_chat",
+              "reason_code": "incompatible_topic_ask_only",
+              "record_ref": null,
+              "rule_version": "research_routing_v0"
+            }
+          ],
+          "duration_ms": 78.13,
+          "ended_at": "2026-09-20T23:51:26.728934+00:00",
+          "error_code": null,
+          "input_refs": [
+            {
+              "record_id": "eval-W01--generic_rag--r2",
+              "record_type": "research_request",
+              "relation": "routes"
+            }
+          ],
+          "operation": "resolve_research_route",
+          "output_refs": [],
+          "parent_span_id": "span_774e9b95929e43e0bb8f8a1ff2f2b2bf",
+          "sequence": 2,
+          "span_id": "span_3491ecda1ed84f189f4606b87d172e20",
+          "stage": "ROUTING",
+          "started_at": "2026-09-20T23:51:26.650811+00:00",
+          "status": "SUCCESS",
+          "trace_id": "trace_d8e394f16b8b4727802944505f36d9be"
+        }
+      ],
+      "status": "SUCCESS",
+      "trace_id": "trace_d8e394f16b8b4727802944505f36d9be",
+      "trace_kind": "RESEARCH"
+    }
+  ]
+}

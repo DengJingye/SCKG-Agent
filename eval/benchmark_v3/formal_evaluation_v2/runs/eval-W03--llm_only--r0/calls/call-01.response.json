@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据如下：\n\n1. **SHA256 语法不合法（决定性失败项）**\n   - `output_schema.sha256_pattern` 要求：64 位小写十六进制字符。\n   - 实际 `input_sha256` 为 `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`，`output_sha256` 为 `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`。\n   - 两者均只包含 `c` 或 `d`，不是合法的十六进制字符集（合法字符为 `0-9a-f`），因此违反 SHA256 语法约束。\n\n2. **必需字段存在性：通过**\n   - `required_fields` 为 `[\"schema_version\",\"status\",\"input_sha256\",\"output_sha256\"]`。\n   - 实际 artifact 中四个字段均存在。\n\n3. **schema/status 相等性：通过**\n   - `schema_version` 实际值为 `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` 实际值为 `completed`，与 `expected_status` 一致。\n\n综合来看，虽然字段存在性与 schema/status 相等性满足要求，但两个 SHA256 字段不符合“64 位小写十六进制字符”的语法约束，因此整体判定为 **invalid under the declared contract**。\n\n建议的 repair/rerun 方向（需另行批准后执行）：\n- 重新生成或修正 `input_sha256` 与 `output_sha256`，使其为合法的 64 位小写十六进制字符串。\n- 若这些值来自实际计算，应检查上游哈希计算逻辑或数据来源。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789948173,
+  "id": "8228606c-5dce-48d9-adc2-40b5a44e312c",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 394,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 910
+  }
+}

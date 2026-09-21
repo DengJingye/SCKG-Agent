@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 语法不合法**\n   - `input_sha256` = `cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc`\n   - `output_sha256` = `dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd`\n   - 两者均为 64 个字符，但包含非十六进制字符（`c` 和 `d` 本身是合法十六进制字符，但这里需要确认：`c`、`d` 属于 `0-9a-f`，因此**字符层面合法**）。\n   - 不过，`input_sha256` 与 `input_digest` 不一致：\n     - 声明中的 `input_digest` = `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`\n     - artifact 中的 `input_sha256` = `cccc...`\n     - 两者不相等，说明 artifact 中记录的输入摘要与冻结 fixture 中声明的输入摘要不匹配。\n\n2. **schema/status 字段**\n   - `schema_version` = `artifact-manifest-v1`，与 `expected_schema_version` 一致。\n   - `status` = `completed`，与 `expected_status` 一致。\n   - 必填字段 `schema_version`、`status`、`input_sha256`、`output_sha256` 均存在。\n\n3. **artifact_digest 与 artifact 内容的关系**\n   - 未提供 artifact 内容本身的哈希计算依据，无法从给定信息判断 `artifact_digest` 是否与 `artifact_manifest.json` 的实际内容一致。但仅凭上述 `input_sha256` 与 `input_digest` 的不一致，已足以判定不满足契约。\n\n结论：由于 `input_sha256` 与冻结 fixture 中的 `input_digest` 不一致，artifact 未通过 declared contract 的核查。\n\n建议（需批准后方可执行）：\n- **repair**：修正 `artifact_manifest.json` 中的 `input_sha256`，使其等于 `7d3c13033a5d67854b16822e6c807812bb1afa106ea427aa990619c6bc4bb87c`。\n- **rerun**：若该 artifact 由流水线生成，建议重新运行生成流程，确保输入摘要被正确记录。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947760,
+  "id": "d001b361-6bff-4f72-b989-5b24a14a51c9",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 567,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 4,
+    "prompt_tokens": 516,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 512
+    },
+    "total_tokens": 1083
+  }
+}

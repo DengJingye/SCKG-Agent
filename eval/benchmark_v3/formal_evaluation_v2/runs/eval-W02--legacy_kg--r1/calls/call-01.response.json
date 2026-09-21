@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "核查结论：**不满足 declared contract**。\n\n决定性证据：\n\n1. **SHA256 不匹配（决定性失败项）**\n   - declared_sha256：`aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`\n   - observed_sha256：`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`\n   - 两者不一致，违反 `output_schema.sha256_must_equal_declared = true`。\n\n2. **artifact_validators 明确要求**\n   - `\"compare exact SHA256\"`\n   - `\"do not accept exit code alone\"`\n   - 因此即使 `exit_code = 0`，也不能作为通过依据。\n\n3. **expected 字段也直接声明**\n   - `\"invalid: checksum mismatch despite exit code 0\"`\n   - 与当前观察结果一致。\n\n补充说明：\n- `artifact_digest` 与 `input_digest` 已冻结，但决定性判据是 observed_sha256 与 declared_sha256 不一致。\n- 当前环境为 `read_only_artifact_review`，且 `execution_or_mutation_authorized = false`，因此本次仅做只读核查。\n\n建议的 repair/rerun 方向（需另行批准后执行）：\n- 重新生成 `result.bin`，使其 SHA256 精确等于 declared_sha256；\n- 或确认 declared_sha256 是否登记错误，并在授权流程中修正契约；\n- 重新运行后再次执行 exact SHA256 比对，不能仅凭 exit code 判定通过。",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947759,
+  "id": "0a1e6096-fe9b-4771-b45c-62c5a18b3672",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 346,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 90,
+    "prompt_tokens": 474,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 384
+    },
+    "total_tokens": 820
+  }
+}

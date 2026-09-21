@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": null,
+        "audio": null,
+        "content": "{\n  \"segments\": [\n    {\n      \"text\": \"在 Scrublet 0.2.3 的 scrub_doublets 中，normalize_variance=true 表示将数据标准化，使每个基因的方差为 1。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"normalize_variance : bool, optional (default: True)\\n            If True, normalize the data such that each gene has a variance of 1.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"当 normalize_variance=true 且 mean_center 不为 True 时，文档说明会使用 sklearn.decomposition.TruncatedSVD 进行降维。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"`sklearn.decomposition.TruncatedSVD` will be used for dimensionality\\n            reduction, unless `mean_center` is True.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"你提供的 mean_center=false 表示不将每个基因中心化到均值为 0，因此不满足使用 PCA 的条件。\",\n      \"basis\": \"USER_PROVIDED_FACT\",\n      \"citations\": [],\n      \"context_fact_ids\": [\n        \"user:mean_center\"\n      ]\n    },\n    {\n      \"text\": \"mean_center 参数本身的语义是：若为 True，则将数据中心化使每个基因均值为 0，并使用 sklearn.decomposition.PCA 进行降维。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 4,\n          \"quote\": \"mean_center : bool, optional (default: True)\\n            If True, center the data such that each gene has a mean of 0.\\n            `sklearn.decomposition.PCA` will be used for dimensionality\\n            reduction.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    },\n    {\n      \"text\": \"综合当前条件 mean_center=false 且 normalize_variance=true，降维路径应为 TruncatedSVD，而不是 PCA。\",\n      \"basis\": \"KG_GROUNDED\",\n      \"citations\": [\n        {\n          \"index\": 3,\n          \"quote\": \"`sklearn.decomposition.TruncatedSVD` will be used for dimensionality\\n            reduction, unless `mean_center` is True.\"\n        }\n      ],\n      \"context_fact_ids\": []\n    }\n  ],\n  \"clarification\": null\n}",
+        "function_call": null,
+        "refusal": null,
+        "role": "assistant",
+        "tool_calls": null
+      }
+    }
+  ],
+  "created": 1789947718,
+  "id": "ec8876ce-9024-4d21-a609-60a91e3b7628",
+  "model": "deepseek-v4-pro",
+  "object": "chat.completion",
+  "service_tier": null,
+  "system_fingerprint": "a307abda487cd1b463329ccb945ce396",
+  "usage": {
+    "completion_tokens": 576,
+    "completion_tokens_details": null,
+    "prompt_cache_hit_tokens": 1920,
+    "prompt_cache_miss_tokens": 9766,
+    "prompt_tokens": 11686,
+    "prompt_tokens_details": {
+      "audio_tokens": null,
+      "cached_tokens": 1920
+    },
+    "total_tokens": 12262
+  }
+}
