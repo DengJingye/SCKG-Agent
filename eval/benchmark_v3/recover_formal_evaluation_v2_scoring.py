@@ -127,6 +127,7 @@ def main() -> None:
             validated = json.loads((directory / "validated.json").read_text())
             scorer.validate_judgments({"judgments": validated}, expected)
         else:
+            result = None
             if directory.exists() and (directory / "receipt.json").exists():
                 receipt = json.loads((directory / "receipt.json").read_text())
                 if receipt.get("status") == "failed":
@@ -136,7 +137,16 @@ def main() -> None:
                     if retained.exists():
                         raise FileExistsError(retained)
                     directory.replace(retained)
-            result = scorer.provider_call(runtime=args.runtime, env_file=args.env_file, system=scorer.adjudication_system_prompt(), payload=packet, directory=directory)
+                elif receipt.get("status") == "completed" and (directory / "parsed.json").exists():
+                    result = json.loads((directory / "parsed.json").read_text())
+            if result is None:
+                result = scorer.provider_call(runtime=args.runtime, env_file=args.env_file, system=scorer.adjudication_system_prompt(), payload=packet, directory=directory)
+            if "judgments" not in result and set(result) == set(expected) and all(isinstance(value, dict) for value in result.values()):
+                result = {"judgments": list(result.values())}
+            elif "judgments" not in result and len(expected) == 1 and result.get("blind_id") in expected:
+                result = {"judgments": [result]}
+            elif "judgments" not in result and isinstance(result.get("adjudications"), list):
+                result = {"judgments": result["adjudications"]}
             for judgment in result.get("judgments", []):
                 answer = expected[judgment["blind_id"]]["answer"]
                 judgment["answer_quotes"] = [quote for quote in judgment.get("answer_quotes", []) if isinstance(quote, str) and quote in answer][:2]
