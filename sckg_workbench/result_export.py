@@ -48,6 +48,15 @@ def build_result_export(*, summary, task, run, binding):
         "files": {"result_summary.json": hashlib.sha256(summary_bytes).hexdigest()},
         "contents": "Aggregate summary and recorded provenance; raw inputs, cell rows, environment and executable notebook are not included.",
     }
+    if "code_provenance" in binding:
+        code = binding["code_provenance"]
+        manifest["code_provenance"] = code
+        manifest["code_sha"] = code["git"]["head"]
+        manifest["code_sha_semantics"] = "Git HEAD observed before preparation; not a verified execution image or complete reproduction identity."
+        if manifest["code_sha"] is not None:
+            missing.pop("code_sha")
+        else:
+            missing["code_sha"] = code["git"]["reason"]
     files = {"result_summary.json": summary_bytes,
              "manifest.json": (canonical_json(manifest) + "\n").encode("utf-8")}
     files["SHA256SUMS"] = "".join(
