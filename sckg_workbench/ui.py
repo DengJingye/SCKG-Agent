@@ -1979,22 +1979,9 @@ def _display_analysis_summary(summary):
         st.caption("首次启动失败后，系统在原预算内恢复一次；科学参数保持原样，最终产物已重新验收。")
 
 
-def _execute_local_analysis(analysis, task_id):
-    """Keep the host reserve before claiming a queued task; never consume a failed admission."""
-    import psutil
-
-    memory = psutil.virtual_memory()
-    reserve = max(2 * 1024**3, memory.total // 4)
-    required = int(analysis.max_rss_mb * 1024**2) + 256 * 1024**2
-    if memory.available - reserve <= required:
-        raise ValueError(f"可用内存 {memory.available / 1024**3:.1f} GiB；启动需要至少 "
-            f"{(reserve + required) / 1024**3:.1f} GiB（包含系统保留内存）。"
-            "请关闭暂不使用的大型应用后重试；任务仍在队列中，尚未开始计算。")
-    return analysis.run_once(task_id=task_id)
-
-
 def _run_results(workspace):
-    from .analysis import AnalysisService
+    from .analysis import AnalysisService, KIND
+    from . import analysis_dispatch
     from .datasets import DatasetService
     from .execution_readiness import ScrubletReadinessService
 
@@ -2008,16 +1995,31 @@ def _run_results(workspace):
             "资产": r["input_snapshot"]["asset_id"], "尝试次数": r["attempt"]} for r in runs], hide_index=True)
         task_id = st.selectbox("查看分析任务", [r["task_id"] for r in runs], key="analysis_result_task")
         task = analysis.queue.get(task_id)
+        dispatch = analysis_dispatch.snapshot(workspace, task_id) or {}
+        if task["status"] == "running":
+            st.info("分析正在后台运行。可以刷新状态、切换页面或取消；刷新不会再次启动计算。")
+        elif task["status"] == "cancel_requested":
+            st.info("已请求取消，正在等待本次执行停止并清理进程。晚到结果不会显示为成功。")
+        elif task["status"] == "cancelled":
+            st.info("任务已取消；刷新不会重新执行。")
+        elif task["status"] == "result_unknown":
+            st.warning("上次执行的结果尚不能确认，系统不会自动重跑。请查看下方运行与进程记录。")
+        elif task["status"] == "queued" and dispatch.get("active"):
+            st.info("正在后台启动分析；可以刷新状态或取消任务。")
+        elif task["status"] == "queued" and dispatch.get("error"):
+            st.error("启动未完成：" + dispatch["error"])
+        elif task["status"] == "queued" and dispatch.get("status") == "busy":
+            st.warning("队列中还有更早的任务或其他任务正在执行；本任务尚未开始。")
         if st.button("刷新分析状态", key="analysis_refresh"):
             st.rerun()
         if task["status"] in {"queued", "running"} and st.button("取消分析任务", key="analysis_cancel"):
             analysis.queue.request_cancel(task_id)
             st.rerun()
-        if task["status"] == "queued" and st.button("执行已授权的分析任务", key="analysis_execute"):
+        if (task["status"] == "queued" and task["kind"] == KIND
+                and st.button("执行已授权的分析任务", key="analysis_execute", disabled=bool(dispatch.get("active")))):
             try:
-                with st.spinner("执行本地分析并验收产物…"):
-                    executed = _execute_local_analysis(analysis, task_id)
-                if executed is None:
+                launched = analysis_dispatch.start(analysis, task_id)
+                if launched["status"] == "busy":
                     st.warning("队列中还有更早的任务；本任务尚未开始。请先处理前面的任务，再重试。")
                 else:
                     st.rerun()

@@ -113,12 +113,54 @@ def test_execution_failure_is_visible_and_refresh_never_retries(ui, tmp_path, mo
     _submit(app)
     widget(app.button, "前往运行结果").click().run()
     widget(app.button, "执行已授权的分析任务").click().run()
+    from tests.test_workbench_analysis_dispatch import join
+    join(AnalysisService(ledger.workspace))
+    app.run()
     assert not app.exception and len(dispatches) == 1
     assert any("synthetic_runtime_missing_before_fit" in item.value for item in app.text)
     assert TaskQueue(ledger.workspace).list()[0]["status"] == "failed"
     widget(app.button, "刷新分析状态").click().run()
     assert not app.exception and len(dispatches) == 1
     assert not any(button.label == "执行已授权的分析任务" for button in app.button)
+
+
+def test_running_ui_can_refresh_navigate_and_cancel_without_second_execution(ui, tmp_path, monkeypatch):
+    from threading import Event
+    from tests.test_workbench_analysis_dispatch import join
+    import psutil
+    monkeypatch.setattr(psutil, "virtual_memory", lambda: SimpleNamespace(total=16 * 1024**3, available=8 * 1024**3))
+    entered, release = Event(), Event()
+    calls = []
+    def controlled_late_result(self, task):
+        calls.append(task["task_id"])
+        entered.set()
+        assert release.wait(10)
+        return {"run_id": "synthetic-late-receipt", "validation": {"passed": True, "failures": []}}
+    monkeypatch.setattr(AnalysisService, "_execute_supervised", controlled_late_result)
+    app, ledger, _, path, original = _input(ui, tmp_path)
+    service = AnalysisService(ledger.workspace)
+    try:
+        _submit(app)
+        widget(app.button, "前往运行结果").click().run()
+        # This UI call must finish while the original execution is still blocked.
+        widget(app.button, "执行已授权的分析任务").click().run()
+        assert not app.exception and entered.wait(2) and not release.is_set()
+        widget(app.button, "刷新分析状态").click().run()
+        assert any("后台运行" in item.value for item in app.info)
+        page(app, "数据资产")
+        page(app, "运行结果")
+        assert not app.exception and len(calls) == 1
+        widget(app.button, "取消分析任务").click().run()
+        assert any("已请求取消" in item.value for item in app.info)
+        assert service.queue.list()[0]["status"] == "cancel_requested"
+    finally:
+        release.set()
+        join(service)
+    widget(app.button, "刷新分析状态").click().run()
+    assert not app.exception and any("任务已取消" in item.value for item in app.info)
+    assert service.queue.list()[0]["status"] == "cancelled"
+    assert not app.metric and not any("校验通过" in item.value for item in app.success)
+    assert len(calls) == 1 and path.read_bytes() == original
 
 
 def test_results_show_current_validated_metrics_and_hide_them_after_corruption(ui, tmp_path):

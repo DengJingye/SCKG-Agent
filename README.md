@@ -214,6 +214,9 @@ rate, and confirm local execution. Click **创建本地分析任务**, then **�
 and **执行已授权的分析任务**. Repeated submission with unchanged inputs in the same
 session reuses the task; refreshing results never reruns it. The results page shows
 validated cell counts and predicted doublet proportion, plus downloadable artifacts.
+Execution runs in the background, so the page remains available for refresh,
+navigation and cancellation. A cancellation request takes precedence over a late
+result; a process restart never automatically resumes an interrupted task.
 
 This preview currently accepts at most 1,000 cells, 10,000 genes and 25 MiB, with
 seed 0. The expected rate has no automatic default. The existing Scrublet contract,
