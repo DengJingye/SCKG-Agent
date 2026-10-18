@@ -1,0 +1,87 @@
+name: Workbench G0 engineering
+
+on:
+  pull_request:
+  push:
+    branches: [main, codex/workbench-workflow-provenance]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workbench-g0-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos-arm64:
+    runs-on: macos-14
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PIP_NO_INPUT: "1"
+      PIP_CONFIG_FILE: /dev/null
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0, node24
+        with:
+          persist-credentials: false
+      - name: Prepare installation evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir g0-evidence
+          git rev-parse HEAD > g0-evidence/revision.txt
+          sw_vers > g0-evidence/host.txt
+          uname -m >> g0-evidence/host.txt
+          cp release/locks/workbench-* g0-evidence/
+      - name: Bootstrap the same pinned Python as the local qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error --max-time 60 \
+            https://api.anaconda.org/download/conda-forge/micromamba/2.8.1/osx-arm64/micromamba-2.8.1-0.tar.bz2 \
+            --output "$RUNNER_TEMP/micromamba.tar.bz2"
+          printf 'a28588c79e96436c2001c87e3b8360bf2eb5c380fb288871389197b9150caf0a  %s\n' "$RUNNER_TEMP/micromamba.tar.bz2" | shasum -a 256 -c -
+          mkdir "$RUNNER_TEMP/g0-bootstrap"
+          tar -xjf "$RUNNER_TEMP/micromamba.tar.bz2" -C "$RUNNER_TEMP/g0-bootstrap" bin/micromamba
+          MAMBA_ROOT_PREFIX="$RUNNER_TEMP/g0-mamba" "$RUNNER_TEMP/g0-bootstrap/bin/micromamba" \
+            --no-rc create --yes --prefix "$RUNNER_TEMP/sckg-g0-python" \
+            --file release/locks/workbench-python-osx-arm64.conda-explicit.txt \
+            2>&1 | tee g0-evidence/python-install.log
+          "$RUNNER_TEMP/sckg-g0-python/bin/python" -I -c 'import sys; assert sys.version_info[:3] == (3, 12, 13)'
+          "$RUNNER_TEMP/sckg-g0-python/bin/python" -VV > g0-evidence/python.txt
+      - name: Create isolated environment and preserve installation evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/sckg-g0-python/bin/python" -I -m venv "$RUNNER_TEMP/sckg-g0-env"
+          "$RUNNER_TEMP/sckg-g0-env/bin/python" -I -m pip install \
+            --index-url https://pypi.org/simple --only-binary=:all: --require-hashes --no-deps \
+            -r release/locks/workbench-dev-osx-arm64-py312.requirements.lock \
+            --report g0-evidence/install.json 2>&1 | tee g0-evidence/install.log
+          "$RUNNER_TEMP/sckg-g0-env/bin/python" -I -m pip freeze --all > g0-evidence/environment.txt
+      - name: Verify dependencies, regression, full-app UI and real server startup
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/sckg-g0-env/bin/python" -I -B scripts/verify_g0.py \
+            --python "$RUNNER_TEMP/sckg-g0-env/bin/python" --output g0-evidence/checks
+      - name: Record final job outcome even if Python setup failed
+        if: always()
+        shell: bash
+        env:
+          JOB_STATUS: ${{ job.status }}
+          REVISION: ${{ github.sha }}
+        run: |
+          mkdir -p g0-evidence
+          printf '{"job_status":"%s","revision":"%s"}\n' "$JOB_STATUS" "$REVISION" > g0-evidence/job-status.json
+      - name: Preserve success or failure evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0, node24
+        with:
+          name: workbench-g0-${{ github.run_id }}-${{ github.run_attempt }}
+          path: g0-evidence/
+          if-no-files-found: error
+          retention-days: 14

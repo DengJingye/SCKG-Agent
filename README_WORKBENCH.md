@@ -14,15 +14,16 @@
 
 ## 安装与启动
 
-本阶段针对 Python 3.12、POSIX/macOS 进程控制；Windows 尚未验收。复用已有合格环境即可，无需重复安装。新环境使用固定直接依赖：
+本阶段针对 Python 3.12、POSIX/macOS 进程控制；Windows 尚未验收。复用已有合格环境即可，无需重复安装。macOS 14+ ARM64 新环境可使用完整版本与哈希锁：
 
 ```bash
 python3.12 -m venv .venv-workbench
-.venv-workbench/bin/python -m pip install -r requirements-workbench-dev.txt
+.venv-workbench/bin/python -I -m pip install --only-binary=:all: --require-hashes --no-deps -r release/locks/workbench-dev-osx-arm64-py312.requirements.lock --report install-workbench01.json
+.venv-workbench/bin/python -I -B scripts/verify_g0.py --python .venv-workbench/bin/python --output validation-run-g0-01
 .venv-workbench/bin/python -m streamlit run workbench_app.py --server.address 127.0.0.1
 ```
 
-安装文件是直接版本约束，不是完整跨平台哈希锁，也不包含拟合工具环境。启动空工作台不需要 API key；发送模型请求前，在“设置”中自行配置真实 provider、profile 和预算。凭据留在本地，不能提交到 Git。
+目录和安装/验收报告使用全新名称，保留既有结果。完整锁仅适用于上述目标平台，不包含拟合工具环境；原 requirements-workbench 分层文件仍用于直接依赖说明和其他平台的独立资格验证。验收入口会检查内存余量，资源不足时记录待资源并停止。详情及CI范围见[plan_v1/G0交付与验收](docs/PLAN_V1_G0.md)。启动空工作台不需要 API key；发送模型请求前，在“设置”中自行配置真实 provider、profile 和预算。凭据留在本地，不能提交到 Git。
 
 ### 独立合成演示：先体验三态与来源检查
 
