@@ -17,6 +17,11 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from .model_service import ModelCallError, _strict_json
 from .knowledge import KnowledgeService
 from .storage import canonical_json, content_hash
+from .evidence_wire import (
+    COLUMNAR_CATALOGUE_ENCODING, COLUMNAR_CATALOGUE_INSTRUCTIONS,
+    LITERAL_CATALOGUE_ENCODING, EvidenceWireError,
+    decode_catalogue_entries, encode_catalogue_entries,
+)
 
 
 Text = Annotated[str, Field(min_length=1, max_length=600)]
@@ -204,14 +209,32 @@ def _validate_catalog(ledger, catalog):
         raise EvidenceSnapshotChanged("Catalogue evidence is changed, paused, or outside current published use")
 
 
-def _planning_messages(material, prompt_version=DEFAULT_PLANNING_PROMPT_VERSION):
+def _catalogue_encoding(value, *, has_catalog):
+    if type(value) is not str or value not in {LITERAL_CATALOGUE_ENCODING, COLUMNAR_CATALOGUE_ENCODING}:
+        raise RetrievalPlanningError("Unsupported retrieval-planning catalogue encoding")
+    if value == COLUMNAR_CATALOGUE_ENCODING and not has_catalog:
+        raise RetrievalPlanningError("Columnar catalogue encoding requires a published lexical catalogue")
+    return value
+
+
+def _planning_messages(material, prompt_version=DEFAULT_PLANNING_PROMPT_VERSION,
+                       catalogue_encoding=LITERAL_CATALOGUE_ENCODING):
     if not isinstance(prompt_version, str) or prompt_version not in {"legacy_v1", "goal_path_v2"}:
         raise RetrievalPlanningError("Unsupported retrieval-planning prompt version")
+    encoding = _catalogue_encoding(catalogue_encoding, has_catalog="available_term_catalog" in material)
     system = LEGACY_SYSTEM if prompt_version == "legacy_v1" else SYSTEM
     if "available_term_catalog" in material:
         system += LEGACY_CATALOG_INSTRUCTIONS if prompt_version == "legacy_v1" else CATALOG_INSTRUCTIONS
+    wire_material = material
+    if encoding == COLUMNAR_CATALOGUE_ENCODING:
+        try:
+            wire_material = deepcopy(material)
+            wire_material["available_term_catalog"] = encode_catalogue_entries(material["available_term_catalog"])
+        except EvidenceWireError as error:
+            raise RetrievalPlanningError(str(error)) from None
+        system += COLUMNAR_CATALOGUE_INSTRUCTIONS
     return [{"role": "system", "content": system},
-            {"role": "user", "content": canonical_json(material)}]
+            {"role": "user", "content": canonical_json(wire_material)}]
 
 
 def compact_evidence_unit(unit):
@@ -336,7 +359,8 @@ def _select_profile(models, profile_id):
 
 def plan_evidence_queries(models, question, dataset_profile, *, budget,
                           outbound_authorized, profile_id=None, passphrase="", term_catalog=None,
-                          prompt_version=DEFAULT_PLANNING_PROMPT_VERSION):
+                          prompt_version=DEFAULT_PLANNING_PROMPT_VERSION,
+                          catalogue_encoding=LITERAL_CATALOGUE_ENCODING):
     """Make at most one actual ModelService invocation; return its exact binding.
 
     Failure/partial/over-budget/invalid plans stop and expose the receipt through
@@ -345,13 +369,14 @@ def plan_evidence_queries(models, question, dataset_profile, *, budget,
     """
     if outbound_authorized is not True:
         raise RetrievalPlanningError("Explicit authorization is required to send planning input")
+    encoding = _catalogue_encoding(catalogue_encoding, has_catalog=term_catalog is not None)
     material = _material(question, dataset_profile)
     if term_catalog is not None:
         _validate_catalog(models.ledger, term_catalog)
         material["available_term_catalog"] = deepcopy(term_catalog["entries"])
     bounded_budget = _budget(budget)
     profile = _select_profile(models, profile_id)
-    messages = _planning_messages(material, prompt_version=prompt_version)
+    messages = _planning_messages(material, prompt_version=prompt_version, catalogue_encoding=encoding)
     try:
         result = models.invoke(profile["id"], messages, passphrase=passphrase,
                                outbound_authorized=True, budget=bounded_budget,
@@ -388,6 +413,8 @@ def plan_evidence_queries(models, question, dataset_profile, *, budget,
               "profile_id": profile["id"], "profile_hash": content_hash(profile),
               "call_id": call_id, "call_receipt": deepcopy(receipt),
               "call_request_hash": request["request_hash"], "budget": bounded_budget}
+    if encoding != LITERAL_CATALOGUE_ENCODING:
+        record["catalogue_encoding"] = encoding
     if term_catalog is not None:
         record["term_catalog"] = deepcopy(term_catalog)
     record["binding_hash"] = content_hash(record)
@@ -402,6 +429,8 @@ def _validate_run(ledger, run):
             or run.get("input_hash") != content_hash(run.get("input_material"))
             or run.get("plan_hash") != content_hash(run.get("plan"))):
         raise RetrievalPlanningError("Query plan run binding changed")
+    encoding = _catalogue_encoding(run.get("catalogue_encoding", LITERAL_CATALOGUE_ENCODING),
+                                   has_catalog="term_catalog" in run)
     plan = EvidenceQueryPlan.model_validate(run["plan"])
     if "term_catalog" in run:
         _validate_catalog(ledger, run["term_catalog"])
@@ -414,7 +443,8 @@ def _validate_run(ledger, run):
     request = ledger.get_record("model_request", run["call_id"])
     profile = ledger.get_record("model_profile", run["profile_id"])
     expected_messages = _planning_messages(run["input_material"],
-                                           prompt_version=run.get("planning_prompt_version", "legacy_v1"))
+                                           prompt_version=run.get("planning_prompt_version", "legacy_v1"),
+                                           catalogue_encoding=encoding)
     if (not profile or content_hash(profile) != run["profile_hash"]
             or profile.get("purpose") not in {"evaluation", "chat"}
             or not receipt or receipt != run["call_receipt"] or receipt.get("status") != "succeeded"
@@ -426,6 +456,14 @@ def _validate_run(ledger, run):
             or request["payload"].get("messages") != expected_messages
             or request["payload"].get("response_format") != RESPONSE_FORMAT):
         raise RetrievalPlanningError("Stored model receipt/request no longer binds the query plan")
+    if encoding == COLUMNAR_CATALOGUE_ENCODING:
+        try:
+            wire_material = _strict_json(request["payload"]["messages"][1]["content"])
+            entries = decode_catalogue_entries(wire_material["available_term_catalog"])
+        except (ValueError, TypeError, KeyError, IndexError):
+            raise RetrievalPlanningError("Stored columnar catalogue cannot be decoded") from None
+        if canonical_json(entries) != canonical_json(run["term_catalog"]["entries"]):
+            raise RetrievalPlanningError("Decoded planning input differs from its published lexical catalogue")
     return plan
 
 
