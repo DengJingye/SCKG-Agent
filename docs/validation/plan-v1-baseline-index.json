@@ -1,0 +1,358 @@
+{
+  "schema": "plan_v1-kickoff-baseline-v1",
+  "captured_at": "2026-10-18T19:16:18.662633+08:00",
+  "branch": "codex/workbench-workflow-provenance",
+  "code_sha": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+  "tree_sha": "8e19c6e7ef377d3c7948130d1a0a97cdf113ce67",
+  "historical_code_sha": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+  "ahead_behind_historical": [
+    13,
+    29
+  ],
+  "workbench_module_count": 53,
+  "migration_inventory": [
+    {
+      "asset": "question_schema",
+      "old_path": "eval/benchmark_v3/development_scenario.schema.json",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "39d2206a262e223a19b07af15d76ebbbe97ce7da",
+      "current_path": null,
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": null,
+      "reference_test": "eval/benchmark_v3/test_review_infrastructure.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "a6700f3ab0842dda22613463cbfc19b2cf267e9b",
+      "decision": "Adapt into a future eval/v4 adapter; exposed questions remain development-only.",
+      "migration_executed": false
+    },
+    {
+      "asset": "failure_scoring",
+      "old_path": "eval/benchmark_v3/dev_scoring.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "1621abc265f74149eaa0f65553a9820768f4bd67",
+      "current_path": null,
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": null,
+      "reference_test": "eval/benchmark_v3/test_dev_scoring.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "85dc1c189a754aaa4159f95430ece702f0699a85",
+      "decision": "Reuse taxonomy after review; calibrate independent scorer before any new comparison.",
+      "migration_executed": false
+    },
+    {
+      "asset": "runtime_receipt",
+      "old_path": "eval/benchmark_v3/runtime_receipt.schema.json",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "a721d8273f5908b6e9c31eb3e18e2c73c26b9059",
+      "current_path": "sckg_workbench/model_service.py",
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": "39e37ffa4d08afc6d2bd9104bd728cfe58ab4591",
+      "reference_test": "tests/test_workbench_models.py",
+      "reference_test_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "reference_test_blob": "a7574f3cd33ce98d19e06700c7445ab77d01d3a5",
+      "decision": "Map fields to existing model receipts and ledger; do not introduce a second task authority.",
+      "migration_executed": false
+    },
+    {
+      "asset": "orchestration",
+      "old_path": "execution/execution_orchestrator.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "742eda878a74bdfe5745f436698895578d156784",
+      "current_path": "sckg_workbench/tasks.py",
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": "510b2e582f8db3035cfe09653c3b701de25a8eb1",
+      "reference_test": "tests/test_execution_orchestrator.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "5ebcb31eaa0c52833a2af3c6406a1926653a1dd5",
+      "decision": "Keep current ledger authoritative; port only independently verified contracts.",
+      "migration_executed": false
+    },
+    {
+      "asset": "scrublet",
+      "old_path": "execution/wrappers/scrublet.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "16f57407fd95e0126da571188fe994912cd272f8",
+      "current_path": "execution/wrappers/scrublet.py",
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": "16f57407fd95e0126da571188fe994912cd272f8",
+      "reference_test": "tests/test_scrublet_wrapper.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "8f7af692f312cbde3832507e2f936af22bc21d2b",
+      "decision": "Retain current narrow path; requalify actual execution and artifacts for plan_v1/G1 and G4.",
+      "migration_executed": false
+    },
+    {
+      "asset": "scdblfinder",
+      "old_path": "execution/wrappers/scdblfinder.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "6e9ab58d12c13bb88b86c1874b377eb260ebfb0f",
+      "current_path": null,
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": null,
+      "reference_test": "tests/test_scdblfinder_wrapper.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "27241ea1e4111495a67eb8bf4c8487bc934b7ddf",
+      "decision": "Defer. Registration is present but implementation is absent in current tree.",
+      "migration_executed": false
+    },
+    {
+      "asset": "batch",
+      "old_path": "execution/wrappers/harmony.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "122949d22e6d14143bd0b73998862682d6d8cd1d",
+      "current_path": null,
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": null,
+      "reference_test": "tests/test_unified_batch_user_path.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "c5fd796b958a79971cd4540502b5967052b1da41",
+      "decision": "Defer Harmony/Scanorama qualification; no whole-branch merge.",
+      "migration_executed": false
+    },
+    {
+      "asset": "annotation",
+      "old_path": "execution/wrappers/celltypist.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "346e039707a9287a6d1b1ac364e5044f6176df89",
+      "current_path": null,
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": null,
+      "reference_test": "tests/test_annotation_wrappers.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "125a53e242e02d8148b737fe0e55d173d849f559",
+      "decision": "Defer CellTypist/SingleR execution pending dependencies, evidence and qualification.",
+      "migration_executed": false
+    },
+    {
+      "asset": "notebook",
+      "old_path": "execution/local_notebook_launcher.py",
+      "old_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "old_blob": "9c72dd53b7c5b6d147747036294b158f4cb7f7bc",
+      "current_path": "sckg_workbench/code_runtime.py",
+      "current_commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "current_blob": "ac6e1c511ef4791e98e5d4bc2b66a43716facd3f",
+      "reference_test": "tests/test_local_notebook_launcher.py",
+      "reference_test_commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "reference_test_blob": "1e70ba910889b9d243c2a4f78fc6ca7b8796a2f9",
+      "decision": "Keep historical launcher separate; bounded code runtime is not equivalent to unrestricted notebooks.",
+      "migration_executed": false
+    }
+  ],
+  "historical_report_index": [
+    {
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "path": "docs/WORKBENCH_DEVELOPMENT.md",
+      "blob": "6451e834079b398a5ac501f5fae729c9fbe11b95",
+      "current_run": false,
+      "evaluation_reexecuted": false
+    },
+    {
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "path": "docs/WORKBENCH_VALIDATION.md",
+      "blob": "fe38057df3df453072d82e6d18a6f7ca6bdf5476",
+      "current_run": false,
+      "evaluation_reexecuted": false
+    },
+    {
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "path": "docs/MAIN_CHAT_RAG_DEVELOPMENT.md",
+      "blob": "1038a532bda23a80de899fe13f72a97438d28d31",
+      "current_run": false,
+      "evaluation_reexecuted": false
+    },
+    {
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "path": "docs/MAIN_CHAT_DIAGNOSTICS.md",
+      "blob": "dec3bbc719a9370e5096d52f5b8341ab5305671b",
+      "current_run": false,
+      "evaluation_reexecuted": false
+    },
+    {
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "path": "docs/PLANNER_CATALOGUE_WIRE.md",
+      "blob": "1258f44a23ed4205fa3e7054e6091794f9998fc0",
+      "current_run": false,
+      "evaluation_reexecuted": false
+    },
+    {
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "path": "eval/benchmark_v3/formal_evaluation_v2/formal_evaluation_report.md",
+      "blob": "4a6f8831cb19dd1dbb6213a8e64d213b58caaaa7",
+      "current_run": false,
+      "evaluation_reexecuted": false
+    }
+  ],
+  "wrapper_module_presence": {
+    "scrublet": true,
+    "scdblfinder": false,
+    "harmony": false,
+    "scanorama": false,
+    "scanpy_core": false,
+    "celltypist": false,
+    "singler": false
+  },
+  "runtime_pack_files": [
+    "runtime_packs/locks/osx-arm64/doublet-python.conda-explicit.txt",
+    "runtime_packs/manifests/doublet-python.json",
+    "runtime_packs/signatures/doublet-python.sig",
+    "runtime_packs/trust/runtime-pack-maintainer-public.pem"
+  ],
+  "source_baseline_sha256": "e2e43d56723487e30140ce5fe24afe5ddc48c2d82a51935f1f6fcc8fa6dd2507",
+  "snapshot_not_current_gate_result": true,
+  "reverified_git_objects": [
+    {
+      "path": "eval/benchmark_v3/development_scenario.schema.json",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "eval/benchmark_v3/test_review_infrastructure.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "eval/benchmark_v3/dev_scoring.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "eval/benchmark_v3/test_dev_scoring.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "eval/benchmark_v3/runtime_receipt.schema.json",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "sckg_workbench/model_service.py",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_workbench_models.py",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/execution_orchestrator.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "sckg_workbench/tasks.py",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_execution_orchestrator.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/wrappers/scrublet.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/wrappers/scrublet.py",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_scrublet_wrapper.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/wrappers/scdblfinder.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_scdblfinder_wrapper.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/wrappers/harmony.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_unified_batch_user_path.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/wrappers/celltypist.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_annotation_wrappers.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "execution/local_notebook_launcher.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "sckg_workbench/code_runtime.py",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "tests/test_local_notebook_launcher.py",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    },
+    {
+      "path": "docs/WORKBENCH_DEVELOPMENT.md",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "docs/WORKBENCH_VALIDATION.md",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "docs/MAIN_CHAT_RAG_DEVELOPMENT.md",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "docs/MAIN_CHAT_DIAGNOSTICS.md",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "docs/PLANNER_CATALOGUE_WIRE.md",
+      "commit": "3d6c49142f392a850ba19783b3a3d948fb91dfe4",
+      "blob_verified": true
+    },
+    {
+      "path": "eval/benchmark_v3/formal_evaluation_v2/formal_evaluation_report.md",
+      "commit": "a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb",
+      "blob_verified": true
+    }
+  ],
+  "reused_tests": [
+    {
+      "path": "tests/test_workbench_datasets.py",
+      "sha256": "187288c893203b6c23fbffbedca6704f6048f2a1109c2c69251901206bd866ef",
+      "origin": "Existing local development test, copied byte-for-byte after matching corresponding product module hashes.",
+      "test_execution_claim": false
+    },
+    {
+      "path": "tests/test_workbench_execution_readiness.py",
+      "sha256": "2a3222b10d10f2d32c0c8b8d42407f408c47adfc07073c12bd881f6a6409cc53",
+      "origin": "Existing local development test, copied byte-for-byte after matching corresponding product module hashes.",
+      "test_execution_claim": false
+    }
+  ]
+}

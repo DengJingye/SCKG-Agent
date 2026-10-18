@@ -4,6 +4,10 @@
 
 本次从 `codex/workbench-workflow-provenance` 的 `3d6c49142f392a850ba19783b3a3d948fb91dfe4` 开始。旧科研分支为 `a3cb79fa9f78d578f819c8711708dcf8c1b2c9eb`；两者 ahead 13 / behind 29。优先复用当前工作台、任务台账与既有进程监督器，不整体合并旧科研分支。
 
+[冻结基线与迁移索引](validation/plan-v1-baseline-index.json)记录9项迁移决策、6份历史报告及精确Git对象身份；28项对象引用已重新核对。旧报告均标明未在本次重跑，不能替代新提交的验收。
+
+交付审查发现公开分支未携带已有的数据画像和执行前提测试。在确认对应产品模块与本地开发版本逐字节一致后，原样复用 `test_workbench_datasets.py`、`test_workbench_execution_readiness.py`，并保存来源哈希。它们进入完整回归的自动选择，覆盖原数据只读、有界读取、坏输入和“已安装不等于可执行”；不执行Scrublet拟合。
+
 ## 本次补齐的交付入口
 
 1. `release/locks/workbench-osx-arm64-py312.requirements.lock`：55项产品依赖的完整锁，复用现有开发交付资产，原字节 SHA256 为 `0b5af7b59a9a49347679a3faa7a1a431b023ab6aeae7b3339cd2a23d352b3f05`。
