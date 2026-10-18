@@ -67,11 +67,11 @@ def read_report(path):
 
 def evidence_passed(lane, result, output, selectors=()):
     """Exit 0 alone, missing reports, skipped tests or incomplete UI cannot pass."""
-    if not result.get("process_ok"):
-        return False
     if lane in {"smoke", "regression"}:
         result["junit"] = junit_result(output / f"{lane}.xml", selectors)
-        return bool(result["junit"]["ok"] and result["junit"]["skipped"] == 0)
+        return bool(result.get("process_ok") and result["junit"]["ok"] and result["junit"]["skipped"] == 0)
+    if not result.get("process_ok"):
+        return False
     report = read_report(output / f"{lane}.json")
     if lane == "dependencies":
         return bool(report.get("status") == "passed"

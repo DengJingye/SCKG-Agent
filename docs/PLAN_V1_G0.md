@@ -63,6 +63,8 @@ runner选择依据[GitHub官方运行器说明](https://docs.github.com/en/actio
 
 第三次CI的[原始失败](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125331779)保留：依赖合同和77项smoke通过，完整回归在第234项后达到120秒上限，峰值约229 MiB，没有残留进程。超时位置的5个参数化用例单独检查全部通过（2.76秒），未发现单项阻塞；当前选择收集到1,129项，历史120秒预算仅用于更小的选择性检查。因此只把完整回归的工程时限调整为600秒，加入逐项日志、慢用例统计和30秒堆栈诊断；不删测试、不跳过、不改变产品加密或科学参数。CI整体仍限15分钟。
 
+补回数据测试后的[完整回归失败](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125870522)记录为1,171通过、1失败、0跳过，267.59秒：公开交付漏带了 `engine.interactive_graph_workspace` 兼容入口。后续原样复用现有轻量转发模块，继续调用同一个 `sckg_workbench.graph_renderer`，保留原兼容性断言；没有复制图谱实现或屏蔽测试。严格入口同时补齐失败进程的JUnit计数，进程失败仍不能通过。
+
 ## 保留的边界
 
 - 当前实际wrapper仍只有Scrublet；注册名不等于已实现方法。

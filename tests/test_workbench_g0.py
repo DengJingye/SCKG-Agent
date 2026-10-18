@@ -28,6 +28,15 @@ def test_real_junit_required_identity_and_no_skips(tmp_path, body, expected):
     assert gate.evidence_passed("smoke", result, tmp_path, ("tests/test_required.py",)) is expected
 
 
+def test_failed_process_retains_actual_junit_counts_without_claiming_success(tmp_path):
+    (tmp_path / "regression.xml").write_text('<testsuite><testcase classname="tests.test_required" name="bad">'
+                                           '<failure message="real failure"/></testcase></testsuite>')
+    result = {"process_ok": False, "returncode": 1}
+    assert not gate.evidence_passed("regression", result, tmp_path, ("tests/test_required.py",))
+    assert result["junit"]["tests"] == result["junit"]["failures"] == 1
+    assert result["junit"]["passed"] == 0
+
+
 def test_successful_process_without_report_cannot_pass(tmp_path):
     result = gate.run_process([sys.executable, "-I", "-B", "-c", "print('done')"],
         cwd=tmp_path, env={"PATH": "/usr/bin:/bin"}, log=tmp_path / "output.log",
