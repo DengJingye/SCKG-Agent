@@ -26,8 +26,9 @@ def _text(value):
     st.text(str(value))
 
 
-def _render_check(check):
-    _text("输入前提：" + _PRECONDITIONS.get(check.get("preconditions_status"), "未知状态"))
+def _render_check(check, *, presence_review=False):
+    labels = {**_PRECONDITIONS, "unknown": "状态未确认"} if presence_review else _PRECONDITIONS
+    _text("输入前提：" + labels.get(check.get("preconditions_status"), "未知状态"))
     _text("拟议动作：" + _ACTIONS.get(check.get("action_status"), "未知状态"))
     _text("来源事实支持：本预览不重新作科学判断（no_claim）")
     _text(check.get("reason", ""))
@@ -53,21 +54,40 @@ def _render_source(source):
 
 def render_workflow_review(result):
     """Display a review already validated by its caller; perform no new reads."""
+    presence_review = result.get("schema_version") == "workflow-reported-input-review-v2"
     st.caption("本次只读输入检查；报告具备不代表科学适用或本机执行已获授权。")
     for route in result["route_results"]:
         with st.container(border=True):
             _text(route["label"])
-            _render_check(route["assessment"]["decision_check"])
+            _render_check(route["assessment"]["decision_check"], presence_review=presence_review)
             _text("本机执行：尚未绑定执行合同和数据；未授权，未执行。")
             _text("完整科学适用性：尚未建立。")
             for requirement in route["requirements"]:
                 with st.expander("输入前提与来源"):
                     _text(requirement["label"])
-                    _render_check(requirement["check"])
-                    label = ('模型提取的用户报告：' if requirement.get('report_origin') ==
-                             'model_extracted_user_text_not_independently_verified' else '用户声明：')
-                    _text(label + {None: "未说明", False: "明确没有", True: "声明具备"}[
-                        requirement["reported_value"]])
+                    _render_check(requirement["check"], presence_review=presence_review)
+                    if presence_review:
+                        # Pointer presence and its boolean/unknown state are separate.
+                        # A null entered in the form is not natural-language evidence.
+                        is_model = requirement.get('report_origin') == (
+                            'model_extracted_user_text_not_independently_verified')
+                        label = '模型提取状态：' if is_model else '结构化输入声明：'
+                        if not requirement["report_present"]:
+                            state = ("本次检查尚未绑定该项报告（状态未确认）" if is_model else
+                                     "本次结构化报告未提交该字段（状态未确认）")
+                        elif requirement["reported_value"] is None:
+                            state = ("已提交该项提取，输入状态未确认" if is_model else
+                                     "该项已提交，状态未确认")
+                        else:
+                            state = {False: "明确没有", True: "声明具备"}[requirement["reported_value"]]
+                        _text(label + state)
+                        if is_model:
+                            _text("提取状态尚未独立核验；不等于实际数据具备或有效。")
+                    else:
+                        label = ('模型提取的用户报告：' if requirement.get('report_origin') ==
+                                 'model_extracted_user_text_not_independently_verified' else '用户声明：')
+                        _text(label + {None: "未说明", False: "明确没有", True: "声明具备"}[
+                            requirement["reported_value"]])
                     for binding in requirement["source_bindings"]:
                         attribute = binding["attribute"]
                         _text("来源列明的输入：" + attribute["value"])
@@ -108,7 +128,7 @@ def render_workflow_inputs(ledger):
         catalog = record.get("catalog")
         if record.get("catalog_hash") != digest:
             raise ValueError("开发目录内容与固定哈希不符")
-        from .workflow_inputs import WorkflowInputService
+        from .workflow_inputs import WorkflowInputService, REPORTED_INPUT_STATE_VERSION
         service = WorkflowInputService(ledger, catalog, expected_catalog_hash=digest)
         routes = service.catalog["routes"]
     except (ValueError, KeyError, TypeError, RuntimeError) as exc:
@@ -140,11 +160,12 @@ def render_workflow_inputs(ledger):
         reported[key] = _VALUES[value]
     profile = {"reported_inputs": reported}
     fingerprint = content_hash({"catalog_hash": digest, "route_ids": route_ids, "profile": profile,
+                                "review_version": REPORTED_INPUT_STATE_VERSION,
                                 "governance_version": ledger.get_state("governance_version", 0)})
     result_key = prefix + "result"
     if st.button("检查这些输入声明", key=prefix + "evaluate"):
         try:
-            result = service.evaluate(route_ids, profile)
+            result = service.evaluate(route_ids, profile, review_version=REPORTED_INPUT_STATE_VERSION)
             st.session_state[result_key] = {"fingerprint": fingerprint, "result": result}
         except (ValueError, KeyError, TypeError, RuntimeError) as exc:
             st.session_state.pop(result_key, None)

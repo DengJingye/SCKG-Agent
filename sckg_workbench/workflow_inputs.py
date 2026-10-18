@@ -24,6 +24,7 @@ from .storage import canonical_json, content_hash
 Identifier = Annotated[str, Field(pattern=r'^[a-z][a-z0-9_]{0,79}$')]
 Digest = Annotated[str, Field(pattern=r'^[0-9a-f]{64}$')]
 Label = Annotated[str, Field(min_length=1, max_length=240)]
+REPORTED_INPUT_STATE_VERSION = 'reported_input_state_v2'
 
 
 class WorkflowInputError(ValueError):
@@ -75,12 +76,17 @@ class WorkflowInputCatalog(Contract):
         return self
 
 
-def _check(status):
+def _check(status, *, review_version=None):
     actions = {'reported_met': 'conditional_plan', 'reported_unmet': 'blocked',
                'unknown': 'needs_evidence'}
     reasons = {'reported_met': '用户报告具备已列输入；未独立测量，也未检查全部科学前提。',
                'reported_unmet': '用户明确报告缺少至少一项已列输入；本路线保持阻断。',
                'unknown': '至少一项已列输入尚未明确报告；需补充信息。'}
+    if review_version == REPORTED_INPUT_STATE_VERSION:
+        # A present null is a submitted unknown state, not proof of a quote,
+        # measured observations, or an absent user report. Text provenance is
+        # checked separately by the opt-in workflow conversation adapter.
+        reasons['unknown'] = '至少一项已列输入状态未确认；需补充信息。'
     return CompactCheck(f='no_claim', p=status, a=actions[status], r=reasons[status], q=[])
 
 
@@ -127,7 +133,9 @@ class WorkflowInputService:
                 'authority':'development_candidate_only', 'recommendation_eligible':False}
 
     def evaluate(self, route_ids, reported_profile, *, report_origin='explicit_structured_user_report_not_measurement',
-                 _connection=None):
+                 review_version=None, _connection=None):
+        if review_version not in (None, REPORTED_INPUT_STATE_VERSION):
+            raise WorkflowInputError('Unknown reported input review version')
         if report_origin not in {'explicit_structured_user_report_not_measurement',
                                  'model_extracted_user_text_not_independently_verified'}:
             raise WorkflowInputError('Unknown input report origin')
@@ -185,13 +193,14 @@ class WorkflowInputService:
                     if value is not None and type(value) is not bool:
                         raise WorkflowInputError('Input availability must be explicit true, false or null; metadata names are not reports')
                     status = 'unknown' if value is None else ('reported_met' if value else 'reported_unmet')
-                    check = _check(status)
+                    check = _check(status, review_version=review_version)
                     checks.append(CompactStepCheck(i=f's{index}',**check.model_dump()))
                     requirements.append({**deepcopy(requirement), 'source_bindings':bindings,
                         'report_present':present, 'reported_value':value,
                         'reported_value_hash':content_hash(value) if present else None,
                         'report_origin':report_origin})
-                wire = CompactAssessment(d=_check(_aggregate([c.p for c in checks])),s=checks)
+                wire = CompactAssessment(d=_check(_aggregate([c.p for c in checks]),
+                    review_version=review_version),s=checks)
                 assessment = _normalize_compact_assessment(wire,{'bindings':[]})
                 # There is no newly judged scientific factual claim in this
                 # deterministic check. Full original candidate facts stay below.
@@ -214,4 +223,7 @@ class WorkflowInputService:
             'model_calls':0,'scientific_fits':0,'recommendation_eligible':False,
             'report_mapping_origin':'developer_source_interpretation_not_human_review',
             'independent_input_verification':'not_established'}
+        if review_version == REPORTED_INPUT_STATE_VERSION:
+            result['schema_version'] = 'workflow-reported-input-review-v2'
+            result['reported_input_state_version'] = review_version
         return {**result,'result_hash':content_hash(result)}

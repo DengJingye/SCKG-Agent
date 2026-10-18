@@ -40,3 +40,5 @@ result = models.invoke(
 历史V2真实记录：原 W02、全新会话，冻结最多 3 次调用。实际 1 次返回 `deepseek-v4-pro-ga-260813`、`finish_reason=stop`，报告 5,536 输入和 806 输出 tokens（合计 6,342），金额未知。完整 schema 拒绝最终回答中的两个长 candidate ID：它们不符合 E 编号格式和长度限制。另观察到 evaluate 动作同时填写 answer；提示和适配器要求其为空，初始 schema 尚未编码此阶段关联，不能把它混称为本次 schema 的直接报错。没有运行工具，原生旅程失败、界面不可用，剩余两次额度关闭。旧 HTTP 400 的原因仍未知。下一版需显式编码阶段条件；不能以放宽别名或自动修复绕过验收。
 
 V3后续记录：新表单显式绑定阶段合同，原W02的新独立单例已以2次请求完成检查→回答及保存轮次重放；V2失败和未用额度仍关闭。阶段约束、兼容性及单例边界见[阶段合同](WORKFLOW_PHASE_CONTRACT.md)。
+
+当前新流程表单使用 `report_presence_v4`，保留阶段与E/missing格式，并区分本次未绑定报告、已绑定但状态未知。程序调用需在目录选项中显式添加 `answer_contract_version="report_presence_v4"`；不指定版本的旧API仍使用V2。V1–V3原记录不迁移，详见[报告绑定与状态](WORKFLOW_REPORT_PRESENCE.md)。

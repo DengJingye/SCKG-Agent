@@ -19,7 +19,7 @@ from .evidence_answers import (CompactAnswerV3, _call_binding,
 from .premise_context import unicode_spans
 from .storage import canonical_json, content_hash
 from .model_service import output_contract_request
-from .workflow_inputs import WorkflowInputService
+from .workflow_inputs import WorkflowInputService, REPORTED_INPUT_STATE_VERSION
 
 
 ORIGIN = 'model_extracted_user_text_not_independently_verified'
@@ -43,6 +43,7 @@ candidate_sources的每个E条目为source_columns顺序的数组；typed_attrib
 """
 EXPLICIT_MISSING_VERSION = 'explicit_missing_v2'
 PHASE_CONTRACT_VERSION = 'phase_bound_v3'
+REPORT_PRESENCE_VERSION = 'report_presence_v4'
 JSON_OBJECT_CANONICAL = 'json_object_canonical_v1'
 _UNSET_VERSION = object()
 EXPLICIT_MISSING_INSTRUCTIONS = """\n本轮answer_contract_version=explicit_missing_v2，沿用CompactAnswerV3，不改变输入检查或执行资格。
@@ -58,6 +59,20 @@ PHASE_CONTRACT_INSTRUCTIONS = EXPLICIT_MISSING_INSTRUCTIONS.replace(
     'answer_contract_version=explicit_missing_v2', 'answer_contract_version=phase_bound_v3') + """\n阶段合同：第一次只能evaluate_workflow_inputs，answer必须为null。先提交相关路线和原用户原话报告，等待只读工具检查；不能同时生成最终回答。
 工具返回后才可finish；若再次evaluate，也必须answer=null，并提交完整替换检查。finish时route_ids=[]、reports=[]、answer必须是完整CompactAnswerV3对象。
 E编号仅由工具返回，不在第一次自行编造。最终s.e只能使用本次工具提供的E别名，不能用长candidate ID代替。保持来源、原话与missing规则；阶段格式不证明科学适用性或执行资格。
+"""
+REPORT_PRESENCE_PROMPT = PROMPT.replace(
+    '有未报告输入时m至少一项not_supplied，p=[]并提出具体追问。用户已明确报告具备不能因缺独立验证改称没提供。',
+    '未知状态和本次检查未绑定报告是不同概念。仅按工具answer_contract的unreported_requirements判断本次缺少绑定；'
+    '已绑定原话但状态未知的P不能因缺独立验证改称没提供。')
+REPORT_PRESENCE_INSTRUCTIONS = """\n本轮answer_contract_version=report_presence_v4，沿用CompactAnswerV3的严格阶段、E别名和missing格式。
+第一次只能evaluate_workflow_inputs，answer必须为null；先提交所选路线的完整原用户报告，等待工具。再次evaluate也必须answer=null，并完整替换检查。finish时route_ids=[]、reports=[]，answer必须是完整对象。
+E编号仅由工具返回；s.e只能用该步工具提供的E别名。p逐项精确复制工具premises的p/s/r/a，不改变true、false或null状态。
+unknown_requirements只是状态未知的兼容总览，不能据此称用户没有提供信息。unreported_requirements是所选路线在本次检查缺少有效原话绑定的输入；模型可能漏抽取，不能推断用户从没提到。非空时m须有兼容类别not_supplied且p=[]并请澄清，为空时禁止not_supplied。
+bound_unknown_requirements列出有本次原用户quote/Unicode span/调用绑定、但reported_value=null的P。每个这样的P都必须被m中independent_verification_missing覆盖，可合并或分项；只填source_evidence_missing不够。
+P及其quote是模型对原话的解释，精确原文和调用绑定仅证明出处，不证明原话与该输入相关、抽取完整、对象一致、实际观测有效或科学适用。工具中的report_present只表示提交了状态字段，不能单独证明有原话。
+not_supplied的p恒为[]；independent_verification_missing至少引用一个已有P；source_evidence_missing可引用已有P或为空。三类不得重复P或编造P，来源证据缺口不能代替输入独立核验缺口。
+有未确认输入就针对所选路线和当前问题追问其状态、生成方式或有效性；保留全部来源条件与未知、未完成科学前提和本机unbound限制，不把目录外路线变成当前问题的必备输入。
+missing_examples仅为格式示例，不是额外发现的缺口。以上合同不证明科学语义、性能或分析成功。
 """
 
 
@@ -80,7 +95,7 @@ class WorkflowAction(Contract):
 
 
 def _answer_version(version):
-    if version not in (None, EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION):
+    if version not in (None, EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION, REPORT_PRESENCE_VERSION):
         raise WorkflowChatError('Unknown workflow answer contract version')
     return version
 
@@ -95,7 +110,7 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
     schema['properties']['action'] = {'type':'string', 'enum': ['finish'] if final_only else
         (['evaluate_workflow_inputs'] if initial else ['evaluate_workflow_inputs','finish'])}
     name = 'development_workflow_action_v1'
-    if version in (EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION):
+    if version in (EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION, REPORT_PRESENCE_VERSION):
         # Pydantic's existing model validator remains authoritative. JSON Schema
         # also exposes its cross-field rules before a request is dispatched.
         missing = schema['$defs']['CompactMissingV3']
@@ -106,7 +121,7 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
                 ('not_supplied',0,0),('independent_verification_missing',1,8),
                 ('source_evidence_missing',0,8))]
         name = 'development_workflow_action_missing_v2'
-    if version == PHASE_CONTRACT_VERSION:
+    if version in (PHASE_CONTRACT_VERSION, REPORT_PRESENCE_VERSION):
         evaluate = {'properties':{'action':{'const':'evaluate_workflow_inputs'},
             'route_ids':{'minItems':1,'uniqueItems':True},'answer':{'type':'null'}}}
         finish = {'properties':{'action':{'const':'finish'},'route_ids':{'maxItems':0},
@@ -122,6 +137,8 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
         else:
             schema['oneOf'] = [evaluate,finish]
         name = 'development_workflow_action_phase_v3'
+        if version == REPORT_PRESENCE_VERSION:
+            name = 'development_workflow_action_report_presence_v4'
     return {'type':'json_schema','json_schema':{'name':name,
         'strict':True,'schema':schema}}
 
@@ -131,7 +148,8 @@ def catalog_service(ledger, options):
             or not {'catalog_record_id','catalog_hash'}.issubset(options)
             or set(options) - {'catalog_record_id','catalog_hash','wire_mode','answer_contract_version'}
             or ('wire_mode' in options and options['wire_mode'] != JSON_OBJECT_CANONICAL)
-            or ('answer_contract_version' in options and options['answer_contract_version'] != PHASE_CONTRACT_VERSION)
+            or ('answer_contract_version' in options and options['answer_contract_version'] not in
+                (PHASE_CONTRACT_VERSION, REPORT_PRESENCE_VERSION))
             or any(not isinstance(v, str) or not v for v in options.values())):
         raise WorkflowChatError('A fixed development catalog record and hash are required')
     state = ledger.get_state('workflow_input_catalog')
@@ -149,7 +167,8 @@ def validate_options(ledger, options):
     # Check exact source inputs even before registering a payable request.
     routes = [r['route_id'] for r in service.catalog['routes']]
     for offset in range(0, len(routes), 4):
-        service.evaluate(routes[offset:offset+4], {})
+        service.evaluate(routes[offset:offset+4], {}, **({'review_version':REPORTED_INPUT_STATE_VERSION}
+            if options.get('answer_contract_version') == REPORT_PRESENCE_VERSION else {}))
     return deepcopy(options)
 
 
@@ -165,10 +184,11 @@ def _request_estimate(messages, canonical_format, material, *, legacy_canonical=
     return len(encoded.encode()) + 256
 
 
-def _source_material(service, *, include_reviews=False):
+def _source_material(service, *, include_reviews=False, review_version=None):
     routes, sources, reviews = [], {}, {}
     for route in service.catalog['routes']:
-        review = service.evaluate([route['route_id']], {})['route_results'][0]
+        review = service.evaluate([route['route_id']], {}, **({'review_version':review_version}
+            if review_version is not None else {}))['route_results'][0]
         reviews[route['route_id']] = review
         sources.update({s['candidate_id']:s for s in review['source_records']})
         routes.append({'route_id':route['route_id'],'label':route['label'],
@@ -187,7 +207,8 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
     version = _answer_version(selected_version if answer_contract_version is _UNSET_VERSION else answer_contract_version)
     if ('answer_contract_version' in request['workflow_options'] and version != selected_version):
         raise WorkflowChatError('Workflow phase contract differs from the immutable user request')
-    source, source_reviews = _source_material(catalog_service(ledger, request['workflow_options']), include_reviews=True)
+    source, source_reviews = _source_material(catalog_service(ledger, request['workflow_options']), include_reviews=True,
+        review_version=REPORTED_INPUT_STATE_VERSION if version == REPORT_PRESENCE_VERSION else None)
     previous = [t for t in ledger.list_records('chat_request')
         if t['conversation_id'] == request['conversation_id'] and t['sequence'] < request['sequence']]
     previous.sort(key=lambda t:t['sequence'])
@@ -208,9 +229,10 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
             material['answer_contract_version'] = version
         if request['workflow_options'].get('wire_mode'):
             material['wire_mode'] = request['workflow_options']['wire_mode']
-        messages = [{'role':'system','content':PROMPT +
+        messages = [{'role':'system','content':(REPORT_PRESENCE_PROMPT if version == REPORT_PRESENCE_VERSION else PROMPT) +
                      (SHARED_TEXT_INSTRUCTIONS if feedback_encoding == 'shared_text_v2' else '') +
-                     (PHASE_CONTRACT_INSTRUCTIONS if version == PHASE_CONTRACT_VERSION else
+                     (REPORT_PRESENCE_INSTRUCTIONS if version == REPORT_PRESENCE_VERSION else
+                      PHASE_CONTRACT_INSTRUCTIONS if version == PHASE_CONTRACT_VERSION else
                       EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '')},
                     {'role':'user','content':canonical_json(material)}]
         estimate = _request_estimate(messages, workflow_format(
@@ -244,8 +266,74 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
         selected = selected[1:]
 
 
-def _answer_contract(review, interpretations, *, answer_contract_version=None):
+def _validate_report_presence_bindings(review, interpretations, report_context):
+    """Recheck text/call binding, without judging relevance or completeness.
+
+    The adapter has already checked these immutable user/call records against
+    its ledger. This pure check prevents a P alias or a present null profile
+    field alone from being upgraded into an original-text assertion.
+    """
+    if (review.get('schema_version') != 'workflow-reported-input-review-v2'
+            or review.get('reported_input_state_version') != REPORTED_INPUT_STATE_VERSION):
+        raise WorkflowChatError('Report presence requires its versioned input-state review')
+    requirements = {}
+    for route in review['route_results']:
+        for requirement in route['requirements']:
+            requirements.setdefault(requirement['report_pointer'], []).append(requirement)
+    present = {p for p,items in requirements.items() if any(r.get('report_present') is True for r in items)}
+    if (any(not isinstance(r,dict) or not isinstance(r.get('report_pointer'),str) for r in interpretations)
+            or present != {r['report_pointer'] for r in interpretations}):
+        raise WorkflowChatError('Report presence profile and interpretation bindings differ')
+    if not interpretations and not isinstance(report_context,dict):
+        return
+    if not isinstance(report_context,dict):
+        raise WorkflowChatError('Report presence requires original user and call bindings')
+    users = {u['user_turn_id']:u for u in report_context.get('user_turns',[])}
+    evaluations = [c for c in report_context.get('calls',[])
+        if (c.get('wire') or {}).get('action') == 'evaluate_workflow_inputs']
+    if not evaluations:
+        raise WorkflowChatError('Report presence requires its originating evaluation call')
+    call = evaluations[-1]
+    receipt, wire = call.get('receipt') or {}, call['wire']
+    if (receipt.get('status') != 'succeeded' or call.get('call_id') != receipt.get('call_id')
+            or receipt.get('structured_output_hash') != content_hash(wire)
+            or wire.get('route_ids') != [r['route_id'] for r in review['route_results']]
+            or len(wire.get('reports',[])) != len(interpretations)):
+        raise WorkflowChatError('Report presence evaluation call binding changed')
+    pointers = set()
+    for index, item in enumerate(interpretations,1):
+        pointer, user = item.get('report_pointer'), users.get(item.get('user_turn_id'))
+        quote = item.get('quote')
+        expected_wire = {k:item.get(k) for k in ('report_pointer','reported_value','user_turn_id','quote')}
+        if (pointer in pointers or pointer not in requirements
+                or item.get('premise_id') != f'P{index}'
+                or not user or not isinstance(quote,str) or not quote.strip()
+                or content_hash(user.get('prompt')) != user.get('prompt_hash')
+                or item.get('prompt_hash') != user.get('prompt_hash')
+                or item.get('conversation_id') != user.get('conversation_id')
+                or item.get('sequence') != user.get('sequence')
+                or item.get('unicode_spans') != unicode_spans(user['prompt'],quote)
+                or not item.get('unicode_spans')
+                or item.get('span_unit') != 'unicode_characters_half_open'
+                or item.get('semantic_origin') != ORIGIN
+                or item.get('semantic_interpretation_verified') is not False
+                or (item.get('reported_value') is not None and type(item.get('reported_value')) is not bool)
+                or item.get('reported_value_hash') != content_hash(item.get('reported_value'))
+                or item.get('call_id') != receipt.get('call_id')
+                or item.get('model_output_hash') != receipt.get('structured_output_hash')
+                or wire['reports'][index-1] != expected_wire
+                or any(r.get('report_present') is not True
+                    or r.get('reported_value') is not item.get('reported_value')
+                    or r.get('reported_value_hash') != item.get('reported_value_hash')
+                    or r.get('report_origin') != ORIGIN for r in requirements[pointer])):
+            raise WorkflowChatError('Report presence original quote, pointer or call binding changed')
+        pointers.add(pointer)
+
+
+def _answer_contract(review, interpretations, *, answer_contract_version=None, report_context=None):
     version = _answer_version(answer_contract_version)
+    if version == REPORT_PRESENCE_VERSION:
+        _validate_report_presence_bindings(review,interpretations,report_context)
     sources = {}
     for route in review['route_results']:
         sources.update({s['candidate_id']:s for s in route['source_records']})
@@ -268,7 +356,7 @@ def _answer_contract(review, interpretations, *, answer_contract_version=None):
     contract = {'step_routes':steps,'premises':premises,
         'evidence_aliases':[{'alias':alias,'candidate_id':cid} for cid,alias in aliases.items()],
         'unknown_requirements':unknown}
-    if version in (EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION):
+    if version in (EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION, REPORT_PRESENCE_VERSION):
         contract['answer_contract_version'] = version
         contract['missing_rules'] = {
             'not_supplied':{'p_min_items':0,'p_max_items':0,
@@ -286,6 +374,23 @@ def _answer_contract(review, interpretations, *, answer_contract_version=None):
         if premises:
             contract['missing_examples'].append({'k':'independent_verification_missing',
                 'p':[premises[0]['p']],'t':'该项原话仅为用户报告，尚未独立核验。'})
+    if version == REPORT_PRESENCE_VERSION:
+        bound = {r['report_pointer']:r for r in interpretations}
+        required = list(dict.fromkeys(q['report_pointer'] for r in review['route_results']
+            for q in r['requirements']))
+        contract['unreported_requirements'] = [p for p in required if p not in bound]
+        contract['bound_unknown_requirements'] = [{'report_pointer':p,'premise_id':bound[p]['premise_id']}
+            for p in required if p in bound and bound[p]['reported_value'] is None]
+        contract['extraction_completeness_not_established'] = True
+        contract['semantic_interpretation_verified'] = False
+        contract['missing_rules']['not_supplied']['meaning'] = (
+            '兼容类别名：澄清本次检查尚无有效原话绑定的输入；模型可能漏抽取，不能断言用户从没提到；p恒为空。')
+        contract['missing_rules']['independent_verification_missing']['meaning'] = (
+            '指出已绑定原话的模型解释或输入状态仍待核验；每个bound_unknown_requirements中的P都须被此类覆盖。')
+        contract['missing_rules'].pop('null_reports_are_supplied_premises',None)
+        contract['missing_rules']['bound_original_text_does_not_verify_input_state_or_semantics'] = True
+        contract['missing_rules']['not_supplied_iff_unreported_requirements_nonempty'] = True
+        contract['missing_examples'][0]['t'] = '请澄清本次尚无绑定报告的所选输入。'
     return contract
 
 
@@ -304,7 +409,9 @@ class WorkflowChatAdapter:
         selected_version = self.request['workflow_options'].get('answer_contract_version')
         if selected_version is not None and selected_version != _prepared_answer_version(self.prepared):
             raise WorkflowChatError('Workflow phase contract differs from the immutable user request')
-        if _source_material(service) != self.prepared['workflow_material']['catalog']:
+        if _source_material(service, review_version=REPORTED_INPUT_STATE_VERSION
+                if _prepared_answer_version(self.prepared) == REPORT_PRESENCE_VERSION else None
+                ) != self.prepared['workflow_material']['catalog']:
             raise WorkflowChatError('Workflow source context changed')
         for user in self.prepared['workflow_material']['user_turns']:
             original = self.ledger.get_record('chat_request', user['user_turn_id'])
@@ -369,12 +476,17 @@ class WorkflowChatAdapter:
                 'semantic_origin':ORIGIN,'semantic_interpretation_verified':False}
             reports.append(report)
             profile['reported_inputs'][pointer.removeprefix('/reported_inputs/')] = item['reported_value']
-        review = service.evaluate(action['route_ids'], profile, report_origin=ORIGIN)
+        version = _prepared_answer_version(self.prepared)
+        review = service.evaluate(action['route_ids'], profile, report_origin=ORIGIN,
+            **({'review_version':REPORTED_INPUT_STATE_VERSION} if version == REPORT_PRESENCE_VERSION else {}))
         self.review, self.interpretations = review, reports
         return {'tool':'evaluate_workflow_inputs','status':'development_input_review_only',
             'workflow_review':review,'workflow_interpretations':reports,
             'answer_contract':_answer_contract(review,reports,
-                answer_contract_version=_prepared_answer_version(self.prepared))}
+                answer_contract_version=version, report_context=self.report_context())}
+
+    def report_context(self):
+        return {'user_turns':self.prepared['workflow_material']['user_turns'], 'calls':self.calls}
 
     def feedback(self, result):
         if result.get('status') != 'development_input_review_only':
@@ -457,7 +569,7 @@ class WorkflowChatAdapter:
     def finish(self, action):
         self.check()
         contract = _answer_contract(self.review, self.interpretations,
-            answer_contract_version=_prepared_answer_version(self.prepared))
+            answer_contract_version=_prepared_answer_version(self.prepared), report_context=self.report_context())
         wire = CompactAnswerV3.model_validate(action['answer'])
         if [s.i for s in wire.s] != [s['step_id'] for s in contract['step_routes']]:
             raise WorkflowChatError('Final steps must correspond to the checked routes')
@@ -466,7 +578,14 @@ class WorkflowChatAdapter:
         for step, bound in zip(wire.s, contract['step_routes']):
             if not step.e or any(e not in bound['evidence_aliases'] for e in step.e):
                 raise WorkflowChatError('Final source aliases must belong to the corresponding checked route')
-        if contract['unknown_requirements'] and not any(m.k == 'not_supplied' for m in wire.m):
+        if _prepared_answer_version(self.prepared) == REPORT_PRESENCE_VERSION:
+            not_supplied = any(m.k == 'not_supplied' for m in wire.m)
+            if bool(contract['unreported_requirements']) != not_supplied:
+                raise WorkflowChatError('Missing-input questions must match inputs without a bound report in this check')
+            covered = {p for m in wire.m if m.k == 'independent_verification_missing' for p in m.p}
+            if any(r['premise_id'] not in covered for r in contract['bound_unknown_requirements']):
+                raise WorkflowChatError('Every bound unknown report requires an independent-verification question')
+        elif contract['unknown_requirements'] and not any(m.k == 'not_supplied' for m in wire.m):
             raise WorkflowChatError('Unreported inputs require an explicit missing-input question')
         context = {'premises':[{'premise_id':r['premise_id'],**deepcopy(r)} for r in self.interpretations]}
         self.answer = _normalize_compact_answer_v3(wire, {'bindings':contract['evidence_aliases']}, context)
@@ -484,6 +603,42 @@ class WorkflowChatAdapter:
         run['binding_hash'] = content_hash(run)
         return {'workflow_run':run,'workflow_review':self.review,
                 'workflow_interpretations':self.interpretations,'workflow_answer':self.answer}
+
+
+def _capacity_report_presence_fixture(prepared, reviews, route_ids, quote):
+    """Complete synthetic binding for sizing only; never a user/ledger record.
+
+    This deliberately replaces the sizing user's text with the quote envelope.
+    It cannot establish any actual report, semantic interpretation or model
+    receipt, and is never returned as a conversation result.
+    """
+    user = deepcopy(max(prepared['workflow_material']['user_turns'],key=lambda u:len(u['user_turn_id'])))
+    user.update(prompt=quote,prompt_hash=content_hash(quote))
+    pointers = list(dict.fromkeys(q['report_pointer'] for rid in route_ids
+        for q in reviews[rid]['requirements']))
+    wire_reports = [{'report_pointer':p,'reported_value':None,
+        'user_turn_id':user['user_turn_id'],'quote':quote} for p in pointers]
+    action = {'action':'evaluate_workflow_inputs','route_ids':list(route_ids),
+        'reports':wire_reports,'answer':None}
+    receipt = {'call_id':'synthetic-capacity-only-not-a-provider-call','status':'succeeded',
+        'structured_output_hash':content_hash(action)}
+    reports = [{**item,'premise_id':f'P{i}','unicode_spans':unicode_spans(quote,quote),
+        'span_unit':'unicode_characters_half_open','conversation_id':user['conversation_id'],
+        'sequence':user['sequence'],'prompt_hash':user['prompt_hash'],
+        'reported_value_hash':content_hash(None),'call_id':receipt['call_id'],
+        'model_output_hash':receipt['structured_output_hash'],
+        'semantic_origin':ORIGIN,'semantic_interpretation_verified':False}
+        for i,item in enumerate(wire_reports,1)]
+    review = {'schema_version':'workflow-reported-input-review-v2',
+        'reported_input_state_version':REPORTED_INPUT_STATE_VERSION,
+        'route_results':[deepcopy(reviews[r]) for r in route_ids],'result_hash':'0'*64}
+    for route in review['route_results']:
+        for requirement in route['requirements']:
+            requirement.update(report_present=True,reported_value=None,
+                reported_value_hash=content_hash(None),report_origin=ORIGIN)
+    context = {'user_turns':[user], 'calls':[{'call_id':receipt['call_id'],
+        'receipt':receipt,'wire':action}], 'scope':'synthetic_capacity_sizing_only_not_ledger_evidence'}
+    return review,reports,context,action
 
 
 def _context_capacity(prepared, reviews):
@@ -504,14 +659,20 @@ def _context_capacity(prepared, reviews):
         for route_ids in combinations(reviews,size):
             pointers = list(dict.fromkeys(q['report_pointer'] for rid in route_ids
                 for q in reviews[rid]['requirements']))
-            reports = [{'premise_id':f'P{i}','report_pointer':pointer,'reported_value':None,
-                'user_turn_id':user_id,'quote':quote} for i,pointer in enumerate(pointers,1)]
-            review = {'route_results':[reviews[r] for r in route_ids],'result_hash':'0'*64}
+            if version == REPORT_PRESENCE_VERSION:
+                review,reports,report_context,action = _capacity_report_presence_fixture(
+                    prepared,reviews,route_ids,quote)
+            else:
+                reports = [{'premise_id':f'P{i}','report_pointer':pointer,'reported_value':None,
+                    'user_turn_id':user_id,'quote':quote} for i,pointer in enumerate(pointers,1)]
+                review = {'route_results':[reviews[r] for r in route_ids],'result_hash':'0'*64}
+                report_context = None
+                action = {'action':'evaluate_workflow_inputs','route_ids':list(route_ids),
+                    'reports':[{k:v for k,v in r.items() if k!='premise_id'} for r in reports],'answer':None}
             result = {'tool':'evaluate_workflow_inputs','status':'development_input_review_only',
                 'workflow_review':review,'workflow_interpretations':reports,
-                'answer_contract':_answer_contract(review,reports,answer_contract_version=version)}
-            action = {'action':'evaluate_workflow_inputs','route_ids':list(route_ids),
-                'reports':[{k:v for k,v in r.items() if k!='premise_id'} for r in reports],'answer':None}
+                'answer_contract':_answer_contract(review,reports,answer_contract_version=version,
+                    report_context=report_context)}
             messages = adapter.messages_after_tool(action,result)
             estimate = _request_estimate(messages,workflow_format(
                 answer_contract_version=version),material,legacy_canonical=False)

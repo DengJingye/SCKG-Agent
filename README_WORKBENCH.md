@@ -54,7 +54,7 @@ SCKG_WORKBENCH_HOME="$HOME/sckg-method-demo01" .venv-workbench/bin/python -m str
 
 ### 显式 JSON 对象接口与完整本地合同
 
-开发流程对话可在“流程输出格式”中显式选择 JSON 对象接口，完整 schema 仍发送并独立验证；预算计入最终请求，失败不自动换格式或重试。见[使用与边界](docs/LOCAL_OUTPUT_CONTRACT.md)。此前V2单例因引用格式错误停止；新增[V3阶段合同](docs/WORKFLOW_PHASE_CONTRACT.md)后，同一原问题的新独立单例已用2次请求完成输入检查、追问及保存轮次重放。仅证明这一配置下的单例交互。
+开发流程对话可在“流程输出格式”中显式选择 JSON 对象接口，完整 schema 仍发送并独立验证；预算计入最终请求，失败不自动换格式或重试。见[使用与边界](docs/LOCAL_OUTPUT_CONTRACT.md)。此前V2单例因引用格式错误停止；[V3阶段合同](docs/WORKFLOW_PHASE_CONTRACT.md)已完成一个真实单例。当前新表单使用[V4报告绑定与输入状态](docs/WORKFLOW_REPORT_PRESENCE.md)，区分未绑定报告与已绑定相关原话但状态未知；模型可能漏抽取，原话绑定也不证明科学含义。本轮V4真实单例因摘要206字符超过180限制而失败，尚未通过完整交互验收。
 
 ## 可重跑验收
 
@@ -76,6 +76,6 @@ SCKG_WORKBENCH_HOME="$HOME/sckg-method-demo01" .venv-workbench/bin/python -m str
 
 [开发手册](docs/WORKBENCH_DEVELOPMENT.md) 给出短期、中期、长期目标及逐步验收：先打通可靠交互，再验证知识是否改善具体科学决策，最后做固定协议的确认评测和外部 agent 对照（包括 Genpilot）。
 
-默认采用一个主 agent、明确工具合同及独立验证器。多 agent 作为有明确分工和成本收益的实验选项；增加角色数量本身不是亮点。可展示的求职成果应来自实际日志、测试、产物和消融结果。当前没有证据支持“优于市场 agent”或“知识库带来科学提升 X%”；新增V3流程单例已完成真实交互和只读重放；完整领域可靠性与科学优势仍待后续验收。
+默认采用一个主 agent、明确工具合同及独立验证器。多 agent 作为有明确分工和成本收益的实验选项；增加角色数量本身不是亮点。可展示的求职成果应来自实际日志、测试、产物和消融结果。当前没有证据支持“优于市场 agent”或“知识库带来科学提升 X%”；历史V3单例仍能重放，当前V4单例失败如实保留。下一项先补总预算内的有界格式修复，再推进知识效用和外部比较。
 
 注释知识的具体补充与未知项见[流程候选说明](docs/ANNOTATION_WORKFLOW_CANDIDATES.md)；最终主/公开分支各464项工程验收和零API导入结果见[阶段记录](docs/WORKBENCH_VALIDATION.md#调用前格式限制与注释候选导入)。候选内容未升级正式推荐。

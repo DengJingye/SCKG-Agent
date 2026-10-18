@@ -140,14 +140,17 @@ def _phase_ui():
 
 
 def test_real_ui_options_always_bind_v3_for_new_submissions():
+    # Historical test ID is retained; new UI submissions now use the presence
+    # contract while all explicit V3 compatibility cases above stay unchanged.
+    from sckg_workbench.workflow_chat import REPORT_PRESENCE_VERSION
     from streamlit.testing.v1 import AppTest
     ui=AppTest.from_function(_phase_ui).run()
     assert not ui.exception
     default=json.loads(ui.json[0].value)
-    assert default['answer_contract_version']==PHASE_CONTRACT_VERSION and 'wire_mode' not in default
+    assert default['answer_contract_version']==REPORT_PRESENCE_VERSION and 'wire_mode' not in default
     ui.selectbox(key='research_workflow_wire_format').select('JSON 对象 + 完整本地合同').run()
     selected=json.loads(ui.json[0].value)
-    assert selected['answer_contract_version']==PHASE_CONTRACT_VERSION
+    assert selected['answer_contract_version']==REPORT_PRESENCE_VERSION
     assert selected['wire_mode']==JSON_OBJECT_CANONICAL
     ui.run()
     assert json.loads(ui.json[0].value)==selected and not ui.exception

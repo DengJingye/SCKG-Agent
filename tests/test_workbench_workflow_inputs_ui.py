@@ -81,9 +81,10 @@ def test_no_opt_in_catalog_shows_nothing_and_changes_no_ledger_rows(workflow):
 def test_unknown_absent_and_reported_present_are_distinct_without_science_or_execution_claim(workflow, monkeypatch):
     calls = []
     original = WorkflowInputService.evaluate
-    def counted(self, route_ids, profile):
+    def counted(self, route_ids, profile, **kwargs):
+        assert kwargs == {"review_version": "reported_input_state_v2"}
         calls.append(deepcopy(profile))
-        return original(self, route_ids, profile)
+        return original(self, route_ids, profile, **kwargs)
     monkeypatch.setattr(WorkflowInputService, "evaluate", counted)
     before = _snapshot(workflow.ledger)
     app = _ui(workflow.ledger)
@@ -92,13 +93,13 @@ def test_unknown_absent_and_reported_present_are_distinct_without_science_or_exe
     app.button[0].click().run()
     assert not app.exception and len(calls) == 1
     assert calls[-1] == {"reported_inputs": {"counts": None}}
-    assert "输入前提：尚未说明" in _visible(app)
+    assert "输入前提：状态未确认" in _visible(app)
     assert "来源事实支持：本预览不重新作科学判断（no_claim）" in _visible(app)
     assert "未授权，未执行" in _visible(app)
     app.run()
     assert not app.exception and len(calls) == 1
     app.selectbox[0].set_value("明确没有").run()
-    assert "旧结果已隐藏" in _visible(app) and "输入前提：尚未说明" not in _visible(app)
+    assert "旧结果已隐藏" in _visible(app) and "输入前提：状态未确认" not in _visible(app)
     assert len(calls) == 1
     app.button[0].click().run()
     assert not app.exception and "输入前提：报告不具备" in _visible(app)
@@ -131,7 +132,7 @@ def test_missing_tampered_or_path_based_catalog_is_unavailable_without_mutation(
 def test_route_changes_hide_old_result_and_shared_report_field_has_one_widget(workflow):
     app = _ui(workflow.ledger)
     app.button[0].click().run()
-    assert "输入前提：尚未说明" in _visible(app)
+    assert "输入前提：状态未确认" in _visible(app)
     app.multiselect[0].set_value(["synthetic_0", "synthetic_1"]).run()
     assert not app.exception and "旧结果已隐藏" in _visible(app)
     assert len(app.selectbox) == 1
