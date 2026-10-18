@@ -206,11 +206,13 @@ def _research_knowledge_mode_changed():
 
 def _workflow_wire_options(options):
     from .workflow_chat import JSON_OBJECT_CANONICAL, REPORT_PRESENCE_VERSION
+    from .workflow_format_repair import FINAL_FORMAT_REPAIR_POLICY
     selected = st.selectbox('流程输出格式', ['JSON Schema', 'JSON 对象 + 完整本地合同'],
         key='research_workflow_wire_format',
-        help='显式选择当前模型接口支持的格式。两者保留完整本地校验；失败后不会自动切换或重试。')
+        help='显式选择当前模型接口支持的格式。两者保留完整本地校验，不自动切换；仅可在原预算内对最终回答做一次格式修复。')
     result = dict(options)
     result['answer_contract_version'] = REPORT_PRESENCE_VERSION
+    result['repair_policy'] = FINAL_FORMAT_REPAIR_POLICY
     if selected == 'JSON 对象 + 完整本地合同':
         result['wire_mode'] = JSON_OBJECT_CANONICAL
     return result

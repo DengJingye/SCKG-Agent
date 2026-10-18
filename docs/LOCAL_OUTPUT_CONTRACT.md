@@ -41,4 +41,6 @@ result = models.invoke(
 
 V3后续记录：新表单显式绑定阶段合同，原W02的新独立单例已以2次请求完成检查→回答及保存轮次重放；V2失败和未用额度仍关闭。阶段约束、兼容性及单例边界见[阶段合同](WORKFLOW_PHASE_CONTRACT.md)。
 
+后续V4新提交可显式绑定[原额度内一次最终格式修复](WORKFLOW_FORMAT_REPAIR.md)：仅在成功只读检查后，对可核验的明确finish结构错误重新生成一次，仍占用原三次总调用上限。SDK不自动重试，不更换wire格式，原V4 schema及本地科学/来源检查不放宽；旧无policy请求保持原行为。
+
 当前新流程表单使用 `report_presence_v4`，保留阶段与E/missing格式，并区分本次未绑定报告、已绑定但状态未知。程序调用需在目录选项中显式添加 `answer_contract_version="report_presence_v4"`；不指定版本的旧API仍使用V2。V1–V3原记录不迁移，详见[报告绑定与状态](WORKFLOW_REPORT_PRESENCE.md)。

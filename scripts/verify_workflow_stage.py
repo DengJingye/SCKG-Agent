@@ -47,6 +47,7 @@ def hashes():
              ROOT / "scripts/bootstrap_method_demo.py",
              ROOT / "scripts/verify_annotation_stage.py"}
     files.add(ROOT / 'scripts/verify_output_contract_stage.py')
+    files.add(ROOT / 'scripts/verify_workflow_format_repair_stage.py')
     files.add(ROOT / 'tests/fixtures/workflow_missing_v2_formats.json')
     files.add(ROOT / 'tests/fixtures/workflow_phase_v3_formats.json')
     for directory in ("sckg_workbench", "core", "engine", "execution", "eval", "tests"):

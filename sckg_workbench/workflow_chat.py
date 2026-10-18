@@ -20,6 +20,8 @@ from .premise_context import unicode_spans
 from .storage import canonical_json, content_hash
 from .model_service import output_contract_request
 from .workflow_inputs import WorkflowInputService, REPORTED_INPUT_STATE_VERSION
+from .workflow_format_repair import (FINAL_FORMAT_REPAIR_POLICY, FORMAT_REPAIR_RUN_VERSION,
+    FORMAT_REPAIR_RESERVATION_KIND, FORMAT_REPAIR_INSTRUCTIONS, FormatRepairError)
 
 
 ORIGIN = 'model_extracted_user_text_not_independently_verified'
@@ -146,10 +148,12 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
 def catalog_service(ledger, options):
     if (not isinstance(options, dict)
             or not {'catalog_record_id','catalog_hash'}.issubset(options)
-            or set(options) - {'catalog_record_id','catalog_hash','wire_mode','answer_contract_version'}
+            or set(options) - {'catalog_record_id','catalog_hash','wire_mode','answer_contract_version','repair_policy'}
             or ('wire_mode' in options and options['wire_mode'] != JSON_OBJECT_CANONICAL)
             or ('answer_contract_version' in options and options['answer_contract_version'] not in
                 (PHASE_CONTRACT_VERSION, REPORT_PRESENCE_VERSION))
+            or ('repair_policy' in options and (options['repair_policy'] != FINAL_FORMAT_REPAIR_POLICY
+                or options.get('answer_contract_version') != REPORT_PRESENCE_VERSION))
             or any(not isinstance(v, str) or not v for v in options.values())):
         raise WorkflowChatError('A fixed development catalog record and hash are required')
     state = ledger.get_state('workflow_input_catalog')
@@ -229,11 +233,14 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
             material['answer_contract_version'] = version
         if request['workflow_options'].get('wire_mode'):
             material['wire_mode'] = request['workflow_options']['wire_mode']
+        if request['workflow_options'].get('repair_policy'):
+            material['repair_policy'] = request['workflow_options']['repair_policy']
         messages = [{'role':'system','content':(REPORT_PRESENCE_PROMPT if version == REPORT_PRESENCE_VERSION else PROMPT) +
                      (SHARED_TEXT_INSTRUCTIONS if feedback_encoding == 'shared_text_v2' else '') +
                      (REPORT_PRESENCE_INSTRUCTIONS if version == REPORT_PRESENCE_VERSION else
                       PHASE_CONTRACT_INSTRUCTIONS if version == PHASE_CONTRACT_VERSION else
-                      EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '')},
+                      EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '') +
+                     (FORMAT_REPAIR_INSTRUCTIONS if material.get('repair_policy') else '')},
                     {'role':'user','content':canonical_json(material)}]
         estimate = _request_estimate(messages, workflow_format(
             initial=True,answer_contract_version=version), material)
@@ -400,9 +407,16 @@ class WorkflowChatAdapter:
         self.ledger, self.models, self.request, self.prepared = ledger, models, request, prepared
         self.calls, self.review, self.interpretations, self.answer = [], None, [], None
         self.final_wire = None
+        self.attempts, self.repair_reservation = [], None
+
+    @property
+    def repair_policy(self):
+        return ((self.prepared or {}).get('workflow_material') or {}).get('repair_policy')
 
     def check(self):
         service = catalog_service(self.ledger, self.request['workflow_options'])
+        if self.request['workflow_options'].get('repair_policy') != self.repair_policy:
+            raise WorkflowChatError('Workflow repair policy differs from the immutable user request')
         if (self.request['workflow_options'].get('wire_mode') !=
                 self.prepared['workflow_material'].get('wire_mode')):
             raise WorkflowChatError('Workflow wire mode differs from the immutable user request')
@@ -434,23 +448,100 @@ class WorkflowChatAdapter:
         return (self.canonical_format(final_only) if self.prepared['workflow_material'].get('wire_mode')
                 == JSON_OBJECT_CANONICAL else None)
 
-    def accept(self, response, messages, response_format, budget):
+    def accept(self, response, messages, response_format, budget, *, attempt_index=None, final_only=None,
+               full_input_proxy=None):
         profile = self.ledger.get_record('model_profile', self.request['profile_id'])
-        final_only = len(self.calls) == 2
+        if self.repair_policy:
+            if attempt_index != len(self.attempts) or final_only is not (
+                    attempt_index == 2 or self.repair_reservation is not None):
+                raise WorkflowChatError('Workflow actual attempt phase differs')
+            raw_hash = response.get('raw_output_record_hash')
+            if (not isinstance(raw_hash,str) or len(raw_hash) != 64
+                    or any(c not in '0123456789abcdefABCDEF' for c in raw_hash)):
+                raise WorkflowChatError('Workflow repaired turn requires an actual raw output binding')
+            returned_model = response.get('returned_model')
+            if not isinstance(returned_model,str) or not returned_model.strip():
+                raise WorkflowChatError('Workflow repaired turn requires a returned model identity')
+        else:
+            final_only = len(self.calls) == 2
         if response_format != self.format(final_only):
             raise WorkflowChatError('Workflow wire format differs from the selected output contract')
         receipt, actual_request = _call_binding(self.models, profile, response, messages, response_format, budget,
             validation_format=self.validation_format(final_only))
+        if self.repair_policy and self.calls and (self.calls[-1]['profile_hash'] != content_hash(profile)
+                or receipt['returned_model'] != self.calls[-1]['receipt'].get('returned_model')):
+            raise WorkflowChatError('Workflow returned model changed within the repaired turn')
         wire = WorkflowAction.model_validate(response['structured'])
         if wire.action == 'finish':
             if self.review is None or wire.route_ids or wire.reports or wire.answer is None:
                 raise WorkflowChatError('Finish needs a checked workflow and an answer, without new inputs')
         elif wire.answer is not None or not wire.route_ids or len(set(wire.route_ids)) != len(wire.route_ids):
             raise WorkflowChatError('Workflow evaluation needs distinct routes and answer=null')
-        self.calls.append({'call_id':receipt['call_id'],'receipt':deepcopy(receipt),
+        call = {'call_id':receipt['call_id'],'receipt':deepcopy(receipt),
             'request_hash':actual_request['request_hash'],'profile_hash':content_hash(profile),
-            'budget':deepcopy(budget),'wire':wire.model_dump(mode='json')})
+            'budget':deepcopy(budget),'wire':wire.model_dump(mode='json')}
+        if self.repair_policy:
+            call['attempt_index'] = attempt_index
+            self.record_attempt(receipt,messages,response_format,budget,attempt_index=attempt_index,
+                final_only=final_only,full_input_proxy=full_input_proxy,outcome='accepted_action')
+        self.calls.append(call)
         return wire.model_dump(mode='json')
+
+    def record_attempt(self, receipt, messages, response_format, budget, *, attempt_index,
+                       final_only, full_input_proxy, outcome):
+        if (attempt_index != len(self.attempts) or not 0 <= attempt_index < 3
+                or not isinstance(receipt.get('call_id'),str) or not receipt['call_id']
+                or any(a['call_id'] == receipt['call_id'] for a in self.attempts)):
+            raise WorkflowChatError('Workflow attempt indices and call identities must be contiguous and unique')
+        request = self.ledger.get_record('model_request',receipt['call_id']) or {}
+        profile = self.ledger.get_record('model_profile',self.request['profile_id'])
+        self.attempts.append({'attempt_index':attempt_index,'call_id':receipt['call_id'],
+            'receipt':deepcopy(receipt),'request_hash':request.get('request_hash'),
+            'profile_hash':content_hash(profile),'budget':deepcopy(budget),'outcome':outcome,
+            'final_only':final_only,'full_input_proxy':full_input_proxy,
+            'response_format_hash':content_hash(response_format),
+            'local_validation_format_hash':content_hash(self.validation_format(final_only)),
+            'raw_output_record_hash':receipt.get('raw_output_record_hash'),
+            'repair_of_call_id':self.repair_reservation['failed_call_id'] if self.repair_reservation else None})
+
+    def plan_repair(self, error, messages, response_format, budget, *, next_budget,
+                    proxy_used, proxy_cap, cost_known):
+        from .workflow_format_repair import bind_invalid_final, repair_messages, admit_request, known_usage
+        if (self.repair_policy != FINAL_FORMAT_REPAIR_POLICY or self.review is None
+                or self.repair_reservation is not None or len(self.attempts) >= 3
+                or not self.calls or self.calls[-1]['wire']['action'] != 'evaluate_workflow_inputs'):
+            raise FormatRepairError('final_format_repair_not_available')
+        self.check()
+        profile = self.ledger.get_record('model_profile',self.request['profile_id'])
+        rejected = self.attempts[-1]
+        if any(a['outcome'] != 'accepted_action' or not known_usage(a['receipt']) for a in self.attempts[:-1]):
+            raise FormatRepairError('prior_attempt_not_accepted')
+        final_format = self.canonical_format(True)
+        binding = bind_invalid_final(self.ledger,profile,error,messages,response_format,budget,
+            validation_format=self.validation_format(rejected['final_only']),final_format=final_format,
+            baseline_call=self.calls[-1])
+        replacement = repair_messages(messages,binding['feedback'])
+        proxy = admit_request(profile,replacement,self.format(True),next_budget,
+            validation_format=self.validation_format(True),proxy_used=proxy_used,proxy_cap=proxy_cap,
+            cost_known=cost_known)
+        reservation = {'schema_version':'workflow-final-format-repair-reservation-v1',
+            'turn_id':self.request['id'],'request_hash':self.request['request_hash'],
+            'repair_policy':self.repair_policy,'failed_call_id':rejected['call_id'],
+            'failed_attempt_index':rejected['attempt_index'],'next_attempt_index':len(self.attempts),
+            'failed_request_hash':binding['request_hash'],'failed_raw_output_record_hash':binding['raw_output_record_hash'],
+            'feedback':binding['feedback'],'feedback_hash':content_hash(binding['feedback']),
+            'messages_hash':content_hash(replacement),'canonical_format_hash':content_hash(final_format),
+            'profile_hash':content_hash(profile),'next_budget':deepcopy(next_budget),'full_input_proxy':proxy}
+        return replacement,reservation
+
+    def schedule_repair(self, error, messages, response_format, budget, *, next_budget,
+                        proxy_used, proxy_cap, cost_known, execution_guard=None):
+        from .workflow_format_repair import reserve_once
+        replacement,reservation = self.plan_repair(error,messages,response_format,budget,
+            next_budget=next_budget,proxy_used=proxy_used,proxy_cap=proxy_cap,cost_known=cost_known)
+        self.repair_reservation = reserve_once(self.ledger,self.request,reservation,execution_guard=execution_guard)
+        self.attempts[-1]['outcome'] = 'known_format_rejected'
+        return replacement
 
     def tool(self, action, receipt):
         self.check()
@@ -556,6 +647,8 @@ class WorkflowChatAdapter:
             material['answer_contract_version'] = _prepared_answer_version(self.prepared)
         if original.get('wire_mode'):
             material['wire_mode'] = original['wire_mode']
+        if original.get('repair_policy'):
+            material['repair_policy'] = original['repair_policy']
         material.update(source_snapshot_hash=original['catalog']['source_snapshot_hash'],
             available_route_index=[{'route_id':r['route_id'],'label':r['label'],
                 'report_pointers':[q['report_pointer'] for q in r['requirements']]}
@@ -601,6 +694,10 @@ class WorkflowChatAdapter:
             'workflow_answer':deepcopy(self.answer),'final_wire':deepcopy(self.final_wire),
             'scientific_semantics_verified':False,'execution_authorized':False}
         run['binding_hash'] = content_hash(run)
+        if self.repair_policy:
+            run.update(schema_version=FORMAT_REPAIR_RUN_VERSION,repair_policy=self.repair_policy,
+                attempts=deepcopy(self.attempts),repair_reservation=deepcopy(self.repair_reservation))
+            run['binding_hash'] = content_hash({k:v for k,v in run.items() if k != 'binding_hash'})
         return {'workflow_run':run,'workflow_review':self.review,
                 'workflow_interpretations':self.interpretations,'workflow_answer':self.answer}
 
@@ -692,6 +789,9 @@ def validate_turn(ledger, models, request, turn):
     version = _prepared_answer_version(prepared)
     if prepared != prepare_context(ledger, request, feedback_encoding=encoding,answer_contract_version=version):
         raise WorkflowChatError('Saved developer context differs from its current source/user bindings')
+    if prepared['workflow_material'].get('repair_policy'):
+        from .workflow_format_repair import validate_repaired_turn
+        return validate_repaired_turn(ledger,models,request,turn,prepared)
     run = turn.get('workflow_run') or {}
     if (run.get('schema_version') != 'development-workflow-chat-run-v1'
             or run.get('binding_hash') != content_hash({k:v for k,v in run.items() if k != 'binding_hash'})

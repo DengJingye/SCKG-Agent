@@ -191,6 +191,8 @@ class AnalysisAgentLoop:
             prepare_messages(prepared["messages"], options, self.datasets.get_asset(options["asset_id"])))
         receipts, steps = [], []
         total_cost, cost_known, token_upper_bound = 0.0, True, 0
+        repair_enabled = bool(workflow and workflow.repair_policy)
+        proxy_reservations = 0
         token_cap = MAX_MODEL_CALLS * (budget["max_input_tokens"] + budget["max_output_tokens"])
 
         def output(status, *, answer=None, error=None):
@@ -202,7 +204,8 @@ class AnalysisAgentLoop:
                         "max_total_token_reservation": token_cap,
                         "charged_or_reserved_tokens": token_upper_bound,
                         "cost_known": cost_known, "cost_usd": total_cost if cost_known else None,
-                        "max_cost_usd": budget.get("max_cost_usd")},
+                        "max_cost_usd": budget.get("max_cost_usd"),
+                        **({'input_proxy_plus_output_reservations':proxy_reservations} if repair_enabled else {})},
                     "analysis_task_ids": [s["result"]["task_id"] for s in steps
                                           if s["action"] == "run_scrublet" and s.get("result", {}).get("task_id")],
                     "referenced_analysis_task_ids": [s["result"]["task_id"] for s in steps
@@ -242,17 +245,51 @@ class AnalysisAgentLoop:
             reserved = call_budget["max_input_tokens"] + call_budget["max_output_tokens"]
             if token_upper_bound + reserved > token_cap:
                 return output("partial", error={"type": "AgentBudgetStopped", "message": "本轮累计token预算已用尽。"})
-            final_only = index == MAX_MODEL_CALLS - 1 or len(steps) == MAX_TOOL_STEPS
+            final_only = (index == MAX_MODEL_CALLS - 1 or len(steps) == MAX_TOOL_STEPS
+                or bool(repair_enabled and workflow.repair_reservation))
             response_format = workflow.format(final_only) if workflow else _format(final_only, readonly=readonly)
             contract_options = {}
             if workflow and workflow.validation_format(final_only) is not None:
                 contract_options['validation_format'] = workflow.validation_format(final_only)
+            full_input_proxy = None
+            if repair_enabled:
+                from .workflow_format_repair import admit_request, record_account, FormatRepairError
+                try:
+                    current_profile = self.ledger.get_record('model_profile',request['profile_id'])
+                    if workflow.calls and content_hash(current_profile) != workflow.calls[-1]['profile_hash']:
+                        return output('blocked',error={'type':'ModelProfileChanged',
+                            'message':'当前模型配置已变化；未发起后续请求。'})
+                    full_input_proxy = admit_request(current_profile,
+                        messages,response_format,call_budget,validation_format=contract_options.get('validation_format'),
+                        proxy_used=proxy_reservations,proxy_cap=token_cap,cost_known=cost_known)
+                except FormatRepairError as exc:
+                    return output('partial',error={'type':'AgentBudgetStopped','message':str(exc)})
             try:
                 response = self.models.invoke(request["profile_id"], messages, passphrase=passphrase,
                     outbound_authorized=True, budget=call_budget, response_format=response_format,
                     **contract_options)
             except Exception as exc:
                 receipt = getattr(exc, "receipt", None)
+                if repair_enabled and receipt:
+                    receipts.append(receipt)
+                    tokens, cost, known = record_account(receipt,call_budget)
+                    token_upper_bound += tokens; total_cost += cost; cost_known = cost_known and known
+                    proxy_reservations += full_input_proxy + call_budget['max_output_tokens']
+                    try:
+                        workflow.record_attempt(receipt,messages,response_format,call_budget,attempt_index=index,
+                            final_only=final_only,full_input_proxy=full_input_proxy,outcome='terminal_failure')
+                        if problem := check_evidence():
+                            return output('blocked',error={'type':'EvidenceChanged','message':problem})
+                        next_budget = dict(budget)
+                        if budget.get('max_cost_usd') is not None:
+                            next_budget['max_cost_usd'] = budget['max_cost_usd'] - total_cost
+                        messages = workflow.schedule_repair(exc,messages,response_format,call_budget,
+                            next_budget=next_budget,proxy_used=proxy_reservations,proxy_cap=token_cap,
+                            cost_known=cost_known,execution_guard=execution_guard)
+                    except Exception:
+                        return output('failed',error={'type':type(exc).__name__,'message':str(exc)[:500],
+                            'call_id':getattr(exc,'call_id',None),'outcome':getattr(exc,'outcome','not_completed')})
+                    continue
                 if receipt:
                     receipts.append(receipt)
                     token_upper_bound += reserved
@@ -261,14 +298,31 @@ class AnalysisAgentLoop:
                     "call_id": getattr(exc, "call_id", None), "outcome": getattr(exc, "outcome", "not_completed")})
             receipt = {k: v for k, v in response.items() if k not in {"text", "structured", "embeddings"}}
             receipts.append(receipt)
+            if repair_enabled:
+                proxy_reservations += full_input_proxy + call_budget['max_output_tokens']
             usage = receipt.get("usage") or {}
             counts = [usage.get("input_tokens"), usage.get("output_tokens")]
-            token_upper_bound += sum(counts) if all(type(v) is int and v >= 0 for v in counts) else reserved
-            if receipt.get("cost_known") is True and isinstance(receipt.get("cost_usd"), (int, float)):
-                total_cost += receipt["cost_usd"]
+            if repair_enabled:
+                charged, cost, known = record_account(receipt,call_budget)
+                token_upper_bound += charged
+                total_cost += cost; cost_known = cost_known and known
             else:
-                cost_known = False
+                token_upper_bound += sum(counts) if all(type(v) is int and v >= 0 for v in counts) else reserved
+                if receipt.get("cost_known") is True and isinstance(receipt.get("cost_usd"), (int, float)):
+                    total_cost += receipt["cost_usd"]
+                else:
+                    cost_known = False
+            if repair_enabled:
+                from .workflow_format_repair import known_usage
+                if not known_usage(receipt):
+                    workflow.record_attempt(receipt,messages,response_format,call_budget,attempt_index=index,
+                        final_only=final_only,full_input_proxy=full_input_proxy,outcome='terminal_failure')
+                    return output('partial',error={'type':'UnknownModelUsage',
+                        'message':'已收到输出，但用量未知；本策略不继续请求或工具操作。'})
             if response.get("status") != "succeeded":
+                if repair_enabled:
+                    workflow.record_attempt(receipt,messages,response_format,call_budget,attempt_index=index,
+                        final_only=final_only,full_input_proxy=full_input_proxy,outcome='terminal_failure')
                 return output("partial", error={"type": "IncompleteModelResponse", "message": "分析助手返回未完成或超预算的输出；未重试。"})
             action = response.get("structured") or {}
             # Independently enforce the allowlist even with injected transports.
@@ -276,8 +330,13 @@ class AnalysisAgentLoop:
                                                     {"inspect_dataset", "run_scrublet", "finish"})
             if workflow:
                 try:
-                    action = workflow.accept(response, messages, response_format, call_budget)
+                    action = workflow.accept(response, messages, response_format, call_budget,
+                        **({'attempt_index':index,'final_only':final_only,'full_input_proxy':full_input_proxy}
+                            if repair_enabled else {}))
                 except Exception as exc:
+                    if repair_enabled and len(workflow.attempts) == index:
+                        workflow.record_attempt(receipt,messages,response_format,call_budget,attempt_index=index,
+                            final_only=final_only,full_input_proxy=full_input_proxy,outcome='terminal_failure')
                     return output('failed', error={'type':'InvalidWorkflowAction','message':str(exc)[:500]})
             elif set(action) != {"action", "answer"} or action.get("action") not in allowed or not isinstance(action.get("answer"), str):
                 return output("failed", error={"type": "InvalidAction", "message": "动作未通过本地合同检查。"})
