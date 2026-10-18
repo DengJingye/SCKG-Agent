@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SMOKE = ("tests/test_workbench_tasks.py", "tests/test_workbench_acceptance_runner.py",
          "tests/test_workbench_g0.py")
 MIB = 1024**2
-LIMITS = {"wall_seconds": 120, "max_rss_bytes": 1536 * MIB}
+LIMITS = {"wall_seconds": 120, "max_rss_bytes": 512 * MIB}
 
 
 def resource_admission():

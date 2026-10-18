@@ -41,7 +41,7 @@ python3.12 -m venv .venv-workbench
 
 旧验收入口保留原有可选跳过语义，新入口不会改写历史结果。新增测试专门覆盖“成功退出但无报告”“报告自称成功但缺少证据”“部分跳过”“资源不足”和“重复输出目录”等失败场景。
 
-每个运行通道限120秒、父子进程组采样RSS限1.5 GiB；开始下一通道前重新读取可用内存，要求额外保留 `max(2 GiB, 总内存的25%)`，并计入256 MiB监督器余量。资源不足返回3并保存 `deferred_resource`，不当作产品测试失败或通过。失败返回1，通过返回0。RSS采样与应用离线配置不等于操作系统硬隔离。
+每个运行通道限120秒、父子进程组采样RSS限512 MiB；开始下一通道前重新读取可用内存，要求额外保留 `max(2 GiB, 总内存的25%)`，并计入256 MiB监督器余量。资源不足返回3并保存 `deferred_resource`，不当作产品测试失败或通过。失败返回1，通过返回0。RSS采样与应用离线配置不等于操作系统硬隔离。
 
 `receipt.json` 保存基线提交、工作区改动状态、相关源码/合同/锁文件哈希、每个通道命令和资源、退出码及实际JUnit计数；同一运行前后源码必须一致。工作区有未提交改动时，提交SHA只是基线，具体受测内容以哈希清单为准。
 
@@ -54,6 +54,8 @@ python3.12 -m venv .venv-workbench
 runner选择依据[GitHub官方运行器说明](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)。两个官方Action固定到已核验的Node24提交：[checkout v5.0.0](https://github.com/actions/checkout/tree/08c6903cd8c0fde910a37f88322edcfb5dd907a8)、[upload-artifact v6.0.0](https://github.com/actions/upload-artifact/tree/b7c566a772e6b6bfb58ed0dc250532a479d7789f)。本地配置校验通过不代表GitHub上的任务已经执行。
 
 首次CI在准备Python阶段失败：[运行39125057954](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125057954)。官方setup-python版本清单没有3.12.13的darwin/arm64构建，因此该次没有执行产品测试。后续复用既有Micromamba 2.8.1归档SHA256和17项显式bootstrap锁，继续使用与本机相同的Python 3.12.13；不改Python版本以取得通过。bootstrap锁原字节SHA256为 `e390621d620fdfea6b20bf9ad3894beac03c3c6bd714fc3007e01fe36f444cfb`，包使用原显式URL及MD5、TLS下载；这不是给conda包新增SHA256或签名认证。证据目录提前建立，Python准备失败时仍保留任务状态和安装日志。
+
+第二次CI完成独立安装后[按资源规则延期](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125210709)：7 GiB运行器当时可用约3.23 GiB，预留2 GiB后不足以容纳初始1.5 GiB通道上限加256 MiB监督器余量。后续仅把通道RSS上限收紧到512 MiB，保持系统保留量和120秒时限；这限制检查进程的可用资源，不扩大主机占用。尚未执行的检查不能计作成功，实际超过512 MiB仍会停止。
 
 ## 保留的边界
 
