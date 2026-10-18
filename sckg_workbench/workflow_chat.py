@@ -40,6 +40,16 @@ candidate_sources的每个E条目为source_columns顺序的数组；typed_attrib
 其中subject/proposition、属性name/value/qualifiers、conditions/unknowns/quotes及路线scope_notes的T编号，均须到text_table读取原文；不是证据编号。属性evidence_anchor_indices仍对应该来源quotes列表的位置。
 引用仍只用E编号，不能引用T编号。表格去重不改变来源、条件、未知项或资格；原始完整记录和全部调用在本地保留。
 """
+EXPLICIT_MISSING_VERSION = 'explicit_missing_v2'
+EXPLICIT_MISSING_INSTRUCTIONS = """\n本轮answer_contract_version=explicit_missing_v2，沿用CompactAnswerV3，不改变输入检查或执行资格。
+P编号标识已经从用户原话抽取的报告；reported_value=null也仍然是已有原话，只是其输入状态未知。
+m中not_supplied的p必须始终为[]，不得填任何P编号，包括状态为null的P。请在t中直接追问所选路线尚未明确报告的输入。
+independent_verification_missing的p必须含至少一个已提供P编号；这是未独立核验，不能改称用户没提供原话。
+source_evidence_missing的p可为[]或已有P编号；三类p均不得重复，也不能引用不存在的P。
+answer_contract.missing_examples只是格式示例，不能当成额外已发现的缺口；按本次unknown_requirements和premises决定需要哪些m。
+追问只围绕当前用户问题及已选路线。未选目录路线的输入不能批量变成当前问题的必要条件；不因目录中存在另一条路线就要求用户补齐它的全部输入。
+这些是输出合同和追问范围约束，不证明模型已理解科学语义，也不证明方案适用或分析成功。
+"""
 
 
 class WorkflowChatError(ValueError):
@@ -60,11 +70,34 @@ class WorkflowAction(Contract):
     answer: CompactAnswerV3 | None
 
 
-def workflow_format(final_only=False, *, initial=False):
+def _answer_version(version):
+    if version not in (None, EXPLICIT_MISSING_VERSION):
+        raise WorkflowChatError('Unknown workflow answer contract version')
+    return version
+
+
+def _prepared_answer_version(prepared):
+    return _answer_version(((prepared or {}).get('workflow_material') or {}).get('answer_contract_version'))
+
+
+def workflow_format(final_only=False, *, initial=False, answer_contract_version=None):
+    version = _answer_version(answer_contract_version)
     schema = WorkflowAction.model_json_schema()
     schema['properties']['action'] = {'type':'string', 'enum': ['finish'] if final_only else
         (['evaluate_workflow_inputs'] if initial else ['evaluate_workflow_inputs','finish'])}
-    return {'type':'json_schema','json_schema':{'name':'development_workflow_action_v1',
+    name = 'development_workflow_action_v1'
+    if version == EXPLICIT_MISSING_VERSION:
+        # Pydantic's existing model validator remains authoritative. JSON Schema
+        # also exposes its cross-field rules before a request is dispatched.
+        missing = schema['$defs']['CompactMissingV3']
+        missing['properties']['p']['uniqueItems'] = True
+        missing['anyOf'] = [{'properties':{'k':{'const':kind},
+            'p':{'type':'array','minItems':minimum,'maxItems':maximum}},'required':['k','p']}
+            for kind,minimum,maximum in (
+                ('not_supplied',0,0),('independent_verification_missing',1,8),
+                ('source_evidence_missing',0,8))]
+        name = 'development_workflow_action_missing_v2'
+    return {'type':'json_schema','json_schema':{'name':name,
         'strict':True,'schema':schema}}
 
 
@@ -106,8 +139,10 @@ def _source_material(service, *, include_reviews=False):
     return (material,reviews) if include_reviews else material
 
 
-def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2'):
+def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
+                    answer_contract_version=EXPLICIT_MISSING_VERSION):
     """Only original user prompts; whole old user turns are budgeted, no summaries."""
+    version = _answer_version(answer_contract_version)
     source, source_reviews = _source_material(catalog_service(ledger, request['workflow_options']), include_reviews=True)
     previous = [t for t in ledger.list_records('chat_request')
         if t['conversation_id'] == request['conversation_id'] and t['sequence'] < request['sequence']]
@@ -125,10 +160,14 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2'):
             raise WorkflowChatError('Unknown workflow context encoding')
         if feedback_encoding == 'shared_text_v2':
             material['feedback_encoding'] = feedback_encoding
+        if version is not None:
+            material['answer_contract_version'] = version
         messages = [{'role':'system','content':PROMPT +
-                     (SHARED_TEXT_INSTRUCTIONS if feedback_encoding == 'shared_text_v2' else '')},
+                     (SHARED_TEXT_INSTRUCTIONS if feedback_encoding == 'shared_text_v2' else '') +
+                     (EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '')},
                     {'role':'user','content':canonical_json(material)}]
-        estimate = len(canonical_json({'messages':messages,'response_format':workflow_format(initial=True)}).encode()) + 256
+        estimate = len(canonical_json({'messages':messages,'response_format':workflow_format(
+            initial=True,answer_contract_version=version)}).encode()) + 256
         limit = request['budget'].get('max_input_tokens')
         if type(limit) is not int or limit < 1:
             raise WorkflowChatError('An explicit positive input budget is required')
@@ -158,7 +197,8 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2'):
         selected = selected[1:]
 
 
-def _answer_contract(review, interpretations):
+def _answer_contract(review, interpretations, *, answer_contract_version=None):
+    version = _answer_version(answer_contract_version)
     sources = {}
     for route in review['route_results']:
         sources.update({s['candidate_id']:s for s in route['source_records']})
@@ -178,9 +218,28 @@ def _answer_contract(review, interpretations):
         for requirement in route['requirements']:
             if requirement['reported_value'] is None and requirement['report_pointer'] not in unknown:
                 unknown.append(requirement['report_pointer'])
-    return {'step_routes':steps,'premises':premises,
+    contract = {'step_routes':steps,'premises':premises,
         'evidence_aliases':[{'alias':alias,'candidate_id':cid} for cid,alias in aliases.items()],
         'unknown_requirements':unknown}
+    if version == EXPLICIT_MISSING_VERSION:
+        contract['answer_contract_version'] = version
+        contract['missing_rules'] = {
+            'not_supplied':{'p_min_items':0,'p_max_items':0,
+                'meaning':'追问所选路线尚未明确报告的输入；p恒为空，不引用已提取原话。'},
+            'independent_verification_missing':{'p_min_items':1,'p_max_items':8,
+                'meaning':'指出已有用户原话尚未独立核验；至少引用一个本次premises中的P。'},
+            'source_evidence_missing':{'p_min_items':0,'p_max_items':8,
+                'meaning':'指出与当前问题及所选路线有关的来源证据缺口；可不引用P。'},
+            'null_reports_are_supplied_premises':True,
+            'followups_limited_to_current_question_and_selected_routes':True,
+            'examples_are_format_only':True}
+        contract['missing_examples'] = [
+            {'k':'not_supplied','p':[],'t':'请说明所选路线尚未明确报告的输入。'},
+            {'k':'source_evidence_missing','p':[],'t':'所选路线的相关来源证据仍有缺口。'}]
+        if premises:
+            contract['missing_examples'].append({'k':'independent_verification_missing',
+                'p':[premises[0]['p']],'t':'该项原话仅为用户报告，尚未独立核验。'})
+    return contract
 
 
 class WorkflowChatAdapter:
@@ -204,7 +263,8 @@ class WorkflowChatAdapter:
                 raise WorkflowChatError('Original user-turn binding changed')
 
     def format(self, final_only):
-        return workflow_format(final_only, initial=self.review is None)
+        return workflow_format(final_only, initial=self.review is None,
+            answer_contract_version=_prepared_answer_version(self.prepared))
 
     def accept(self, response, messages, response_format, budget):
         profile = self.ledger.get_record('model_profile', self.request['profile_id'])
@@ -248,7 +308,8 @@ class WorkflowChatAdapter:
         self.review, self.interpretations = review, reports
         return {'tool':'evaluate_workflow_inputs','status':'development_input_review_only',
             'workflow_review':review,'workflow_interpretations':reports,
-            'answer_contract':_answer_contract(review,reports)}
+            'answer_contract':_answer_contract(review,reports,
+                answer_contract_version=_prepared_answer_version(self.prepared))}
 
     def feedback(self, result):
         if result.get('status') != 'development_input_review_only':
@@ -314,6 +375,8 @@ class WorkflowChatAdapter:
             'user_turns','current_user_turn_id','omitted_previous_user_turns')}
         if original.get('feedback_encoding'):
             material['feedback_encoding'] = original['feedback_encoding']
+        if original.get('answer_contract_version') is not None:
+            material['answer_contract_version'] = _prepared_answer_version(self.prepared)
         material.update(source_snapshot_hash=original['catalog']['source_snapshot_hash'],
             available_route_index=[{'route_id':r['route_id'],'label':r['label'],
                 'report_pointers':[q['report_pointer'] for q in r['requirements']]}
@@ -326,7 +389,8 @@ class WorkflowChatAdapter:
 
     def finish(self, action):
         self.check()
-        contract = _answer_contract(self.review, self.interpretations)
+        contract = _answer_contract(self.review, self.interpretations,
+            answer_contract_version=_prepared_answer_version(self.prepared))
         wire = CompactAnswerV3.model_validate(action['answer'])
         if [s.i for s in wire.s] != [s['step_id'] for s in contract['step_routes']]:
             raise WorkflowChatError('Final steps must correspond to the checked routes')
@@ -363,6 +427,7 @@ def _context_capacity(prepared, reviews):
     source conditions or questions are truncated to fit this estimate.
     """
     adapter = WorkflowChatAdapter(None,None,None,prepared)
+    version = _prepared_answer_version(prepared)
     material = prepared['workflow_material']
     longest = max(len(u['prompt']) for u in material['user_turns'])
     quote = '\U0001f9ec' * min(1000,longest)  # UTF-8 upper bound for a quoted span.
@@ -377,11 +442,12 @@ def _context_capacity(prepared, reviews):
             review = {'route_results':[reviews[r] for r in route_ids],'result_hash':'0'*64}
             result = {'tool':'evaluate_workflow_inputs','status':'development_input_review_only',
                 'workflow_review':review,'workflow_interpretations':reports,
-                'answer_contract':_answer_contract(review,reports)}
+                'answer_contract':_answer_contract(review,reports,answer_contract_version=version)}
             action = {'action':'evaluate_workflow_inputs','route_ids':list(route_ids),
                 'reports':[{k:v for k,v in r.items() if k!='premise_id'} for r in reports],'answer':None}
             messages = adapter.messages_after_tool(action,result)
-            estimate = len(json.dumps({'messages':messages,'response_format':workflow_format()},
+            estimate = len(json.dumps({'messages':messages,'response_format':workflow_format(
+                answer_contract_version=version)},
                 ensure_ascii=False).encode()) + 256
             largest = max(largest,estimate)
             count += 1
@@ -396,7 +462,8 @@ def validate_turn(ledger, models, request, turn):
     """Replay pure input checks against actual immutable model requests/outputs."""
     prepared = ledger.get_record('chat_context', request['id'])
     encoding = ((prepared or {}).get('workflow_material') or {}).get('feedback_encoding','literal_v1')
-    if prepared != prepare_context(ledger, request, feedback_encoding=encoding):
+    version = _prepared_answer_version(prepared)
+    if prepared != prepare_context(ledger, request, feedback_encoding=encoding,answer_contract_version=version):
         raise WorkflowChatError('Saved developer context differs from its current source/user bindings')
     run = turn.get('workflow_run') or {}
     if (run.get('schema_version') != 'development-workflow-chat-run-v1'

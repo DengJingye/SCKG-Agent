@@ -20,6 +20,7 @@ from run_workbench_acceptance import child_environment, junit_result, run_proces
 ROOT = Path(__file__).resolve().parents[1]
 TESTS = (
     "tests/test_workbench_workflow_chat.py",
+    "tests/test_workbench_workflow_missing_contract.py",
     "tests/test_workbench_workflow_chat_ui.py",
     "tests/test_workbench_workflow_inputs.py",
     "tests/test_workbench_workflow_inputs_ui.py",
