@@ -1009,6 +1009,19 @@ class AnalysisService:
         return [self.queue.get(r["task_id"]) for r in self.ledger.list_records("task_submission") if r["kind"] in ANALYSIS_KINDS]
 
     def get_public_result_summary(self, task_id: str, *, attempt: int, expected_run_id: str) -> dict:
+        return self._read_validated_result(task_id, attempt=attempt, expected_run_id=expected_run_id)
+
+    def get_result_export(self, task_id: str, *, attempt: int, expected_run_id: str) -> dict:
+        """Return a deterministic summary/manifest ZIP from current validated evidence.
+
+        No raw cell identifiers, local paths, credentials or execution commands
+        are exported. Missing historical provenance is not reconstructed.
+        """
+        return self._read_validated_result(task_id, attempt=attempt,
+                                           expected_run_id=expected_run_id, export=True)
+
+    def _read_validated_result(self, task_id: str, *, attempt: int,
+                               expected_run_id: str, export: bool = False) -> dict:
         """Revalidate one server-selected current result and disclose aggregates only.
 
         Caller access/conversation selection belongs to the chat service. This
@@ -1156,6 +1169,9 @@ class AnalysisService:
             latest = self.get_task_snapshot(task_id)
             if latest["status"] != "succeeded" or latest["attempt"] != attempt or latest["result"] != saved:
                 return {**unavailable, "reason_code": "task_not_current_completed"}
+            if export:
+                from .result_export import build_result_export
+                return build_result_export(summary=public, task=latest, run=run, binding=binding)
             return public
         except Exception:
             # Never disclose exception text, paths, arbitrary metadata or stale
