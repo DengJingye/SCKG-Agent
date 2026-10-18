@@ -445,6 +445,9 @@ def _research(ledger, models):
                     grounded_mode=bool(grounded_mode and use_knowledge and not analysis_enabled and not result_read_enabled))
                 if workflow_options is not None:
                     send_options.update(workflow_options=workflow_options, use_knowledge=False, purpose="explanation")
+                elif analysis_options is None and result_ref is None and not send_options['grounded_mode']:
+                    from .evidence_wire import SHARED_EVIDENCE_ENCODING
+                    send_options['evidence_encoding']=SHARED_EVIDENCE_ENCODING
                 turn = chat.submit_send(conversation_id, prompt, **send_options)
                 phrase = st.session_state.get("vault_passphrase", "")
                 dispatch = ChatRunService(ledger).launch(turn["id"],

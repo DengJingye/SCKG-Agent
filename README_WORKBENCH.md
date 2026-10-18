@@ -54,9 +54,17 @@ SCKG_WORKBENCH_HOME="$HOME/sckg-method-demo01" .venv-workbench/bin/python -m str
 
 ### 显式 JSON 对象接口与完整本地合同
 
-开发流程对话可在“流程输出格式”中显式选择 JSON 对象接口，完整 schema 仍发送并独立验证；预算计入最终请求，不自动更换接口或格式。见[使用与边界](docs/LOCAL_OUTPUT_CONTRACT.md)。当前新表单绑定[V4报告绑定与输入状态](docs/WORKFLOW_REPORT_PRESENCE.md)，并显式启用[原预算内一次最终格式修复](docs/WORKFLOW_FORMAT_REPAIR.md)。新的独立真实单例自然遇到摘要331字符超过180限制，以第三次、也是最后一次请求重生成74字符摘要，完整校验及只读重放通过。报告22,668 tokens，金额未知；不运行分析。旧V4摘要206字符的失败和旧V2/V3结果全部保留，历史请求不补修复策略。原话绑定、单例恢复与来源精确引用均不证明科学语义或知识增益。
+开发流程对话可在“流程输出格式”中显式选择 JSON 对象接口，完整 schema 仍发送并独立验证；预算计入最终请求，不自动更换接口或格式。见[使用与边界](docs/LOCAL_OUTPUT_CONTRACT.md)。当前新表单绑定[V4报告绑定与输入状态](docs/WORKFLOW_REPORT_PRESENCE.md)，并显式启用[原预算内一次最终格式修复](docs/WORKFLOW_FORMAT_REPAIR.md)。前一已封存的52模块格式修复阶段中，独立真实单例自然遇到摘要331字符超过180限制，以第三次、也是最后一次请求重生成74字符摘要，完整校验及只读重放通过。报告22,668 tokens，金额未知；不运行分析。此历史资格不作为当前53模块新原生运行结果。旧V4摘要206字符的失败和旧V2/V3结果全部保留，历史请求不补修复策略。原话绑定、单例恢复与来源精确引用均不证明科学语义或知识增益。
 
 ## 可重跑验收
+
+普通聊天新增[无损证据共享编码](docs/CHAT_EVIDENCE_ENCODING.md)：默认 API 与旧请求保留 literal，新 UI 普通提交显式 shared。相同四题 R 输入在原32,768上限内的容量准备从3/4变为4/4，B/R共8个输入均通过零API资格；这不是任务完成率或知识增益。主/公开副本各78项相关定向检查通过，实际JUnit身份一致、全部53产品模块字节相同；非全量回归或live browser人工验收。该工程与容量资格范围0 provider请求、拟合、新环境、生产写入或人审，后续真实16次调用另计。复跑三个串行通道：
+
+```bash
+.venv-workbench/bin/python -I -B scripts/verify_chat_evidence_stage.py --output ./chat-evidence-validation01
+```
+
+每通道限120秒/1.5GiB，输出目录必须不存在；详细容量、原row7失败和检索相关性限制见上述说明。
 
 ```bash
 .venv-workbench/bin/python -I -B scripts/verify_workflow_stage.py --output ./validation-run01
@@ -76,6 +84,8 @@ SCKG_WORKBENCH_HOME="$HOME/sckg-method-demo01" .venv-workbench/bin/python -m str
 
 [开发手册](docs/WORKBENCH_DEVELOPMENT.md) 给出短期、中期、长期目标及逐步验收：先打通可靠交互，再验证知识是否改善具体科学决策，最后做固定协议的确认评测和外部 agent 对照（包括 Genpilot）。
 
-默认采用一个主 agent、明确工具合同及独立验证器。多 agent 作为有明确分工和成本收益的实验选项；增加角色数量本身不是亮点。可展示的求职成果应来自实际日志、测试、产物和消融结果。当前可展示一次真实的预算内最终格式恢复，没有证据支持“优于市场 agent”或“知识库带来科学提升 X%”。下一主线是固定协议知识效用和独立任务；不同知识开关、同事实表示与外部原生系统分别比较，不能把给两组都交付完整来源的实验称为无知识对照。
+默认采用一个主 agent、明确工具合同及独立验证器。多 agent 作为有明确分工和成本收益的实验选项；增加角色数量本身不是亮点。可展示的求职成果应来自实际日志、测试、产物和消融结果。可展示前一52模块封存阶段的一次真实预算内最终格式恢复，以及本次53模块的同包无损容量修复和78项相关定向检查；没有证据支持“优于市场 agent”或“知识库带来科学提升 X%”。
+
+[普通主聊天真实B/R开发对照](docs/MAIN_CHAT_RAG_DEVELOPMENT.md)已用独立16次调用结束并关闭账户：8份生成有效，8次评分仅4次有效，另4次因辅助理由超过160字符未评分。只有row7可配对，B/R均6/12；不能由此宣称四题零增益或比较不同分母均值。报告65,945 tokens、金额未知，0拟合/生产写入/新环境。下一步先作版本化0API decision-only诊断，全8份冻结输入统一处理，保留v1及NA，不重生成或增加本包预算。同事实F/S、完整工具agent及外部原生比较继续分轨。
 
 注释知识的具体补充与未知项见[流程候选说明](docs/ANNOTATION_WORKFLOW_CANDIDATES.md)；最终主/公开分支各464项工程验收和零API导入结果见[阶段记录](docs/WORKBENCH_VALIDATION.md#调用前格式限制与注释候选导入)。候选内容未升级正式推荐。
