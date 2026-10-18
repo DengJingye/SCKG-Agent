@@ -739,8 +739,6 @@ class AnalysisService:
         return {**payload["result"], "resource_control": resources}
 
     def _execute(self, task: dict) -> dict:
-        from .code_provenance import capture_code_provenance
-        code_provenance = capture_code_provenance()
         # Heavy/legacy imports occur only for a claimed, explicitly authorized task.
         import anndata as ad
         import numpy as np
@@ -760,7 +758,9 @@ class AnalysisService:
         from execution.workspace_checkpoint import _model_digest
         from execution.wrapper_registry import WrapperRegistry
         from .analysis_repair import enabled, OperationalRecovery, public_summary
+        from .code_provenance import capture_code_provenance
 
+        code_provenance = capture_code_provenance()
         recovery_enabled = enabled(task)
         max_inner_runs = 2 if recovery_enabled else 1
 
