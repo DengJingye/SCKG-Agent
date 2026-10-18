@@ -48,3 +48,15 @@ python -I -B scripts/smoke_workbench_ui.py --workspace "$HOME/sckg-ui-smoke01" -
 新增28项包含三类缺失项schema与typed正反例、null原话引用、真实ModelService配内存transport拒收且不重试、旧literal/shared上下文逐字节回放、版本降级篡改隐藏。工程fixture不是新的provider实验。完整UI使用旧真实记录的新克隆，不新增模型turn，不救回W02、不重评分。两处checkout的45个workbench源文件相同；历史原件和生产数据库保持不变。
 
 字段合同通过不等于新模型会稳定遵守，更不等于生物学质量通过。开发AI还指出需要更清楚地区分排序与方向，以及避免追问当前未选路线的输入；没有把这些观察当独立科学金标或新增成绩。下一步仅在原家族12次请求/442368代理预留总上限内冻结新的三场景资格；已用5次/140888，剩余最多7次/301480。旧包保持关闭，跨版本成功不合并为同版成功率。
+
+## 新合同原生资格：HTTP400停止，未完成
+
+上述工程发布后，先用实际宿主完成零API容量预检：四个原问题/历史各30种合法路线选择，共120次；完整输入代理最大58173，最坏容量包络60861，均低于65536。全部来源命题、属性、条件、未知和引文逐项无损还原；生产库、入口、45模块和两个旧包身份不变。23.84秒、102.2MiB，无残留。
+
+随后冻结原W02→同会话W03及独立W04，最多7次请求/301480新增预留，串行900秒/1.5GiB。实际W02第一请求得到**HTTP400**，无模型回答或usage；本地记result_unknown，立即关闭，W03/W04未启动，无自动重试。运行5.64秒、102.5MiB，无资源终止或残留，原件和生产库未变。不是三场景通过；未知用量与金额不记零。见[原生资格摘要](validation/workflow-native-http400-20261018.json)。
+
+新旧实际请求的model、temperature、reasoning、max_tokens与stream一致，接入同一个非官方DeepSeek域名的兼容gateway，路径为chat/completions。schema差异集中于格式名、missing分支约束和uniqueItems。旧成功schema已经含anyOf；没有保留HTTP响应body，故不能定位为某个字段或宣称anyOf普遍不支持，也不能直接用另一供应商/官方接口文档代替该gateway的能力证明。
+
+三个包累计6次dispatch、169252代理预留、29751已知报告tokens，另1次usage未知；没有未归档dispatch，业务完成/费用仍未知。下一步先做provider能力契约、wire schema兼容预检和安全错误元数据，再按已核访问/结果制定新资格；不重开旧包或把数学剩余额度当重试许可。知识整理、评分合同与既有产品演示可独立继续。
+
+已核对的[官方Chat接口规范](https://api-docs.deepseek.com/api/create-chat-completion/)只为response_format列出text/json_object，[官方Responses接口规范](https://api-docs.deepseek.com/api/create-response/)另列json_schema。实际兼容gateway有自己的支持范围；这些规范差异提示要分接口核验，不能作为本轮400的具体因果证明。
