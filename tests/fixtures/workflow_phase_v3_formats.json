@@ -1,0 +1,1027 @@
+{
+  "schema": "archived-phase-v3-code-only-compatibility-v1",
+  "source_protocol_sha256": "9b1f13e5fb92648d4421a762cf473c7fd9b304c1a739352aaf1de49dfb883534",
+  "source_module_sha256": "623792210bf632803d73d175d4f17bb52317c796ec0713c688b707b2abbe6352",
+  "formats": {
+    "initial": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "development_workflow_action_phase_v3",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "CompactAnswerV3": {
+              "additionalProperties": false,
+              "properties": {
+                "d": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "D",
+                  "type": "string"
+                },
+                "s": {
+                  "items": {
+                    "$ref": "#/$defs/CompactStep"
+                  },
+                  "maxItems": 4,
+                  "title": "S",
+                  "type": "array"
+                },
+                "p": {
+                  "items": {
+                    "$ref": "#/$defs/CompactPremiseCheckV3"
+                  },
+                  "maxItems": 8,
+                  "title": "P",
+                  "type": "array"
+                },
+                "m": {
+                  "items": {
+                    "$ref": "#/$defs/CompactMissingV3"
+                  },
+                  "maxItems": 6,
+                  "title": "M",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "d",
+                "s",
+                "p",
+                "m"
+              ],
+              "title": "CompactAnswerV3",
+              "type": "object"
+            },
+            "CompactMissingV3": {
+              "additionalProperties": false,
+              "properties": {
+                "k": {
+                  "enum": [
+                    "not_supplied",
+                    "independent_verification_missing",
+                    "source_evidence_missing"
+                  ],
+                  "title": "K",
+                  "type": "string"
+                },
+                "p": {
+                  "items": {
+                    "pattern": "^P[1-8]$",
+                    "type": "string"
+                  },
+                  "maxItems": 8,
+                  "title": "P",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "t": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "title": "T",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "k",
+                "p",
+                "t"
+              ],
+              "title": "CompactMissingV3",
+              "type": "object",
+              "anyOf": [
+                {
+                  "properties": {
+                    "k": {
+                      "const": "not_supplied"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 0
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                },
+                {
+                  "properties": {
+                    "k": {
+                      "const": "independent_verification_missing"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                },
+                {
+                  "properties": {
+                    "k": {
+                      "const": "source_evidence_missing"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                }
+              ]
+            },
+            "CompactPremiseCheckV3": {
+              "additionalProperties": false,
+              "properties": {
+                "p": {
+                  "pattern": "^P[1-8]$",
+                  "title": "P",
+                  "type": "string"
+                },
+                "s": {
+                  "items": {
+                    "pattern": "^s[1-4]$",
+                    "type": "string"
+                  },
+                  "maxItems": 4,
+                  "title": "S",
+                  "type": "array"
+                },
+                "r": {
+                  "enum": [
+                    "reported_met",
+                    "reported_unmet",
+                    "unknown"
+                  ],
+                  "title": "R",
+                  "type": "string"
+                },
+                "a": {
+                  "enum": [
+                    "conditional_plan",
+                    "blocked",
+                    "needs_evidence"
+                  ],
+                  "title": "A",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p",
+                "s",
+                "r",
+                "a"
+              ],
+              "title": "CompactPremiseCheckV3",
+              "type": "object"
+            },
+            "CompactStep": {
+              "additionalProperties": false,
+              "properties": {
+                "i": {
+                  "pattern": "^s[1-4]$",
+                  "title": "I",
+                  "type": "string"
+                },
+                "f": {
+                  "maxLength": 160,
+                  "title": "F",
+                  "type": "string"
+                },
+                "a": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "A",
+                  "type": "string"
+                },
+                "e": {
+                  "items": {
+                    "maxLength": 8,
+                    "pattern": "^E[1-9][0-9]*$",
+                    "type": "string"
+                  },
+                  "maxItems": 4,
+                  "title": "E",
+                  "type": "array"
+                },
+                "p": {
+                  "items": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "title": "P",
+                  "type": "array"
+                },
+                "k": {
+                  "enum": [
+                    "source_bound",
+                    "proposal",
+                    "needs_evidence"
+                  ],
+                  "title": "K",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "i",
+                "f",
+                "a",
+                "e",
+                "p",
+                "k"
+              ],
+              "title": "CompactStep",
+              "type": "object"
+            },
+            "ReportInterpretation": {
+              "additionalProperties": false,
+              "properties": {
+                "report_pointer": {
+                  "pattern": "^/reported_inputs/[a-z][a-z0-9_]{0,79}$",
+                  "title": "Report Pointer",
+                  "type": "string"
+                },
+                "reported_value": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Reported Value"
+                },
+                "user_turn_id": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "User Turn Id",
+                  "type": "string"
+                },
+                "quote": {
+                  "maxLength": 1000,
+                  "minLength": 1,
+                  "title": "Quote",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "report_pointer",
+                "reported_value",
+                "user_turn_id",
+                "quote"
+              ],
+              "title": "ReportInterpretation",
+              "type": "object"
+            }
+          },
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "evaluate_workflow_inputs"
+              ],
+              "const": "evaluate_workflow_inputs"
+            },
+            "route_ids": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 4,
+              "title": "Route Ids",
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "reports": {
+              "items": {
+                "$ref": "#/$defs/ReportInterpretation"
+              },
+              "maxItems": 8,
+              "title": "Reports",
+              "type": "array"
+            },
+            "answer": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "action",
+            "route_ids",
+            "reports",
+            "answer"
+          ],
+          "title": "WorkflowAction",
+          "type": "object"
+        }
+      }
+    },
+    "tool_or_finish": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "development_workflow_action_phase_v3",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "CompactAnswerV3": {
+              "additionalProperties": false,
+              "properties": {
+                "d": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "D",
+                  "type": "string"
+                },
+                "s": {
+                  "items": {
+                    "$ref": "#/$defs/CompactStep"
+                  },
+                  "maxItems": 4,
+                  "title": "S",
+                  "type": "array"
+                },
+                "p": {
+                  "items": {
+                    "$ref": "#/$defs/CompactPremiseCheckV3"
+                  },
+                  "maxItems": 8,
+                  "title": "P",
+                  "type": "array"
+                },
+                "m": {
+                  "items": {
+                    "$ref": "#/$defs/CompactMissingV3"
+                  },
+                  "maxItems": 6,
+                  "title": "M",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "d",
+                "s",
+                "p",
+                "m"
+              ],
+              "title": "CompactAnswerV3",
+              "type": "object"
+            },
+            "CompactMissingV3": {
+              "additionalProperties": false,
+              "properties": {
+                "k": {
+                  "enum": [
+                    "not_supplied",
+                    "independent_verification_missing",
+                    "source_evidence_missing"
+                  ],
+                  "title": "K",
+                  "type": "string"
+                },
+                "p": {
+                  "items": {
+                    "pattern": "^P[1-8]$",
+                    "type": "string"
+                  },
+                  "maxItems": 8,
+                  "title": "P",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "t": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "title": "T",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "k",
+                "p",
+                "t"
+              ],
+              "title": "CompactMissingV3",
+              "type": "object",
+              "anyOf": [
+                {
+                  "properties": {
+                    "k": {
+                      "const": "not_supplied"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 0
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                },
+                {
+                  "properties": {
+                    "k": {
+                      "const": "independent_verification_missing"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                },
+                {
+                  "properties": {
+                    "k": {
+                      "const": "source_evidence_missing"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                }
+              ]
+            },
+            "CompactPremiseCheckV3": {
+              "additionalProperties": false,
+              "properties": {
+                "p": {
+                  "pattern": "^P[1-8]$",
+                  "title": "P",
+                  "type": "string"
+                },
+                "s": {
+                  "items": {
+                    "pattern": "^s[1-4]$",
+                    "type": "string"
+                  },
+                  "maxItems": 4,
+                  "title": "S",
+                  "type": "array"
+                },
+                "r": {
+                  "enum": [
+                    "reported_met",
+                    "reported_unmet",
+                    "unknown"
+                  ],
+                  "title": "R",
+                  "type": "string"
+                },
+                "a": {
+                  "enum": [
+                    "conditional_plan",
+                    "blocked",
+                    "needs_evidence"
+                  ],
+                  "title": "A",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p",
+                "s",
+                "r",
+                "a"
+              ],
+              "title": "CompactPremiseCheckV3",
+              "type": "object"
+            },
+            "CompactStep": {
+              "additionalProperties": false,
+              "properties": {
+                "i": {
+                  "pattern": "^s[1-4]$",
+                  "title": "I",
+                  "type": "string"
+                },
+                "f": {
+                  "maxLength": 160,
+                  "title": "F",
+                  "type": "string"
+                },
+                "a": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "A",
+                  "type": "string"
+                },
+                "e": {
+                  "items": {
+                    "maxLength": 8,
+                    "pattern": "^E[1-9][0-9]*$",
+                    "type": "string"
+                  },
+                  "maxItems": 4,
+                  "title": "E",
+                  "type": "array"
+                },
+                "p": {
+                  "items": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "title": "P",
+                  "type": "array"
+                },
+                "k": {
+                  "enum": [
+                    "source_bound",
+                    "proposal",
+                    "needs_evidence"
+                  ],
+                  "title": "K",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "i",
+                "f",
+                "a",
+                "e",
+                "p",
+                "k"
+              ],
+              "title": "CompactStep",
+              "type": "object"
+            },
+            "ReportInterpretation": {
+              "additionalProperties": false,
+              "properties": {
+                "report_pointer": {
+                  "pattern": "^/reported_inputs/[a-z][a-z0-9_]{0,79}$",
+                  "title": "Report Pointer",
+                  "type": "string"
+                },
+                "reported_value": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Reported Value"
+                },
+                "user_turn_id": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "User Turn Id",
+                  "type": "string"
+                },
+                "quote": {
+                  "maxLength": 1000,
+                  "minLength": 1,
+                  "title": "Quote",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "report_pointer",
+                "reported_value",
+                "user_turn_id",
+                "quote"
+              ],
+              "title": "ReportInterpretation",
+              "type": "object"
+            }
+          },
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "evaluate_workflow_inputs",
+                "finish"
+              ]
+            },
+            "route_ids": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 4,
+              "title": "Route Ids",
+              "type": "array"
+            },
+            "reports": {
+              "items": {
+                "$ref": "#/$defs/ReportInterpretation"
+              },
+              "maxItems": 8,
+              "title": "Reports",
+              "type": "array"
+            },
+            "answer": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/CompactAnswerV3"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "action",
+            "route_ids",
+            "reports",
+            "answer"
+          ],
+          "title": "WorkflowAction",
+          "type": "object",
+          "oneOf": [
+            {
+              "properties": {
+                "action": {
+                  "const": "evaluate_workflow_inputs"
+                },
+                "route_ids": {
+                  "minItems": 1,
+                  "uniqueItems": true
+                },
+                "answer": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "action": {
+                  "const": "finish"
+                },
+                "route_ids": {
+                  "maxItems": 0
+                },
+                "reports": {
+                  "maxItems": 0
+                },
+                "answer": {
+                  "$ref": "#/$defs/CompactAnswerV3"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "finish": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "development_workflow_action_phase_v3",
+        "strict": true,
+        "schema": {
+          "$defs": {
+            "CompactAnswerV3": {
+              "additionalProperties": false,
+              "properties": {
+                "d": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "D",
+                  "type": "string"
+                },
+                "s": {
+                  "items": {
+                    "$ref": "#/$defs/CompactStep"
+                  },
+                  "maxItems": 4,
+                  "title": "S",
+                  "type": "array"
+                },
+                "p": {
+                  "items": {
+                    "$ref": "#/$defs/CompactPremiseCheckV3"
+                  },
+                  "maxItems": 8,
+                  "title": "P",
+                  "type": "array"
+                },
+                "m": {
+                  "items": {
+                    "$ref": "#/$defs/CompactMissingV3"
+                  },
+                  "maxItems": 6,
+                  "title": "M",
+                  "type": "array"
+                }
+              },
+              "required": [
+                "d",
+                "s",
+                "p",
+                "m"
+              ],
+              "title": "CompactAnswerV3",
+              "type": "object"
+            },
+            "CompactMissingV3": {
+              "additionalProperties": false,
+              "properties": {
+                "k": {
+                  "enum": [
+                    "not_supplied",
+                    "independent_verification_missing",
+                    "source_evidence_missing"
+                  ],
+                  "title": "K",
+                  "type": "string"
+                },
+                "p": {
+                  "items": {
+                    "pattern": "^P[1-8]$",
+                    "type": "string"
+                  },
+                  "maxItems": 8,
+                  "title": "P",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "t": {
+                  "maxLength": 100,
+                  "minLength": 1,
+                  "title": "T",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "k",
+                "p",
+                "t"
+              ],
+              "title": "CompactMissingV3",
+              "type": "object",
+              "anyOf": [
+                {
+                  "properties": {
+                    "k": {
+                      "const": "not_supplied"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 0
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                },
+                {
+                  "properties": {
+                    "k": {
+                      "const": "independent_verification_missing"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                },
+                {
+                  "properties": {
+                    "k": {
+                      "const": "source_evidence_missing"
+                    },
+                    "p": {
+                      "type": "array",
+                      "minItems": 0,
+                      "maxItems": 8
+                    }
+                  },
+                  "required": [
+                    "k",
+                    "p"
+                  ]
+                }
+              ]
+            },
+            "CompactPremiseCheckV3": {
+              "additionalProperties": false,
+              "properties": {
+                "p": {
+                  "pattern": "^P[1-8]$",
+                  "title": "P",
+                  "type": "string"
+                },
+                "s": {
+                  "items": {
+                    "pattern": "^s[1-4]$",
+                    "type": "string"
+                  },
+                  "maxItems": 4,
+                  "title": "S",
+                  "type": "array"
+                },
+                "r": {
+                  "enum": [
+                    "reported_met",
+                    "reported_unmet",
+                    "unknown"
+                  ],
+                  "title": "R",
+                  "type": "string"
+                },
+                "a": {
+                  "enum": [
+                    "conditional_plan",
+                    "blocked",
+                    "needs_evidence"
+                  ],
+                  "title": "A",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p",
+                "s",
+                "r",
+                "a"
+              ],
+              "title": "CompactPremiseCheckV3",
+              "type": "object"
+            },
+            "CompactStep": {
+              "additionalProperties": false,
+              "properties": {
+                "i": {
+                  "pattern": "^s[1-4]$",
+                  "title": "I",
+                  "type": "string"
+                },
+                "f": {
+                  "maxLength": 160,
+                  "title": "F",
+                  "type": "string"
+                },
+                "a": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "A",
+                  "type": "string"
+                },
+                "e": {
+                  "items": {
+                    "maxLength": 8,
+                    "pattern": "^E[1-9][0-9]*$",
+                    "type": "string"
+                  },
+                  "maxItems": 4,
+                  "title": "E",
+                  "type": "array"
+                },
+                "p": {
+                  "items": {
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "title": "P",
+                  "type": "array"
+                },
+                "k": {
+                  "enum": [
+                    "source_bound",
+                    "proposal",
+                    "needs_evidence"
+                  ],
+                  "title": "K",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "i",
+                "f",
+                "a",
+                "e",
+                "p",
+                "k"
+              ],
+              "title": "CompactStep",
+              "type": "object"
+            },
+            "ReportInterpretation": {
+              "additionalProperties": false,
+              "properties": {
+                "report_pointer": {
+                  "pattern": "^/reported_inputs/[a-z][a-z0-9_]{0,79}$",
+                  "title": "Report Pointer",
+                  "type": "string"
+                },
+                "reported_value": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Reported Value"
+                },
+                "user_turn_id": {
+                  "maxLength": 180,
+                  "minLength": 1,
+                  "title": "User Turn Id",
+                  "type": "string"
+                },
+                "quote": {
+                  "maxLength": 1000,
+                  "minLength": 1,
+                  "title": "Quote",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "report_pointer",
+                "reported_value",
+                "user_turn_id",
+                "quote"
+              ],
+              "title": "ReportInterpretation",
+              "type": "object"
+            }
+          },
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": [
+                "finish"
+              ],
+              "const": "finish"
+            },
+            "route_ids": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0,
+              "title": "Route Ids",
+              "type": "array"
+            },
+            "reports": {
+              "items": {
+                "$ref": "#/$defs/ReportInterpretation"
+              },
+              "maxItems": 0,
+              "title": "Reports",
+              "type": "array"
+            },
+            "answer": {
+              "$ref": "#/$defs/CompactAnswerV3"
+            }
+          },
+          "required": [
+            "action",
+            "route_ids",
+            "reports",
+            "answer"
+          ],
+          "title": "WorkflowAction",
+          "type": "object"
+        }
+      }
+    }
+  },
+  "instruction_sha256": {
+    "PROMPT": "54ab1b3aaa3e546b706f3b466bfbfd391baba9712f69d7c0db59f213f6ce49c0",
+    "SHARED_TEXT_INSTRUCTIONS": "ee982f5c1581f8904ca72233a2fa422c7460e0949a9bd8c497c3e2b9fe82b1f4",
+    "EXPLICIT_MISSING_INSTRUCTIONS": "023aa6ca409cb6495aa9d55a84e783a0a28fe6742616e87ded9d31bc284bc789",
+    "PHASE_CONTRACT_INSTRUCTIONS": "4ec70798093d8967a37615375e214ba0d14481cb4a71e1cf0978692fac7bd752"
+  },
+  "scope": "Schema and constant code strings only; no original user prompt, model response, credentials, paper text or semantic gold."
+}

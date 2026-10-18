@@ -1,5 +1,7 @@
 # scKG-Atlas Agent
 
+> 新工作台的源码启动、合成演示、实际验收范围和后续关卡见 [README_WORKBENCH.md](README_WORKBENCH.md)。下文保留旧版原型说明；它不代表当前开发功能或科学增益均已通过验收。
+
 scKG-Atlas Agent is an evidence-governed recommendation and workflow prototype for single-cell, spatial, and multi-omics tool selection. It is not meant to behave like an unconstrained chatbot. Its core job is to convert a research request into structured constraints, retrieve only governed evidence, rank cautiously, expose missing evidence, and prevent unsupported scientific claims from entering the final report.
 
 The current system combines:

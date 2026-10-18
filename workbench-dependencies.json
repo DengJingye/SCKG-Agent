@@ -1,0 +1,92 @@
+{
+  "schema": "workbench-dependency-contract-v1",
+  "status": "candidate_dependency_layers_pending_actual_clean_prefix_qualification",
+  "profiles": {
+    "base": {
+      "requirements": "requirements-workbench-base.txt",
+      "scope": "UI/knowledge/chat control, source parsing, bounded H5AD registration/profile, process controls; does not qualify scientific analysis execution."
+    },
+    "analysis": {
+      "requirements": "requirements-workbench.txt",
+      "scope": "Default complete CPU host: base plus current trusted analysis worker preparation and artifact validation. Fitting wrappers still require separately qualified runtime packs."
+    }
+  },
+  "import_names": {
+    "python-dotenv": "dotenv",
+    "scikit-learn": "sklearn"
+  },
+  "development_requirements": "requirements-workbench-dev.txt",
+  "optional_mcp_requirements": "requirements-workbench-mcp.txt",
+  "version_policy": "Reuse the existing tested direct pins and official isolated psutil5.9.8 wheel. These files are not a complete transitive hash lock; do not resolve latest direct versions or call metadata in the mixed global environment a clean installation.",
+  "direct_dependency_reasons": {
+    "streamlit": "UI render library; importing is not launching the server.",
+    "pydantic": "Workbench and legacy typed scientific contracts.",
+    "cryptography": "Credential vault plus runtime-pack signature verification.",
+    "jsonschema": "Structured model requests/response validation.",
+    "python-dotenv": "Explicit credential reference parsing; no SDK needed for HTTP transport.",
+    "pypdf": "Local PDF parser, loaded on demand.",
+    "psutil": "Chat owner identity, code-process controls and scientific subprocess cleanup/RSS.",
+    "h5py": "H5AD signature, external-link and bounded profile checks in DatasetService.",
+    "numpy": "Bounded matrix profile; also a Streamlit/AnnData dependency.",
+    "anndata": "Trusted analysis worker reads backed H5AD and validates saved scientific artifacts in the same Python as control plane.",
+    "scipy": "Trusted analysis preparation and engine.data_intelligence sparse matrices.",
+    "pandas": "Representative preview and eagerly imported integration validator.",
+    "scikit-learn": "execution.local_user_service imports IntegrationValidator at module import, which imports sklearn.metrics even for the current Scrublet host path."
+  },
+  "interpreter_boundary": {
+    "trusted_worker": "sckg_workbench/analysis.py:_execute_supervised launches [sys.executable, -m, sckg_workbench.analysis]. Lazy imports defer work but do not move it to another interpreter.",
+    "same_interpreter_imports": [
+      "anndata",
+      "scipy",
+      "engine.data_intelligence",
+      "execution.local_user_service",
+      "execution.preview_execution_service"
+    ],
+    "eager_cross_layer_evidence": [
+      "execution/local_user_service.py imports execution.validators.integration",
+      "execution/validators/integration.py imports anndata,numpy,pandas,sklearn.metrics"
+    ],
+    "fitting_runtime": "execution/wrapper_registry.py:WrapperDefinition.command selects python_executable or RuntimePackResolver.python(runtime_pack_id). Scrublet0.2.3 stays unchanged; no scanpy/torch/CellTypist/model weights are added here.",
+    "not_qualified_by_dependency_probe": [
+      "A scientific task execution",
+      "A Scrublet fitting runtime",
+      "Scientific accuracy or gain",
+      "All platforms",
+      "Clean install without root installation and wheel receipts"
+    ]
+  },
+  "installation_strategy": {
+    "preferred_for_existing_python": "A new venv with include-system-site-packages=false, no PYTHONPATH/user-site/overlay inheritance, then wheel-only install of this product requirements layer.",
+    "independent_python_alternative": "Reuse the existing pinned micromamba2.8.1 and explicit Python3.12.13 bootstrap into a fresh dedicated prefix; use the new Workbench requirements instead of the historical full-agent pip lock.",
+    "history_read_only": [
+      "release/control-plane-manifest.json",
+      "release/locks/control-plane-osx-arm64.conda-explicit.txt",
+      "release/locks/control-plane-osx-arm64.requirements.lock",
+      "release/bootstrap/install_sckg.command"
+    ],
+    "why_not_existing_installer_unchanged": "The historical manifest targets app.py and requirements.txt, including legacy LLM/scientific packages and psutil5.9.0. Its downloader/hash/explicit-prefix pattern is reusable; its application/dependency set is not this new product lock.",
+    "no_automatic_install": true,
+    "root_only_next_preflight": [
+      "Freeze official URL/bytes/hash and install/download resource budget before downloading.",
+      "Resolve a new full transitive wheel set for the target Python/platform, freeze hashes and bytes in the new evidence package.",
+      "Install to a fresh prefix with wheel-only/no source build; prefer --no-index plus the frozen wheelhouse and --require-hashes once the actual lock exists.",
+      "Run pip check and the dependency qualifier under the existing wall/RSS supervisor, followed by actual product journey tests."
+    ],
+    "freshness_rule": "A new dedicated prefix is required for clean-install evidence. A venv with --system-site-packages or an existing Conda/overlay environment is not clean; this probe reports clean_install_claim=false even on pass until installation receipts establish provenance."
+  },
+  "qualification_command": [
+    "<fresh-prefix>/bin/python",
+    "-I",
+    "-B",
+    "scripts/check_workbench_dependencies.py",
+    "--prefix",
+    "<fresh-prefix>",
+    "--profile",
+    "analysis",
+    "--report",
+    "<new-exclusive-report.json>"
+  ],
+  "qualification_scope": "Metadata/isolation, direct import origins, actual _execute import prelude, AnalysisService construction, typed Scrublet contract load, tiny synthetic HDF5 profile, and pip check. No model/network, task dispatch, scientific fit, UI/server, or install.",
+  "platform_boundary": "Current application uses POSIX fcntl and process-group semantics. A new prefix on this macOS arm64 host is the immediate target; do not claim Windows or other platform qualification.",
+  "g5_boundary": "Requirements and successful import probes alone do not pass portable product delivery; actual fresh install, complete locked transitives, resource measurements and product journeys must still be recorded."
+}
