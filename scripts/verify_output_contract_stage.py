@@ -21,7 +21,8 @@ def main(argv=None):
     receipts=[]
     # The previous regression already takes about 106 seconds in the installed
     # host. Keep its 120-second ceiling; new tests have a separate serial lane.
-    for name,tests in (('contracts',('tests/test_workbench_local_output_contract.py',)),
+    for name,tests in (('contracts',('tests/test_workbench_workflow_phase_contract.py',
+                                   'tests/test_workbench_local_output_contract.py')),
                        ('regression',stage.TESTS)):
         options=['--output',str(output/name)]
         if args.python:

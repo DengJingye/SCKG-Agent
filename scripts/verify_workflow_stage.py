@@ -47,6 +47,7 @@ def hashes():
              ROOT / "scripts/bootstrap_method_demo.py",
              ROOT / "scripts/verify_annotation_stage.py"}
     files.add(ROOT / 'scripts/verify_output_contract_stage.py')
+    files.add(ROOT / 'tests/fixtures/workflow_missing_v2_formats.json')
     for directory in ("sckg_workbench", "core", "engine", "execution", "eval", "tests"):
         files.update((ROOT / directory).rglob("*.py"))
     return {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()

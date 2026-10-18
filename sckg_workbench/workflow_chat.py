@@ -42,7 +42,9 @@ candidate_sources的每个E条目为source_columns顺序的数组；typed_attrib
 引用仍只用E编号，不能引用T编号。表格去重不改变来源、条件、未知项或资格；原始完整记录和全部调用在本地保留。
 """
 EXPLICIT_MISSING_VERSION = 'explicit_missing_v2'
+PHASE_CONTRACT_VERSION = 'phase_bound_v3'
 JSON_OBJECT_CANONICAL = 'json_object_canonical_v1'
+_UNSET_VERSION = object()
 EXPLICIT_MISSING_INSTRUCTIONS = """\n本轮answer_contract_version=explicit_missing_v2，沿用CompactAnswerV3，不改变输入检查或执行资格。
 P编号标识已经从用户原话抽取的报告；reported_value=null也仍然是已有原话，只是其输入状态未知。
 m中not_supplied的p必须始终为[]，不得填任何P编号，包括状态为null的P。请在t中直接追问所选路线尚未明确报告的输入。
@@ -51,6 +53,11 @@ source_evidence_missing的p可为[]或已有P编号；三类p均不得重复，�
 answer_contract.missing_examples只是格式示例，不能当成额外已发现的缺口；按本次unknown_requirements和premises决定需要哪些m。
 追问只围绕当前用户问题及已选路线。未选目录路线的输入不能批量变成当前问题的必要条件；不因目录中存在另一条路线就要求用户补齐它的全部输入。
 这些是输出合同和追问范围约束，不证明模型已理解科学语义，也不证明方案适用或分析成功。
+"""
+PHASE_CONTRACT_INSTRUCTIONS = EXPLICIT_MISSING_INSTRUCTIONS.replace(
+    'answer_contract_version=explicit_missing_v2', 'answer_contract_version=phase_bound_v3') + """\n阶段合同：第一次只能evaluate_workflow_inputs，answer必须为null。先提交相关路线和原用户原话报告，等待只读工具检查；不能同时生成最终回答。
+工具返回后才可finish；若再次evaluate，也必须answer=null，并提交完整替换检查。finish时route_ids=[]、reports=[]、answer必须是完整CompactAnswerV3对象。
+E编号仅由工具返回，不在第一次自行编造。最终s.e只能使用本次工具提供的E别名，不能用长candidate ID代替。保持来源、原话与missing规则；阶段格式不证明科学适用性或执行资格。
 """
 
 
@@ -73,7 +80,7 @@ class WorkflowAction(Contract):
 
 
 def _answer_version(version):
-    if version not in (None, EXPLICIT_MISSING_VERSION):
+    if version not in (None, EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION):
         raise WorkflowChatError('Unknown workflow answer contract version')
     return version
 
@@ -88,7 +95,7 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
     schema['properties']['action'] = {'type':'string', 'enum': ['finish'] if final_only else
         (['evaluate_workflow_inputs'] if initial else ['evaluate_workflow_inputs','finish'])}
     name = 'development_workflow_action_v1'
-    if version == EXPLICIT_MISSING_VERSION:
+    if version in (EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION):
         # Pydantic's existing model validator remains authoritative. JSON Schema
         # also exposes its cross-field rules before a request is dispatched.
         missing = schema['$defs']['CompactMissingV3']
@@ -99,15 +106,32 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
                 ('not_supplied',0,0),('independent_verification_missing',1,8),
                 ('source_evidence_missing',0,8))]
         name = 'development_workflow_action_missing_v2'
+    if version == PHASE_CONTRACT_VERSION:
+        evaluate = {'properties':{'action':{'const':'evaluate_workflow_inputs'},
+            'route_ids':{'minItems':1,'uniqueItems':True},'answer':{'type':'null'}}}
+        finish = {'properties':{'action':{'const':'finish'},'route_ids':{'maxItems':0},
+            'reports':{'maxItems':0},'answer':{'$ref':'#/$defs/CompactAnswerV3'}}}
+        if final_only:
+            for key, constraints in finish['properties'].items():
+                schema['properties'][key].update(constraints)
+            schema['properties']['answer'] = finish['properties']['answer']
+        elif initial:
+            for key, constraints in evaluate['properties'].items():
+                schema['properties'][key].update(constraints)
+            schema['properties']['answer'] = {'type':'null'}
+        else:
+            schema['oneOf'] = [evaluate,finish]
+        name = 'development_workflow_action_phase_v3'
     return {'type':'json_schema','json_schema':{'name':name,
         'strict':True,'schema':schema}}
 
 
 def catalog_service(ledger, options):
     if (not isinstance(options, dict)
-            or set(options) not in ({'catalog_record_id','catalog_hash'},
-                                   {'catalog_record_id','catalog_hash','wire_mode'})
+            or not {'catalog_record_id','catalog_hash'}.issubset(options)
+            or set(options) - {'catalog_record_id','catalog_hash','wire_mode','answer_contract_version'}
             or ('wire_mode' in options and options['wire_mode'] != JSON_OBJECT_CANONICAL)
+            or ('answer_contract_version' in options and options['answer_contract_version'] != PHASE_CONTRACT_VERSION)
             or any(not isinstance(v, str) or not v for v in options.values())):
         raise WorkflowChatError('A fixed development catalog record and hash are required')
     state = ledger.get_state('workflow_input_catalog')
@@ -157,9 +181,12 @@ def _source_material(service, *, include_reviews=False):
 
 
 def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
-                    answer_contract_version=EXPLICIT_MISSING_VERSION):
+                    answer_contract_version=_UNSET_VERSION):
     """Only original user prompts; whole old user turns are budgeted, no summaries."""
-    version = _answer_version(answer_contract_version)
+    selected_version = request['workflow_options'].get('answer_contract_version', EXPLICIT_MISSING_VERSION)
+    version = _answer_version(selected_version if answer_contract_version is _UNSET_VERSION else answer_contract_version)
+    if ('answer_contract_version' in request['workflow_options'] and version != selected_version):
+        raise WorkflowChatError('Workflow phase contract differs from the immutable user request')
     source, source_reviews = _source_material(catalog_service(ledger, request['workflow_options']), include_reviews=True)
     previous = [t for t in ledger.list_records('chat_request')
         if t['conversation_id'] == request['conversation_id'] and t['sequence'] < request['sequence']]
@@ -183,7 +210,8 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
             material['wire_mode'] = request['workflow_options']['wire_mode']
         messages = [{'role':'system','content':PROMPT +
                      (SHARED_TEXT_INSTRUCTIONS if feedback_encoding == 'shared_text_v2' else '') +
-                     (EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '')},
+                     (PHASE_CONTRACT_INSTRUCTIONS if version == PHASE_CONTRACT_VERSION else
+                      EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '')},
                     {'role':'user','content':canonical_json(material)}]
         estimate = _request_estimate(messages, workflow_format(
             initial=True,answer_contract_version=version), material)
@@ -240,7 +268,7 @@ def _answer_contract(review, interpretations, *, answer_contract_version=None):
     contract = {'step_routes':steps,'premises':premises,
         'evidence_aliases':[{'alias':alias,'candidate_id':cid} for cid,alias in aliases.items()],
         'unknown_requirements':unknown}
-    if version == EXPLICIT_MISSING_VERSION:
+    if version in (EXPLICIT_MISSING_VERSION, PHASE_CONTRACT_VERSION):
         contract['answer_contract_version'] = version
         contract['missing_rules'] = {
             'not_supplied':{'p_min_items':0,'p_max_items':0,
@@ -273,6 +301,9 @@ class WorkflowChatAdapter:
         if (self.request['workflow_options'].get('wire_mode') !=
                 self.prepared['workflow_material'].get('wire_mode')):
             raise WorkflowChatError('Workflow wire mode differs from the immutable user request')
+        selected_version = self.request['workflow_options'].get('answer_contract_version')
+        if selected_version is not None and selected_version != _prepared_answer_version(self.prepared):
+            raise WorkflowChatError('Workflow phase contract differs from the immutable user request')
         if _source_material(service) != self.prepared['workflow_material']['catalog']:
             raise WorkflowChatError('Workflow source context changed')
         for user in self.prepared['workflow_material']['user_turns']:
