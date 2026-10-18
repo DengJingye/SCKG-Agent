@@ -10,6 +10,7 @@ from streamlit.testing.v1 import AppTest
 
 from sckg_workbench.analysis import AnalysisService
 from sckg_workbench.result_export import EXPORT_SCHEMA
+from tests.test_workbench_bad_artifact_journey import journey, _run_and_finish
 from tests.test_workbench_result_summary import make_summary_fixture, sha
 
 
@@ -83,6 +84,31 @@ def test_repeat_export_and_service_reentry_are_identical_and_read_only(fixture, 
         attempt=fixture["attempt"], expected_run_id=fixture["run_id"]) == first
     assert service.workspace.db_path.read_bytes() == before
     assert sha(fixture["source"]) == source
+
+
+def test_current_v2_submission_validation_explanation_then_export_does_not_repeat_work(journey):
+    # Only transport and the scientific subprocess are synthetic; submission,
+    # v2 recovery receipts, validation, explanation and export use real services.
+    a = journey
+    source_before = a.path.read_bytes()
+    turn = _run_and_finish(a, answer="Synthetic engineering fixture only.")
+    assert turn["status"] == "succeeded"
+    task_id = turn["analysis_task_ids"][0]
+    task = a.analysis.get_task_snapshot(task_id)
+    assert task["profile_snapshot"]["skill"] != "scrublet-preview-v1"
+    before = a.ledger.workspace.db_path.read_bytes()
+    call_count, invocation_count = len(a.calls), len(a.artifacts)
+    result = a.analysis.get_result_export(task_id, attempt=task["attempt"],
+                                         expected_run_id=task["result"]["run_id"])
+    manifest, summary, _ = unpack(result)
+    assert manifest["run_id"] == task["result"]["run_id"]
+    assert summary["operational_recovery"]["status"] == "not_used"
+    assert summary["dataset_origin"] == "synthetic"
+    assert a.analysis.get_result_export(task_id, attempt=task["attempt"],
+        expected_run_id=task["result"]["run_id"]) == result
+    assert a.ledger.workspace.db_path.read_bytes() == before
+    assert len(a.calls) == call_count == 2 and len(a.artifacts) == invocation_count == 1
+    assert a.path.read_bytes() == source_before
 
 
 @pytest.mark.parametrize("target", ["source", "preview", "notebook", "result_path",
