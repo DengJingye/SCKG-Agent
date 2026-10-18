@@ -15,7 +15,7 @@ from .catalog import Catalog
 from .model_service import ModelService, ModelCapabilityError, _strict_json
 from .model_capabilities import API_FAMILY, CAPABILITIES_VERSION
 from .sources import SourceService
-from .storage import Ledger, Workspace
+from .storage import Ledger, Workspace, content_hash
 from .tasks import TaskQueue
 from .ui_theme import inject_theme
 
@@ -666,17 +666,7 @@ def _display_chat_turn(chat, stored_turn):
             summary = outcome.get("summary") or {}
             if (summary.get("status") == "validated_preview_summary"
                     and (outcome["state"] == "result_read" or outcome["validated_preview"])):
-                metrics = summary["metrics"]
-                cells, doublets, rate = st.columns(3)
-                cells.metric("预览细胞数", f"{metrics['n_cells']:,.0f}")
-                doublets.metric("预测为双细胞", f"{metrics['predicted_doublet_count']:,.0f}")
-                rate.metric("预测调用比例", f"{metrics['predicted_doublet_call_rate']:.1%}")
-                st.caption("预测调用比例是本次预览中模型预测为双细胞的比例，不是准确率或真实双细胞率。")
-                if summary.get("threshold", {}).get("status") == "not_recorded":
-                    st.caption("阈值未记录；不能从预测调用比例或分数反推。")
-                recovery = summary.get("operational_recovery") or {}
-                if recovery.get("status") == "repaired_validated":
-                    st.caption("首次启动失败后，系统在原预算内恢复一次；科学参数保持原样，最终产物已重新验收。")
+                _display_analysis_summary(summary)
         grounded = bool(turn.get("grounded_mode") or turn.get("grounded_run"))
         grounded_run = turn.get("grounded_run") or {}
         if grounded or workflow:
@@ -1925,31 +1915,116 @@ def _datasets(workspace):
                      "metadata_keys": profile["measurements"]["metadata"]})
     else:
         st.info("尚无画像；登记时没有读取完整矩阵。")
+    _direct_scrublet(workspace, asset)
+
+
+def _direct_scrublet(workspace, asset):
+    """Submit to the existing analysis queue without a chat or model connection."""
+    from .analysis import AnalysisService, MAX_CELLS, MAX_GENES, MAX_BYTES
+    from .datasets import DatasetService
+
+    st.subheader("本地 Scrublet 双细胞检测")
+    st.caption("填写参数后创建任务，再到运行结果页启动。无需配置模型；原始矩阵只在本地读取。"
+               "当前支持不超过 1000 个细胞、10000 个基因、25 MiB，固定随机种子为 0。")
+    with st.form("direct_scrublet_" + asset["asset_id"]):
+        provenance = st.text_area("原始计数来源说明", max_chars=4000,
+            help="说明数据来源和 X 的处理过程；整数值本身不能证明是原始计数。")
+        rate = st.number_input("预期双细胞比例（0.06 表示 6%）", min_value=0.001,
+            max_value=0.25, value=None, step=0.01, format="%.4f")
+        origin = st.selectbox("分析数据来源", ["unknown", "caller_supplied", "synthetic", "published_derived"],
+            format_func=lambda value: {"unknown": "尚不清楚", "caller_supplied": "用户提供",
+                "synthetic": "合成测试数据", "published_derived": "公开来源的衍生数据"}[value])
+        refs = st.text_area("数据来源 DOI 或公开链接（每行一条，可选）")
+        authorized = st.checkbox("确认 X 为未经归一化的原始计数，并授权本次本地分析", value=False)
+        submitted = st.form_submit_button("创建本地分析任务", type="primary")
+    if submitted:
+        try:
+            if not authorized or not provenance.strip() or rate is None:
+                raise ValueError("请填写计数来源和预期双细胞比例，并确认原始计数与本地执行授权。")
+            if asset["stat_signature"]["size"] > MAX_BYTES:
+                raise ValueError("当前分析支持不超过 25 MiB 的文件。")
+            profile = DatasetService(workspace).profile(asset["asset_id"])["profile"]
+            dimensions = profile["dimensions"]
+            if not (1 <= dimensions["n_obs"] <= MAX_CELLS and 1 <= dimensions["n_vars"] <= MAX_GENES):
+                raise ValueError("当前分析支持 1–1000 个细胞、1–10000 个基因；请提供已选好的小数据文件。")
+            options = {"asset_id": asset["asset_id"], "count_source": "X",
+                "count_provenance": provenance.strip(), "expected_doublet_rate": float(rate),
+                "dataset_origin": origin,
+                "dataset_origin_refs": [line.strip() for line in refs.splitlines() if line.strip()]}
+            nonce = st.session_state.setdefault("direct_analysis_nonce", uuid.uuid4().hex)
+            task = AnalysisService(workspace).submit_scrublet(**options, execution_authorized=True,
+                idempotency_key="direct-scrublet:" + nonce + ":" + content_hash(options))
+            st.session_state["analysis_result_task"] = task["task_id"]
+            st.session_state["direct_analysis_task"] = {"asset_id": asset["asset_id"], "task_id": task["task_id"]}
+            st.success("任务已保存；重复提交相同参数会复用本次任务。请进入运行结果页启动分析。")
+        except Exception as exc:
+            _error(exc)
+    selected = st.session_state.get("direct_analysis_task")
+    if selected and selected["asset_id"] == asset["asset_id"]:
+        st.caption("当前任务：" + selected["task_id"])
+        st.button("前往运行结果", type="primary", on_click=_navigate, args=("运行结果",),
+                  key="direct_analysis_results")
+
+
+def _display_analysis_summary(summary):
+    metrics = summary["metrics"]
+    cells, doublets, rate = st.columns(3)
+    cells.metric("预览细胞数", f"{metrics['n_cells']:,.0f}")
+    doublets.metric("预测为双细胞", f"{metrics['predicted_doublet_count']:,.0f}")
+    rate.metric("预测调用比例", f"{metrics['predicted_doublet_call_rate']:.1%}")
+    st.caption("预测调用比例是本次预览中模型预测为双细胞的比例，不是准确率或真实双细胞率。")
+    if summary.get("threshold", {}).get("status") == "not_recorded":
+        st.caption("阈值未记录；不能从预测调用比例或分数反推。")
+    if (summary.get("operational_recovery") or {}).get("status") == "repaired_validated":
+        st.caption("首次启动失败后，系统在原预算内恢复一次；科学参数保持原样，最终产物已重新验收。")
 
 
 def _run_results(workspace):
-    from .analysis import AnalysisService
+    from .analysis import AnalysisService, KIND
+    from . import analysis_dispatch
     from .datasets import DatasetService
     from .execution_readiness import ScrubletReadinessService
 
     analysis = AnalysisService(workspace)
     runs = analysis.list_runs()
     if not runs:
-        _empty("暂无分析运行结果", "在研究台选择数据并启用本地分析工具，可提交受控 Scrublet 预览。")
+        _empty("暂无分析运行结果", "在数据资产页选择 .h5ad 并创建本地分析任务，即可直接运行 Scrublet。")
+        st.button("选择分析数据", on_click=_navigate, args=("数据资产",), key="analysis_choose_data")
     else:
         st.dataframe([{"任务": r["task_id"], "状态": r["status"],
             "资产": r["input_snapshot"]["asset_id"], "尝试次数": r["attempt"]} for r in runs], hide_index=True)
         task_id = st.selectbox("查看分析任务", [r["task_id"] for r in runs], key="analysis_result_task")
         task = analysis.queue.get(task_id)
+        dispatch = analysis_dispatch.snapshot(workspace, task_id) or {}
+        if task["status"] == "running":
+            st.info("分析正在后台运行。可以刷新状态、切换页面或取消；刷新不会再次启动计算。")
+        elif task["status"] == "cancel_requested":
+            st.info("已请求取消，正在等待本次执行停止并清理进程。晚到结果不会显示为成功。")
+        elif task["status"] == "cancelled":
+            st.info("任务已取消；刷新不会重新执行。")
+        elif task["status"] == "result_unknown":
+            st.warning("上次执行的结果尚不能确认，系统不会自动重跑。请查看下方运行与进程记录。")
+        elif task["status"] == "queued" and dispatch.get("active"):
+            st.info("正在后台启动分析；可以刷新状态或取消任务。")
+        elif task["status"] == "queued" and dispatch.get("error"):
+            st.error("启动未完成：" + dispatch["error"])
+        elif task["status"] == "queued" and dispatch.get("status") == "busy":
+            st.warning("队列中还有更早的任务或其他任务正在执行；本任务尚未开始。")
         if st.button("刷新分析状态", key="analysis_refresh"):
             st.rerun()
         if task["status"] in {"queued", "running"} and st.button("取消分析任务", key="analysis_cancel"):
             analysis.queue.request_cancel(task_id)
             st.rerun()
-        if task["status"] == "queued" and st.button("执行已授权的分析任务", key="analysis_execute"):
-            with st.spinner("执行本地分析并验收产物…"):
-                analysis.run_once(task_id=task_id)
-            st.rerun()
+        if (task["status"] == "queued" and task["kind"] == KIND
+                and st.button("执行已授权的分析任务", key="analysis_execute", disabled=bool(dispatch.get("active")))):
+            try:
+                launched = analysis_dispatch.start(analysis, task_id)
+                if launched["status"] == "busy":
+                    st.warning("队列中还有更早的任务；本任务尚未开始。请先处理前面的任务，再重试。")
+                else:
+                    st.rerun()
+            except Exception as exc:
+                _error(exc)
         result = analysis.get_result(task_id)
         if result:
             origin = {"unknown": "尚不清楚", "caller_supplied": "用户提供",
@@ -1958,6 +2033,10 @@ def _run_results(workspace):
             st.caption("数据来源声明 · " + origin + " · 尚未独立核验")
         if result and task["status"] == "succeeded" and result.get("validation", {}).get("passed"):
             st.success("分析预览与产物校验通过。此结果用于工程预览，不是科学效力证明。")
+            summary = analysis.get_public_result_summary(task_id, attempt=task["attempt"],
+                                                         expected_run_id=result.get("run_id", ""))
+            if summary.get("status") == "validated_preview_summary":
+                _display_analysis_summary(summary)
             exported = analysis.get_result_export(task_id, attempt=task["attempt"],
                                                   expected_run_id=result.get("run_id", ""))
             if exported["status"] == "ready":
@@ -1976,6 +2055,8 @@ def _run_results(workspace):
                         key="analysis_download_" + task_id + "_" + name)
         elif result:
             st.warning("当前分析或产物验收未通过，完整错误保留在运行记录中。")
+            for failure in result.get("validation", {}).get("failures", [])[:5]:
+                st.text(str(failure)[:1000])
         with st.expander("分析、资源与验收记录", expanded=bool(result and not result.get("validation", {}).get("passed"))):
             st.json({"task": task, "result": result, "events": analysis.queue.events(task_id)})
     st.button("查看知识处理任务", on_click=_navigate, args=("入库工作台", "配置与抽取"))
@@ -1999,7 +2080,8 @@ def _run_results(workspace):
         if report["ready"]:
             st.success("前提检查通过；仍需经正式执行路径和结果验证。")
         else:
-            st.warning("当前不能执行 Scrublet。下列阻塞项需要逐项解决并重新预检。")
+            st.info("这是尚未绑定具体任务的独立预检。请从数据资产页填写参数并创建任务；"
+                    "合同、环境和数据错误仍须解决，执行权限由具体任务校验。")
         st.dataframe([{"检查": row["check_id"], "状态": row["status"],
                        "说明": row["detail"]} for row in report["checks"]],
                      hide_index=True, width="stretch")
