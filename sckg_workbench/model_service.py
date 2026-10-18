@@ -22,7 +22,7 @@ from dotenv import dotenv_values
 from dotenv.parser import parse_stream
 
 from .secrets import SecretVault
-from .storage import content_hash
+from .storage import canonical_json, content_hash
 from .model_capabilities import (
     preflight_wire, validate_wire_capabilities, wire_receipt_binding,
 )
@@ -99,6 +99,43 @@ def _validate_response_format(response_format):
             Draft202012Validator.check_schema(specification["schema"])
         except SchemaError:
             raise ModelServiceError("Invalid structured output schema") from None
+
+
+def output_contract_request(messages, response_format, validation_format=None):
+    """Bind an explicit JSON-object wire to a complete local schema.
+
+    This is an opt-in configuration, never an error fallback. The canonical
+    schema is sent verbatim in a system message and counted by the same input
+    budget as all other messages. Historical requests remain byte-compatible.
+    """
+    messages, response_format, validation_format = deepcopy((
+        messages, response_format, validation_format))
+    _validate_response_format(response_format)
+    if validation_format is not None:
+        specification = (validation_format.get('json_schema')
+                         if isinstance(validation_format, dict) else None)
+        if (response_format != {"type": "json_object"}
+                or not isinstance(validation_format, dict)
+                or validation_format.get("type") != "json_schema"
+                or not isinstance(specification, dict)
+                or specification.get("strict") is not True):
+            raise ModelServiceError("Local validation requires explicit JSON-object wire and strict JSON Schema")
+        _validate_response_format(validation_format)
+        messages = [{"role": "system", "content":
+            "Return exactly one JSON object satisfying this complete canonical output contract. "
+            "The application independently validates every constraint; invalid output stops the run. "
+            "Do not omit or weaken constraints. Canonical contract JSON:\n" +
+            canonical_json(validation_format)}, *messages]
+    return messages, response_format, validation_format
+
+
+def local_validation_matches(request, receipt, validation_format=None):
+    """Replay the original local contract without inferring one from today's code."""
+    if validation_format is None:
+        return ('local_validation_format' not in request
+                and 'local_validation_format_hash' not in receipt)
+    return (request.get('local_validation_format') == validation_format
+            and receipt.get('local_validation_format_hash') == content_hash(validation_format))
 
 
 def _id(prefix: str) -> str:
@@ -341,22 +378,23 @@ class ModelService:
         return report
 
     def invoke(self, profile_id: str, messages: list[dict], *, passphrase: str = "",
-               outbound_authorized: bool, budget: dict, response_format: dict | None = None) -> dict:
+               outbound_authorized: bool, budget: dict, response_format: dict | None = None,
+               validation_format: dict | None = None) -> dict:
         if not isinstance(messages, list) or not messages:
             raise ModelServiceError("At least one text message is required")
         # Caller-owned objects can change while credentials are unlocked or
         # transport code runs. Admission, sizing, validation and receipts must
         # all use the same private input, rather than a later caller mutation.
-        messages = deepcopy(messages)
-        response_format = deepcopy(response_format)
+        messages, response_format, validation_format = output_contract_request(
+            messages, response_format, validation_format)
         for message in messages:
             if not isinstance(message, dict) or set(message) != {"role", "content"} or message["role"] not in {"system", "developer", "user", "assistant"} or not isinstance(message["content"], str):
                 raise ModelServiceError("M0 accepts text messages with role and content only")
         payload = {"messages": messages}
-        _validate_response_format(response_format)
         if response_format is not None:
             payload["response_format"] = response_format
-        return self._call(profile_id, payload, passphrase, outbound_authorized, budget, embedding=False)
+        return self._call(profile_id, payload, passphrase, outbound_authorized, budget,
+                          embedding=False, validation_format=validation_format)
 
     def embed(self, profile_id: str, texts: list[str], *, passphrase: str = "",
               outbound_authorized: bool, budget: dict) -> dict:
@@ -364,7 +402,8 @@ class ModelService:
             raise ModelServiceError("Embedding inputs must be nonempty strings")
         return self._call(profile_id, {"input": list(texts)}, passphrase, outbound_authorized, budget, embedding=True)
 
-    def _call(self, profile_id, payload, passphrase, outbound_authorized, budget, *, embedding):
+    def _call(self, profile_id, payload, passphrase, outbound_authorized, budget, *, embedding,
+              validation_format=None):
         if outbound_authorized is not True:
             raise ModelServiceError("Explicit outbound authorization is required")
         if not isinstance(budget, dict):
@@ -411,6 +450,13 @@ class ModelService:
             request_payload.update(profile["options"])
             request_payload["max_tokens"] = output_limit
             request_payload["stream"] = False
+        if validation_format is not None:
+            # New explicit mode admits the entire final wire body, including
+            # model/options/stream/output ceiling. Keep legacy estimates intact.
+            estimated_input = len(json.dumps(request_payload, ensure_ascii=False,
+                                            allow_nan=False).encode()) + 256
+            if estimated_input > input_limit:
+                raise ModelServiceError("Estimated input exceeds the request token budget")
         api_key = self._credential(connection, passphrase)
         run_id = _id("model-call")
         call_meta = {"profile_id": profile_id, "connection_id": connection["connection_id"],
@@ -420,8 +466,12 @@ class ModelService:
             call_meta.update(wire_receipt_binding(profile, payload.get("response_format")))
         # Store exactly the bounded request sent, excluding headers and credentials.
         # Scientific assessments can then bind a receipt to the actual evidence.
-        self.ledger.put_record("model_request", run_id, {"id": run_id, "payload": request_payload,
-                                                       "request_hash": content_hash(request_payload)})
+        request_record = {"id": run_id, "payload": request_payload,
+                          "request_hash": content_hash(request_payload)}
+        if validation_format is not None:
+            request_record['local_validation_format'] = deepcopy(validation_format)
+            call_meta['local_validation_format_hash'] = content_hash(validation_format)
+        self.ledger.put_record("model_request", run_id, request_record)
         self.ledger.append_event("model_call_started", run_id, call_meta)
         try:
             response = self.transport(connection["base_url"] + ("/embeddings" if embedding else "/chat/completions"),
@@ -521,6 +571,8 @@ class ModelService:
                     raise ValueError("structured object")
                 if payload.get("response_format", {}).get("type") == "json_schema":
                     Draft202012Validator(payload["response_format"]["json_schema"]["schema"]).validate(structured)
+                if validation_format is not None:
+                    Draft202012Validator(validation_format['json_schema']['schema']).validate(structured)
                 result.update(text=content, structured=structured, finish_reason=finish_reason,
                               structured_output_hash=content_hash(structured),
                               status="succeeded" if finish_reason == "stop" else "partial")

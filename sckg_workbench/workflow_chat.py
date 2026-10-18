@@ -18,6 +18,7 @@ from .evidence_answers import (CompactAnswerV3, _call_binding,
     _normalize_compact_answer_v3)
 from .premise_context import unicode_spans
 from .storage import canonical_json, content_hash
+from .model_service import output_contract_request
 from .workflow_inputs import WorkflowInputService
 
 
@@ -41,6 +42,7 @@ candidate_sources的每个E条目为source_columns顺序的数组；typed_attrib
 引用仍只用E编号，不能引用T编号。表格去重不改变来源、条件、未知项或资格；原始完整记录和全部调用在本地保留。
 """
 EXPLICIT_MISSING_VERSION = 'explicit_missing_v2'
+JSON_OBJECT_CANONICAL = 'json_object_canonical_v1'
 EXPLICIT_MISSING_INSTRUCTIONS = """\n本轮answer_contract_version=explicit_missing_v2，沿用CompactAnswerV3，不改变输入检查或执行资格。
 P编号标识已经从用户原话抽取的报告；reported_value=null也仍然是已有原话，只是其输入状态未知。
 m中not_supplied的p必须始终为[]，不得填任何P编号，包括状态为null的P。请在t中直接追问所选路线尚未明确报告的输入。
@@ -102,7 +104,10 @@ def workflow_format(final_only=False, *, initial=False, answer_contract_version=
 
 
 def catalog_service(ledger, options):
-    if (not isinstance(options, dict) or set(options) != {'catalog_record_id','catalog_hash'}
+    if (not isinstance(options, dict)
+            or set(options) not in ({'catalog_record_id','catalog_hash'},
+                                   {'catalog_record_id','catalog_hash','wire_mode'})
+            or ('wire_mode' in options and options['wire_mode'] != JSON_OBJECT_CANONICAL)
             or any(not isinstance(v, str) or not v for v in options.values())):
         raise WorkflowChatError('A fixed development catalog record and hash are required')
     state = ledger.get_state('workflow_input_catalog')
@@ -122,6 +127,18 @@ def validate_options(ledger, options):
     for offset in range(0, len(routes), 4):
         service.evaluate(routes[offset:offset+4], {})
     return deepcopy(options)
+
+
+def _request_estimate(messages, canonical_format, material, *, legacy_canonical=True):
+    wire, local = canonical_format, None
+    if material.get('wire_mode') == JSON_OBJECT_CANONICAL:
+        wire, local = {'type':'json_object'}, canonical_format
+    if local is not None:
+        messages, wire, _ = output_contract_request(messages, wire, local)
+    payload = {'messages':messages,'response_format':wire}
+    encoded = (canonical_json(payload) if legacy_canonical and local is None else
+               json.dumps(payload,ensure_ascii=False))
+    return len(encoded.encode()) + 256
 
 
 def _source_material(service, *, include_reviews=False):
@@ -162,12 +179,14 @@ def prepare_context(ledger, request, *, feedback_encoding='shared_text_v2',
             material['feedback_encoding'] = feedback_encoding
         if version is not None:
             material['answer_contract_version'] = version
+        if request['workflow_options'].get('wire_mode'):
+            material['wire_mode'] = request['workflow_options']['wire_mode']
         messages = [{'role':'system','content':PROMPT +
                      (SHARED_TEXT_INSTRUCTIONS if feedback_encoding == 'shared_text_v2' else '') +
                      (EXPLICIT_MISSING_INSTRUCTIONS if version == EXPLICIT_MISSING_VERSION else '')},
                     {'role':'user','content':canonical_json(material)}]
-        estimate = len(canonical_json({'messages':messages,'response_format':workflow_format(
-            initial=True,answer_contract_version=version)}).encode()) + 256
+        estimate = _request_estimate(messages, workflow_format(
+            initial=True,answer_contract_version=version), material)
         limit = request['budget'].get('max_input_tokens')
         if type(limit) is not int or limit < 1:
             raise WorkflowChatError('An explicit positive input budget is required')
@@ -251,6 +270,9 @@ class WorkflowChatAdapter:
 
     def check(self):
         service = catalog_service(self.ledger, self.request['workflow_options'])
+        if (self.request['workflow_options'].get('wire_mode') !=
+                self.prepared['workflow_material'].get('wire_mode')):
+            raise WorkflowChatError('Workflow wire mode differs from the immutable user request')
         if _source_material(service) != self.prepared['workflow_material']['catalog']:
             raise WorkflowChatError('Workflow source context changed')
         for user in self.prepared['workflow_material']['user_turns']:
@@ -262,13 +284,25 @@ class WorkflowChatAdapter:
                     or content_hash(original['prompt']) != user['prompt_hash']):
                 raise WorkflowChatError('Original user-turn binding changed')
 
-    def format(self, final_only):
+    def canonical_format(self, final_only):
         return workflow_format(final_only, initial=self.review is None,
             answer_contract_version=_prepared_answer_version(self.prepared))
 
+    def format(self, final_only):
+        return ({'type':'json_object'} if self.prepared['workflow_material'].get('wire_mode')
+                == JSON_OBJECT_CANONICAL else self.canonical_format(final_only))
+
+    def validation_format(self, final_only):
+        return (self.canonical_format(final_only) if self.prepared['workflow_material'].get('wire_mode')
+                == JSON_OBJECT_CANONICAL else None)
+
     def accept(self, response, messages, response_format, budget):
         profile = self.ledger.get_record('model_profile', self.request['profile_id'])
-        receipt, actual_request = _call_binding(self.models, profile, response, messages, response_format, budget)
+        final_only = len(self.calls) == 2
+        if response_format != self.format(final_only):
+            raise WorkflowChatError('Workflow wire format differs from the selected output contract')
+        receipt, actual_request = _call_binding(self.models, profile, response, messages, response_format, budget,
+            validation_format=self.validation_format(final_only))
         wire = WorkflowAction.model_validate(response['structured'])
         if wire.action == 'finish':
             if self.review is None or wire.route_ids or wire.reports or wire.answer is None:
@@ -377,6 +411,8 @@ class WorkflowChatAdapter:
             material['feedback_encoding'] = original['feedback_encoding']
         if original.get('answer_contract_version') is not None:
             material['answer_contract_version'] = _prepared_answer_version(self.prepared)
+        if original.get('wire_mode'):
+            material['wire_mode'] = original['wire_mode']
         material.update(source_snapshot_hash=original['catalog']['source_snapshot_hash'],
             available_route_index=[{'route_id':r['route_id'],'label':r['label'],
                 'report_pointers':[q['report_pointer'] for q in r['requirements']]}
@@ -446,9 +482,8 @@ def _context_capacity(prepared, reviews):
             action = {'action':'evaluate_workflow_inputs','route_ids':list(route_ids),
                 'reports':[{k:v for k,v in r.items() if k!='premise_id'} for r in reports],'answer':None}
             messages = adapter.messages_after_tool(action,result)
-            estimate = len(json.dumps({'messages':messages,'response_format':workflow_format(
-                answer_contract_version=version)},
-                ensure_ascii=False).encode()) + 256
+            estimate = _request_estimate(messages,workflow_format(
+                answer_contract_version=version),material,legacy_canonical=False)
             largest = max(largest,estimate)
             count += 1
     return {'schema_version':'workflow-context-capacity-envelope-v1',

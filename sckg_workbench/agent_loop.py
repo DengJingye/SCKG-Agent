@@ -244,9 +244,13 @@ class AnalysisAgentLoop:
                 return output("partial", error={"type": "AgentBudgetStopped", "message": "本轮累计token预算已用尽。"})
             final_only = index == MAX_MODEL_CALLS - 1 or len(steps) == MAX_TOOL_STEPS
             response_format = workflow.format(final_only) if workflow else _format(final_only, readonly=readonly)
+            contract_options = {}
+            if workflow and workflow.validation_format(final_only) is not None:
+                contract_options['validation_format'] = workflow.validation_format(final_only)
             try:
                 response = self.models.invoke(request["profile_id"], messages, passphrase=passphrase,
-                    outbound_authorized=True, budget=call_budget, response_format=response_format)
+                    outbound_authorized=True, budget=call_budget, response_format=response_format,
+                    **contract_options)
             except Exception as exc:
                 receipt = getattr(exc, "receipt", None)
                 if receipt:

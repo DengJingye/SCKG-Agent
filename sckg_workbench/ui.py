@@ -204,6 +204,17 @@ def _research_knowledge_mode_changed():
         st.session_state["research_grounded_mode"] = False
 
 
+def _workflow_wire_options(options):
+    from .workflow_chat import JSON_OBJECT_CANONICAL
+    selected = st.selectbox('流程输出格式', ['JSON Schema', 'JSON 对象 + 完整本地合同'],
+        key='research_workflow_wire_format',
+        help='显式选择当前模型接口支持的格式。两者保留完整本地校验；失败后不会自动切换或重试。')
+    result = dict(options)
+    if selected == 'JSON 对象 + 完整本地合同':
+        result['wire_mode'] = JSON_OBJECT_CANONICAL
+    return result
+
+
 def _workflow_catalog_options(ledger):
     """Opt in only to an explicitly bound development catalog, without release."""
     configured = ledger.get_state("workflow_input_catalog")
@@ -320,6 +331,7 @@ def _research(ledger, models):
                         args=("research_workflow_enabled",),
                         help="仅在当前隔离开发目录启用。模型从用户原话提取报告，服务检查前提；候选未发布，不执行分析。")
                     if workflow_enabled:
+                        available_workflow = _workflow_wire_options(available_workflow)
                         st.caption("开发候选流程 · 仅解释与输入检查。模型提取可能不完整，用户报告尚未独立核验；本轮不使用正式知识检索开关。")
                         st.caption("本轮最多 3 次模型请求、2 次只读流程检查；每次输入与输出受当前上限约束，费用按本轮累计。")
                 assets = {a["asset_id"]: a for a in DatasetService(ledger.workspace).list_assets()}

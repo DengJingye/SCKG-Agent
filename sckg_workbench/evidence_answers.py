@@ -14,7 +14,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .model_service import ModelCallError, _strict_json
+from .model_service import (ModelCallError, _strict_json, output_contract_request,
+                            local_validation_matches)
 from .model_capabilities import wire_receipt_matches
 from .evidence_selection import validate_selected_evidence, validate_decision_scope
 from .retrieval_planning import (
@@ -246,17 +247,19 @@ def _current_selection(knowledge, selection):
         raise EvidenceAnswerError("Selected evidence contract is invalid") from None
 
 
-def _payload(profile, messages, response_format, budget):
+def _payload(profile, messages, response_format, budget, validation_format=None):
+    if validation_format is not None:
+        messages, response_format, _ = output_contract_request(messages, response_format, validation_format)
     return {"messages": messages, "response_format": deepcopy(response_format),
             "model": profile["model"], **profile.get("options", {}),
             "max_tokens": budget["max_output_tokens"], "stream": False}
 
 
-def _call_binding(models, profile, result, messages, response_format, budget):
+def _call_binding(models, profile, result, messages, response_format, budget, *, validation_format=None):
     call_id = result.get("call_id")
     receipt = models.ledger.get_record("model_call", call_id) if call_id else None
     request = models.ledger.get_record("model_request", call_id) if call_id else None
-    expected = _payload(profile, messages, response_format, budget)
+    expected = _payload(profile, messages, response_format, budget, validation_format)
     if (result.get("status") != "succeeded" or not receipt or receipt.get("status") != "succeeded"
             or receipt != {k: v for k, v in result.items() if k not in {"text", "structured", "embeddings"}}
             or receipt.get("profile_id") != profile["id"] or receipt.get("budget") != budget
@@ -264,6 +267,7 @@ def _call_binding(models, profile, result, messages, response_format, budget):
             or not wire_receipt_matches(profile, receipt, response_format)
             or models.ledger.get_record("model_profile", profile["id"]) != profile
             or not request or request.get("payload") != expected
+            or not local_validation_matches(request, receipt, validation_format)
             or request.get("request_hash") != content_hash(expected)):
         raise EvidenceAnswerError("Answer must bind a complete unchanged actual request and receipt",
                                   receipt=receipt, call_id=call_id)
