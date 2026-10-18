@@ -758,7 +758,9 @@ class AnalysisService:
         from execution.workspace_checkpoint import _model_digest
         from execution.wrapper_registry import WrapperRegistry
         from .analysis_repair import enabled, OperationalRecovery, public_summary
+        from .code_provenance import capture_code_provenance
 
+        code_provenance = capture_code_provenance()
         recovery_enabled = enabled(task)
         max_inner_runs = 2 if recovery_enabled else 1
 
@@ -870,6 +872,7 @@ class AnalysisService:
                   "contract_digest": _model_digest(contract),
                   "environment_digest": _model_digest(environments.get(contract.environment_id))}
         prepared = {"frozen": frozen,
+            "code_provenance": code_provenance,
             **origin_from_snapshot(request),
             "runtime_discovery": runtime_discovery,
             "preview_path": str(preview_path), "source_path": str(source), "output_root": str(local / "users"),
@@ -924,6 +927,7 @@ class AnalysisService:
                 recovery_summary = public_summary(status="repaired_validated" if validation["passed"] else "repair_failed",
                     admissions=1, initial_run_id=initial_run_id, final_run_id=result.execution_run.run_id)
         response = {"task_id": task_id, "attempt": task["attempt"], "asset_id": request["asset_id"], "run_id": result.execution_run.run_id,
+                "code_provenance_digest": content_hash(code_provenance),
                 "status": "validated" if validation["passed"] else "failed", "validation": validation,
                 "summary": ("Scrublet preview completed and independent artifact/ID checks passed." if validation["passed"] else
                             "Scrublet preview did not pass external validation: " + "; ".join(validation["failures"])),
@@ -1050,6 +1054,8 @@ class AnalysisService:
             if (saved.get("task_id") != task_id or saved.get("attempt") != attempt
                     or saved.get("run_id") != expected_run_id or task["result"] != saved):
                 return {**unavailable, "reason_code": "result_binding_mismatch"}
+            from .code_provenance import recorded_code_provenance
+            code_provenance = recorded_code_provenance(prepared, saved)
 
             # Establish owned paths before get_result or the legacy store reads.
             local = _path_inside(self.workspace.artifacts_dir / "analysis" / _attempt_directory(task),
@@ -1164,6 +1170,8 @@ class AnalysisService:
                 "table_sha256": table_digest, "axis_ids_sha256": axis_digest,
                 "metadata_sha256": run.artifact_hashes["result_metadata.json"],
                 "validator": current["current_integrity"]["validator"]}
+            if code_provenance is not None:
+                binding["code_provenance"] = code_provenance
             # Ensure the selection still denotes the completed current attempt.
             content_hash(binding)  # Validate the private binding's finite canonical form; do not persist it here.
             latest = self.get_task_snapshot(task_id)

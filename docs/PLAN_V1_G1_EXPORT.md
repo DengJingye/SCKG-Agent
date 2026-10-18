@@ -8,7 +8,7 @@ ZIP 包含三个固定文件：
 - `manifest.json`：任务/尝试/运行身份、seed、参数、数据/环境/合同/notebook 指纹、原产物哈希、分析任务自身的预算与用量、摘要文件哈希。
 - `SHA256SUMS`：上述两个文件的 SHA256，针对实际下载字节计算。校验值用于发现内容变化，不是数字签名。
 
-这是摘要与已记录溯源的导出，不是可独立执行的复现环境。原始输入、逐细胞结果、环境和可执行 notebook 不包含在 ZIP 中。本版历史分析收据未记录 `parent_run_id`、`code_sha`、模型实际身份/配置、prompt、corpus、index 与完整 tool registry 身份；这些字段明确为 null，并在 `missing_provenance` 中写明原因。不会拿当前工作区版本冒充历史执行版本；`reproduction_complete` 保持 false。分析任务的零模型预算不能解释为父级对话没有模型费用。
+这是摘要与已记录溯源的导出，不是可独立执行的复现环境。原始输入、逐细胞结果、环境和可执行 notebook 不包含在 ZIP 中。历史分析收据未记录的 `parent_run_id`、`code_sha`、模型实际身份/配置、prompt、corpus、index 与完整 tool registry 身份明确为 null，并在 `missing_provenance` 中写明原因。新执行准备阶段会保存[代码观察记录](PLAN_V1_G1_CODE_PROVENANCE.md)；只有确实保存过该记录的结果才导出相应字段。不会拿当前工作区版本冒充历史执行版本；`reproduction_complete` 保持 false。分析任务的零模型预算不能解释为父级对话没有模型费用。
 
 所有结果仍是 `preview_engineering_only`；来源仍为调用方声明且未独立核验。导出不执行模型/科学工具，不写台账，不修改历史收据，不授予科学资格。相同收据重复导出、重新打开工作区后导出得到相同 ZIP 字节。下载表示生成时已验证的快照；已下载文件不会因源数据后来变化而自动撤回，重新打开页面会重新验证。
 
