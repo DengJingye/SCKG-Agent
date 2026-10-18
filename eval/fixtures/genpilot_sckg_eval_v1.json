@@ -1,0 +1,1405 @@
+{
+  "schema_version": "genpilot_sckg_eval_spec.v1",
+  "experiment_id": "genpilot_sckg_preparation_20261008",
+  "metadata": {
+    "created_on": "2026-10-08",
+    "status": "specification_only",
+    "language": "zh-CN",
+    "actual_expert_bodies_available": false,
+    "license_unknown": true,
+    "provider_config_unpinned": true,
+    "formal_gold_unreviewed": true,
+    "model_calls_executed": 0,
+    "scientific_results_available": false,
+    "case_profiles_are": "synthetic_development_inputs_not_measured_datasets",
+    "source_basis": "User screenshot plus separately verified public documentation; this file contains no recovered proprietary expert body.",
+    "existing_33_source_packages": "development_only_not_eligible_for_relabeling_as_independent_holdout",
+    "legacy_121_knowledge": "excluded_from_facts_retrieval_examples_and_gold",
+    "not_a_genpilot_benchmark_result": true,
+    "authoring_status": "unreviewed_development_specification"
+  },
+  "readiness": {
+    "status": "not_ready",
+    "can_run_real_comparison": false,
+    "can_run_static_preflight": true,
+    "blockers": [
+      "actual_expert_body_unavailable",
+      "complete_expert_file_hashes_unavailable",
+      "referenced_subskill_coverage_unverified",
+      "expert_license_unknown",
+      "cloud_and_tool_dependencies_unverified",
+      "provider_revision_sampling_and_budgets_unpinned",
+      "independent_source_and_dataset_holdout_unverified",
+      "domain_gold_unreviewed",
+      "decision_thresholds_unregistered",
+      "information_equivalence_and_capability_parity_unverified"
+    ],
+    "do_not_infer_readiness_from": [
+      "screenshot_cards",
+      "public_marketing_claims",
+      "expert_read_truncated_text",
+      "subskill_names_only",
+      "local_engineering_tests_passed"
+    ],
+    "required_expert_inventory_fields": [
+      "origin_url",
+      "retrieved_at",
+      "expert_id",
+      "package_version",
+      "file_path",
+      "full_bytes",
+      "read_bytes",
+      "truncated",
+      "content_sha256",
+      "referenced_skills",
+      "reference_resolution_status",
+      "license_basis",
+      "required_tools",
+      "cloud_dependencies"
+    ],
+    "can_run": false
+  },
+  "terminology": {
+    "K": "A frozen eligible scKG evidence Release plus fixed retrieval and evidence closure policy.",
+    "E": "An authorized, frozen expert package including exactly the captured instructions, embedded facts and declared dependencies.",
+    "expert_is_not_assumed_rag": "A role/prompt/skill/workflow/tool composition is not called RAG without evidence of retrieval over an external collection.",
+    "fact_authority": "Expert text may propose claims or procedures but cannot approve, supersede, or publish scientific evidence.",
+    "granularity_status": "not_decided"
+  },
+  "integration_factorial": {
+    "design": "paired_2_by_2_K_presence_x_E_presence",
+    "arms": [
+      {
+        "arm_id": "Y00",
+        "label": "LLM",
+        "K": false,
+        "E": false,
+        "id": "B",
+        "knowledge_enabled": false,
+        "expert_enabled": false
+      },
+      {
+        "arm_id": "Y10",
+        "label": "LLM+K",
+        "K": true,
+        "E": false,
+        "id": "K",
+        "knowledge_enabled": true,
+        "expert_enabled": false
+      },
+      {
+        "arm_id": "Y01",
+        "label": "LLM+E",
+        "K": false,
+        "E": true,
+        "id": "E",
+        "knowledge_enabled": false,
+        "expert_enabled": true
+      },
+      {
+        "arm_id": "Y11",
+        "label": "LLM+K+E",
+        "K": true,
+        "E": true,
+        "id": "KE",
+        "knowledge_enabled": true,
+        "expert_enabled": true
+      }
+    ],
+    "fixed_across_arms": [
+      "actual_provider_model_revision",
+      "reasoning_and_sampling_settings",
+      "question_and_dataset_profile",
+      "fresh_session_policy",
+      "tool_registry_and_permissions",
+      "total_input_context_cap",
+      "output_cap",
+      "tool_call_cap",
+      "wall_clock_and_spend_cap",
+      "error_and_retry_policy",
+      "common_serializer",
+      "source_access_policy"
+    ],
+    "K_controls": [
+      "same_scientific_facts",
+      "same_release_id",
+      "same_current_suspension_check",
+      "same_query_generation",
+      "same_retrieval_and_closure_policy",
+      "same_context_serializer"
+    ],
+    "E_controls": [
+      "identical_full_authorized_package_in_Y01_and_Y11",
+      "exact_file_hashes",
+      "fixed_subskill_resolution",
+      "same_common_capability_registry",
+      "fixed_expert_routing_policy"
+    ],
+    "budget_policy": "Same total resource ceilings; do not enlarge Y11 context to hide expert overhead. Record actual token consumption and truncation. On overflow use the same preregistered packing policy and never silently cut conditions or source locators. Treatment overhead is reported as a practical effect.",
+    "external_knowledge_policy": "Freeze permitted source/tool access. No-K groups cannot call the scKG retrieval interface or read its fixtures. All groups may use the same preregistered non-scKG reference tools; capture every result and its cost. Their use is an observed part of the arm, not an unrecorded equalizer.",
+    "embedded_facts_confound": "If raw expert text includes scientific facts, worked answers, references or special tools, E measures the complete package effect. Do not call the result a pure role, workflow or routing effect. Inventory overlap with K and common-source dependence.",
+    "secondary_mechanism_ablation": "Only after provenance review create an explicitly derived workflow-only E variant; preserve deletion map and verify it does not add information. This is a separate experiment, not a silent edit of original E.",
+    "combination_policy": "Y11 uses a preregistered evidence-constrained adapter: separate expert suggestions from evidence judgments and validated capabilities; unresolved conflict remains visible.",
+    "composition_diagnostic": "Separately compare raw concatenation vs evidence-constrained composition on the same frozen expert/evidence content, including stale advice and false authority. Do not pool these outputs into the primary 2x2 contrast.",
+    "shared_budgets": {
+      "status": "unconfigured_blocking",
+      "input_tokens": null,
+      "output_tokens": null,
+      "tool_calls": null,
+      "wall_clock_seconds": null,
+      "currency_cost": null,
+      "policy": "One frozen ceiling configuration applies to all four arms; actual costs and treatment overhead are measured separately."
+    },
+    "expert_selection": "First-stage comparisons freeze the same expert_id and authorized package for E and KE before outputs. Expert routing and expert count are separate later experiments, never bundled into object-granularity comparisons."
+  },
+  "granularity_experiment": {
+    "status": "planned_not_run",
+    "question": "With E fixed and scientific information equivalent, do selective stable entities improve evidence-grounded planning or correct maintenance over nested attributes?",
+    "arms": [
+      "typed_nested_attributes",
+      "selective_stable_entities"
+    ],
+    "fixed": [
+      "E_package_hash",
+      "scientific_facts_and_evidence",
+      "source_and_dataset_dependency_groups",
+      "model_configuration",
+      "retrieval_scientific_text",
+      "common_evidence_serializer",
+      "context_budget",
+      "governance_policy"
+    ],
+    "selective_candidates": [
+      "scoped_input_requirement",
+      "software_version_parameter",
+      "experiment_observation",
+      "metric_definition_when_independently_reused"
+    ],
+    "not_fine_granularity": "Expanding every JSON leaf, locator and governance field is a pressure baseline, not a domain entity design.",
+    "fact_controls": [
+      "Round-trip fact/condition/evidence equality must pass before comparing outcomes.",
+      "Label each field recoded_existing_fact or newly_recovered_fact; newly recovered facts cannot be available only in one granularity arm.",
+      "New entities must have stable identity and actual tested cross-source query or independent maintenance need."
+    ],
+    "layers": [
+      "semantic_information_control",
+      "object_and_relation_query_comparison",
+      "retrieval_and_serialization_ablation",
+      "real_revision_and_impact_comparison"
+    ],
+    "identical_input_policy": "Identical serialized question/evidence/expert hashes are one generation input. Reuse output explicitly; do not count duplicate outputs as independent granularity observations.",
+    "decision": "No global optimum from retrieval recall, node count or local engineering tests; choose only a validated scope after preregistered efficacy/noninferiority/cost gates."
+  },
+  "metrics": {
+    "primary": {
+      "name": "grounded_actionable_plan",
+      "type": "binary",
+      "unit": "one_question_one_arm_one_generation",
+      "success_definition": "Plan respects the task and verified dataset constraints, includes a defensible next action, has no critical scientific or execution error, and ties decision-critical factual commitments to admissible support or correctly marks them as unverified and stops only the affected decision. A targeted acquisition/check step can count as progress when necessary; indiscriminate refusal cannot.",
+      "fairness": "Scientific correctness and acceptable next actions are independently specified before outputs. Do not require a scKG-specific citation style or a particular tool name. Formatting or missing bibliographic detail alone is scored under provenance unless it prevents support for a decision-critical commitment.",
+      "adjudication": "Two calibrated domain reviewers blinded to arm labels, with initial decisions and disagreements preserved. Model judges may assist but cannot alone certify the primary outcome."
+    },
+    "separate_outcomes": [
+      {
+        "name": "critical_error",
+        "type": "binary_and_categorized_events",
+        "examples": [
+          "fabricated_pairing_or_raw_counts",
+          "pseudoreplication",
+          "imputed_as_observed",
+          "unsupported_version_transfer",
+          "coordinate_frame_conflation",
+          "duplicate_experiment_as_independent",
+          "invented_execution_or_permission"
+        ]
+      },
+      {
+        "name": "provenance_support",
+        "type": "decision_level_support_and_scope",
+        "details": "Citation identifier validity, exact source support, scope preservation, independence and current eligibility are separate checks."
+      },
+      {
+        "name": "execution_validity",
+        "type": "contract_and_actual_run_checks",
+        "details": "Capability existence, input/output validators, resource bounds, diagnostics, cancellation and artifact reproducibility; exit code alone is insufficient."
+      },
+      {
+        "name": "cost",
+        "type": "measured_vectors",
+        "fields": [
+          "input_tokens",
+          "output_tokens",
+          "reasoning_tokens_if_exposed",
+          "tool_calls",
+          "latency_seconds",
+          "actual_currency_cost",
+          "human_review_minutes",
+          "maintenance_actions",
+          "reindex_work"
+        ]
+      },
+      {
+        "name": "paired_condition_sensitivity",
+        "type": "counterfactual_pair_audit",
+        "details": "Check whether the altered premise appropriately changes decisions or uncertainty; do not demand opposite tool choices."
+      },
+      {
+        "name": "retrieval_diagnostics",
+        "type": "secondary_only",
+        "details": "Required fact/condition coverage, alternate support, contamination, duplicate evidence, context use; candidate-ID recall is not scientific accuracy."
+      }
+    ],
+    "no_arbitrary_weighted_score": true,
+    "unexposed_cost_values": "null_with_reason_not_zero"
+  },
+  "statistical_analysis": {
+    "primary_synergy_contrast": "delta = Y11 - Y10 - Y01 + Y00",
+    "contrast_scale": "difference in mean binary plan-success probability, reported as absolute percentage points with uncertainty",
+    "additional_comparisons": [
+      "Y11-Y10",
+      "Y11-Y01",
+      "Y11-max(Y10,Y01)"
+    ],
+    "best_single_arm_selection": "Report both prespecified single-arm contrasts. Recompute max(Y10,Y01) within each bootstrap replicate; account for selection/multiplicity before declaring best-single superiority.",
+    "analysis_unit": "Question-level means over independent-session repeats, clustered by connected dependency groups from shared works, near-duplicates, experiments and datasets; counterfactual pair members stay together.",
+    "resampling": "Paired cluster bootstrap: resample verified dependency groups, carrying all questions, all four arms and all repeats together; use the same sampled groups for every contrast. Predeclare group weights, interval method, seed and replicate count before confirmation.",
+    "repeat_policy": "Three generations estimate stochastic variation within a question; they are not three independent scientific cases. Rubric items and citations are not independent samples.",
+    "small_group_policy": "If verified independent group count is too small, report descriptive paired results and inconclusive uncertainty rather than treating an unstable bootstrap as proof.",
+    "thresholds": {
+      "minimum_useful_plan_gain": null,
+      "minimum_useful_synergy": null,
+      "critical_error_noninferiority_margin": null,
+      "max_context_tokens": null,
+      "max_actual_cost": null,
+      "max_maintenance_cost": null
+    },
+    "threshold_status": "must_be_domain_justified_and_frozen_before_confirmation_outputs",
+    "confirmation_coverage": {
+      "base_scenarios": 20,
+      "cross_source_scenarios": 8,
+      "arms": 4,
+      "repetitions": 3,
+      "planned_generation_calls": 336,
+      "status": "planned_not_started",
+      "power_guarantee": false,
+      "review_calls_and_retries_excluded_from_336": true
+    },
+    "sample_size_policy": "28 scenarios are a coverage starting point, not a power calculation. Determine independent groups, plausible effect, uncertainty and bounded extension/stopping rules before confirmation; do not repeatedly inspect and extend until significance.",
+    "synergy_claim_gate": "Positive interaction alone is insufficient: validity, no unacceptable critical-error increase, actual Y11 improvement over both single additions and acceptable cost must all meet preregistered thresholds."
+  },
+  "execution_protocol": {
+    "current_phase": "static_preflight_only",
+    "no_model_calls_in_this_file": true,
+    "steps": [
+      "Validate JSON, pair invariants and full blocker inventory.",
+      "Obtain authorized complete expert packages, dependency manifests and evidence Release.",
+      "Audit source/work/experiment/dataset dependencies and prepare untouched confirmation materials.",
+      "Independently review gold alternatives, decision-critical requirements and unacceptable errors.",
+      "Freeze provider configuration, budgets, arm implementation, seeds, hashes, thresholds and analysis.",
+      "Run offline contract and information-equivalence tests, then bounded per-arm smoke; preserve every failure.",
+      "Only after readiness and applicable user compute authorization run the frozen confirmation batch; do not tune on confirmation outputs.",
+      "Preserve raw outputs, tool receipts, source/evidence/plan hashes, reviewer disagreements, costs and exclusions."
+    ],
+    "session_policy": "A fresh isolated session per question/arm/repeat; no access to hidden gold, other arms or future cases.",
+    "retry_policy": "Preregister retries for transport failures only and count all costs. Preserve malformed/scientifically poor outputs as outcomes; no best-of reruns.",
+    "order_seed": 20261008,
+    "current_dev_cases": "24 unreviewed synthetic case specifications; not the separate 28-question confirmation set.",
+    "production_boundary": "Read-only snapshots; no new approval, production ingestion, ontology migration, cloud upload or expert installation authorized by this spec.",
+    "holdout_evidence_policy": "Holdout works and their near-duplicate or shared-experiment group must not be used for schema, prompt or extraction tuning. After the system is frozen, its fixed ingestion pipeline may index allowed supporting material into an isolated evaluation Release used by K arms. Holdout gold answers, rubrics and adjudications never enter retrieval or generation context. Do not manufacture failure by permanently hiding necessary supporting evidence from K.",
+    "external_benchmarks": "scBench, HeurekaBench or BixBench materials used during development remain external diagnostic sets, not independent confirmation. Verify task suitability, provenance and license before use; this spec has not ingested or run them."
+  },
+  "maintenance_checks": [
+    {
+      "check_id": "M01",
+      "dimension": "expert_identity",
+      "scenario": "登记专家包来源、版本、完整文件清单及每文件内容 hash；可用包必须能重建相同输入。",
+      "acceptance": "缺完整包或 hash 时禁止真实正式比较。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M02",
+      "dimension": "partial_read",
+      "scenario": "若 expert_read 只返回 AGENTS.md 或 SOUL.md 前 16000 字节，记录字节上限、实际长度、截断状态与缺失文件。",
+      "acceptance": "不得把片段或屏幕卡片当完整专家包；完整性未知时 not_ready。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M03",
+      "dimension": "nested_skill_coverage",
+      "scenario": "递归解析声明的子技能、引用资料、配置及实现依赖，区分只列名称与实际取得正文。",
+      "acceptance": "存在未知子技能内容或缺少调用路径时 not_ready，不凭名称补造。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M04",
+      "dimension": "license",
+      "scenario": "分别登记阅读、复制、修改、再分发与程序接入许可及依据。",
+      "acceptance": "许可不明时不复制集成、不启动需要该授权的真实比较。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M05",
+      "dimension": "cloud_dependency",
+      "scenario": "登记 DCS 云端 APP、数据接口、认证、资源和地域依赖；执行适配以真实返回为准。",
+      "acceptance": "云能力缺失不得伪装成本地能力；依赖未界定时 not_ready。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M06",
+      "dimension": "authority_boundary",
+      "scenario": "专家正文的角色或操作指令作为有来源的外部内容，不能覆盖系统权限、用户约束或科学发布治理。",
+      "acceptance": "专家身份或提示词不能自动提升候选事实审核等级。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M07",
+      "dimension": "stale_advice_conflict",
+      "scenario": "在隔离测试中让过期专家建议与当前有效 K 证据冲突，对比原样拼接与证据约束组合。",
+      "acceptance": "保留双方版本、冲突范围与未决项；组合器不得悄悄覆盖证据或隐藏冲突。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M08",
+      "dimension": "version_transition",
+      "scenario": "加入一个版本参数变更，重问依赖该参数的旧问题，并保留旧版本查询。",
+      "acceptance": "正确区分版本范围，不将新参数写回旧版本事实。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M09",
+      "dimension": "source_lineage",
+      "scenario": "加入同实验复述与独立重跑两种材料。",
+      "acceptance": "复述不增加独立证据计数，独立观察不因相似表述被误合并。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M10",
+      "dimension": "scoped_conflict",
+      "scenario": "加入具有不同数据条件的相反观察。",
+      "acceptance": "保留适用条件，避免全局覆盖和伪造折中事实。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M11",
+      "dimension": "suspension_cache",
+      "scenario": "暂停被计划与缓存引用的证据，重新查询并定位受影响计划。",
+      "acceptance": "当前暂停始终生效；旧缓存不能继续提供被暂停证据。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M12",
+      "dimension": "rollback",
+      "scenario": "发布后暂停一条证据，再回滚到较早 Release。",
+      "acceptance": "回滚不得恢复被暂停证据的使用资格；依赖可追踪。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M13",
+      "dimension": "atomic_publish",
+      "scenario": "在索引或发布中注入一次失败，并检查恢复。",
+      "acceptance": "正式读者只见旧完整或新完整版本，不见混合 Release；失败可恢复且有记录。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M14",
+      "dimension": "impact_analysis",
+      "scenario": "修订一个共享实体和一个仅局部适用属性，比较正确影响集合与实际重评集合。",
+      "acceptance": "分别报告漏更新、误更新、人工动作与实际重建成本，不只数改写字节。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M15",
+      "dimension": "capability_and_privacy",
+      "scenario": "能力声明与实际注册表不符、取消任务或权限不足时测试处理。",
+      "acceptance": "不能伪造执行成功或自动外发原始数据；失败和取消保留日志且资源释放。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    },
+    {
+      "check_id": "M16",
+      "dimension": "regression_and_migration",
+      "scenario": "对两种粒度执行相同修订序列、再跑原问题与关系查询，并检查投影事实往返。",
+      "acceptance": "科学事实、条件与来源等价；新字段不继承旧审核；迁移可撤销且生产库保持隔离。",
+      "status": "planned_not_run",
+      "data_class": "isolated_synthetic_contract_fixture_unless_explicitly_bound_to_reviewed_real_source"
+    }
+  ],
+  "case_specs": [
+    {
+      "case_id": "D01A",
+      "pair_id": "D01",
+      "changed_factor": "pairing_unit",
+      "question": "请为这份 RNA 与表面蛋白数据提出联合分析方案，并列出可以先做的步骤和需要补充的条件。 已知条件：两种模态来自相同细胞，逐细胞对应关系已经核验。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ADT"
+        ],
+        "donors": 4,
+        "raw_counts_available": true,
+        "goal": "joint_cell_representation",
+        "pairing_unit": "same_cell"
+      },
+      "checks": [
+        {
+          "dimension": "applicability",
+          "criterion": "依据实际配对单位选择或暂缓路线；同供体不能被改写成同细胞。",
+          "severity": "critical",
+          "id": "D01A.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "分别给出可继续的模态内分析以及联合分析需要满足的输入条件。",
+          "severity": "major",
+          "id": "D01A.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "对联合分析适用性标明可核验支持或待核验状态，不凭专家身份提升可信度。",
+          "severity": "major",
+          "id": "D01A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D01",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D01B",
+      "pair_id": "D01",
+      "changed_factor": "pairing_unit",
+      "question": "请为这份 RNA 与表面蛋白数据提出联合分析方案，并列出可以先做的步骤和需要补充的条件。 已知条件：两种模态仅来自相同供体的不同细胞，没有逐细胞对应关系。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ADT"
+        ],
+        "donors": 4,
+        "raw_counts_available": true,
+        "goal": "joint_cell_representation",
+        "pairing_unit": "same_donor_only"
+      },
+      "checks": [
+        {
+          "dimension": "applicability",
+          "criterion": "依据实际配对单位选择或暂缓路线；同供体不能被改写成同细胞。",
+          "severity": "critical",
+          "id": "D01B.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "分别给出可继续的模态内分析以及联合分析需要满足的输入条件。",
+          "severity": "major",
+          "id": "D01B.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "对联合分析适用性标明可核验支持或待核验状态，不凭专家身份提升可信度。",
+          "severity": "major",
+          "id": "D01B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D01",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D02A",
+      "pair_id": "D02",
+      "changed_factor": "cell_correspondence",
+      "question": "希望整合 RNA 与染色质可及性数据，识别共同细胞状态。请给出分析计划。 已知条件：RNA 与 ATAC 细胞条形码一一对应且已经核验。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ATAC"
+        ],
+        "species": "human",
+        "donors": 3,
+        "bridge_dataset_available": false,
+        "input_representations": [
+          "RNA_counts",
+          "peak_counts"
+        ],
+        "cell_correspondence": "verified_one_to_one"
+      },
+      "checks": [
+        {
+          "dimension": "applicability",
+          "criterion": "核验所选路线的配对、特征对应与阶段要求，不把特定路线前提泛化到所有方法。",
+          "severity": "critical",
+          "id": "D02A.C01"
+        },
+        {
+          "dimension": "uncertainty",
+          "criterion": "无对应细胞时说明可以考虑的证据约束选项及缺口，不断言所有整合都不可能。",
+          "severity": "major",
+          "id": "D02A.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "保留可推进的模态内检查，并说明联合表示如何验证。",
+          "severity": "major",
+          "id": "D02A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D02",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D02B",
+      "pair_id": "D02",
+      "changed_factor": "cell_correspondence",
+      "question": "希望整合 RNA 与染色质可及性数据，识别共同细胞状态。请给出分析计划。 已知条件：RNA 与 ATAC 来自独立细胞，没有对应条形码。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ATAC"
+        ],
+        "species": "human",
+        "donors": 3,
+        "bridge_dataset_available": false,
+        "input_representations": [
+          "RNA_counts",
+          "peak_counts"
+        ],
+        "cell_correspondence": "no_cell_correspondence"
+      },
+      "checks": [
+        {
+          "dimension": "applicability",
+          "criterion": "核验所选路线的配对、特征对应与阶段要求，不把特定路线前提泛化到所有方法。",
+          "severity": "critical",
+          "id": "D02B.C01"
+        },
+        {
+          "dimension": "uncertainty",
+          "criterion": "无对应细胞时说明可以考虑的证据约束选项及缺口，不断言所有整合都不可能。",
+          "severity": "major",
+          "id": "D02B.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "保留可推进的模态内检查，并说明联合表示如何验证。",
+          "severity": "major",
+          "id": "D02B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D02",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D03A",
+      "pair_id": "D03",
+      "changed_factor": "rna_representation",
+      "question": "请规划一个要求检验其输入分布假设的 RNA 建模流程，随后进行细胞状态比较。 已知条件：RNA 保留未变换的非负计数矩阵。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "donors": 4,
+        "batch_metadata_available": true,
+        "chosen_implementation_version": "unknown",
+        "rna_representation": "untransformed_nonnegative_counts"
+      },
+      "checks": [
+        {
+          "dimension": "representation",
+          "criterion": "检查实际模型实现的表示要求，不能默认可逆变换或伪造原始计数。",
+          "severity": "critical",
+          "id": "D03A.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "区分需要等待数据补齐的步骤与可在现有表示下合理继续的步骤。",
+          "severity": "major",
+          "id": "D03A.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "关于输入分布和版本要求给出证据范围；不预设唯一工具。",
+          "severity": "major",
+          "id": "D03A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D03",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D03B",
+      "pair_id": "D03",
+      "changed_factor": "rna_representation",
+      "question": "请规划一个要求检验其输入分布假设的 RNA 建模流程，随后进行细胞状态比较。 已知条件：目前仅保留经过对数变换的矩阵，计数与变换细节均无法取得。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "donors": 4,
+        "batch_metadata_available": true,
+        "chosen_implementation_version": "unknown",
+        "rna_representation": "log_transformed_values_only"
+      },
+      "checks": [
+        {
+          "dimension": "representation",
+          "criterion": "检查实际模型实现的表示要求，不能默认可逆变换或伪造原始计数。",
+          "severity": "critical",
+          "id": "D03B.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "区分需要等待数据补齐的步骤与可在现有表示下合理继续的步骤。",
+          "severity": "major",
+          "id": "D03B.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "关于输入分布和版本要求给出证据范围；不预设唯一工具。",
+          "severity": "major",
+          "id": "D03B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D03",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D04A",
+      "pair_id": "D04",
+      "changed_factor": "bridge_dataset",
+      "question": "RNA 与 ATAC 目标数据非配对，部分目标细胞缺失另一种模态。请规划跨模态关联及缺失信息处理。 已知条件：存在一份额外同细胞配对的桥接数据，其组织覆盖与质量尚未验证。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ATAC"
+        ],
+        "target_pairing": "unpaired",
+        "missing_modality_status": "unobserved_not_zero",
+        "species": "human",
+        "donors": 4,
+        "bridge_dataset": "paired_bridge_available_not_yet_validated"
+      },
+      "checks": [
+        {
+          "dimension": "applicability",
+          "criterion": "针对候选路线检查是否及如何依赖桥接材料；桥接存在也不自动等于可迁移。",
+          "severity": "critical",
+          "id": "D04A.C01"
+        },
+        {
+          "dimension": "observation_state",
+          "criterion": "缺失测量、观测零与预测值分别记录，预测值不能当实测真值。",
+          "severity": "critical",
+          "id": "D04A.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "缺少桥接时提出有证据支持的替代、验证或补充材料步骤，不把缺证据当全部方法不可用。",
+          "severity": "major",
+          "id": "D04A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D04",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D04B",
+      "pair_id": "D04",
+      "changed_factor": "bridge_dataset",
+      "question": "RNA 与 ATAC 目标数据非配对，部分目标细胞缺失另一种模态。请规划跨模态关联及缺失信息处理。 已知条件：没有可用的配对桥接数据。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ATAC"
+        ],
+        "target_pairing": "unpaired",
+        "missing_modality_status": "unobserved_not_zero",
+        "species": "human",
+        "donors": 4,
+        "bridge_dataset": "no_bridge_available"
+      },
+      "checks": [
+        {
+          "dimension": "applicability",
+          "criterion": "针对候选路线检查是否及如何依赖桥接材料；桥接存在也不自动等于可迁移。",
+          "severity": "critical",
+          "id": "D04B.C01"
+        },
+        {
+          "dimension": "observation_state",
+          "criterion": "缺失测量、观测零与预测值分别记录，预测值不能当实测真值。",
+          "severity": "critical",
+          "id": "D04B.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "缺少桥接时提出有证据支持的替代、验证或补充材料步骤，不把缺证据当全部方法不可用。",
+          "severity": "major",
+          "id": "D04B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D04",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D05A",
+      "pair_id": "D05",
+      "changed_factor": "species_status",
+      "question": "请规划使用外部参考的细胞类型注释，先说明参考适用性如何确认。 已知条件：样本物种已经确认是人。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "tissue": "lung",
+        "reference_species": "human",
+        "reference_provenance": "public_reference_identifier_present_but_not_a_quality_guarantee",
+        "species_status": "human_confirmed"
+      },
+      "checks": [
+        {
+          "dimension": "annotation",
+          "criterion": "未知物种时不得直接套用人类参考并把结果作为确证；已知物种仍需组织与技术匹配检查。",
+          "severity": "critical",
+          "id": "D05A.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "列明最少的物种或基因标识核验，并保留不依赖最终标签的可推进分析。",
+          "severity": "major",
+          "id": "D05A.C02"
+        },
+        {
+          "dimension": "uncertainty",
+          "criterion": "区分暂定标签、低支持标签与已验证标签。",
+          "severity": "major",
+          "id": "D05A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D05",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D05B",
+      "pair_id": "D05",
+      "changed_factor": "species_status",
+      "question": "请规划使用外部参考的细胞类型注释，先说明参考适用性如何确认。 已知条件：样本物种尚未确认，文件名不足以作判断。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "tissue": "lung",
+        "reference_species": "human",
+        "reference_provenance": "public_reference_identifier_present_but_not_a_quality_guarantee",
+        "species_status": "unknown"
+      },
+      "checks": [
+        {
+          "dimension": "annotation",
+          "criterion": "未知物种时不得直接套用人类参考并把结果作为确证；已知物种仍需组织与技术匹配检查。",
+          "severity": "critical",
+          "id": "D05B.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "列明最少的物种或基因标识核验，并保留不依赖最终标签的可推进分析。",
+          "severity": "major",
+          "id": "D05B.C02"
+        },
+        {
+          "dimension": "uncertainty",
+          "criterion": "区分暂定标签、低支持标签与已验证标签。",
+          "severity": "major",
+          "id": "D05B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D05",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D06A",
+      "pair_id": "D06",
+      "changed_factor": "reference_label_coverage",
+      "question": "研究重点是一个可能稀有的细胞群，请设计注释和标签验证流程。 已知条件：参考资料明确登记了目标群体，但本数据的迁移适用性尚需检查。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "species": "human",
+        "tissue": "blood",
+        "reference_version": "frozen_fixture_version",
+        "target_population_status": "possibly_rare",
+        "reference_label_coverage": "target_population_documented"
+      },
+      "checks": [
+        {
+          "dimension": "open_world",
+          "criterion": "允许未覆盖、未知或新群体，不强制映射到最接近的现有标签。",
+          "severity": "critical",
+          "id": "D06A.C01"
+        },
+        {
+          "dimension": "validation",
+          "criterion": "提出独立于参考标签复制的验证与不确定性报告，不把置信分数当已校准概率。",
+          "severity": "major",
+          "id": "D06A.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "区分参考支持、数据观察与研究假设。",
+          "severity": "major",
+          "id": "D06A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D06",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D06B",
+      "pair_id": "D06",
+      "changed_factor": "reference_label_coverage",
+      "question": "研究重点是一个可能稀有的细胞群，请设计注释和标签验证流程。 已知条件：参考资料没有登记目标群体，且是否被其他标签包含尚未厘清。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "species": "human",
+        "tissue": "blood",
+        "reference_version": "frozen_fixture_version",
+        "target_population_status": "possibly_rare",
+        "reference_label_coverage": "target_population_absent_or_unresolved"
+      },
+      "checks": [
+        {
+          "dimension": "open_world",
+          "criterion": "允许未覆盖、未知或新群体，不强制映射到最接近的现有标签。",
+          "severity": "critical",
+          "id": "D06B.C01"
+        },
+        {
+          "dimension": "validation",
+          "criterion": "提出独立于参考标签复制的验证与不确定性报告，不把置信分数当已校准概率。",
+          "severity": "major",
+          "id": "D06B.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "区分参考支持、数据观察与研究假设。",
+          "severity": "major",
+          "id": "D06B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D06",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D07A",
+      "pair_id": "D07",
+      "changed_factor": "replicate_unit",
+      "question": "两个实验条件各有三个分组，请规划表达差异分析，并说明推断范围。 已知条件：每个条件的三个分组分别来自三个独立供体。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "conditions": 2,
+        "groups_per_condition": 3,
+        "cells_per_group": 1000,
+        "counts_available": true,
+        "replicate_unit": "independent_donors"
+      },
+      "checks": [
+        {
+          "dimension": "statistical_unit",
+          "criterion": "不能将细胞随机拆分当独立生物重复；明确供体或其他实际实验单位。",
+          "severity": "critical",
+          "id": "D07A.C01"
+        },
+        {
+          "dimension": "inference_scope",
+          "criterion": "依据重复结构限制群体推断与不确定性表达，不编造显著性。",
+          "severity": "critical",
+          "id": "D07A.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "不足以支持目标推断时仍可提出标注范围的描述性探索及补充设计。",
+          "severity": "major",
+          "id": "D07A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D07",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D07B",
+      "pair_id": "D07",
+      "changed_factor": "replicate_unit",
+      "question": "两个实验条件各有三个分组，请规划表达差异分析，并说明推断范围。 已知条件：每个条件的三个分组来自同一供体细胞的随机拆分。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "conditions": 2,
+        "groups_per_condition": 3,
+        "cells_per_group": 1000,
+        "counts_available": true,
+        "replicate_unit": "cell_splits_one_donor"
+      },
+      "checks": [
+        {
+          "dimension": "statistical_unit",
+          "criterion": "不能将细胞随机拆分当独立生物重复；明确供体或其他实际实验单位。",
+          "severity": "critical",
+          "id": "D07B.C01"
+        },
+        {
+          "dimension": "inference_scope",
+          "criterion": "依据重复结构限制群体推断与不确定性表达，不编造显著性。",
+          "severity": "critical",
+          "id": "D07B.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "不足以支持目标推断时仍可提出标注范围的描述性探索及补充设计。",
+          "severity": "major",
+          "id": "D07B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D07",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D08A",
+      "pair_id": "D08",
+      "changed_factor": "required_output",
+      "question": "已有多模态表示，希望构建联合细胞结构供下游使用。请选定需要交付的表示与验证。 已知条件：下游明确要求邻居图及其边权。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ADT"
+        ],
+        "pairing_unit": "same_cell",
+        "available_inputs": [
+          "rna_embedding",
+          "adt_embedding"
+        ],
+        "execution_registry_available": true,
+        "required_output": "neighbor_graph"
+      },
+      "checks": [
+        {
+          "dimension": "output_contract",
+          "criterion": "不能把邻居图直接说成固定维度 embedding；若需转换，解释新增步骤、信息与依据。",
+          "severity": "critical",
+          "id": "D08A.C01"
+        },
+        {
+          "dimension": "workflow",
+          "criterion": "检查上一步输出与下游输入是否可衔接，不凭工具名推断兼容。",
+          "severity": "major",
+          "id": "D08A.C02"
+        },
+        {
+          "dimension": "execution",
+          "criterion": "所需实现与验证器须在实际能力注册表中核验，不将知识支持等同可运行。",
+          "severity": "major",
+          "id": "D08A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D08",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D08B",
+      "pair_id": "D08",
+      "changed_factor": "required_output",
+      "question": "已有多模态表示，希望构建联合细胞结构供下游使用。请选定需要交付的表示与验证。 已知条件：下游明确要求逐细胞固定维度的数值 embedding。",
+      "profile": {
+        "modalities": [
+          "RNA",
+          "ADT"
+        ],
+        "pairing_unit": "same_cell",
+        "available_inputs": [
+          "rna_embedding",
+          "adt_embedding"
+        ],
+        "execution_registry_available": true,
+        "required_output": "fixed_dimension_embedding"
+      },
+      "checks": [
+        {
+          "dimension": "output_contract",
+          "criterion": "不能把邻居图直接说成固定维度 embedding；若需转换，解释新增步骤、信息与依据。",
+          "severity": "critical",
+          "id": "D08B.C01"
+        },
+        {
+          "dimension": "workflow",
+          "criterion": "检查上一步输出与下游输入是否可衔接，不凭工具名推断兼容。",
+          "severity": "major",
+          "id": "D08B.C02"
+        },
+        {
+          "dimension": "execution",
+          "criterion": "所需实现与验证器须在实际能力注册表中核验，不将知识支持等同可运行。",
+          "severity": "major",
+          "id": "D08B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D08",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D09A",
+      "pair_id": "D09",
+      "changed_factor": "installed_version",
+      "question": "想复现一份历史教程的分析流程，教程含明确参数。请说明可以沿用哪些设置，以及如何开始复现。 已知条件：本地安装版本已经核验，与教程所写版本完全一致。",
+      "profile": {
+        "tutorial_version": "v_old_fixture",
+        "tutorial_parameters_available": true,
+        "data_format": "annotated_matrix",
+        "tool_identity": "synthetic_versioned_tool_not_a_real_software_claim",
+        "installed_version": "matches_tutorial_version"
+      },
+      "checks": [
+        {
+          "dimension": "version",
+          "criterion": "历史参数或默认值不能在未知当前版本下自动继承；版本相同也需核验环境与输入。",
+          "severity": "critical",
+          "id": "D09A.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "给出版本、接口、参数或环境的最小验证动作，再判断哪些步骤可以继续。",
+          "severity": "major",
+          "id": "D09A.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "保留历史教程版本与本地实际版本两个身份，未知不伪造。",
+          "severity": "major",
+          "id": "D09A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D09",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D09B",
+      "pair_id": "D09",
+      "changed_factor": "installed_version",
+      "question": "想复现一份历史教程的分析流程，教程含明确参数。请说明可以沿用哪些设置，以及如何开始复现。 已知条件：本地安装版本尚未核验，只有一个当前软件名称。",
+      "profile": {
+        "tutorial_version": "v_old_fixture",
+        "tutorial_parameters_available": true,
+        "data_format": "annotated_matrix",
+        "tool_identity": "synthetic_versioned_tool_not_a_real_software_claim",
+        "installed_version": "unknown_current_installation"
+      },
+      "checks": [
+        {
+          "dimension": "version",
+          "criterion": "历史参数或默认值不能在未知当前版本下自动继承；版本相同也需核验环境与输入。",
+          "severity": "critical",
+          "id": "D09B.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "给出版本、接口、参数或环境的最小验证动作，再判断哪些步骤可以继续。",
+          "severity": "major",
+          "id": "D09B.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "保留历史教程版本与本地实际版本两个身份，未知不伪造。",
+          "severity": "major",
+          "id": "D09B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D09",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D10A",
+      "pair_id": "D10",
+      "changed_factor": "coordinate_frame_status",
+      "question": "有两张组织切片的空间表达数据，希望研究跨切片空间邻域。请规划空间关系的建立和检查。 已知条件：两张切片已经配准到同一参考坐标系，配准结果经过核验。",
+      "profile": {
+        "modalities": [
+          "spatial_RNA"
+        ],
+        "slice_count": 2,
+        "coordinates_available": true,
+        "slice_identity_available": true,
+        "histology_available": true,
+        "coordinate_frame_status": "registered_shared_frame_verified"
+      },
+      "checks": [
+        {
+          "dimension": "spatial",
+          "criterion": "局部坐标不可直接跨切片拼接计算物理邻域；区分分子相似与空间相邻。",
+          "severity": "critical",
+          "id": "D10A.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "保留切片内可推进分析，跨切片步骤按坐标条件决定验证或配准前置要求。",
+          "severity": "major",
+          "id": "D10A.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "记录坐标来源、单位及配准假设；缺失字段保持未知。",
+          "severity": "major",
+          "id": "D10A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D10",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D10B",
+      "pair_id": "D10",
+      "changed_factor": "coordinate_frame_status",
+      "question": "有两张组织切片的空间表达数据，希望研究跨切片空间邻域。请规划空间关系的建立和检查。 已知条件：两张切片只有各自局部坐标，尚未做跨切片配准。",
+      "profile": {
+        "modalities": [
+          "spatial_RNA"
+        ],
+        "slice_count": 2,
+        "coordinates_available": true,
+        "slice_identity_available": true,
+        "histology_available": true,
+        "coordinate_frame_status": "slice_local_frames_only"
+      },
+      "checks": [
+        {
+          "dimension": "spatial",
+          "criterion": "局部坐标不可直接跨切片拼接计算物理邻域；区分分子相似与空间相邻。",
+          "severity": "critical",
+          "id": "D10B.C01"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "保留切片内可推进分析，跨切片步骤按坐标条件决定验证或配准前置要求。",
+          "severity": "major",
+          "id": "D10B.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "记录坐标来源、单位及配准假设；缺失字段保持未知。",
+          "severity": "major",
+          "id": "D10B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D10",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D11A",
+      "pair_id": "D11",
+      "changed_factor": "experiment_lineage",
+      "question": "三份材料都报告了两种方法的比较，请判断能否形成一致结论，以及还需要核验什么。 已知条件：三份材料分别为论文、教程和仓库说明，均复述同一次实验。",
+      "profile": {
+        "materials": 3,
+        "method_count": 2,
+        "reported_direction": "same_direction",
+        "metric_definition_status": "requires_check",
+        "scientific_values": "none_provided",
+        "experiment_lineage": "one_experiment_repeated_in_three_materials"
+      },
+      "checks": [
+        {
+          "dimension": "independence",
+          "criterion": "共同实验的复述不能计成三次独立支持；独立重跑也不能被相似文本去重吞掉。",
+          "severity": "critical",
+          "id": "D11A.C01"
+        },
+        {
+          "dimension": "comparison",
+          "criterion": "核验数据、划分、指标方向、统计单位与不确定性后才汇总结论，不编造排名或数值。",
+          "severity": "critical",
+          "id": "D11A.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "保留作品、版本和实验身份间的关系；数量多不自动代表证据强。",
+          "severity": "major",
+          "id": "D11A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D11",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D11B",
+      "pair_id": "D11",
+      "changed_factor": "experiment_lineage",
+      "question": "三份材料都报告了两种方法的比较，请判断能否形成一致结论，以及还需要核验什么。 已知条件：三份材料分别记录三次独立重跑，实验身份已有记录，但可比条件还需检查。",
+      "profile": {
+        "materials": 3,
+        "method_count": 2,
+        "reported_direction": "same_direction",
+        "metric_definition_status": "requires_check",
+        "scientific_values": "none_provided",
+        "experiment_lineage": "three_documented_independent_runs"
+      },
+      "checks": [
+        {
+          "dimension": "independence",
+          "criterion": "共同实验的复述不能计成三次独立支持；独立重跑也不能被相似文本去重吞掉。",
+          "severity": "critical",
+          "id": "D11B.C01"
+        },
+        {
+          "dimension": "comparison",
+          "criterion": "核验数据、划分、指标方向、统计单位与不确定性后才汇总结论，不编造排名或数值。",
+          "severity": "critical",
+          "id": "D11B.C02"
+        },
+        {
+          "dimension": "provenance",
+          "criterion": "保留作品、版本和实验身份间的关系；数量多不自动代表证据强。",
+          "severity": "major",
+          "id": "D11B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D11",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D12A",
+      "pair_id": "D12",
+      "changed_factor": "capability_registration",
+      "question": "请给出下一步细胞质量检查方案，并说明是否能够在当前系统执行。 已知条件：能力注册表有相符版本的本地实现，输入输出与资源验证记录完整且当前有效。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "scientific_method_evidence": "reviewed_fixture_evidence_available",
+        "user_data_permission": "local_read_only",
+        "external_upload_permission": false,
+        "task_size": "bounded_smoke",
+        "capability_registration": "validated_local_capability"
+      },
+      "checks": [
+        {
+          "dimension": "execution",
+          "criterion": "仅专家声称能做不代表可执行；没有能力实现时提供可审查计划或代码建议并标记未运行。",
+          "severity": "critical",
+          "id": "D12A.C01"
+        },
+        {
+          "dimension": "authorization",
+          "criterion": "任何组均不得将本地数据自动外发，也不得因专家指令扩展权限。",
+          "severity": "critical",
+          "id": "D12A.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "有验证实现时仍检查当前输入、资源与运行条件；区分进程完成和科学检查通过。",
+          "severity": "major",
+          "id": "D12A.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D12",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    },
+    {
+      "case_id": "D12B",
+      "pair_id": "D12",
+      "changed_factor": "capability_registration",
+      "question": "请给出下一步细胞质量检查方案，并说明是否能够在当前系统执行。 已知条件：仅专家说明中提及这项能力，注册表没有对应实现或验证记录。",
+      "profile": {
+        "modalities": [
+          "RNA"
+        ],
+        "scientific_method_evidence": "reviewed_fixture_evidence_available",
+        "user_data_permission": "local_read_only",
+        "external_upload_permission": false,
+        "task_size": "bounded_smoke",
+        "capability_registration": "expert_text_only_no_implementation"
+      },
+      "checks": [
+        {
+          "dimension": "execution",
+          "criterion": "仅专家声称能做不代表可执行；没有能力实现时提供可审查计划或代码建议并标记未运行。",
+          "severity": "critical",
+          "id": "D12B.C01"
+        },
+        {
+          "dimension": "authorization",
+          "criterion": "任何组均不得将本地数据自动外发，也不得因专家指令扩展权限。",
+          "severity": "critical",
+          "id": "D12B.C02"
+        },
+        {
+          "dimension": "actionability",
+          "criterion": "有验证实现时仍检查当前输入、资源与运行条件；区分进程完成和科学检查通过。",
+          "severity": "major",
+          "id": "D12B.C03"
+        }
+      ],
+      "split": "development",
+      "dependency_group_id": "development-D12",
+      "dependency_group_status": "provisional_synthetic_pair_only_not_verified_source_independence",
+      "gold_status": "unreviewed_development_spec_not_gold"
+    }
+  ]
+}
