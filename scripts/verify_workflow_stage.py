@@ -21,6 +21,15 @@ ROOT = Path(__file__).resolve().parents[1]
 TESTS = (
     "tests/test_workbench_workflow_chat.py",
     "tests/test_workbench_workflow_missing_contract.py",
+    "tests/test_workbench_model_capabilities.py",
+    "tests/test_workbench_model_diagnostics.py",
+    "tests/test_workbench_model_wire_integration.py",
+    "tests/test_workbench_model_capabilities_ui.py",
+    "tests/test_workbench_models.py",
+    "tests/test_workbench_worker.py",
+    "tests/test_workbench_evidence_answers.py",
+    "tests/test_workbench_ui.py::test_empty_workspace_and_all_seven_pages_do_not_acquire_or_call_models",
+    "tests/test_workbench_ui.py::test_connection_profile_and_session_unlock_are_real_but_do_not_call_models",
     "tests/test_workbench_workflow_chat_ui.py",
     "tests/test_workbench_workflow_inputs.py",
     "tests/test_workbench_workflow_inputs_ui.py",
@@ -54,7 +63,7 @@ def main(argv=None):
     if not python.is_file() or not os.access(python, os.X_OK):
         parser.error("Python must be an existing executable")
     for selector in TESTS:
-        if not (ROOT / selector).is_file():
+        if not (ROOT / selector.partition("::")[0]).is_file():
             parser.error("required test file missing: " + selector)
     before = hashes()
     output.mkdir(parents=True, exist_ok=False)

@@ -41,6 +41,11 @@ and parse gaps. Return JSON matching the schema. This is not a human review.
 """
 
 
+def _output_format(schema):
+    return {"type": "json_schema", "json_schema": {
+        "name": "scKG_output", "strict": False, "schema": schema}}
+
+
 class Worker:
     def __init__(self, ledger, models=None):
         self.ledger = ledger
@@ -111,8 +116,7 @@ class Worker:
         if upper_cost > 0:
             request["max_cost_usd"] = upper_cost
         response = self.models.invoke(profile["id"], messages, passphrase=passphrase, outbound_authorized=outbound_authorized,
-                                      budget=request, response_format={"type": "json_schema", "json_schema": {
-                                          "name": "scKG_output", "strict": False, "schema": schema}})
+                                      budget=request, response_format=_output_format(schema))
         usage = response["usage"]
         tokens = (usage["input_tokens"] + usage["output_tokens"]) if response["usage_known"] else None
         self.queue.checkpoint(task["task_id"], task["fencing_token"], phase + ":returned", {"call_id": response["call_id"], "status": response["status"]},
@@ -144,6 +148,13 @@ class Worker:
             return None
         if pending["kind"] != "ingestion":
             raise ValueError("Unsupported worker task kind; task was not claimed")
+        contracts = {"extraction": ExtractionOutput, "assessment": SemanticAssessment}
+        # Check every frozen output format before validating either credential
+        # or claiming the task. Legacy profiles keep their unqualified behavior.
+        for purpose, profile in pending["profile_snapshot"].items():
+            if profile != self.ledger.get_record("model_profile", profile["id"]):
+                raise ValueError("Frozen model profile differs from the actual configuration")
+            self.models.preflight(profile["id"], _output_format(contracts[purpose].model_json_schema()))
         for profile in pending["profile_snapshot"].values():
             self.models.validate_profile_credential(profile["id"], passphrase=passphrase)
         task = self.queue.claim(worker_id, lease_seconds=660, expected_task_id=pending["task_id"])

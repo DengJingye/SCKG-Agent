@@ -60,3 +60,21 @@ python -I -B scripts/smoke_workbench_ui.py --workspace "$HOME/sckg-ui-smoke01" -
 三个包累计6次dispatch、169252代理预留、29751已知报告tokens，另1次usage未知；没有未归档dispatch，业务完成/费用仍未知。下一步先做provider能力契约、wire schema兼容预检和安全错误元数据，再按已核访问/结果制定新资格；不重开旧包或把数学剩余额度当重试许可。知识整理、评分合同与既有产品演示可独立继续。
 
 已核对的[官方Chat接口规范](https://api-docs.deepseek.com/api/create-chat-completion/)只为response_format列出text/json_object，[官方Responses接口规范](https://api-docs.deepseek.com/api/create-response/)另列json_schema。实际兼容gateway有自己的支持范围；这些规范差异提示要分接口核验，不能作为本轮400的具体因果证明。
+
+## 调用前格式限制与注释候选导入
+
+新增显式 wire 格式及完整格式哈希限制；调用前、读取凭据前检查，不改 schema、不自动降级或重试。设置页可创建新 profile 修订并只读检查。声明是操作员的本地限制，不能证明 gateway 支持；旧 profile 仍为 legacy_unqualified，严格资格检查会拒绝，历史回放按原合同保留。
+
+独立开发审查发现调用者可在检查后修改原对象。实际三个合成边界反例修复前均失败，私有快照修复后均通过；格式、消息、预算、请求记录及回执保持一致。HTTP 错误只保存闭集分类、合法状态码及可选请求 ID 哈希，不读取或保存原始错误 body，不掩盖未知结果与费用。
+
+| 最终检查 | 实际结果 | 范围 |
+| --- | --- | --- |
+| 主工作区实际安装 HOST | 464通过；0失败/错误/跳过；106.60秒，270.1MiB | 120秒/1.5GiB监督；无残留 |
+| 公开分支实际安装 HOST | 464通过；0失败/错误/跳过；108.77秒，213.9MiB | 47产品模块一致；保留公开监督器及其fixture适配 |
+| 最终公开源码＋旧真实W01/W02完整UI | 原W01可用、W02仍失败、两次刷新无写入；14.78秒，244.2MiB | 保留原4调用；0新调用、0拟合 |
+
+此前 base Streamlit1.37.1 的六项UI setup错误和中间461项通过记录均保留。最终使用既有Streamlit1.56.0/Pydantic2.12.5宿主，仅在子进程末位路径复用已有pytest；没有新建环境或安装包。选择性工程验收不代表全旧仓库测试、真实新合同原生完成或科学准确率。
+
+注释线通过真实来源注册/解析、准备后独立交付、AI开发语义复核及实际候选导入：3个归档、8条新候选、16属性、14锚点；11块逐一交代为8 linked/3 partial。重复注册/解析及第二次导入不增记录；普通grounding、人工review和release均为0。七组研究者规则单独保存；原件、旧包和生产数据库未变。内容与限制见[注释流程候选](ANNOTATION_WORKFLOW_CANDIDATES.md)。
+
+本阶段0 provider请求、0科学拟合。既有HTTP400原因与费用仍未知，原家族6次dispatch/29751已知报告tokens加1次usage未知，关闭包不重开。新格式本地检查通过不能作为远程支持证据。完整摘要见[机器可读记录](validation/provider-contract-annotation-20261018.json)。

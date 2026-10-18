@@ -7,6 +7,7 @@ import os
 import re
 import stat
 import uuid
+from copy import deepcopy
 from datetime import datetime, timezone
 from io import StringIO
 from pathlib import Path
@@ -22,6 +23,10 @@ from dotenv.parser import parse_stream
 
 from .secrets import SecretVault
 from .storage import content_hash
+from .model_capabilities import (
+    preflight_wire, validate_wire_capabilities, wire_receipt_binding,
+)
+from .model_diagnostics import safe_http_error_metadata
 
 
 PURPOSES = frozenset({"extraction", "assessment", "chat", "evaluation", "embedding"})
@@ -31,6 +36,16 @@ Transport = Callable[[str, dict, dict, float], dict]
 
 class ModelServiceError(ValueError):
     pass
+
+
+class ModelCapabilityError(ModelServiceError):
+    """A local policy rejection; no credential or remote request is needed."""
+    confirmed_no_dispatch = True
+    outcome = "not_dispatched"
+
+    def __init__(self, report):
+        super().__init__("Model output is outside its declared wire capabilities; no request was sent")
+        self.preflight = report
 
 
 class ModelCallError(RuntimeError):
@@ -66,6 +81,24 @@ def _validate_local_schema(schema):
     elif isinstance(schema, list):
         for value in schema:
             _validate_local_schema(value)
+
+
+def _validate_response_format(response_format):
+    if response_format is None:
+        return
+    if not isinstance(response_format, dict) or response_format.get("type") not in {"json_object", "json_schema"}:
+        raise ModelServiceError("Structured format must be json_object or json_schema")
+    if response_format["type"] == "json_schema":
+        specification = response_format.get("json_schema")
+        if not isinstance(specification, dict):
+            raise ModelServiceError("json_schema format requires a schema object")
+        if not isinstance(specification.get("name"), str) or not specification["name"] or "schema" not in specification:
+            raise ModelServiceError("Structured schema requires a name and schema")
+        _validate_local_schema(specification["schema"])
+        try:
+            Draft202012Validator.check_schema(specification["schema"])
+        except SchemaError:
+            raise ModelServiceError("Invalid structured output schema") from None
 
 
 def _id(prefix: str) -> str:
@@ -239,7 +272,8 @@ class ModelService:
     def create_profile(self, name: str, purpose: str, connection_id: str, model: str, *,
                        input_usd_per_million: float | None = None,
                        output_usd_per_million: float | None = None,
-                       options: dict | None = None, supersedes_profile_id: str | None = None) -> dict:
+                       options: dict | None = None, supersedes_profile_id: str | None = None,
+                       wire_capabilities: dict | None = None) -> dict:
         if purpose not in PURPOSES or not isinstance(name, str) or not name.strip() or not isinstance(model, str) or not model.strip():
             raise ModelServiceError("Valid purpose, profile name and model are required")
         if self.ledger.get_record("model_connection", connection_id) is None:
@@ -261,12 +295,21 @@ class ModelService:
             raise ModelServiceError("seed must be an integer")
         if "reasoning_effort" in options and options["reasoning_effort"] not in {"none", "minimal", "low", "medium", "high", "xhigh"}:
             raise ModelServiceError("Unsupported reasoning effort")
+        if wire_capabilities is not None:
+            if purpose == "embedding":
+                raise ModelServiceError("Chat wire capabilities do not apply to embedding profiles")
+            try:
+                wire_capabilities = validate_wire_capabilities(wire_capabilities)
+            except ValueError:
+                raise ModelServiceError("Invalid wire capability declaration") from None
         profile_id = _id("profile")
         record = {"id": profile_id, "profile_id": profile_id, "name": name.strip(), "purpose": purpose,
                   "connection_id": connection_id, "model": model.strip(), "options": options,
                   "input_usd_per_million": input_usd_per_million,
                   "output_usd_per_million": output_usd_per_million,
                   "supersedes_profile_id": supersedes_profile_id, "created_at": _now()}
+        if wire_capabilities is not None:
+            record["wire_capabilities"] = wire_capabilities
         with self.ledger.transaction() as conn:
             self.ledger.put_record("model_profile", profile_id, record, conn=conn)
             self.ledger.append_event("model_profile_created", profile_id, {"purpose": purpose}, conn=conn)
@@ -275,28 +318,43 @@ class ModelService:
     def list_profiles(self, purpose: str | None = None) -> list[dict]:
         return [p for p in self.ledger.list_records("model_profile") if purpose is None or p["purpose"] == purpose]
 
+    def preflight(self, profile_id: str, response_format: dict | None = None, *,
+                  require_declared: bool = False) -> dict:
+        """Check local output limits without reading credentials or sending data.
+
+        Declarations are operator limits, not proof of remote enforcement.
+        Existing profiles without them remain unqualified; strict scientific
+        qualification must explicitly require a declaration before any request.
+        """
+        _validate_response_format(response_format)
+        profile = self.ledger.get_record("model_profile", profile_id)
+        if profile is None or profile.get("purpose") == "embedding":
+            raise ModelServiceError("A compatible chat-output profile is required")
+        if self.ledger.get_record("model_connection", profile["connection_id"]) is None:
+            raise ModelServiceError("Profile connection does not exist")
+        try:
+            report = preflight_wire(profile, response_format, require_declared=require_declared)
+        except ValueError:
+            raise ModelServiceError("Invalid wire capability declaration") from None
+        if not report["dispatch_allowed"]:
+            raise ModelCapabilityError(report)
+        return report
+
     def invoke(self, profile_id: str, messages: list[dict], *, passphrase: str = "",
                outbound_authorized: bool, budget: dict, response_format: dict | None = None) -> dict:
         if not isinstance(messages, list) or not messages:
             raise ModelServiceError("At least one text message is required")
+        # Caller-owned objects can change while credentials are unlocked or
+        # transport code runs. Admission, sizing, validation and receipts must
+        # all use the same private input, rather than a later caller mutation.
+        messages = deepcopy(messages)
+        response_format = deepcopy(response_format)
         for message in messages:
             if not isinstance(message, dict) or set(message) != {"role", "content"} or message["role"] not in {"system", "developer", "user", "assistant"} or not isinstance(message["content"], str):
                 raise ModelServiceError("M0 accepts text messages with role and content only")
         payload = {"messages": messages}
+        _validate_response_format(response_format)
         if response_format is not None:
-            if not isinstance(response_format, dict) or response_format.get("type") not in {"json_object", "json_schema"}:
-                raise ModelServiceError("Structured format must be json_object or json_schema")
-            if response_format["type"] == "json_schema" and not isinstance(response_format.get("json_schema"), dict):
-                raise ModelServiceError("json_schema format requires a schema object")
-            if response_format["type"] == "json_schema":
-                specification = response_format["json_schema"]
-                if not isinstance(specification.get("name"), str) or not specification["name"] or "schema" not in specification:
-                    raise ModelServiceError("Structured schema requires a name and schema")
-                _validate_local_schema(specification["schema"])
-                try:
-                    Draft202012Validator.check_schema(specification["schema"])
-                except SchemaError:
-                    raise ModelServiceError("Invalid structured output schema") from None
             payload["response_format"] = response_format
         return self._call(profile_id, payload, passphrase, outbound_authorized, budget, embedding=False)
 
@@ -304,13 +362,14 @@ class ModelService:
               outbound_authorized: bool, budget: dict) -> dict:
         if not isinstance(texts, list) or not texts or not all(isinstance(t, str) and t for t in texts):
             raise ModelServiceError("Embedding inputs must be nonempty strings")
-        return self._call(profile_id, {"input": texts}, passphrase, outbound_authorized, budget, embedding=True)
+        return self._call(profile_id, {"input": list(texts)}, passphrase, outbound_authorized, budget, embedding=True)
 
     def _call(self, profile_id, payload, passphrase, outbound_authorized, budget, *, embedding):
         if outbound_authorized is not True:
             raise ModelServiceError("Explicit outbound authorization is required")
         if not isinstance(budget, dict):
             raise ModelServiceError("An explicit request budget is required")
+        budget = deepcopy(budget)
         if set(budget) - {"max_input_tokens", "max_output_tokens", "timeout_seconds", "max_cost_usd", "allow_unknown_cost"}:
             raise ModelServiceError("Unknown request budget field")
         input_limit = _token_limit(budget.get("max_input_tokens"), "max_input_tokens")
@@ -324,6 +383,10 @@ class ModelService:
         connection = self.ledger.get_record("model_connection", profile["connection_id"])
         if connection is None:
             raise ModelServiceError("Profile connection does not exist")
+        if not embedding:
+            # This is also called by invoke, not only by optional inspection UI.
+            # Explicit limits are always enforced. No wire projection or retry.
+            self.preflight(profile_id, payload.get("response_format"))
         # A deliberately conservative UTF-8 sizing estimate, not measured token usage.
         estimated_input = len(json.dumps(payload, ensure_ascii=False).encode()) + 256
         if estimated_input > input_limit:
@@ -340,7 +403,10 @@ class ModelService:
                 raise ModelServiceError("Configured token ceilings exceed the monetary budget")
         if not price_known and budget.get("allow_unknown_cost") is not True:
             raise ModelServiceError("Pricing is unknown; explicitly allow token-bounded unknown cost")
-        request_payload = dict(payload, model=profile["model"])
+        # Keep the canonical local validation snapshot separate from the
+        # mutable dict handed to the transport implementation.
+        request_payload = deepcopy(payload)
+        request_payload["model"] = profile["model"]
         if not embedding:
             request_payload.update(profile["options"])
             request_payload["max_tokens"] = output_limit
@@ -350,6 +416,8 @@ class ModelService:
         call_meta = {"profile_id": profile_id, "connection_id": connection["connection_id"],
                      "requested_model": profile["model"], "estimated_input_tokens": estimated_input,
                      "input_estimate_method": "utf8_bytes_plus_256_not_tokenizer", "budget": dict(budget)}
+        if not embedding:
+            call_meta.update(wire_receipt_binding(profile, payload.get("response_format")))
         # Store exactly the bounded request sent, excluding headers and credentials.
         # Scientific assessments can then bind a receipt to the actual evidence.
         self.ledger.put_record("model_request", run_id, {"id": run_id, "payload": request_payload,
@@ -361,15 +429,34 @@ class ModelService:
         except Exception as error:
             # Record useful failure categories without propagating provider
             # bodies, URLs, exception messages, or credentials.
-            http_status = error.code if isinstance(error, HTTPError) else None
-            is_timeout = isinstance(error, TimeoutError) or (
-                isinstance(error, URLError) and isinstance(error.reason, TimeoutError))
-            reason = ("timeout" if is_timeout else "http_error" if http_status is not None
+            is_http_error = isinstance(error, HTTPError)
+            http_status = None
+            if is_http_error:
+                try:
+                    value = error.code
+                    if type(value) is int and 100 <= value <= 599:
+                        http_status = value
+                except Exception:
+                    pass
+            try:
+                is_timeout = isinstance(error, TimeoutError) or (
+                    isinstance(error, URLError) and isinstance(error.reason, TimeoutError))
+            except Exception:
+                is_timeout = False
+            reason = ("timeout" if is_timeout else "http_error" if is_http_error
                       else "network_error" if isinstance(error, URLError) else "transport_error")
             failure = dict(call_meta, call_id=run_id, status="failed", outcome="result_unknown",
                            failure_reason=reason, http_status=http_status,
                            usage={"input_tokens": None, "output_tokens": None, "total_tokens": None},
                            usage_known=False, cost_known=False, cost_usd=None)
+            metadata = safe_http_error_metadata(error, forbidden_values=(api_key, passphrase))
+            if metadata:
+                failure["error_metadata"] = metadata
+            if isinstance(error, HTTPError):
+                try:
+                    error.close()
+                except Exception:
+                    pass  # Diagnostics/cleanup cannot replace the original failure.
             self.ledger.put_record("model_call", run_id, failure)
             self.ledger.append_event("model_call_failed", run_id, failure)
             raise ModelCallError(f"Model request failed ({reason}); remote completion and billing may be unknown",

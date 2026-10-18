@@ -12,7 +12,8 @@ from types import SimpleNamespace
 import streamlit as st
 
 from .catalog import Catalog
-from .model_service import ModelService
+from .model_service import ModelService, ModelCapabilityError, _strict_json
+from .model_capabilities import API_FAMILY, CAPABILITIES_VERSION
 from .sources import SourceService
 from .storage import Ledger, Workspace
 from .tasks import TaskQueue
@@ -2036,12 +2037,45 @@ def _settings(models):
                 input_rate = a.number_input("输入 USD / 百万 token", min_value=0., value=0., step=.1)
                 output_rate = b.number_input("输出 USD / 百万 token", min_value=0., value=0., step=.1)
                 st.caption("未勾选则费用未知；0 仅用于你明确确认零费率的模型。修改配置应创建新的 profile。")
+                with st.expander("高级：接口输出范围"):
+                    declare_wire = st.checkbox("为此 profile 声明接口输出限制", key="profile_wire_declared")
+                    wire_formats = st.multiselect("允许的输出格式", ["text", "json_object", "json_schema"],
+                        key="profile_wire_formats")
+                    wire_hashes = st.text_area("允许的完整 JSON schema 格式摘要（每行一个 SHA256）",
+                        key="profile_wire_hashes")
+                    st.caption("声明只限制当前 profile，不代表已验证远端支持。json_schema 必须填写完整 response_format 的摘要；更改 name、strict 或 schema 都需要新摘要。JSON 对象模式不保证符合科学合同。")
                 submitted = st.form_submit_button("保存不可变用途 profile")
             if submitted:
-                result = models.create_profile(name, purpose, connection["id"], model,
-                    input_usd_per_million=input_rate if prices else None,
-                    output_usd_per_million=output_rate if prices else None)
-                st.success(f"已保存 profile：{result['id']}")
+                try:
+                    capability = {"schema_version": CAPABILITIES_VERSION, "api_family": API_FAMILY,
+                        "response_formats": wire_formats,
+                        "json_schema_format_hashes": [line.strip() for line in wire_hashes.splitlines() if line.strip()]}
+                    result = models.create_profile(name, purpose, connection["id"], model,
+                        input_usd_per_million=input_rate if prices else None,
+                        output_usd_per_million=output_rate if prices else None,
+                        wire_capabilities=capability if declare_wire else None)
+                    st.success(f"已保存 profile：{result['id']}")
+                except Exception as exc:
+                    _error(exc)
         profiles = models.list_profiles()
         if profiles:
-            st.dataframe([{k: p[k] for k in ("id", "name", "purpose", "model", "input_usd_per_million", "output_usd_per_million")} for p in profiles], hide_index=True)
+            st.dataframe([{**{k: p[k] for k in ("id", "name", "purpose", "model", "input_usd_per_million", "output_usd_per_million")},
+                "接口输出范围": "显式限制，未远端验收" if "wire_capabilities" in p else "未声明，沿用旧行为"}
+                for p in profiles], hide_index=True)
+            chat_profiles = [p for p in profiles if p["purpose"] != "embedding"]
+            if chat_profiles:
+                with st.expander("只读检查输出格式"):
+                    selected = st.selectbox("检查用途 profile", chat_profiles, format_func=_profile_label,
+                        key="wire_preflight_profile")
+                    raw_format = st.text_area("待检查的 response_format JSON（留空表示纯文本）",
+                        key="wire_preflight_format")
+                    st.caption("此检查要求显式声明，不读取密钥、不发送模型请求。旧配置不会自动迁移；通过仅表示符合本地声明范围，科研协议仍需实际接口资格。")
+                    if st.button("仅检查输出格式，不发请求", key="wire_preflight_check"):
+                        try:
+                            fmt = _strict_json(raw_format) if raw_format.strip() else None
+                            st.json(models.preflight(selected["id"], fmt, require_declared=True))
+                        except ModelCapabilityError as exc:
+                            st.json(exc.preflight)
+                            st.info("此格式未通过本地接口范围检查，没有发送请求。")
+                        except (ValueError, TypeError):
+                            st.info("检查未完成：请使用有效的输出格式和接口声明。没有发送请求。")

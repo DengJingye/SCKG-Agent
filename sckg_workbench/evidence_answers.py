@@ -15,6 +15,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .model_service import ModelCallError, _strict_json
+from .model_capabilities import wire_receipt_matches
 from .evidence_selection import validate_selected_evidence, validate_decision_scope
 from .retrieval_planning import (
     RetrievalPlanningError, _validate_run, compact_evidence_unit,
@@ -260,6 +261,7 @@ def _call_binding(models, profile, result, messages, response_format, budget):
             or receipt != {k: v for k, v in result.items() if k not in {"text", "structured", "embeddings"}}
             or receipt.get("profile_id") != profile["id"] or receipt.get("budget") != budget
             or receipt.get("structured_output_hash") != content_hash(result.get("structured"))
+            or not wire_receipt_matches(profile, receipt, response_format)
             or models.ledger.get_record("model_profile", profile["id"]) != profile
             or not request or request.get("payload") != expected
             or request.get("request_hash") != content_hash(expected)):
@@ -389,6 +391,7 @@ def _validate_answer_run(models, knowledge, run):
                 or receipt.get("profile_id") != run["profile_id"]
                 or receipt.get("budget") != run["budget"]
                 or receipt.get("structured_output_hash") != run["answer_hash"]
+                or not wire_receipt_matches(profile, receipt, ANSWER_FORMAT)
                 or not request or request.get("payload") != expected
                 or request.get("request_hash") != content_hash(expected)
                 or request.get("request_hash") != run["call_request_hash"]):
@@ -522,6 +525,7 @@ def validate_evidence_assessment_run(models, knowledge, answer_run, assessment_r
                 or receipt.get("profile_id") != run["profile_id"]
                 or receipt.get("budget") != run["budget"]
                 or receipt.get("structured_output_hash") != run["assessment_hash"]
+                or not wire_receipt_matches(profile, receipt, ASSESS_FORMAT)
                 or not request or request.get("payload") != expected
                 or request.get("request_hash") != content_hash(expected)
                 or request.get("request_hash") != run["call_request_hash"]
@@ -743,6 +747,7 @@ def _stored_compact_call(models, run, *, material, system, response_format, wire
             or receipt.get("profile_id") != run["profile_id"] or receipt.get("budget") != bounded
             or run.get(wire_hash_field) != content_hash(wire)
             or receipt.get("structured_output_hash") != content_hash(wire)
+            or not wire_receipt_matches(profile, receipt, response_format)
             or not request or request.get("payload") != expected
             or request.get("request_hash") != content_hash(expected)
             or request.get("request_hash") != run["call_request_hash"]):
