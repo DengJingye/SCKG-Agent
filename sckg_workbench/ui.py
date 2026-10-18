@@ -889,6 +889,10 @@ def _knowledge_page(ledger):
         with st.expander("方法配置与适用条件（开发预览）"):
             from .workflow_methods_ui import render_workflow_methods
             render_workflow_methods(ledger)
+    if ledger.get_state("prediction_semantics_catalog") is not None:
+        with st.expander("预测产物分数定义（开发预览）"):
+            from .prediction_semantics_ui import render_prediction_semantics
+            render_prediction_semantics(ledger)
     with st.expander("维护与版本"):
         _maintenance(ledger, knowledge, candidates)
 

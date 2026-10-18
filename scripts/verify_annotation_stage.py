@@ -3,6 +3,7 @@ from pathlib import Path
 import importlib.util
 
 TESTS = (
+    'tests/test_workbench_prediction_semantics.py',
     'tests/test_workbench_method_demo.py',
     'tests/test_workbench_workflow_demo.py',
     'tests/test_workbench_workflow_methods.py',

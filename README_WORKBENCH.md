@@ -48,6 +48,10 @@ SCKG_WORKBENCH_HOME="$HOME/sckg-method-demo01" .venv-workbench/bin/python -m str
 
 打开“知识库”→“方法配置与适用条件（开发预览）”。演示明确虚构，不配置模型，不建立科学结论；原三路线演示继续保留。相关验收入口为 `scripts/verify_annotation_stage.py`，实际安装宿主主/公开工作区各179项通过，见[阶段记录](docs/WORKBENCH_VALIDATION.md#来源条件接入方法配置)。
 
+### 预测产物的分数定义
+
+新增[只读预测解释](docs/PREDICTION_SCORE_CONTEXT.md)：显式绑定已有文件和来源定义，保留实际版本、预测模式及标签列的未知，不把参数请求当成已执行。该开发入口需单独配置目录与产物快照；不会自动预测或创建科学结果。实际来源与历史A1文件身份检查、完整页面和主/公开各214项相关回归已通过；A1精确版本语义仍待确认。
+
 ## 可重跑验收
 
 ```bash
