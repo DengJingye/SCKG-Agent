@@ -1958,6 +1958,15 @@ def _run_results(workspace):
             st.caption("数据来源声明 · " + origin + " · 尚未独立核验")
         if result and task["status"] == "succeeded" and result.get("validation", {}).get("passed"):
             st.success("分析预览与产物校验通过。此结果用于工程预览，不是科学效力证明。")
+            exported = analysis.get_result_export(task_id, attempt=task["attempt"],
+                                                  expected_run_id=result.get("run_id", ""))
+            if exported["status"] == "ready":
+                st.download_button("下载结果摘要与复现清单（ZIP）", exported["data"],
+                    file_name=exported["filename"], mime=exported["mime"], on_click="rerun",
+                    key="analysis_export_" + task_id + "_" + str(task["attempt"]))
+                st.caption("包含汇总结果、参数和校验指纹；缺失的历史版本信息会标明，原始数据与逐细胞表另行保留。")
+            else:
+                st.warning("结果已变化或复现记录不完整，暂不能导出。请刷新并检查验收记录。")
             paths = (result.get("execution_run") or {}).get("artifact_paths", {})
             for name, text in paths.items():
                 path = Path(text)
