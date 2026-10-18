@@ -27,6 +27,9 @@ SMOKE = ("tests/test_workbench_tasks.py", "tests/test_workbench_acceptance_runne
          "tests/test_workbench_g0.py")
 MIB = 1024**2
 LIMITS = {"wall_seconds": 120, "max_rss_bytes": 512 * MIB}
+LANES = ("dependencies", "smoke", "regression", "ui", "server")
+LANE_LIMITS = {lane: dict(LIMITS, wall_seconds=600 if lane == "regression" else 120)
+               for lane in LANES}
 
 
 def resource_admission():
@@ -40,7 +43,9 @@ def resource_admission():
 
 def source_hashes():
     result = hashes()
-    paths = [ROOT / "scripts/verify_g0.py", ROOT / "workbench-dependencies.json"]
+    paths = [ROOT / "scripts/verify_g0.py", ROOT / "scripts/smoke_workbench_server.py",
+             ROOT / "scripts/smoke_workbench_ui.py", ROOT / "scripts/check_workbench_dependencies.py",
+             ROOT / "workbench-dependencies.json"]
     paths += list(ROOT.glob("requirements-workbench*.txt"))
     paths += list((ROOT / "release/locks").glob("*workbench*"))
     paths += list((ROOT / ".github/workflows").glob("*"))
@@ -82,6 +87,13 @@ def evidence_passed(lane, result, output, selectors=()):
                     and report.get("input_form", {}).get("persistent_snapshot_unchanged") is True
                     and report.get("activity") == {"model_calls": 0, "network_attempts": 0,
                                                    "scientific_fits": 0, "human_reviews": 0, "releases": 0})
+    if lane == "server":
+        return bool(report.get("status") == "passed" and report.get("error") is None
+                    and report.get("health") == {"status": 200, "body": "ok"}
+                    and report.get("listener_owner", {}).get("address") == "127.0.0.1"
+                    and report.get("listener_owner", {}).get("pid")
+                    and report.get("cleanup", {}).get("surviving_pids") == []
+                    and report.get("entry_unchanged") is True)
     return False
 
 
@@ -102,8 +114,8 @@ def main(argv=None):
     output.mkdir(parents=True, exist_ok=False)
     receipt = {"schema": "plan_v1-g0-engineering-v1", "started_at": datetime.now(timezone.utc).isoformat(),
                "python": str(python), "source_hashes": before, "lanes": {}, "passed": False,
-               "status": "running", "limits_per_lane": LIMITS,
-               "scope": "offline engineering plus full-app AppTest; not browser or scientific qualification",
+               "status": "running", "limits_per_lane": LANE_LIMITS,
+               "scope": "offline engineering, full-app AppTest and loopback server; not browser or scientific qualification",
                "clean_install_claim": False, "configured_provider_calls": 0, "configured_scientific_fits": 0}
     try:
         receipt["code_sha"] = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
@@ -120,7 +132,7 @@ def main(argv=None):
         with tempfile.TemporaryDirectory(prefix="isolated-", dir=output) as temporary:
             env, removed = child_environment(Path(temporary), None)
             receipt["credential_variable_names_removed"] = removed
-            for lane in ("dependencies", "smoke", "regression", "ui"):
+            for lane in LANES:
                 admission = resource_admission()
                 if not admission["allowed"]:
                     receipt["lanes"][lane] = {"status": "deferred_resource", "admission": admission}
@@ -132,12 +144,16 @@ def main(argv=None):
                                "--prefix", str(python.parent.parent), "--profile", "analysis",
                                "--report", str(output / "dependencies.json")]
                 elif selectors:
-                    command = [str(python), "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider",
+                    command = [str(python), "-B", "-m", "pytest", "-vv", "-p", "no:cacheprovider",
+                               "-o", "faulthandler_timeout=30", "--durations=15",
                                *selectors, "--junitxml=" + str(output / f"{lane}.xml")]
-                else:
+                elif lane == "ui":
                     command = [str(python), "-I", "-B", str(ROOT / "scripts/smoke_workbench_ui.py"),
                                "--workspace", str(Path(temporary) / "ui"), "--output", str(output / "ui.json")]
-                result = run_process(command, cwd=ROOT, env=env, log=output / f"{lane}.log", **LIMITS)
+                else:
+                    command = [str(python), "-I", "-B", str(ROOT / "scripts/smoke_workbench_server.py"),
+                               "--output", str(output / "server.json")]
+                result = run_process(command, cwd=ROOT, env=env, log=output / f"{lane}.log", **LANE_LIMITS[lane])
                 result["admission"] = admission
                 result["passed"] = evidence_passed(lane, result, output, selectors)
                 receipt["lanes"][lane] = result

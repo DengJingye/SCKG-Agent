@@ -8,7 +8,7 @@
 
 1. `release/locks/workbench-osx-arm64-py312.requirements.lock`：55项产品依赖的完整锁，复用现有开发交付资产，原字节 SHA256 为 `0b5af7b59a9a49347679a3faa7a1a431b023ab6aeae7b3339cd2a23d352b3f05`。
 2. `release/locks/workbench-dev-osx-arm64-py312.requirements.lock`：复用产品锁，再加入 pytest、pluggy、iniconfig。合计58项，不重复定义已在产品锁中的 packaging。
-3. `scripts/verify_g0.py`：顺序执行依赖合同、轻量 smoke、当前工作台全部测试文件、完整页面 AppTest；复用已有监督器、JUnit解释器、依赖检查器和UI探针。
+3. `scripts/verify_g0.py`：顺序执行依赖合同、轻量 smoke、当前工作台全部测试文件、完整页面 AppTest、真实服务启动；复用已有监督器、JUnit解释器、依赖检查器和UI探针。`smoke_workbench_server.py` 复用原交付探针的进程归属与清理逻辑，要求指定入口的进程实际监听127.0.0.1、HTTP健康响应成功、停止后无残留。
 4. `.github/workflows/workbench-g0.yml`：在 macOS ARM64 的全新虚拟环境安装锁定依赖并运行上述检查，失败时也上传日志和收据。
 
 依赖锁目前限定 CPython 3.12、macOS 14+、ARM64。NumPy的已冻结wheel要求 macOS 14+；不把这份哈希锁作为 Linux、Windows或Intel Mac的通用安装文件。科学拟合环境仍是单独的 runtime pack，不在这份产品锁中。
@@ -41,11 +41,11 @@ python3.12 -m venv .venv-workbench
 
 旧验收入口保留原有可选跳过语义，新入口不会改写历史结果。新增测试专门覆盖“成功退出但无报告”“报告自称成功但缺少证据”“部分跳过”“资源不足”和“重复输出目录”等失败场景。
 
-每个运行通道限120秒、父子进程组采样RSS限512 MiB；开始下一通道前重新读取可用内存，要求额外保留 `max(2 GiB, 总内存的25%)`，并计入256 MiB监督器余量。资源不足返回3并保存 `deferred_resource`，不当作产品测试失败或通过。失败返回1，通过返回0。RSS采样与应用离线配置不等于操作系统硬隔离。
+完整回归限600秒，其余通道各限120秒、父子进程组采样RSS统一限512 MiB；开始下一通道前重新读取可用内存，要求额外保留 `max(2 GiB, 总内存的25%)`，并计入256 MiB监督器余量。资源不足返回3并保存 `deferred_resource`，不当作产品测试失败或通过。失败返回1，通过返回0。RSS采样与应用离线配置不等于操作系统硬隔离。
 
 `receipt.json` 保存基线提交、工作区改动状态、相关源码/合同/锁文件哈希、每个通道命令和资源、退出码及实际JUnit计数；同一运行前后源码必须一致。工作区有未提交改动时，提交SHA只是基线，具体受测内容以哈希清单为准。
 
-即使该入口通过，也只表示当前工程选择与AppTest通过。它不会单独把完整 G0 标成通过：仍需确认新安装的实际来源/报告、目标系统启动、CI实际运行和历史报告索引。AppTest不替代真实浏览器旅程；科学执行与科学质量属于后续关卡。
+即使该入口通过，也只表示当前工程选择、AppTest和真实HTTP服务启动通过。它不会单独把完整 G0 标成通过：仍需确认新安装的实际来源/报告、CI实际运行、历史报告索引与审查身份。HTTP健康响应不证明页面执行，AppTest不替代真实浏览器旅程；科学执行与科学质量属于后续关卡。
 
 ## CI范围
 
@@ -56,6 +56,8 @@ runner选择依据[GitHub官方运行器说明](https://docs.github.com/en/actio
 首次CI在准备Python阶段失败：[运行39125057954](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125057954)。官方setup-python版本清单没有3.12.13的darwin/arm64构建，因此该次没有执行产品测试。后续复用既有Micromamba 2.8.1归档SHA256和17项显式bootstrap锁，继续使用与本机相同的Python 3.12.13；不改Python版本以取得通过。bootstrap锁原字节SHA256为 `e390621d620fdfea6b20bf9ad3894beac03c3c6bd714fc3007e01fe36f444cfb`，包使用原显式URL及MD5、TLS下载；这不是给conda包新增SHA256或签名认证。证据目录提前建立，Python准备失败时仍保留任务状态和安装日志。
 
 第二次CI完成独立安装后[按资源规则延期](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125210709)：7 GiB运行器当时可用约3.23 GiB，预留2 GiB后不足以容纳初始1.5 GiB通道上限加256 MiB监督器余量。后续仅把通道RSS上限收紧到512 MiB，保持系统保留量和120秒时限；这限制检查进程的可用资源，不扩大主机占用。尚未执行的检查不能计作成功，实际超过512 MiB仍会停止。
+
+第三次CI的[原始失败](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125331779)保留：依赖合同和77项smoke通过，完整回归在第234项后达到120秒上限，峰值约229 MiB，没有残留进程。超时位置的5个参数化用例单独检查全部通过（2.76秒），未发现单项阻塞；当前选择收集到1,129项，历史120秒预算仅用于更小的选择性检查。因此只把完整回归的工程时限调整为600秒，加入逐项日志、慢用例统计和30秒堆栈诊断；不删测试、不跳过、不改变产品加密或科学参数。CI整体仍限15分钟。
 
 ## 保留的边界
 
