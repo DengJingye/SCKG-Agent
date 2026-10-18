@@ -885,6 +885,10 @@ def _knowledge_page(ledger):
         with st.expander("流程输入检查（开发预览）"):
             from .workflow_inputs_ui import render_workflow_inputs
             render_workflow_inputs(ledger)
+    if ledger.get_state("workflow_method_catalog") is not None:
+        with st.expander("方法配置与适用条件（开发预览）"):
+            from .workflow_methods_ui import render_workflow_methods
+            render_workflow_methods(ledger)
     with st.expander("维护与版本"):
         _maintenance(ledger, knowledge, candidates)
 

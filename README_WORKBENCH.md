@@ -37,6 +37,17 @@ SCKG_WORKBENCH_HOME="$HOME/sckg-workflow-demo01" .venv-workbench/bin/python -m s
 
 若配置了真实模型，可在“研究台”的对话设置中启用“开发流程对话：按来源检查输入”，使用演示目录内 `workflow_demo_examples.json` 的问题。模型调用需自行设置预算；容量不足会在发送前阻断，不能自动加预算。默认开发模式最多 3 次模型请求、2 次只读检查，不执行分析。
 
+### 方法配置与适用条件：零API演示
+
+新增独立[方法决策预览](docs/METHOD_DECISION_PREVIEW.md)，可检查选项开关、数值边界、相互冲突的报告及替代路线。用全新的合成目录体验：
+
+```sh
+.venv-workbench/bin/python -I -B scripts/bootstrap_method_demo.py --workspace "$HOME/sckg-method-demo01"
+SCKG_WORKBENCH_HOME="$HOME/sckg-method-demo01" .venv-workbench/bin/python -m streamlit run workbench_app.py --server.address 127.0.0.1
+```
+
+打开“知识库”→“方法配置与适用条件（开发预览）”。演示明确虚构，不配置模型，不建立科学结论；原三路线演示继续保留。相关验收入口为 `scripts/verify_annotation_stage.py`，实际安装宿主主/公开工作区各179项通过，见[阶段记录](docs/WORKBENCH_VALIDATION.md#来源条件接入方法配置)。
+
 ## 可重跑验收
 
 ```bash

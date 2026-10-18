@@ -7,6 +7,7 @@ from a source attribute to a report field is an explicit development artifact.
 from __future__ import annotations
 
 from copy import deepcopy
+from contextlib import nullcontext
 import json
 from typing import Annotated, Literal
 
@@ -125,7 +126,8 @@ class WorkflowInputService:
                 'claim':claim, 'evidence':evidence,
                 'authority':'development_candidate_only', 'recommendation_eligible':False}
 
-    def evaluate(self, route_ids, reported_profile, *, report_origin='explicit_structured_user_report_not_measurement'):
+    def evaluate(self, route_ids, reported_profile, *, report_origin='explicit_structured_user_report_not_measurement',
+                 _connection=None):
         if report_origin not in {'explicit_structured_user_report_not_measurement',
                                  'model_extracted_user_text_not_independently_verified'}:
             raise WorkflowInputError('Unknown input report origin')
@@ -148,7 +150,9 @@ class WorkflowInputService:
         if any(r not in available for r in route_ids):
             raise WorkflowInputError('Workflow route is absent from the bound development catalog')
         results = []
-        with self.ledger.connect() as conn:
+        # A composing read-only service may borrow its own read transaction;
+        # standalone v1 callers retain the same data contract and behavior.
+        with (nullcontext(_connection) if _connection is not None else self.ledger.connect()) as conn:
             # A read transaction keeps governance and source records consistent.
             if not conn.in_transaction:
                 conn.execute('BEGIN')

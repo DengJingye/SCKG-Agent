@@ -43,14 +43,16 @@ TESTS = (
 def hashes():
     files = {ROOT / "workbench_app.py", Path(__file__).resolve(),
              ROOT / "scripts/run_workbench_acceptance.py",
-             ROOT / "scripts/bootstrap_workflow_demo.py"}
+             ROOT / "scripts/bootstrap_workflow_demo.py",
+             ROOT / "scripts/bootstrap_method_demo.py",
+             ROOT / "scripts/verify_annotation_stage.py"}
     for directory in ("sckg_workbench", "core", "engine", "execution", "eval", "tests"):
         files.update((ROOT / directory).rglob("*.py"))
     return {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in sorted(files) if path.is_file()}
 
 
-def main(argv=None):
+def main(argv=None, *, tests=TESTS):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True,
                         help="new output directory; existing results are never overwritten")
@@ -62,7 +64,7 @@ def main(argv=None):
         parser.error("output must not exist; choose a new result directory")
     if not python.is_file() or not os.access(python, os.X_OK):
         parser.error("Python must be an existing executable")
-    for selector in TESTS:
+    for selector in tests:
         if not (ROOT / selector.partition("::")[0]).is_file():
             parser.error("required test file missing: " + selector)
     before = hashes()
@@ -70,10 +72,10 @@ def main(argv=None):
     with tempfile.TemporaryDirectory(prefix="isolated-", dir=output) as temporary:
         env, removed = child_environment(Path(temporary), None)
         command = [str(python), "-m", "pytest", "-q", "-p", "no:cacheprovider",
-                   *TESTS, "--junitxml=" + str(output / "junit.xml")]
+                   *tests, "--junitxml=" + str(output / "junit.xml")]
         result = run_process(command, cwd=ROOT, env=env, log=output / "output.log",
                              wall_seconds=120, max_rss_bytes=1536 * 1024 * 1024)
-    result["junit"] = junit_result(output / "junit.xml", TESTS)
+    result["junit"] = junit_result(output / "junit.xml", tests)
     result.update(schema="published-workflow-engineering-checks-v1",
                   source_hashes=before, source_hashes_unchanged=hashes() == before,
                   credential_variable_names_removed=removed,
