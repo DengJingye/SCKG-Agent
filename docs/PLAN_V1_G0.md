@@ -51,7 +51,9 @@ python3.12 -m venv .venv-workbench
 
 使用只读仓库权限，不保留checkout凭据；安装阶段固定版本、wheel类型和哈希；整个任务15分钟上限；完整结果目录在失败时仍上传，保存14天。不会使用生产凭据、修改知识库或运行真实科学任务。
 
-runner选择依据[GitHub官方运行器说明](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)。三个官方Action固定到已核验的Node24提交：[checkout v5.0.0](https://github.com/actions/checkout/tree/08c6903cd8c0fde910a37f88322edcfb5dd907a8)、[setup-python v6.0.0](https://github.com/actions/setup-python/tree/e797f83bcb11b83ae66e0230d6156d7c80228e7c)、[upload-artifact v6.0.0](https://github.com/actions/upload-artifact/tree/b7c566a772e6b6bfb58ed0dc250532a479d7789f)。本地配置校验通过不代表GitHub上的任务已经执行。
+runner选择依据[GitHub官方运行器说明](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)。两个官方Action固定到已核验的Node24提交：[checkout v5.0.0](https://github.com/actions/checkout/tree/08c6903cd8c0fde910a37f88322edcfb5dd907a8)、[upload-artifact v6.0.0](https://github.com/actions/upload-artifact/tree/b7c566a772e6b6bfb58ed0dc250532a479d7789f)。本地配置校验通过不代表GitHub上的任务已经执行。
+
+首次CI在准备Python阶段失败：[运行39125057954](https://github.com/DengJingye/SCKG-Agent/actions/runs/39125057954)。官方setup-python版本清单没有3.12.13的darwin/arm64构建，因此该次没有执行产品测试。后续复用既有Micromamba 2.8.1归档SHA256和17项显式bootstrap锁，继续使用与本机相同的Python 3.12.13；不改Python版本以取得通过。bootstrap锁原字节SHA256为 `e390621d620fdfea6b20bf9ad3894beac03c3c6bd714fc3007e01fe36f444cfb`，包使用原显式URL及MD5、TLS下载；这不是给conda包新增SHA256或签名认证。证据目录提前建立，Python准备失败时仍保留任务状态和安装日志。
 
 ## 保留的边界
 
