@@ -202,6 +202,28 @@ DISABLE_LLM_CALLS=false
 
 ## Running the App
 
+For the independent local workbench, use its installed Python environment:
+
+```bash
+python -m streamlit run workbench_app.py --server.address 127.0.0.1
+```
+
+Direct Scrublet analysis does not require a model connection. In **数据资产**, register
+an `.h5ad` file, describe the raw counts in `X`, explicitly enter the expected doublet
+rate, and confirm local execution. Click **创建本地分析任务**, then **前往运行结果**
+and **执行已授权的分析任务**. Repeated submission with unchanged inputs in the same
+session reuses the task; refreshing results never reruns it. The results page shows
+validated cell counts and predicted doublet proportion, plus downloadable artifacts.
+
+This preview currently accepts at most 1,000 cells, 10,000 genes and 25 MiB, with
+seed 0. The expected rate has no automatic default. The existing Scrublet contract,
+local source references and compatible scientific runtime must be present. Execution
+checks available memory before claiming the task, retaining a system reserve of at
+least 2 GiB or 25% of RAM; insufficient memory leaves the task queued. Predicted
+doublet proportion is not accuracy or a measured true doublet rate.
+
+The original application remains available below.
+
 From the repository root:
 
 ```bash
